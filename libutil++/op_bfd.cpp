@@ -88,12 +88,11 @@ bool op_bfd_symbol::operator<(op_bfd_symbol const & rhs) const
 }
 
 
-op_bfd::op_bfd(string const & archive, string const & fname,
-	       string_filter const & symbol_filter,
+op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	       extra_images const & extra_images, bool & ok)
 	:
 	filename(fname),
-	archive_path(archive),
+	archive_path(extra_images.get_archive_path()),
 	file_size(-1)
 {
 	int fd;
@@ -105,9 +104,8 @@ op_bfd::op_bfd(string const & archive, string const & fname,
 	asection const * sect;
 
 	image_error image_ok;
-	string const image_path = find_image_path(archive_path, filename,
-						  extra_images, image_ok,
-						  true);
+	string const image_path =
+		extra_images.find_image_path(filename, image_ok, true);
 
 	cverb << vbfd << "op_bfd ctor for " << image_path << endl;
 

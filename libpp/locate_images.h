@@ -53,6 +53,22 @@ public:
 	/// return a vector of all directories that match the given name
 	std::vector<std::string> const find(std::string const & name) const;
 
+	/**
+	 * @param image_name binary image name
+	 * @param error errors are flagged in this passed enum ref
+	 * @param fixup if true return the fixed image name else always return
+	 *  image_name and update error
+	 *
+	 * Locate a (number of) matching absolute paths to the given image
+	 * name. If we fail to find the file we fill in error and return the
+	 * original string.
+	 */
+	std::string const find_image_path(std::string const & image_name,
+				image_error & error, bool fixup) const;
+
+	/// return the archive path used to populate the images name map
+	std::string get_archive_path() const { return archive_path; }
+
 private:
 	typedef std::multimap<std::string, std::string> images_t;
 	typedef images_t::value_type value_type;
@@ -60,23 +76,8 @@ private:
 
 	/// map from image basename to owning directory
 	images_t images;
+	/// the archive path passed to populate the images name map.
+	std::string archive_path;
 };
-
-/**
- * @param archive_path archive prefix path
- * @param extra_images container where all extra candidate filenames are stored
- * @param image_name binary image name
- * @param error errors are flagged in this passed enum ref
- * @param fixup if true return the fixed image name else always return
- *  image_name
- *
- * Locate a (number of) matching absolute paths to the given image name.
- * If we fail to find the file we fill in error and return the original string.
- */
-std::string const
-find_image_path(std::string const & archive_path,
-		std::string const & image_name,
-                extra_images const & extra_images,
-                image_error & error, bool fixup);
 
 #endif /* LOCATE_IMAGES_H */

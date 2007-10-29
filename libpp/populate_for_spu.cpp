@@ -46,12 +46,12 @@ static int spu_profile = unknown_profile;
 void
 populate_spu_profile_from_files(list<profile_sample_files> const & files,
 				string const app_image,
-				string const & archive_path,
 				profile_container & samples,
 				inverted_profile const & ip,
 				string_filter const & symbol_filter,
 				size_t ip_grp_num, bool * has_debug_info)
 {
+	string archive_path = samples.extra_found_images.get_archive_path();
 	bool ok = ip.error == image_ok;
 	op_bfd * abfd = NULL;
 	string fname_to_check;
@@ -65,16 +65,14 @@ populate_spu_profile_from_files(list<profile_sample_files> const & files,
 		profile.add_sample_file(it->sample_filename);
 		opd_header header = profile.get_header();
 		if (header.embedded_offset) {
-			abfd = new op_bfd(archive_path,
-					  header.embedded_offset,
+			abfd = new op_bfd(header.embedded_offset,
 					  ip.image,
 					  symbol_filter,
 					  samples.extra_found_images,
 					  ok);
 			fname_to_check = ip.image;
 		} else {
-			abfd = new op_bfd(archive_path,
-					  ip.image,
+			abfd = new op_bfd(ip.image,
 					  symbol_filter,
 					  samples.extra_found_images,
 					  ok);
@@ -100,8 +98,7 @@ populate_spu_profile_from_files(list<profile_sample_files> const & files,
 }  // anon namespace
 
 void
-populate_for_spu_image(string const & archive_path,
-		       profile_container & samples,
+populate_for_spu_image(profile_container & samples,
 		       inverted_profile const & ip,
 		       string_filter const & symbol_filter,
 		       bool * has_debug_info)
@@ -115,7 +112,7 @@ populate_for_spu_image(string const & archive_path,
 
 		for (; it != end; ++it)
 			populate_spu_profile_from_files(it->files,
-				it->app_image, archive_path, samples, ip,
+				it->app_image, samples, ip,
 				symbol_filter, i, has_debug_info);
 	}
 }

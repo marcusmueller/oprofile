@@ -284,8 +284,8 @@ int opgprof(options::spec const & spec)
 
 	bool ok = image_profile.error == image_ok;
 	// FIXME: symbol_filter would be allowed through option
-	op_bfd abfd(options::archive_path, image_profile.image,
-		    string_filter(), classes.extra_found_images, ok);
+	op_bfd abfd(image_profile.image, string_filter(),
+		    classes.extra_found_images, ok);
 	if (!ok && image_profile.error == image_ok)
 		image_profile.error = image_format_failure;
 

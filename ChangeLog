@@ -1,5 +1,40 @@
 2007-10-29  Philippe Elie  <phil.el@wanadoo.fr>
 
+	Cleanup the way per spec archive_path is handled, as extra_images
+	is built using an archive_path it make no sense to pass archive_path
+	as parameter all over the place, rather make it a member of
+	extra_images and use it, anyway it was required the archive_path
+	passed to find_image_path() was the same as used to build the
+	extra_images.
+
+	As a side effect it fix a corner case: oparchive archive:tmp1 -o tmp2
+	was not working for module, archiving from an archive should work now.
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h:
+	* libpp/callgraph_container.cpp:
+	* libpp/callgraph_container.h:
+	* libpp/locate_images.cpp:
+	* libpp/locate_images.h:
+	* libpp/populate.cpp:
+	* libpp/populate.h:
+	* libpp/populate_for_spu.cpp:
+	* libpp/populate_for_spu.h:
+	* libpp/profile_spec.cpp:
+	* libpp/xml_utils.cpp:
+	* libpp/xml_utils.h:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_spu_bfd.cpp:
+	* pp/opannotate.cpp:
+	* pp/oparchive.cpp:
+	* pp/oparchive_options.cpp:
+	* pp/oparchive_options.h:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+
+2007-10-29  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/file_manip.cpp: do not create the output file if the input
 	  file can not be read. It change oparchive behavior which created
 	  empty file with input file like -rws--x--x 1 root root
@@ -26,7 +61,7 @@
 	automatically and --image_path will be obsoleted when used with an
 	archive.
 
-	This patch except clarifying than --image-apth with archive: is a bit
+	This patch except clarifying than --image-path with archive: is a bit
 	special does not add any user level visible change.
 	* libpp/arrange_profiles.cpp:
 	* libpp/arrange_profiles.h:

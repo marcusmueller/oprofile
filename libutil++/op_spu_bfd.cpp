@@ -30,12 +30,11 @@ extern verbose vbfd;
  * constructor in libutil++/op_bfd.cpp, with the additional processing
  * needed to handle an embedded spu offset.
  */
-op_bfd::op_bfd(string const & archive, uint64_t spu_offset,
-	       string const & fname,
+op_bfd::op_bfd(uint64_t spu_offset, string const & fname,
 	       string_filter const & symbol_filter, 
 	       extra_images const & extra_images, bool & ok)
 	:
-	archive_path(archive),
+	archive_path(extra_images.get_archive_path()),
 	file_size(-1),
 	embedding_filename(fname)
 {
@@ -51,9 +50,8 @@ op_bfd::op_bfd(string const & archive, uint64_t spu_offset,
 	asection const * sect;
 
 	image_error image_ok;
-	string const image_path = find_image_path(archive_path, fname,
-						  extra_images, image_ok,
-						  true);
+	string const image_path =
+		extra_images.find_image_path(fname, image_ok, true);
 
 	cverb << vbfd << "op_bfd ctor for " << image_path << endl;
 	if (!ok)

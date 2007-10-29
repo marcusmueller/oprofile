@@ -241,6 +241,6 @@ struct inverted_profile {
  * applicable (hence image_set).
  */
 std::list<inverted_profile> const
-invert_profiles(std::string archive_path, profile_classes const & classes);
+invert_profiles(profile_classes const & classes);
 
 #endif /* !ARRANGE_PROFILES_H */

@@ -31,7 +31,6 @@ profile_classes classes;
 list<string> sample_files;
 
 namespace options {
-	string archive_path;
 	demangle_type demangle = dmt_normal;
 	bool exclude_dependent;
 	merge_option merge_by;
@@ -94,9 +93,6 @@ void handle_options(options::spec const & spec)
 		profile_spec::create(spec.common, image_path);
 
 	sample_files = pspec.generate_file_list(exclude_dependent, false);
-
-	archive_path = pspec.get_archive_path();
-	cverb << vsfile << "Archive: " << archive_path << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;

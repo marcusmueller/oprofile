@@ -51,6 +51,8 @@ int oparchive(options::spec const & spec)
 {
 	handle_options(spec);
 
+	string archive_path = classes.extra_found_images.get_archive_path();
+
 	/* Check to see if directory can be created */
 	if (!options::list_files && create_path(options::outdirectory.c_str())) {
 		cerr << "Unable to create directory for " 
@@ -59,8 +61,7 @@ int oparchive(options::spec const & spec)
 	}
 
 	/* copy over each of the executables and the debuginfo files */
-	list<inverted_profile> iprofiles
-		= invert_profiles(options::archive_path, classes);
+	list<inverted_profile> iprofiles = invert_profiles(classes);
 
 	report_image_errors(iprofiles);
 
@@ -71,9 +72,12 @@ int oparchive(options::spec const & spec)
 	for (; it != end; ++it) {
 
 		image_error error;
-		string exe_name = find_image_path("", it->image,
-						  classes.extra_found_images,
+		string exe_name =
+			classes.extra_found_images.find_image_path(it->image,
 						  error, true);
+
+		if (error == image_ok)
+			exe_name = exe_name.substr(archive_path.size());
 
 		// output name must be identical to the original name, when
 		// using this archive the used fixup will be identical e.g.:
@@ -85,7 +89,7 @@ int oparchive(options::spec const & spec)
 		if (it->error == image_not_found && is_prefix(exe_name, "anon "))
 			continue;
 
-		cverb << vdebug << exe_name << endl;
+		cverb << vdebug << archive_path + exe_name << endl;
 		/* Create directory for executable file. */
 		if (!options::list_files &&
 			create_path(exe_archive_file.c_str())) {
@@ -95,8 +99,8 @@ int oparchive(options::spec const & spec)
 		}
 
 		/* Copy actual executable files */
-		copy_one_file(it->error, options::archive_path + exe_name,
-		              exe_archive_file);
+		copy_one_file(it->error, archive_path + exe_name,
+			      exe_archive_file);
 
 		/* If there are any debuginfo files, copy them over.
 		 * Need to copy the debug info file to somewhere we'll
@@ -104,11 +108,10 @@ int oparchive(options::spec const & spec)
 		 * to avoid overwriting files with the same name. The
 		 * /usr/lib/debug search path is not going to work.
 		 */
-		bfd * ibfd = open_bfd(exe_name);
+		bfd * ibfd = open_bfd(archive_path + exe_name);
 		if (ibfd) {
-			string global(options::archive_path + DEBUGDIR);
-			string dirname = op_dirname(options::archive_path + 
-						    exe_name);
+			string global(archive_path + DEBUGDIR);
+			string dirname = op_dirname(archive_path + exe_name);
 			string debug_filename;
 			if (find_separate_debug_file(ibfd, dirname, global,
 				debug_filename)) {
@@ -137,13 +140,11 @@ int oparchive(options::spec const & spec)
 
 	for (; sit != send; ++sit) {
 		string sample_name = *sit;
-		string sample_base = sample_name;
 		/* Get rid of the the archive_path from the name */
-		sample_base.replace(sample_base.find(options::archive_path),
-				    options::archive_path.size(), "");
+		string sample_base = sample_name.substr(archive_path.size());
 		string sample_archive_file = options::outdirectory + sample_base;
 		
-		cverb << vdebug << (sample_name) << endl;
+		cverb << vdebug << sample_name << endl;
 		cverb << vdebug << " destp " << sample_archive_file << endl;
 		if (!options::list_files &&
 			create_path(sample_archive_file.c_str())) {
@@ -158,12 +159,12 @@ int oparchive(options::spec const & spec)
 
 	/* copy over the /var/lib/oprofile/abi file if it exists */
 	string abi_name = "/var/lib/oprofile/abi";
-	copy_one_file(image_ok, options::archive_path + abi_name,
+	copy_one_file(image_ok, archive_path + abi_name,
 	              options::outdirectory + abi_name);
 
 	/* copy over the /var/lib/oprofile/oprofiled.log file */
 	string log_name = "/var/lib/oprofile/oprofiled.log";
-	copy_one_file(image_ok, options::archive_path + log_name,
+	copy_one_file(image_ok, archive_path + log_name,
 	              options::outdirectory + log_name);
 
 	return 0;

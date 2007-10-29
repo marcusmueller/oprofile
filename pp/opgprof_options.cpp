@@ -26,7 +26,6 @@ profile_classes classes;
 inverted_profile image_profile;
 
 namespace options {
-	string archive_path;
 	string gmon_filename = "gmon.out";
 
 	// Ugly, for build only
@@ -70,8 +69,7 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 
 	size_t nr_classes = classes.v.size();
 
-	list<inverted_profile> iprofiles
-		= invert_profiles(options::archive_path, classes);
+	list<inverted_profile> iprofiles = invert_profiles(classes);
 
 	if (nr_classes == 1 && iprofiles.size() == 1) {
 		image_profile = *(iprofiles.begin());
@@ -110,9 +108,6 @@ void handle_options(options::spec const & spec)
 
 	profile_spec const pspec =
 		profile_spec::create(spec.common, options::image_path);
-
-	options::archive_path = pspec.get_archive_path();
-	cverb << vsfile << "Archive: " << options::archive_path << endl;
 
 	cverb << vsfile << "output filename: " << options::gmon_filename
 	      << endl;

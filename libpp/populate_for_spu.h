@@ -28,8 +28,7 @@ bool is_spu_profile(inverted_profile const & ip);
  * This is a special-purpose function for CELL BE SPU profiling.
  * See populate_spu_profile_from_files prologue for more details.
  */
-void populate_for_spu_image(std::string const & archive_path,
-			    profile_container & samples,
+void populate_for_spu_image(profile_container & samples,
 			    inverted_profile const & ip,
 			    string_filter const & symbol_filter,
 			    bool * has_debug_info);

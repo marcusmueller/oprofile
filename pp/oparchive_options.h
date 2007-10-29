@@ -18,7 +18,6 @@ class profile_classes;
 class merge_option;
 
 namespace options {
-	extern std::string archive_path;
 	extern bool exclude_dependent;
 	extern merge_option merge_by;
 	extern std::string outdirectory;

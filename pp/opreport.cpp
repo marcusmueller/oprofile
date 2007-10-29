@@ -403,8 +403,7 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 
 	if (options::xml) {
 		xml_support = new xml_utils(xml_out, symbols, nr_classes,
-			&options::symbol_filter, options::archive_path,
-			pc.extra_found_images);
+			&options::symbol_filter, pc.extra_found_images);
 		xml_out->output(cout);
 	} else {
 		text_out->output(cout, symbols);
@@ -480,8 +479,7 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 
 	if (options::xml) {
 		xml_support = new xml_utils(xml_out, symbols, nr_classes,
-			&options::symbol_filter, options::archive_path,
-			cg.extra_found_images);
+			&options::symbol_filter, cg.extra_found_images);
 		xml_out->output(cout);
 	} else {
 		text_out->output(cout, symbols);
@@ -512,8 +510,7 @@ int opreport(options::spec const & spec)
 			multiple_apps = true;
 	}
 
-	list<inverted_profile> iprofiles
-		= invert_profiles(options::archive_path, classes);
+	list<inverted_profile> iprofiles = invert_profiles(classes);
 
 	report_image_errors(iprofiles);
 
@@ -537,11 +534,10 @@ int opreport(options::spec const & spec)
 		list<inverted_profile>::iterator const end = iprofiles.end();
 
 		for (; it != end; ++it)
-			populate_for_image(options::archive_path, pc1,
-				*it, options::symbol_filter, 0);
+			populate_for_image(pc1, *it,
+					   options::symbol_filter, 0);
 
-		list<inverted_profile> iprofiles2
-			= invert_profiles(options::archive_path2, classes2);
+		list<inverted_profile> iprofiles2 = invert_profiles(classes2);
 
 		report_image_errors(iprofiles2);
 
@@ -552,16 +548,15 @@ int opreport(options::spec const & spec)
 		list<inverted_profile>::iterator const end2 = iprofiles2.end();
 
 		for (; it2 != end2; ++it2)
-			populate_for_image(options::archive_path2, pc2,
-				*it2, options::symbol_filter, 0);
+			populate_for_image(pc2, *it2,
+					   options::symbol_filter, 0);
 
 		output_diff_symbols(pc1, pc2, multiple_apps);
 	} else if (options::callgraph) {
 		callgraph_container cg_container;
-		cg_container.populate(options::archive_path, iprofiles,
-			classes.extra_found_images, options::debug_info,
-			options::threshold, options::merge_by.lib,
-			options::symbol_filter);
+		cg_container.populate(iprofiles, classes.extra_found_images,
+			options::debug_info, options::threshold,
+			options::merge_by.lib, options::symbol_filter);
 
 		output_cg_symbols(cg_container, multiple_apps);
 	} else {
@@ -572,8 +567,8 @@ int opreport(options::spec const & spec)
 		list<inverted_profile>::iterator const end = iprofiles.end();
 
 		for (; it != end; ++it)
-			populate_for_image(options::archive_path, samples,
-				*it, options::symbol_filter, 0);
+			populate_for_image(samples, *it,
+					   options::symbol_filter, 0);
 
 		output_symbols(samples, multiple_apps);
 	}

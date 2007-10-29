@@ -111,11 +111,9 @@ string get_cpu_num(size_t pclass)
 
 xml_utils::xml_utils(format_output::xml_formatter * xo,
                     symbol_collection const & s, size_t nc,
-		     string_filter * sf, string const & ap,
-		     extra_images const & extra_)
+		     string_filter * sf,extra_images const & extra_)
 	:
 	symbol_filter(sf),
-	archive_path(ap),
 	has_subclasses(false),
 	bytes_index(0),
 	extra_image(extra_)
@@ -382,11 +380,10 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 	op_bfd * abfd = NULL;
 	if (symb->spu_offset) {
 		string tmp = get_image_name(symb->embedding_filename, true);
-		abfd = new op_bfd(archive_path, symb->spu_offset,
-				  tmp, *symbol_filter, extra_image, ok);
-	} else {
-		abfd = new op_bfd(archive_path, image_name, *symbol_filter,
+		abfd = new op_bfd(symb->spu_offset, tmp, *symbol_filter,
 				  extra_image, ok);
+	} else {
+		abfd = new op_bfd(image_name, *symbol_filter, extra_image, ok);
 	}
 
 	if (!ok) {

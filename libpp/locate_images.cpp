@@ -21,8 +21,10 @@ using namespace std;
 
 
 void extra_images::populate(vector<string> const & paths,
-			    string const & archive_path)
+			    string const & archive_path_)
 {
+	archive_path = archive_path_;
+
 	vector<string>::const_iterator cit = paths.begin();
 	vector<string>::const_iterator end = paths.end();
 	for (; cit != end; ++cit) {
@@ -94,10 +96,8 @@ public:
 } // anon namespace
 
 
-string const find_image_path(string const & archive_path,
-			     string const & image_name,
-                             extra_images const & extra_images,
-                             image_error & error, bool fixup)
+string const extra_images::find_image_path(string const & image_name,
+	image_error & error, bool fixup) const
 {
 	error = image_ok;
 
@@ -116,11 +116,11 @@ string const find_image_path(string const & archive_path,
 
 	string const base = op_basename(image);
 
-	vector<string> result = extra_images.find(base);
+	vector<string> result = find(base);
 
 	// not found, try a module search
 	if (result.empty())
-		result = extra_images.find(module_matcher(base + ".ko"));
+		result = find(module_matcher(base + ".ko"));
 
 	if (result.empty()) {
 		error = image_not_found;
@@ -132,6 +132,7 @@ string const find_image_path(string const & archive_path,
 		return image_name;
 	}
 
-	// extra_images already contains the archive path as prefix
+	// extra_images::images name  already contains the archive path as
+	// prefix
 	return fixup ? result[0] : image_name;
 }

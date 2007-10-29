@@ -28,23 +28,21 @@ namespace {
 
 // PP:3.7, full path, or relative path. If we can't find it,
 // we should maintain the original to maintain the wordexp etc.
-string const fixup_image_spec(string const & archive_path,
-			      string const & str, extra_images const & extra)
+string const fixup_image_spec(string const & str, extra_images const & extra)
 {
 	// On error find_image_path() return str, so if an occur we will
 	// use the provided image_name not the fixed one.
 	image_error error;
-	return find_image_path(archive_path, str, extra, error, true);
+	return extra.find_image_path(str, error, true);
 }
 
-void fixup_image_spec(string const & archive_path,
-		      vector<string> & images, extra_images const & extra)
+void fixup_image_spec(vector<string> & images, extra_images const & extra)
 {
 	vector<string>::iterator it = images.begin();
 	vector<string>::iterator const end = images.end();
 
 	for (; it != end; ++it)
-		*it = fixup_image_spec(archive_path, *it, extra);
+		*it = fixup_image_spec(*it, extra);
 }
 
 }  // anon namespace
@@ -94,8 +92,7 @@ void profile_spec::set_image_or_lib_name(string const & str)
 {
 	/* FIXME: what does spec say about this being allowed to be
 	 * a comma list or not ? */
-	image_or_lib_image.push_back(fixup_image_spec(archive_path,
-		str, extra_found_images));
+	image_or_lib_image.push_back(fixup_image_spec(str, extra_found_images));
 }
 
 
@@ -126,21 +123,21 @@ void profile_spec::parse_session_exclude(string const & str)
 void profile_spec::parse_image(string const & str)
 {
 	image = separate_token(str, ',');
-	fixup_image_spec(archive_path, image, extra_found_images);
+	fixup_image_spec(image, extra_found_images);
 }
 
 
 void profile_spec::parse_image_exclude(string const & str)
 {
 	image_exclude = separate_token(str, ',');
-	fixup_image_spec(archive_path, image_exclude, extra_found_images);
+	fixup_image_spec(image_exclude, extra_found_images);
 }
 
 
 void profile_spec::parse_lib_image(string const & str)
 {
 	lib_image = separate_token(str, ',');
-	fixup_image_spec(archive_path, lib_image, extra_found_images);
+	fixup_image_spec(lib_image, extra_found_images);
 }
 
 
@@ -229,9 +226,8 @@ bool profile_spec::match(filename_spec const & spec) const
 	// filename for the benefit of module which have /oprofile in their
 	// sample filename. This allow to specify profile spec based on the
 	// real name of the image, e.g. 'binary:*oprofile.ko'
-	string simage = fixup_image_spec(archive_path, spec.image,
-					 extra_found_images);
-	string slib_image = fixup_image_spec(archive_path, spec.lib_image,
+	string simage = fixup_image_spec(spec.image, extra_found_images);
+	string slib_image = fixup_image_spec(spec.lib_image,
 					     extra_found_images);
 
 	// PP:3.19

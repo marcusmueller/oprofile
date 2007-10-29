@@ -99,8 +99,7 @@ public:
 	 * open the bfd (because it's not there or whatever). On out,
 	 * it's set to false if the bfd couldn't be loaded.
 	 */
-	op_bfd(std::string const & archive_path,
-	       std::string const & filename,
+	op_bfd(std::string const & filename,
 	       string_filter const & symbol_filter,
 	       extra_images const & extra_images,
 	       bool & ok);
@@ -109,8 +108,7 @@ public:
 	 * This constructor is used when processing an SPU profile
 	 * where the SPU ELF is embedded within the PPE binary.
 	 */
-	op_bfd(std::string const & archive_path,
-	       uint64_t spu_offset,
+	op_bfd(uint64_t spu_offset,
 	       std::string const & filename,
 	       string_filter const & symbol_filter,
 	       extra_images const & extra_images,
