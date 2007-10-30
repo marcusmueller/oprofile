@@ -28,7 +28,10 @@ class sample_entry;
 class callgraph_container;
 class profile_container;
 class diff_container;
+class extra_images;
+
 struct profile_classes;
+// FIXME: should be passed to the derived class formatter ctor
 extern profile_classes classes;
 
 namespace format_output {
@@ -36,7 +39,7 @@ namespace format_output {
 /// base class for formatter, handle common options to formatter
 class formatter {
 public:
-	formatter();
+	formatter(extra_images const & extra);
 	virtual ~formatter();
 
 	/// add a given column
@@ -80,13 +83,15 @@ protected:
 	struct field_datum {
 		field_datum(symbol_entry const & sym,
 		            sample_entry const & s,
-			    size_t pc, counts_t & c, double d = 0.0)
+			    size_t pc, counts_t & c,
+			    extra_images const & extra, double d = 0.0)
 			: symbol(sym), sample(s), pclass(pc),
-			  counts(c), diff(d) {}
+			  counts(c), extra(extra), diff(d) {}
 		symbol_entry const & symbol;
 		sample_entry const & sample;
 		size_t pclass;
 		mutable counts_t & counts;
+		extra_images const & extra;
 		double diff;
 	};
  
@@ -160,6 +165,10 @@ protected:
 	/// bool if details percentage are relative to total count rather to
 	/// symbol count
 	bool global_percent;
+
+	/// To retrieve the real image location, usefull when acting on
+	/// an archive and for 2.6 kernel modules
+	extra_images const & extra_found_images;
 };
  
 
@@ -208,7 +217,8 @@ public:
 class diff_formatter : public formatter {
 public:
 	/// build a ready to use formatter
-	diff_formatter(diff_container const & profile);
+	diff_formatter(diff_container const & profile,
+		       extra_images const & extra);
 
 	/**
 	 * Output a vector of symbols to out according to the output
@@ -228,7 +238,7 @@ class xml_formatter : public formatter {
 public:
 	/// build a ready to use formatter
 	xml_formatter(profile_container const * profile,
-		symbol_collection & symbols);
+		symbol_collection & symbols, extra_images const & extra);
 
 	// output body of XML output
 	void output(std::ostream & out);
@@ -274,7 +284,7 @@ private:
 class xml_cg_formatter : public xml_formatter {
 public:
 	/// build a ready to use formatter
-	xml_cg_formatter(callgraph_container const * callgraph,
+	xml_cg_formatter(callgraph_container const & callgraph,
 		symbol_collection & symbols);
 
 	/** output one symbol symb to out according to the output format
@@ -284,7 +294,7 @@ public:
 
 private:
 	/// container we work from
-	callgraph_container const * callgraph;
+	callgraph_container const & callgraph;
 
 	void output_symbol_core(std::ostream & out,
 		cg_symbol::children const cg_symb,

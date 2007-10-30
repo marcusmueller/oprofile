@@ -20,6 +20,15 @@
 using namespace std;
 
 
+int extra_images::suid;
+
+extra_images::extra_images()
+	:
+	uid(++suid)
+{
+}
+
+
 void extra_images::populate(vector<string> const & paths,
 			    string const & archive_path_)
 {

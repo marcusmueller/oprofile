@@ -11,12 +11,12 @@
 
 
 #include "symbol.h"
+#include "locate_images.h"
+
 #include <iostream>
 #include <string>
 
-using std::cerr;
-using std::endl;
-using std::string;
+using namespace std;
 
 column_flags symbol_entry::output_hint(column_flags fl) const
 {
@@ -41,8 +41,9 @@ bool has_sample_counts(count_array_t const & counts, size_t lo, size_t hi)
 }
 
 
-string const & get_image_name(image_name_id id, bool lf)
+string const & get_image_name(image_name_id id,
+			      image_name_storage::image_name_type type,
+			      extra_images const & extra)
 {
-	return lf ? image_names.name(id) : image_names.basename(id);
+	return image_names.get_name(id, type, extra);
 }
-

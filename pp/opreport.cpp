@@ -378,7 +378,8 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 	format_output::opreport_formatter * text_out = 0;
 
 	if (options::xml) {
-		xml_out = new format_output::xml_formatter(&pc, symbols);
+		xml_out = new format_output::xml_formatter(&pc, symbols,
+						     pc.extra_found_images);
 		xml_out->show_details(options::details);
 		out = xml_out;
 		// for XML always output long filenames
@@ -425,7 +426,10 @@ void output_diff_symbols(profile_container const & pc1,
 	if (multiple_apps)
 		flags = format_flags(flags | ff_app_name);
 
-	format_output::diff_formatter out(dc);
+	// With diff profile we output only filename coming from the first
+	// profile session, internally we use only name derived from the sample
+	// filename so image name can match.
+	format_output::diff_formatter out(dc, pc1.extra_found_images);
 
 	out.set_nr_classes(nr_classes);
 	out.show_long_filenames(options::long_filenames);
@@ -455,7 +459,7 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 	format_output::cg_formatter * text_out = 0;
 
 	if (options::xml) {
-		xml_out = new format_output::xml_cg_formatter(&cg, symbols);
+		xml_out = new format_output::xml_cg_formatter(cg, symbols);
 		xml_out->show_details(options::details);
 		out = xml_out;
 		// for XML always output long filenames

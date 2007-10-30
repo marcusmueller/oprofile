@@ -23,6 +23,8 @@
 
 #include <list>
 
+class extra_images;
+
 
 /// for storing sample counts
 typedef sparse_array<u32, count_type> count_array_t;
@@ -138,7 +140,9 @@ struct diff_symbol : public symbol_entry  {
 typedef std::vector<diff_symbol> diff_collection;
 
 bool has_sample_counts(count_array_t const & counts, size_t lo, size_t hi);
-std::string const & get_image_name(image_name_id id, bool lf);
+std::string const & get_image_name(image_name_id id,
+				   image_name_storage::image_name_type type,
+				   extra_images const & extra);
 
 
 #endif /* !SYMBOL_H */

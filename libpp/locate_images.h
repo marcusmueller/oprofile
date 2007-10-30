@@ -28,6 +28,8 @@
  */
 class extra_images {
 public:
+	extra_images();
+
 	/// add all filenames found in the given paths prefixed by the
 	/// archive path, recursively
 	void populate(std::vector<std::string> const & paths,
@@ -69,6 +71,9 @@ public:
 	/// return the archive path used to populate the images name map
 	std::string get_archive_path() const { return archive_path; }
 
+	/// return the uid for this extra_images, first valid uid is 1
+	int get_uid() const { return uid; }
+
 private:
 	typedef std::multimap<std::string, std::string> images_t;
 	typedef images_t::value_type value_type;
@@ -78,6 +83,11 @@ private:
 	images_t images;
 	/// the archive path passed to populate the images name map.
 	std::string archive_path;
+
+	/// unique identifier, first valid uid is 1
+	int uid;
+	/// unique uid generator
+	static int suid;
 };
 
 #endif /* LOCATE_IMAGES_H */

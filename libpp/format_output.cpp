@@ -91,13 +91,14 @@ bool extract_linenr_info(string const & info, string & file, size_t & line)
 
 namespace format_output {
 
-formatter::formatter()
+formatter::formatter(extra_images const & extra)
 	:
 	nr_classes(1),
 	flags(ff_none),
 	vma_64(false),
 	long_filenames(false),
-	need_header(true)
+	need_header(true),
+	extra_found_images(extra)
 {
 	format_map[ff_vma] = field_description(9, "vma", &formatter::format_vma);
 	format_map[ff_nr_samples] = field_description(9, "samples", &formatter::format_nr_samples);
@@ -274,13 +275,21 @@ string formatter::format_symb_name(field_datum const & f)
 
 string formatter::format_image_name(field_datum const & f)
 {
-	return get_image_name(f.symbol.image_name, long_filenames);
+	return get_image_name(f.symbol.image_name, 
+		long_filenames 
+			? image_name_storage::int_filename
+			: image_name_storage::int_basename,
+		extra_found_images);
 }
 
  
 string formatter::format_app_name(field_datum const & f)
 {
-	return get_image_name(f.symbol.app_name, long_filenames);
+	return get_image_name(f.symbol.app_name,
+		long_filenames 
+			? image_name_storage::int_filename
+			: image_name_storage::int_basename,
+		extra_found_images);
 }
 
  
@@ -363,13 +372,14 @@ do_output(ostream & out, symbol_entry const & symb, sample_entry const & sample,
 	size_t padding = 0;
 
 	// first output the vma field
-	field_datum datum(symb, sample, 0, c);
+	field_datum datum(symb, sample, 0, c, extra_found_images);
 	if (flags & ff_vma)
 		padding = output_field(out, datum, ff_vma, padding, false);
 
 	// repeated fields for each profile class
 	for (size_t pclass = 0 ; pclass < nr_classes; ++pclass) {
-		field_datum datum(symb, sample, pclass, c, diffs[pclass]);
+		field_datum datum(symb, sample, pclass, c,
+				  extra_found_images, diffs[pclass]);
 
 		if (flags & ff_nr_samples)
 			padding = output_field(out, datum,
@@ -423,6 +433,7 @@ do_output(ostream & out, symbol_entry const & symb, sample_entry const & sample,
 
 opreport_formatter::opreport_formatter(profile_container const & p)
 	:
+	formatter(p.extra_found_images),
 	profile(p),
 	need_details(false)
 {
@@ -479,6 +490,8 @@ output_details(ostream & out, symbol_entry const * symb)
 
  
 cg_formatter::cg_formatter(callgraph_container const & profile)
+	:
+	formatter(profile.extra_found_images)
 {
 	counts.total = profile.samples_count();
 }
@@ -533,7 +546,10 @@ void cg_formatter::output(ostream & out, symbol_collection const & syms)
 }
 
 
-diff_formatter::diff_formatter(diff_container const & profile)
+diff_formatter::diff_formatter(diff_container const & profile,
+			       extra_images const & extra)
+	:
+	formatter(extra)
 {
 	counts.total = profile.samples_count();
 }
@@ -587,8 +603,9 @@ size_t detail_table_index = 0;
 
 xml_formatter::
 xml_formatter(profile_container const * p,
-		symbol_collection & s)
+	      symbol_collection & s, extra_images const & extra)
 	:
+	formatter(extra),
 	profile(p),
 	symbols(s),
 	need_details(false)
@@ -647,7 +664,8 @@ void xml_formatter::output_symbol_data(ostream & out)
 		string const name = symbol_names.name(symb->name);
 		assert(name.size() > 0);
 
-		string const image = get_image_name(symb->image_name, true);
+		string const image = get_image_name(symb->image_name,
+			image_name_storage::int_filename, extra_found_images);
 		string const qname = image + ":" + name;
 		map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
 
@@ -656,7 +674,8 @@ void xml_formatter::output_symbol_data(ostream & out)
 			out << open_element(SYMBOL_DATA, true);
 			out << init_attr(TABLE_ID, sd_it->second);
 
-			field_datum datum(*symb, symb->sample, 0, counts);
+			field_datum datum(*symb, symb->sample, 0, counts,
+					  extra_found_images);
 
 			output_attribute(out, datum, ff_symb_name, NAME);
 
@@ -703,7 +722,8 @@ output_symbol_details(symbol_entry const * symb,
 			str << init_attr(TABLE_ID, detail_index++);
 
 			// first output the vma field
-			field_datum datum(*symb, it->second, 0, c, 0.0);
+			field_datum datum(*symb, it->second, 0, c, 
+					  extra_found_images, 0.0);
 			output_attribute(str, datum, ff_vma, VMA);
 			if (ff_linenr_info) {
 				string sym_file;
@@ -763,7 +783,8 @@ output_symbol(ostream & out,
 	string const name = symbol_names.name(symb->name);
 	assert(name.size() > 0);
 	
-	string const image = get_image_name(symb->image_name, true);
+	string const image = get_image_name(symb->image_name,
+		image_name_storage::int_filename, extra_found_images);
 	string const qname = image + ":" + name;
 
 	indx = xml_get_symbol_index(qname);
@@ -801,7 +822,7 @@ output_sample_data(ostream & out, symbol_entry const & symb,
                    sample_entry const & sample, size_t pclass)
 {
 	counts_t c;
-	field_datum datum(symb, sample, 0, c, 0.0);
+	field_datum datum(symb, sample, 0, c, extra_found_images, 0.0);
 
 	out << open_element(COUNT, true);
 	out << init_attr(CLASS, classes.v[pclass].name);
@@ -836,12 +857,12 @@ output_attribute(ostream & out, field_datum const & datum,
 }
 
 xml_cg_formatter::
-xml_cg_formatter(callgraph_container const * cg, symbol_collection & s)
+xml_cg_formatter(callgraph_container const & cg, symbol_collection & s)
 	:
-	xml_formatter(0, s),
+	xml_formatter(0, s, cg.extra_found_images),
 	callgraph(cg)
 {
-	counts.total = callgraph->samples_count();
+	counts.total = callgraph.samples_count();
 }
 
 void xml_cg_formatter::
@@ -853,7 +874,8 @@ output_symbol_core(ostream & out, cg_symbol::children const cg_symb,
 	cg_symbol::children::const_iterator cend = cg_symb.end();
 
 	for (cit = cg_symb.begin(); cit != cend; ++cit) {
-		string const & module = get_image_name((cit)->image_name, true);
+		string const & module = get_image_name((cit)->image_name,
+			image_name_storage::int_filename, extra_found_images);
 		bool got_samples = false;
 		bool self = false;
 		ostringstream str;
@@ -932,7 +954,8 @@ output_symbol(ostream & out,
 	string const name = symbol_names.name(symb->name);
 	assert(name.size() > 0);
 
-	string const image = get_image_name(symb->image_name, true);
+	string const image = get_image_name(symb->image_name,
+		image_name_storage::int_filename, extra_found_images);
 	string const qname = image + ":" + name;
 
 	string const selfname = symbol_names.demangle(symb->name) + " [self]";

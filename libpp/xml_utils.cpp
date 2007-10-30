@@ -111,12 +111,12 @@ string get_cpu_num(size_t pclass)
 
 xml_utils::xml_utils(format_output::xml_formatter * xo,
                     symbol_collection const & s, size_t nc,
-		     string_filter * sf,extra_images const & extra_)
+		     string_filter * sf, extra_images const & extra)
 	:
 	symbol_filter(sf),
 	has_subclasses(false),
 	bytes_index(0),
-	extra_image(extra_)
+	extra_found_images(extra)
 {
 	xml_out = xo;
 	nr_classes = nc;
@@ -376,19 +376,25 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 {
 	bool ok = true;
 
-	string const & image_name = get_image_name(symb->image_name, true);
+	string const & image_name = get_image_name(symb->image_name,
+		image_name_storage::int_filename, extra_found_images);
 	op_bfd * abfd = NULL;
 	if (symb->spu_offset) {
-		string tmp = get_image_name(symb->embedding_filename, true);
+		// FIXME: what about archive:tmp, actually it's not supported
+		// for spu since oparchive doesn't archive the real file but
+		// in future it would work ?
+		string tmp = get_image_name(symb->embedding_filename, 
+			image_name_storage::int_filename, extra_found_images);
 		abfd = new op_bfd(symb->spu_offset, tmp, *symbol_filter,
-				  extra_image, ok);
+				  extra_found_images, ok);
 	} else {
-		abfd = new op_bfd(image_name, *symbol_filter, extra_image, ok);
+		abfd = new op_bfd(image_name, *symbol_filter,
+				  extra_found_images, ok);
 	}
 
 	if (!ok) {
 		report_image_error(image_name, image_format_failure,
-				   false, extra_image);
+				   false, extra_found_images);
 		delete abfd;
 		return;
 	}
@@ -505,7 +511,7 @@ public:
 	void add_modules(string const & module, string const & app_name,
 		sym_iterator it);
 	void summarize();
-	void summarize_processes();
+	void summarize_processes(extra_images const & extra_found_images);
 	void set_process_end();
 	void output_process_symbols(ostream & out);
 	void dump_processes();
@@ -535,7 +541,7 @@ class binary_root_info {
 public:
 	binary_root_info() { nr_binaries = 0; }
 	binary_info * add_binary(string const & n, sym_iterator it);
-	void summarize_binaries();
+	void summarize_binaries(extra_images const & extra_found_images);
 	void output_binary_symbols(ostream & out);
 	void dump_binaries();
 private:
@@ -544,8 +550,8 @@ private:
 	growable_vector<binary_info> binaries;
 };
 
-process_root_info processes_root;
-binary_root_info binaries_root;
+static process_root_info processes_root;
+static binary_root_info binaries_root;
 
 
 void module_info::
@@ -694,14 +700,17 @@ add_module_symbol(string const & module, string const & app,
 }
 
 
-void binary_root_info::summarize_binaries()
+void binary_root_info::
+summarize_binaries(extra_images const & extra_found_images)
 {
 	binary_info * current_binary = 0;
 	string current_binary_name = "";
 
 	for (sym_iterator it = symbols_begin ; it != symbols_end; ++it) {
-		string binary = get_image_name((*it)->app_name, true);
-		string module = get_image_name((*it)->image_name, true);
+		string binary = get_image_name((*it)->app_name,
+			image_name_storage::int_filename, extra_found_images);
+		string module = get_image_name((*it)->image_name,
+			image_name_storage::int_filename, extra_found_images);
 
 		if (binary != current_binary_name) {
 			current_binary = binaries_root.add_binary(binary, it);
@@ -741,12 +750,15 @@ void process_root_info::summarize()
 }
 
 
-void process_root_info::summarize_processes()
+void process_root_info::
+summarize_processes(extra_images const & extra_found_images)
 {
 	// add modules to the appropriate threads in the process hierarchy
 	for (sym_iterator it = symbols_begin ; it != symbols_end; ++it) {
-		string binary = get_image_name((*it)->app_name, true);
-		string module = get_image_name((*it)->image_name, true);
+		string binary = get_image_name((*it)->app_name, 
+			image_name_storage::int_filename, extra_found_images);
+		string module = get_image_name((*it)->image_name,
+			image_name_storage::int_filename, extra_found_images);
 
 		processes_root.add_modules(module, binary, it);
 	}
@@ -1045,12 +1057,12 @@ void xml_utils::output_program_structure(ostream & out)
 
 	if (has_separated_thread_info()) {
 		build_process_tree();
-		processes_root.summarize_processes();
+		processes_root.summarize_processes(extra_found_images);
 		if (cverb << vxml)
 			processes_root.dump_processes();
 		processes_root.output_process_symbols(out);
 	} else {
-		binaries_root.summarize_binaries();
+		binaries_root.summarize_binaries(extra_found_images);
 		if (cverb << vxml)
 			binaries_root.dump_binaries();
 		binaries_root.output_binary_symbols(out);

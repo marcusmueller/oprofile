@@ -1,3 +1,22 @@
+2007-10-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	Prepare #931882 fix, continue to move down real filename
+	retrieval by extending image_name_storage which can hold now the
+	real image name and the image as derived from the sample filename.
+	Use the new api in a compatible way with the old behavior, no output
+	change intended.
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/locate_images.cpp:
+	* libpp/locate_images.h:
+	* libpp/name_storage.cpp:
+	* libpp/name_storage.h:
+	* libpp/symbol.cpp:
+	* libpp/symbol.h:
+	* libpp/xml_utils.cpp:
+	* libpp/xml_utils.h:
+	* pp/opreport.cpp:
+
 2007-10-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/image_errors.cpp: Pass to image_errors the archive_path through

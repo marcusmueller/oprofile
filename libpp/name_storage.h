@@ -16,6 +16,8 @@
 
 #include "unique_storage.h"
 
+class extra_images;
+
 /// store original name and processed name
 struct stored_name {
 	stored_name(std::string const & n = std::string())
@@ -51,13 +53,68 @@ struct debug_name_storage : name_storage<debug_name_tag> {
 	std::string const & basename(debug_name_id id) const;
 };
 
+/// store original name and processed name
+struct stored_filename {
+	stored_filename(std::string const & n = std::string())
+		: filename(n), extra_images_uid(0) {}
+
+	bool operator<(stored_filename const & rhs) const {
+		return filename < rhs.filename;
+	}
+
+	std::string filename;
+	mutable std::string base_filename;
+	mutable std::string real_filename;
+	mutable std::string real_base_filename;
+	mutable int extra_images_uid;
+};
+
+/// partial specialization for unique storage of filenames
+template <typename I> 
+struct filename_storage : unique_storage<I, stored_filename> {
+
+	typedef typename unique_storage<I, stored_filename>::id_value id_value;
+
+	std::string const & name(id_value const & id) const {
+		return unique_storage<I, stored_filename>::get(id).filename;
+	}
+};
 
 class image_name_tag;
 /// an image name
-typedef name_storage<image_name_tag>::id_value image_name_id;
+typedef filename_storage<image_name_tag>::id_value image_name_id;
 
 /// class storing a set of shared image name
-struct image_name_storage : name_storage<image_name_tag> {
+struct image_name_storage : filename_storage<image_name_tag> {
+	enum image_name_type {
+		/// image name based on the sample filename w/o path
+		int_basename,
+		/// image name based on the sample filename
+		int_filename,
+		/// real image name, can be different for module.
+		int_real_basename,
+		/// same as int_real_basename + the complete path, including an
+		/// optionnal archive_path passed trough profile_spec
+		int_real_filename,
+	};
+
+	/**
+	 * @param id  the image name id
+	 * @param type  the image name type
+	 * @param extra  extra locations where the image can be found
+	 *
+	 * If type == int_real_name (resp. int_real_filename) and the image
+	 * can't be located the return value is the same as if get_name()
+	 * was called with int_name (resp. int_filename).
+	 *
+	 * multiple call with the image_name_id and different extra parameter
+	 * will throw a runtime error, multiple extra_images are possible
+	 * with differential profile but the name. FIXME
+	 */
+	std::string const & get_name(image_name_id id,
+				     image_name_type type,
+				     extra_images const & extra) const;
+
 	/// return the basename name for the given ID
 	std::string const & basename(image_name_id) const;
 };

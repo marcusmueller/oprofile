@@ -55,7 +55,7 @@ private:
 	bool multiple_events;
 	bool has_subclasses;
 	size_t bytes_index;
-	extra_images const & extra_image;
+	extra_images const & extra_found_images;
 	static bool has_nonzero_masks;
 	static size_t events_index;
 };
