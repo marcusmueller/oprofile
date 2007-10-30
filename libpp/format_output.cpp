@@ -277,8 +277,8 @@ string formatter::format_image_name(field_datum const & f)
 {
 	return get_image_name(f.symbol.image_name, 
 		long_filenames 
-			? image_name_storage::int_filename
-			: image_name_storage::int_basename,
+			? image_name_storage::int_real_filename
+			: image_name_storage::int_real_basename,
 		extra_found_images);
 }
 
@@ -287,8 +287,8 @@ string formatter::format_app_name(field_datum const & f)
 {
 	return get_image_name(f.symbol.app_name,
 		long_filenames 
-			? image_name_storage::int_filename
-			: image_name_storage::int_basename,
+			? image_name_storage::int_real_filename
+			: image_name_storage::int_real_basename,
 		extra_found_images);
 }
 

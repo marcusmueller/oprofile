@@ -1,5 +1,10 @@
 2007-10-30  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/format_output.cpp: Fix #931882, xml output not changed at
+	the moment.
+
+2007-10-30  Philippe Elie  <phil.el@wanadoo.fr>
+
 	Prepare #931882 fix, continue to move down real filename
 	retrieval by extending image_name_storage which can hold now the
 	real image name and the image as derived from the sample filename.
