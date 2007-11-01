@@ -62,10 +62,19 @@ void check_options()
 	using namespace options;
 
 	/* output directory is required */
-	if (outdirectory.size() == 0 && !list_files) {
-		cerr << "Requires --output-directory option." << endl;
-		exit(EXIT_FAILURE);
+	if (!list_files) {
+		if (outdirectory.size() == 0) {
+			cerr << "Requires --output-directory option." << endl;
+			exit(EXIT_FAILURE);
+		}
+		string realpath = op_realpath(outdirectory);
+		if (realpath == "/") {
+			cerr << "Invalid --output-directory: /" << endl;
+			exit(EXIT_FAILURE);
+		}
 	}
+
+	exit(EXIT_FAILURE);
 }
 
 }  // anonymous namespace

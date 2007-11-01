@@ -163,9 +163,11 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
    oparchive in a file at the toplevel of the archive, use it with all tools
    when an archive: is specified on the command line and deprecate the use of
    -p in such case.
- o consider to make extra_images a ref counted object, it's copied by a value
-  a few time but can be contain a lot of string. There is also some ugly public
+ o consider to make extra_images a ref counted object, it's copied by value
+  a few time but can contain a lot of string. There is also some ugly public
   member extra_images to fix.
+ o daemon bss size can be improved, grep for MAX_PATH to see where dynamic
+   allocation can be used, try $ nm oprofiled --size-sort too.
 
 Documentation
 -------------

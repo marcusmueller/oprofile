@@ -1,3 +1,10 @@
+2007-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/oparchive_options.cpp: oparchive need to be run as root if you
+	  want to get save all binaries, generally I don't like to restrict
+	  user to do silly things but --output-directory / is an easy typo
+	  todo and will completly screw up the box
+
 2007-10-30  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/format_output.cpp: Fix #931882, xml output not changed at
