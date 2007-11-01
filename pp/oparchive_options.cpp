@@ -73,8 +73,6 @@ void check_options()
 			exit(EXIT_FAILURE);
 		}
 	}
-
-	exit(EXIT_FAILURE);
 }
 
 }  // anonymous namespace
