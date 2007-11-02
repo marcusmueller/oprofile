@@ -114,20 +114,24 @@ popt::option options_array[] = {
 
 void handle_sort_option()
 {
-	if (sort.empty()) {
+	if (options::xml && !sort.empty()) {
+		cerr << "warning: sort options ignored because they "
+		     << "are incompatible with --xml" << endl;
+		// don't allow any other sorting, except the default below,
+		// to mess up symbol traversal for XML
+		sort.clear();
+	}
+
+	if (sort.empty() || options::xml) {
 		// PP:5.14 sort default to sample
 		if (options::xml) {
 			// implicitly sort by app-name,image so that in the
-			// symbol traversal all library module symbols are grouped
-			// together with their application
+			// symbol traversal all library module symbols are
+			// grouped together with their application
 			sort.push_back("app-name");
 			sort.push_back("image");
 		} else
 			sort.push_back("sample");
-	} else if (options::xml) {
-		// don't allow any other sorting to mess up symbol traversal for XML
-		cerr << "warning: sort options ignored because they are incompatible ";
-		cerr << "with --xml";
 	}
 
 	vector<string>::const_iterator cit = sort.begin();

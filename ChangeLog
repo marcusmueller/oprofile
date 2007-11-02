@@ -1,3 +1,9 @@
+2007-11-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport_options.cpp: --xml is not compatible with --sort since
+	  xml output need some predefined sort options, we warned against
+	  the use of --sort but didn't reset the sort options to default.
+
 2007-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/oparchive_options.cpp: oparchive need to be run as root if you
