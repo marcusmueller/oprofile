@@ -19,12 +19,13 @@ typedef symbol_collection::const_iterator sym_iterator;
 extern bool want_xml;
 
 class extra_images;
+class op_bfd;
 
 class xml_utils {
 public:
 	xml_utils(format_output::xml_formatter * xo,
 		symbol_collection const & s, size_t nc,
-		string_filter * sf, extra_images const & extra);
+		extra_images const & extra);
 	// these members are static because they are invoked before
 	// the xml_utils object has been created
 	static std::string get_timer_setup(size_t count);
@@ -44,14 +45,13 @@ public:
 						   std::string const & cpu_info,
 						   std::string const & events);
 	void output_symbol_bytes(std::ostream & out, symbol_entry const * symb,
-	                         size_t sym_id);
+	                         size_t sym_id, op_bfd const & abfd);
 	bool output_summary_data(std::ostream & out, count_array_t const & summary,
 							 size_t pclass);
 	size_t get_symbol_index(sym_iterator const it);
 	void output_program_structure(std::ostream & out);
 	void build_subclasses(std::ostream & out);
 private:
-	string_filter * symbol_filter;
 	bool multiple_events;
 	bool has_subclasses;
 	size_t bytes_index;

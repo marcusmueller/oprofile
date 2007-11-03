@@ -603,12 +603,14 @@ size_t detail_table_index = 0;
 
 xml_formatter::
 xml_formatter(profile_container const * p,
-	      symbol_collection & s, extra_images const & extra)
+	      symbol_collection & s, extra_images const & extra,
+	      string_filter const & sf)
 	:
 	formatter(extra),
 	profile(p),
 	symbols(s),
-	need_details(false)
+	need_details(false),
+	symbol_filter(sf)
 {
 	if (profile)
 		counts.total = profile->samples_count();
@@ -652,9 +654,47 @@ void xml_formatter::output(ostream & out)
 	out << close_element(PROFILE);
 }
 
+bool
+xml_formatter::get_bfd_object(symbol_entry const * symb, op_bfd * & abfd) const
+{
+	bool ok = true;
+
+	string const & image_name = get_image_name(symb->image_name,
+		image_name_storage::int_filename, extra_found_images);
+	if (symb->spu_offset) {
+		// FIXME: what about archive:tmp, actually it's not supported
+		// for spu since oparchive doesn't archive the real file but
+		// in future it would work ?
+		string tmp = get_image_name(symb->embedding_filename, 
+			image_name_storage::int_filename, extra_found_images);
+		if (abfd && abfd->get_filename() == tmp)
+			return true;
+		delete abfd;
+		abfd = new op_bfd(symb->spu_offset, tmp,
+				  symbol_filter, extra_found_images, ok);
+	} else {
+		if (abfd && abfd->get_filename() == image_name)
+			return true;
+		delete abfd;
+		abfd = new op_bfd(image_name, symbol_filter,
+				  extra_found_images, ok);
+
+	}
+
+	if (!ok) {
+		report_image_error(image_name, image_format_failure,
+				   false, extra_found_images);
+		delete abfd;
+		abfd = 0;
+		return false;
+	}
+
+	return true;
+}
 
 void xml_formatter::output_symbol_data(ostream & out)
 {
+	op_bfd * abfd = NULL;
 	sym_iterator it = symbols.begin();
 	sym_iterator end = symbols.end();
 
@@ -687,8 +727,11 @@ void xml_formatter::output_symbol_data(ostream & out)
 			if (name.size() > 0 && name[0] != '?') {
 				output_attribute(out, datum, ff_vma, STARTING_ADDR);
 
-				if (need_details)
-					xml_support->output_symbol_bytes(bytes_out, symb, sd_it->second);
+				if (need_details) {
+					get_bfd_object(symb, abfd);
+					if (abfd)
+						xml_support->output_symbol_bytes(bytes_out, symb, sd_it->second, *abfd);
+				}
 			}
 			out << close_element();
 
@@ -697,6 +740,8 @@ void xml_formatter::output_symbol_data(ostream & out)
 		}
 	}
 	out << close_element(SYMBOL_TABLE);
+
+	delete abfd;
 }
 
 string  xml_formatter::
@@ -857,9 +902,10 @@ output_attribute(ostream & out, field_datum const & datum,
 }
 
 xml_cg_formatter::
-xml_cg_formatter(callgraph_container const & cg, symbol_collection & s)
+xml_cg_formatter(callgraph_container const & cg, symbol_collection & s,
+		 string_filter const & sf)
 	:
-	xml_formatter(0, s, cg.extra_found_images),
+	xml_formatter(0, s, cg.extra_found_images, sf),
 	callgraph(cg)
 {
 	counts.total = callgraph.samples_count();

@@ -379,7 +379,7 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 
 	if (options::xml) {
 		xml_out = new format_output::xml_formatter(&pc, symbols,
-						     pc.extra_found_images);
+			pc.extra_found_images, options::symbol_filter);
 		xml_out->show_details(options::details);
 		out = xml_out;
 		// for XML always output long filenames
@@ -404,7 +404,7 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 
 	if (options::xml) {
 		xml_support = new xml_utils(xml_out, symbols, nr_classes,
-			&options::symbol_filter, pc.extra_found_images);
+			pc.extra_found_images);
 		xml_out->output(cout);
 	} else {
 		text_out->output(cout, symbols);
@@ -459,7 +459,8 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 	format_output::cg_formatter * text_out = 0;
 
 	if (options::xml) {
-		xml_out = new format_output::xml_cg_formatter(cg, symbols);
+		xml_out = new format_output::xml_cg_formatter(cg, symbols,
+			options::symbol_filter);
 		xml_out->show_details(options::details);
 		out = xml_out;
 		// for XML always output long filenames
@@ -483,7 +484,7 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 
 	if (options::xml) {
 		xml_support = new xml_utils(xml_out, symbols, nr_classes,
-			&options::symbol_filter, cg.extra_found_images);
+			cg.extra_found_images);
 		xml_out->output(cout);
 	} else {
 		text_out->output(cout, symbols);

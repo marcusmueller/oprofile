@@ -1,3 +1,18 @@
+2007-11-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	with --xml and --details, bfd open/close was done one time per
+	symbols, not one time per application. Solved by moving open/close
+	in the caller and cache bfd object, this work because --xml imply
+	symbols are sorted by app name then lib name. This is not perfect as
+	we can open/close multiple time bfd object with --separate=library
+	but still a real win. Quick test showed an improvement by over 40
+	times. Improvement grows as number of symbols per binary.
+	* libpp/xml_utils.cpp: move bfd open ...
+	* libpp/xml_utils.h:
+	* libpp/format_output.cpp: ... here
+	* libpp/format_output.h:
+	* pp/opreport.cpp:
+
 2007-11-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opreport_options.cpp: --xml is not compatible with --sort since

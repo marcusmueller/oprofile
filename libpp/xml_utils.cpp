@@ -110,10 +110,9 @@ string get_cpu_num(size_t pclass)
 };  // anonymous namespace
 
 xml_utils::xml_utils(format_output::xml_formatter * xo,
-                    symbol_collection const & s, size_t nc,
-		     string_filter * sf, extra_images const & extra)
+		     symbol_collection const & s, size_t nc,
+		     extra_images const & extra)
 	:
-	symbol_filter(sf),
 	has_subclasses(false),
 	bytes_index(0),
 	extra_found_images(extra)
@@ -372,36 +371,11 @@ get_counts_string(count_array_t const & counts, size_t begin, size_t end)
 
 void
 xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
-	                           size_t sym_id)
+			       size_t sym_id, op_bfd const & abfd)
 {
-	bool ok = true;
-
-	string const & image_name = get_image_name(symb->image_name,
-		image_name_storage::int_filename, extra_found_images);
-	op_bfd * abfd = NULL;
-	if (symb->spu_offset) {
-		// FIXME: what about archive:tmp, actually it's not supported
-		// for spu since oparchive doesn't archive the real file but
-		// in future it would work ?
-		string tmp = get_image_name(symb->embedding_filename, 
-			image_name_storage::int_filename, extra_found_images);
-		abfd = new op_bfd(symb->spu_offset, tmp, *symbol_filter,
-				  extra_found_images, ok);
-	} else {
-		abfd = new op_bfd(image_name, *symbol_filter,
-				  extra_found_images, ok);
-	}
-
-	if (!ok) {
-		report_image_error(image_name, image_format_failure,
-				   false, extra_found_images);
-		delete abfd;
-		return;
-	}
-
 	size_t size = symb->size;
 	unsigned char contents[size];
-	if (abfd->get_symbol_contents(symb->sym_index, contents)) {
+	if (abfd.get_symbol_contents(symb->sym_index, contents)) {
 		string const name = symbol_names.name(symb->name);
 		out << open_element(BYTES, true) << init_attr(TABLE_ID, sym_id);
 		out << close_element(NONE, true);
@@ -414,7 +388,6 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 		}
 		out << close_element(BYTES);
 	}
-	delete abfd;
 }
 
 

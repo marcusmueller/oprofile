@@ -29,6 +29,7 @@ class callgraph_container;
 class profile_container;
 class diff_container;
 class extra_images;
+class op_bfd;
 
 struct profile_classes;
 // FIXME: should be passed to the derived class formatter ctor
@@ -238,7 +239,8 @@ class xml_formatter : public formatter {
 public:
 	/// build a ready to use formatter
 	xml_formatter(profile_container const * profile,
-		symbol_collection & symbols, extra_images const & extra);
+		      symbol_collection & symbols, extra_images const & extra,
+		      string_filter const & symbol_filter);
 
 	// output body of XML output
 	void output(std::ostream & out);
@@ -272,12 +274,20 @@ private:
 	// count of DetailData items output so far
 	size_t detail_count;
 
+	/// with --details we need to reopen the bfd object for each symb to
+	/// get it's contents, hence we store the filter used by the bfd ctor.
+	string_filter const & symbol_filter;
+
 	void output_sample_data(std::ostream & out, symbol_entry const & symb,
 			   sample_entry const & sample, size_t count);
 
 	/// output attribute in XML
 	void output_attribute(std::ostream & out, field_datum const & datum,
 			      format_flags fl, tag_t tag);
+
+	/// Retrieve a bfd object for this symbol, reopening a new bfd object
+	/// only if necessary
+	bool get_bfd_object(symbol_entry const * symb, op_bfd * & abfd) const;
 };
 
 // callgraph XML output version
@@ -285,7 +295,7 @@ class xml_cg_formatter : public xml_formatter {
 public:
 	/// build a ready to use formatter
 	xml_cg_formatter(callgraph_container const & callgraph,
-		symbol_collection & symbols);
+		symbol_collection & symbols, string_filter const & sf);
 
 	/** output one symbol symb to out according to the output format
 	 * specifier previously set by call(s) to add_format() */
