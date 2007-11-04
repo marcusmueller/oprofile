@@ -118,7 +118,8 @@ int oparchive(options::spec const & spec)
 				/* found something copy it over */
 				string dest_debug_dir = options::outdirectory +
 					dirname + "/.debug/";
-				if (create_dir(dest_debug_dir.c_str())) {
+				if (!options::list_files &&
+				    create_dir(dest_debug_dir.c_str())) {
 					cerr << "Unable to create directory: "
 					<< dest_debug_dir << "." << endl;
 					exit (EXIT_FAILURE);

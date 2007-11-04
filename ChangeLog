@@ -1,3 +1,8 @@
+2007-11-03  Richard Purdie  <rpurdie@openedhand.com>
+
+	* pp/oparchive.cpp:  Check list_files option before calling
+	  create_dir() for debug files.
+
 2007-11-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	with --xml and --details, bfd open/close was done one time per
@@ -433,7 +438,7 @@
 2007-05-21  Richard Purdie  <rpurdie@openedhand.com>
   
 	* doc/opreport.xsd:
- 	* libpp/format_output.cpp:
+	* libpp/format_output.cpp:
 	* libpp/format_output.h:
 	* libpp/xml_utils.cpp:
 	* libutil++/xml_output.cpp:
