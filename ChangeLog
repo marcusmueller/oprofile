@@ -1,3 +1,11 @@
+2007-11-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: nmi watchdog is now cleanly handled in the kernel
+	  but it can be on by default even if CONFIG_WATCHDOG=n, a sysctl
+	  exists to put it off. We need to check this in opcontrol since we
+	  returned success if a counter is missing and starting oprofile with
+	  oprof_start silently failed.
+
 2007-11-03  Richard Purdie  <rpurdie@openedhand.com>
 
 	* pp/oparchive.cpp:  Check list_files option before calling

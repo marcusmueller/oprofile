@@ -1044,7 +1044,17 @@ set_ctr_param()
 	fi
 
 	if test "$KERNEL_SUPPORT" = "yes"; then
-		echo $3 >$MOUNT/$1/$2
+		if test -e $MOUNT/$1; then
+			echo $3 >$MOUNT/$1/$2
+		else
+			echo -n "Error: counter $1 not available"
+			if test -e /proc/sys/kernel/nmi_watchdog; then
+				echo " nmi_watchdog using this resource ? Try:"
+				echo "opcontrol --deinit"
+				echo "echo 0 > /proc/sys/kernel/nmi_watchdog"
+			fi
+			exit 1
+		fi
 	else
 		$SYSCTL -w dev.oprofile.$1.$2=$3
 	fi
