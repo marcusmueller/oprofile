@@ -1,4 +1,9 @@
-2007-09-28  Richard Purdie  <rpurdie@openedhand.com>
+2007-11-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opannotate.cpp: for module we didn't use the right image name,
+	  this bug appeared after 0.9.3 release
+
+2007-11-05  Richard Purdie  <rpurdie@openedhand.com>
 
 	* events/arm/armv6/events: Fix armv6 events to match mainline kernels
 

@@ -270,7 +270,8 @@ symbol_entry const * output_objdump_asm_line(symbol_entry const * last_symbol,
 
 
 void do_one_output_objdump(symbol_collection const & symbols,
-			   string const & app_name, bfd_vma start, bfd_vma end)
+			   string const & image_name, string const & app_name,
+			   bfd_vma start, bfd_vma end)
 {
 	vector<string> args;
 
@@ -292,7 +293,7 @@ void do_one_output_objdump(symbol_collection const & symbols,
 			args.push_back(objdump_params[i]);
 	}
 
-	args.push_back(app_name);
+	args.push_back(image_name);
 	child_reader reader("objdump", args);
 	if (reader.error()) {
 		cerr << "An error occur during the execution of objdump:\n\n";
@@ -338,6 +339,11 @@ void do_one_output_objdump(symbol_collection const & symbols,
 void output_objdump_asm(symbol_collection const & symbols,
 			string const & app_name)
 {
+	image_error error;
+	string image =
+		classes.extra_found_images.find_image_path(app_name, error,
+							   true);
+
 	// this is only an optimisation, we can either filter output by
 	// directly calling objdump and rely on the symbol filtering or
 	// we can call objdump with the right parameter to just disassemble
@@ -345,16 +351,18 @@ void output_objdump_asm(symbol_collection const & symbols,
 	// a medium number of times, I dunno if the used threshold is optimal
 	// but it is a conservative value.
 	size_t const max_objdump_exec = 50;
-	if (symbols.size() <= max_objdump_exec) {
+	if (symbols.size() <= max_objdump_exec || error != image_ok) {
 		symbol_collection::const_iterator cit = symbols.begin();
 		symbol_collection::const_iterator end = symbols.end();
 		for (; cit != end; ++cit) {
 			bfd_vma start = (*cit)->sample.vma;
 			bfd_vma end  = start + (*cit)->size;
-			do_one_output_objdump(symbols, app_name, start, end);
+			do_one_output_objdump(symbols, image, app_name,
+					      start, end);
 		}
 	} else {
-		do_one_output_objdump(symbols, app_name, 0, ~bfd_vma(0));
+		do_one_output_objdump(symbols, image,
+				      app_name, 0, ~bfd_vma(0));
 	}
 }
 
