@@ -792,7 +792,7 @@ output_symbol_details(symbol_entry const * symb,
 			str << close_element(NONE, true);
 
 			// output buffered sample data
-			output_sample_data(str, *symb, it->second, p);
+			output_sample_data(str, it->second, p);
 
 			str << close_element(DETAIL_DATA);
 		}
@@ -863,12 +863,8 @@ output_symbol(ostream & out,
 
 
 void xml_formatter::
-output_sample_data(ostream & out, symbol_entry const & symb,
-                   sample_entry const & sample, size_t pclass)
+output_sample_data(ostream & out, sample_entry const & sample, size_t pclass)
 {
-	counts_t c;
-	field_datum datum(symb, sample, 0, c, extra_found_images, 0.0);
-
 	out << open_element(COUNT, true);
 	out << init_attr(CLASS, classes.v[pclass].name);
 	out << close_element(NONE, true);

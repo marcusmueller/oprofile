@@ -278,8 +278,8 @@ private:
 	/// get it's contents, hence we store the filter used by the bfd ctor.
 	string_filter const & symbol_filter;
 
-	void output_sample_data(std::ostream & out, symbol_entry const & symb,
-			   sample_entry const & sample, size_t count);
+	void output_sample_data(std::ostream & out,
+		sample_entry const & sample, size_t count);
 
 	/// output attribute in XML
 	void output_attribute(std::ostream & out, field_datum const & datum,
