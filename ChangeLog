@@ -1,3 +1,8 @@
+2007-11-08  Haavard Skinnemoen  <hskinnemoen@atmel.com>
+
+	* utils/opcontrol: Busybox's implementation of "kill" doesn't
+	  understand the "-s SIG" option. Use "-SIG" instead.
+
 2007-11-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	Compile fix for gcc 2.95.3

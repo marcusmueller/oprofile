@@ -924,7 +924,7 @@ do_stop()
 		return
 	fi
 
-	kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+	kill -0 `cat $LOCK_FILE` 2>/dev/null
 	if test "$?" -ne 0; then
 		echo "Detected stale lock file. Removing." >&2
 		rm -f "$LOCK_FILE"
@@ -935,7 +935,7 @@ do_stop()
 		echo "Stopping profiling."
 		echo 0 >/dev/oprofile/enable
 	fi
-	kill -s USR2 `cat $LOCK_FILE` 2>/dev/null
+	kill -USR2 `cat $LOCK_FILE` 2>/dev/null
 }
 
 
@@ -948,7 +948,7 @@ do_kill_daemon()
 		return
 	fi
 
-	kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+	kill -0 `cat $LOCK_FILE` 2>/dev/null
 	if test "$?" -ne 0; then
 		echo "Detected stale lock file. Removing." >&2
 		rm -f "$LOCK_FILE"
@@ -1300,7 +1300,7 @@ do_start_daemon()
 {
  
 	if test -f "$LOCK_FILE"; then
-		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+		kill -0 `cat $LOCK_FILE` 2>/dev/null
 		if test "$?" -eq 0; then
 			return;
 		else
@@ -1367,7 +1367,7 @@ do_start()
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		echo 1 >$MOUNT/enable
 	fi
-	kill -s USR1 `cat $LOCK_FILE` 2>/dev/null
+	kill -USR1 `cat $LOCK_FILE` 2>/dev/null
 	echo "Profiler running."
 }
 
