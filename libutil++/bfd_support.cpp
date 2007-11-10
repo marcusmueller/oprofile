@@ -542,7 +542,12 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 	if (!ret || !cfilename || !function)
 		goto fail;
 
-	if (!is_correct_function(function, sym.name()))
+	/*
+	 * is_correct_function does not handle the case of static inlines,
+	 * but if the linenr is non-zero in the inline case, it is the correct
+	 * line number.
+	 */
+	if (linenr == 0 && !is_correct_function(function, sym.name()))
 		goto fail;
 
 	if (linenr == 0) {

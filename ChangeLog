@@ -1,3 +1,9 @@
+2007-11-10  Dave Nomura  <dcnltc@us.ibm.com>
+
+	* libutil++/bfd_support.cpp: is_correct_function() is itended to deal
+	  with missing debug information, if linenr != 0, don't call it since
+	  we know we have valid debug info
+
 2007-11-08  Haavard Skinnemoen  <hskinnemoen@atmel.com>
 
 	* utils/opcontrol: Busybox's implementation of "kill" doesn't
