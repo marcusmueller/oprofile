@@ -1,3 +1,8 @@
+2007-11-15  Dave Nomura  <dcnltc@us.ibm.com>
+
+	* libpp/format_output.cpp: output XML SYMBOL_DATA for callers/callees
+	* libpp/format.h:
+
 2007-11-15   Dave Nomura  <dcnltc@us.ibm.com>
 
 	* events/ppc64/power6/event_mappings: updated Power6 event files

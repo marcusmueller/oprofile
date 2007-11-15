@@ -692,6 +692,68 @@ xml_formatter::get_bfd_object(symbol_entry const * symb, op_bfd * & abfd) const
 	return true;
 }
 
+void xml_formatter::
+output_the_symbol_data(ostream &out, symbol_entry const *symb, op_bfd * & abfd)
+{
+	string const name = symbol_names.name(symb->name);
+	assert(name.size() > 0);
+
+	string const image = get_image_name(symb->image_name,
+		image_name_storage::int_filename, extra_found_images);
+	string const qname = image + ":" + name;
+	map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
+
+	if (sd_it != symbol_data_table.end()) {
+		// first time we've seen this symbol
+		out << open_element(SYMBOL_DATA, true);
+		out << init_attr(TABLE_ID, sd_it->second);
+
+		field_datum datum(*symb, symb->sample, 0, counts,
+				  extra_found_images);
+
+		output_attribute(out, datum, ff_symb_name, NAME);
+
+		if (flags & ff_linenr_info) {
+			output_attribute(out, datum, ff_linenr_info, SOURCE_FILE);
+			output_attribute(out, datum, ff_linenr_info, SOURCE_LINE);
+		}
+
+		if (name.size() > 0 && name[0] != '?') {
+			output_attribute(out, datum, ff_vma, STARTING_ADDR);
+
+			if (need_details) {
+				get_bfd_object(symb, abfd);
+				if (abfd)
+					xml_support->output_symbol_bytes(bytes_out, symb, sd_it->second, *abfd);
+			}
+		}
+		out << close_element();
+
+		// seen so remove (otherwise get several "no symbols")
+		symbol_data_table.erase(qname);
+	}
+}
+
+void xml_formatter::output_cg_children(ostream &out, 
+	cg_symbol::children const cg_symb, op_bfd * & abfd)
+{
+	cg_symbol::children::const_iterator cit;
+	cg_symbol::children::const_iterator cend = cg_symb.end();
+
+	for (cit = cg_symb.begin(); cit != cend; ++cit) {
+		string const name = symbol_names.name(cit->name);
+		string const image = get_image_name(cit->image_name,
+			image_name_storage::int_filename, extra_found_images);
+		string const qname = image + ":" + name;
+		map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
+
+		if (sd_it != symbol_data_table.end()) {
+			symbol_entry const *child = &(*cit);
+			output_the_symbol_data(out, child, abfd);
+		}
+	}
+}
+
 void xml_formatter::output_symbol_data(ostream & out)
 {
 	op_bfd * abfd = NULL;
@@ -701,42 +763,12 @@ void xml_formatter::output_symbol_data(ostream & out)
 	out << open_element(SYMBOL_TABLE);
 	for ( ; it != end; ++it) {
 		symbol_entry const * symb = *it;
-		string const name = symbol_names.name(symb->name);
-		assert(name.size() > 0);
-
-		string const image = get_image_name(symb->image_name,
-			image_name_storage::int_filename, extra_found_images);
-		string const qname = image + ":" + name;
-		map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
-
-		if (sd_it != symbol_data_table.end()) {
-			// first time we've seen this symbol
-			out << open_element(SYMBOL_DATA, true);
-			out << init_attr(TABLE_ID, sd_it->second);
-
-			field_datum datum(*symb, symb->sample, 0, counts,
-					  extra_found_images);
-
-			output_attribute(out, datum, ff_symb_name, NAME);
-
-			if (flags & ff_linenr_info) {
-				output_attribute(out, datum, ff_linenr_info, SOURCE_FILE);
-				output_attribute(out, datum, ff_linenr_info, SOURCE_LINE);
-			}
-
-			if (name.size() > 0 && name[0] != '?') {
-				output_attribute(out, datum, ff_vma, STARTING_ADDR);
-
-				if (need_details) {
-					get_bfd_object(symb, abfd);
-					if (abfd)
-						xml_support->output_symbol_bytes(bytes_out, symb, sd_it->second, *abfd);
-				}
-			}
-			out << close_element();
-
-			// seen so remove (otherwise get several "no symbols")
-			symbol_data_table.erase(qname);
+		cg_symbol const * cg_symb = dynamic_cast<cg_symbol const *>(symb);
+		output_the_symbol_data(out, symb, abfd);
+		if (cg_symb) {
+			/* make sure callers/callees are included in SYMBOL_TABLE */
+			output_cg_children(out, cg_symb->callers, abfd);
+			output_cg_children(out, cg_symb->callees, abfd);
 		}
 	}
 	out << close_element(SYMBOL_TABLE);
