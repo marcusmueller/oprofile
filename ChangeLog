@@ -1,3 +1,8 @@
+2007-11-15   Dave Nomura  <dcnltc@us.ibm.com>
+
+	* events/ppc64/power6/event_mappings: updated Power6 event files
+	* events/ppc64/power6/events:
+
 2007-11-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	handle --root which act as a replacement (a prefix) for the / fs
