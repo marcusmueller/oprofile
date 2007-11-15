@@ -97,9 +97,13 @@ populate_for_image(profile_container & samples, inverted_profile const & ip,
 		}
 	}
 
-	if (found == true && ip.error == image_ok)
-		check_mtime(samples.extra_found_images.get_archive_path() +
-			    abfd.get_filename(), header);
+	if (found == true && ip.error == image_ok) {
+		image_error error;
+		string filename =
+			samples.extra_found_images.find_image_path(
+				ip.image, error, true);
+		check_mtime(filename, header);
+	}
 
 	if (has_debug_info)
 		*has_debug_info = abfd.has_debug_info();

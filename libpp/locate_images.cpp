@@ -11,6 +11,7 @@
 
 #include "file_manip.h"
 #include "locate_images.h"
+#include "string_manip.h"
 
 #include <cerrno>
 #include <iostream>
@@ -30,14 +31,12 @@ extra_images::extra_images()
 
 
 void extra_images::populate(vector<string> const & paths,
-			    string const & archive_path_)
+			    string const & prefix_path)
 {
-	archive_path = archive_path_;
-
 	vector<string>::const_iterator cit = paths.begin();
 	vector<string>::const_iterator end = paths.end();
 	for (; cit != end; ++cit) {
-		string const path = op_realpath(archive_path + *cit);
+		string const path = op_realpath(prefix_path + *cit);
 		list<string> file_list;
 		create_file_list(file_list, path, "*", true);
 		list<string>::const_iterator lit = file_list.begin();
@@ -47,6 +46,27 @@ void extra_images::populate(vector<string> const & paths,
 			images.insert(v);
 		}
 	}
+}
+
+
+void extra_images::populate(vector<string> const & paths,
+			    string const & archive_path_,
+			    string const & root_path_)
+{
+	archive_path = archive_path_;
+	if (!archive_path.empty())
+		archive_path = op_realpath(archive_path);
+
+	root_path = op_realpath(root_path_);
+	if (!root_path.empty())
+		root_path = op_realpath(root_path);
+
+	if (root_path.empty() && archive_path.empty())
+		populate(paths, "");
+	if (!archive_path.empty())
+		populate(paths, archive_path);
+	if (!root_path.empty() && root_path != archive_path)
+		populate(paths, root_path);
 }
 
 
@@ -104,24 +124,48 @@ public:
 
 } // anon namespace
 
+string const extra_images::locate_image(string const & image_name,
+			   image_error & error, bool fixup) const
+{
+	// Skip search since root_path can be non empty and we want
+	// to lookup only in root_path in this case.
+	if (!archive_path.empty()) {
+		string image = op_realpath(archive_path + image_name);
+		if (op_file_readable(image)) {
+			error = image_ok;
+			return fixup ? image : image_name;
+		}
+
+		if (errno == EACCES) {
+			error = image_unreadable;
+			return image_name;
+		}
+	}
+
+	// We catch a case where root_path.empty() since we skipped a
+	// search in "/" above when archive_path is empty. The case where
+	// root_path.empty() && archive_path.empty() is the normal one, none
+	// of --root or archive: as been given on command line.
+	if (!root_path.empty() || archive_path.empty()) {
+		string image = op_realpath(root_path + image_name);
+		if (op_file_readable(image)) {
+			error = image_ok;
+			return fixup ? image : image_name;
+		}
+	}
+
+	error = image_not_found;
+	return image_name;
+}
 
 string const extra_images::find_image_path(string const & image_name,
 	image_error & error, bool fixup) const
 {
 	error = image_ok;
 
-	string const image = op_realpath(archive_path + image_name);
-
-	// simplest case
-	if (op_file_readable(image)) {
-		error = image_ok;
-		return fixup ? image : image_name;
-	}
-
-	if (errno == EACCES) {
-		error = image_unreadable;
-		return image_name;
-	}
+	string const image = locate_image(image_name, error, fixup);
+	if (error != image_not_found)
+		return image;
 
 	string const base = op_basename(image);
 
@@ -136,12 +180,46 @@ string const extra_images::find_image_path(string const & image_name,
 		return image_name;
 	}
 
-	if (result.size() > 1) {
-		error = image_multiple_match;
-		return image_name;
+	if (result.size() == 1) {
+		error = image_ok;
+		return fixup ? result[0] : image_name;
 	}
 
-	// extra_images::images name  already contains the archive path as
-	// prefix
-	return fixup ? result[0] : image_name;
+	// We can't get multiple result except if only one result is prefixed
+	// by archive_path or by root_path.
+	size_t count = 0;
+	size_t index = 0;
+	for (size_t i = 0; i < result.size() && count < 2; ++i) {
+		if (is_prefix(result[i], archive_path)) {
+			index = i;
+			++count;
+		}
+	}
+
+	if (count == 0) {
+		for (size_t i = 0; i < result.size() && count < 2; ++i) {
+			if (is_prefix(result[i], root_path)) {
+				index = i;
+				++count;
+			}
+		}
+	}
+
+	if (count == 1) {
+		error = image_ok;
+		return fixup ? result[index] : image_name;
+	}
+
+	error = image_multiple_match;
+	return image_name;
+}
+
+
+string extra_images::strip_path_prefix(string const & image) const
+{
+	if (archive_path.length() && is_prefix(image, archive_path))
+		return image.substr(archive_path.size());
+	if (root_path.length() && is_prefix(image, root_path))
+		return image.substr(root_path.size());
+	return image;
 }

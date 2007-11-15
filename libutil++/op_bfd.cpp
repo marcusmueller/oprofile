@@ -103,15 +103,17 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	symbols_found_t symbols;
 	asection const * sect;
 
-	image_error image_ok;
+	image_error img_ok;
 	string const image_path =
-		extra_images.find_image_path(filename, image_ok, true);
+		extra_images.find_image_path(filename, img_ok, true);
 
 	cverb << vbfd << "op_bfd ctor for " << image_path << endl;
 
 	// if there's a problem already, don't try to open it
-	if (!ok)
+	if (!ok || img_ok != image_ok) {
+		cverb << vbfd << "can't locate " << image_path << endl;
 		goto out_fail;
+	}
 
 	fd = open(image_path.c_str(), O_RDONLY);
 	if (fd == -1) {

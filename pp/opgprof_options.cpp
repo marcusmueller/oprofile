@@ -107,7 +107,8 @@ void handle_options(options::spec const & spec)
 	}
 
 	profile_spec const pspec =
-		profile_spec::create(spec.common, options::image_path);
+		profile_spec::create(spec.common, options::image_path,
+				     options::root_path);
 
 	cverb << vsfile << "output filename: " << options::gmon_filename
 	      << endl;

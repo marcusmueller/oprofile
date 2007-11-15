@@ -1,3 +1,31 @@
+2007-11-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	handle --root which act as a replacement (a prefix) for the / fs
+	* libpp/locate_images.cpp: root path search taking care if a
+	  root path is given we never search through "/"
+	* libpp/locate_images.h:
+	* libpp/populate.cpp:
+	* libpp/populate_for_spu.cpp: use the right path to check last
+	  modification time, this is yet again a change in behavior, module
+	  was never found a this point, even if we found them later, and we
+	  didn't try to check_mtime(), so opreport is again a bit more verbose
+	* libutil++/op_bfd.cpp: be more cautious when checking if we can try to
+	  open the bfd file, don't open it in the '/' fs if a --root is  given
+	* libpp/profile_spec.cpp: convey the root_path all over the code.
+	* libpp/profile_spec.h:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/opannotate_options.cpp:
+	* pp/oparchive.cpp:
+	* pp/oparchive_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp:
+	* doc/opannotate.1.in: document --root
+	* doc/oparchive.1.in:
+	* doc/opgprof.1.in:
+	* doc/opreport.1.in:
+	* doc/oprofile.xml:
+
 2007-11-10  Dave Nomura  <dcnltc@us.ibm.com>
 
 	* libutil++/bfd_support.cpp: is_correct_function() is itended to deal

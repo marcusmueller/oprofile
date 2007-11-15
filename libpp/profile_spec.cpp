@@ -297,7 +297,8 @@ bool profile_spec::match(filename_spec const & spec) const
 
 
 profile_spec profile_spec::create(list<string> const & args,
-                                  vector<string> const & image_path)
+                                  vector<string> const & image_path,
+				  string const & root_path)
 {
 	profile_spec spec;
 	set<string> tag_seen;
@@ -323,7 +324,8 @@ profile_spec profile_spec::create(list<string> const & args,
 	if (spec.session.empty())
 		spec.session.push_back("current");
 
-	spec.extra_found_images.populate(image_path, spec.get_archive_path());
+	spec.extra_found_images.populate(image_path, spec.get_archive_path(),
+					 root_path);
 
 	return spec;
 }

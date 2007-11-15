@@ -250,7 +250,8 @@ void process_spec(profile_classes & classes, list<string> const & spec)
 	cverb << vsfile << "\n\n";
 
 	profile_spec const pspec =
-		profile_spec::create(spec, image_path);
+		profile_spec::create(spec, options::image_path,
+				     options::root_path);
 
 	list<string> sample_files = pspec.generate_file_list(exclude_dependent,
 	                                                     !options::callgraph);

@@ -83,12 +83,17 @@ populate_spu_profile_from_files(list<profile_sample_files> const & files,
 			ip.error = image_format_failure;
 
 		if (ip.error == image_format_failure)
-		  report_image_error(ip, false, samples.extra_found_images);
+			report_image_error(ip, false,
+					   samples.extra_found_images);
 
 		samples.add(profile, *abfd, app_image, ip_grp_num);
-		if (ip.error == image_ok)
-			check_mtime(archive_path + fname_to_check,
-				    profile.get_header());
+		if (ip.error == image_ok) {
+			image_error error;
+			string filename =
+				samples.extra_found_images.find_image_path(
+					fname_to_check, error, true);
+			check_mtime(filename, profile.get_header());
+		}
 
 		if (has_debug_info && !*has_debug_info)
 			*has_debug_info = abfd->has_debug_info();

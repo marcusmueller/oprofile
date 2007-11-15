@@ -31,9 +31,10 @@ public:
 	extra_images();
 
 	/// add all filenames found in the given paths prefixed by the
-	/// archive path, recursively
+	/// archive path or the root path, recursively
 	void populate(std::vector<std::string> const & paths,
-		      std::string const & archive_path);
+		      std::string const & archive_path,
+		      std::string const & root_path);
 
 	/// base class for matcher functors object
 	struct matcher {
@@ -71,10 +72,20 @@ public:
 	/// return the archive path used to populate the images name map
 	std::string get_archive_path() const { return archive_path; }
 
+	/// Given an image name returned by find_image_path() return
+	/// a filename with the archive_path or root_path stripped.
+	std::string strip_path_prefix(std::string const & image) const;
+
 	/// return the uid for this extra_images, first valid uid is 1
 	int get_uid() const { return uid; }
 
 private:
+	void populate(std::vector<std::string> const & paths,
+		      std::string const & prefix_path);
+
+	std::string const locate_image(std::string const & image_name,
+				image_error & error, bool fixup) const;
+
 	typedef std::multimap<std::string, std::string> images_t;
 	typedef images_t::value_type value_type;
 	typedef images_t::const_iterator const_iterator;
@@ -83,6 +94,9 @@ private:
 	images_t images;
 	/// the archive path passed to populate the images name map.
 	std::string archive_path;
+	/// A prefix added to locate binaries if they can't be found
+	/// through the archive path
+	std::string root_path;
 
 	/// unique identifier, first valid uid is 1
 	int uid;

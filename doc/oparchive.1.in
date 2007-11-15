@@ -42,6 +42,10 @@ Comma-separated list of additional paths to search for binaries.
 This is needed to find modules in kernels 2.6 and upwards.
 .br
 .TP
+.BI "--root / -R [path]"
+A path to a filesystem to search for additional binaries.
+.br
+.TP
 .BI "--output-directory / -o [directory]"
 Output to the given directory. There is no default. This must be specified.
 .br

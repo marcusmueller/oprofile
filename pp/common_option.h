@@ -25,6 +25,7 @@ namespace options {
 	extern std::string threshold_opt;
 	extern std::string command_options;
 	extern std::vector<std::string> image_path;
+	extern std::string root_path;
 
 	struct spec {
 		std::list<std::string> common;

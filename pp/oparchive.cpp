@@ -71,13 +71,14 @@ int oparchive(options::spec const & spec)
 	cverb << vdebug << "(exe_names)" << endl << endl;
 	for (; it != end; ++it) {
 
+		string exe_name = it->image;
 		image_error error;
-		string exe_name =
+		string real_exe_name =
 			classes.extra_found_images.find_image_path(it->image,
 						  error, true);
 
 		if (error == image_ok)
-			exe_name = exe_name.substr(archive_path.size());
+			exe_name = classes.extra_found_images.strip_path_prefix(real_exe_name);
 
 		// output name must be identical to the original name, when
 		// using this archive the used fixup will be identical e.g.:
@@ -89,7 +90,7 @@ int oparchive(options::spec const & spec)
 		if (it->error == image_not_found && is_prefix(exe_name, "anon "))
 			continue;
 
-		cverb << vdebug << archive_path + exe_name << endl;
+		cverb << vdebug << real_exe_name << endl;
 		/* Create directory for executable file. */
 		if (!options::list_files &&
 			create_path(exe_archive_file.c_str())) {
@@ -99,8 +100,7 @@ int oparchive(options::spec const & spec)
 		}
 
 		/* Copy actual executable files */
-		copy_one_file(it->error, archive_path + exe_name,
-			      exe_archive_file);
+		copy_one_file(it->error, real_exe_name, exe_archive_file);
 
 		/* If there are any debuginfo files, copy them over.
 		 * Need to copy the debug info file to somewhere we'll
@@ -108,10 +108,10 @@ int oparchive(options::spec const & spec)
 		 * to avoid overwriting files with the same name. The
 		 * /usr/lib/debug search path is not going to work.
 		 */
-		bfd * ibfd = open_bfd(archive_path + exe_name);
+		bfd * ibfd = open_bfd(real_exe_name);
 		if (ibfd) {
 			string global(archive_path + DEBUGDIR);
-			string dirname = op_dirname(archive_path + exe_name);
+			string dirname = op_dirname(real_exe_name);
 			string debug_filename;
 			if (find_separate_debug_file(ibfd, dirname, global,
 				debug_filename)) {

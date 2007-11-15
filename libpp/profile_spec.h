@@ -39,7 +39,8 @@ public:
 	 * as image:value
 	 */
 	static profile_spec create(std::list<std::string> const & args,
-	                           std::vector<std::string> const & image_path);
+	                           std::vector<std::string> const & image_path,
+				   std::string const & root_path);
 
 	/**
 	 * @param exclude_dependent  whether to exclude dependent sub-images

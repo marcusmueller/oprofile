@@ -29,6 +29,7 @@ namespace options {
 	string session_dir = OP_SESSION_DIR_DEFAULT;
 	string command_options;
 	vector<string> image_path;
+	string root_path;
 }
 
 namespace {
@@ -43,6 +44,8 @@ popt::option common_options_array[] = {
 		     "specify session path to hold samples database and session data (" OP_SESSION_DIR_DEFAULT ")", "path"),
 	popt::option(options::image_path, "image-path", 'p',
 		     "comma-separated path to search missing binaries", "path"),
+	popt::option(options::root_path, "root", 'R',
+		     "path to filesystem to search for missing binaries", "path"),
 };
 
 
