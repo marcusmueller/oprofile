@@ -1,5 +1,9 @@
 2007-11-15  Dave Nomura  <dcnltc@us.ibm.com>
 
+	* fixed a some typos in manually patched event files
+
+2007-11-15  Dave Nomura  <dcnltc@us.ibm.com>
+
 	* libpp/format_output.cpp: output XML SYMBOL_DATA for callers/callees
 	* libpp/format.h:
 
