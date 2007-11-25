@@ -76,6 +76,8 @@ void opd_print_stats(void)
 		     path, "sample_received", 1);
 		print_if("Nr. backtrace aborted: %u\n", 
 		     path, "backtrace_aborted", 0);
+		print_if("Nr. samples lost invalid pc: %u\n", 
+		     path, "sample_invalid_eip", 1);
 	}
 	closedir(dir);
 out:
