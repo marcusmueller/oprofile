@@ -144,7 +144,8 @@ private:
 	/// helper for add()
 	void add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 	                 profile_t::iterator_pair const &,
-	                 symbol_entry const * symbol, size_t pclass);
+	                 symbol_entry const * symbol, size_t pclass,
+			 unsigned long start);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range

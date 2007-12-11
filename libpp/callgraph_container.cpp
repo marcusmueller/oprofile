@@ -164,7 +164,7 @@ public:
 
 		sym.size = end - start;
 		sym.name = symbol_names.create(b.syms[i].name());
-		sym.sample.vma = b.sym_offset(i, start) + b.syms[i].vma();
+		sym.sample.vma = b.syms[i].vma();
 
 		finish_sym(i, start);
 

@@ -126,7 +126,7 @@ void profile_container::add(profile_t const & profile,
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details)
-			add_samples(abfd, i, p_it, symbol, pclass);
+			add_samples(abfd, i, p_it, symbol, pclass, start);
 	}
 }
 
@@ -134,7 +134,8 @@ void profile_container::add(profile_t const & profile,
 void
 profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
                                profile_t::iterator_pair const & p_it,
-                               symbol_entry const * symbol, size_t pclass)
+                               symbol_entry const * symbol, size_t pclass,
+			       unsigned long start)
 {
 	bfd_vma base_vma = abfd.syms[sym_index].vma();
 
@@ -154,7 +155,7 @@ profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 			}
 		}
 
-		sample.vma = abfd.sym_offset(sym_index, it.vma()) + base_vma;
+		sample.vma = (it.vma() - start) + base_vma;
 
 		samples->insert(symbol, sample);
 	}

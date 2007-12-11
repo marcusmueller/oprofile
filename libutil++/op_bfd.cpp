@@ -276,13 +276,6 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 }
 
 
-bfd_vma op_bfd::sym_offset(symbol_index_t sym_index, bfd_vma vma) const
-{
-	/* take off section offset and symb value */
-	return vma - syms[sym_index].filepos();
-}
-
-
 bfd_vma op_bfd::offset_to_pc(bfd_vma offset) const
 {
 	asection const * sect = ibfd.abfd->sections;

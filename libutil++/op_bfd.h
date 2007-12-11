@@ -148,16 +148,6 @@ public:
 			      unsigned long & start, unsigned long & end) const;
 
 	/**
-	 * sym_offset - return offset from a symbol's start
-	 * @param num_symbols symbol number
-	 * @param num number of fentry
-	 *
-	 * Returns the offset of a sample at position num
-	 * in the samples file from the start of symbol sym_idx.
-	 */
-	bfd_vma sym_offset(symbol_index_t num_symbols, bfd_vma vma) const;
-
-	/**
 	 * @param start reference to the start vma
 	 * @param end reference to the end vma
 	 *
