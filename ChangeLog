@@ -1,3 +1,7 @@
+2008-01-15  Isaku Yamahata  <yamahata@valinux.co.jp>
+
+	* daemon/opd_trans.c: fix previous SPU patch
+
 2008-01-11  Isaku Yamahata  <yamahata@valinux.co.jp>
 
 	* daemon/opd_perfmon.c: Xen support for IA64

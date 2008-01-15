@@ -271,7 +271,7 @@ handler_t handlers[LAST_CODE + 1] = {
 	&code_trace_begin,
 	&code_unknown,
  	&code_xen_enter,
-#if !defined(__i386__) && !defined(__x86_64__)
+#if defined(__powerpc__)
 	&code_spu_profiling,
 	&code_spu_ctx_switch,
 #endif
