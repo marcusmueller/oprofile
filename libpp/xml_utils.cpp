@@ -615,9 +615,8 @@ void binary_info::close_binary(sym_iterator it)
 void binary_info::dump()
 {
 	cverb << vxml << "app_name=" << name << endl;
-	if (begin != (sym_iterator)0) {
+	if (begin != (sym_iterator)0)
 		dump_symbols("	", begin, end);
-	}
 
 	for (size_t i = 0; i < nr_modules; ++i)
 		my_modules[i].dump();

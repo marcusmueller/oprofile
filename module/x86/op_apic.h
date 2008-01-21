@@ -37,7 +37,7 @@ do { \
 	"movl %%edx, %1" \
 	:"=m" (*((long *) (gate_addr))), \
 	 "=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
-	:"i" ((short) (0x8000+(dpl<<13)+(type<<8))), \
+	:"i" ((short) (0x8000+(dpl << 13)+(type << 8))), \
 	 "3" ((char *) (addr)), "2" (__KERNEL_CS << 16)); \
 } while (0)
 
@@ -56,8 +56,8 @@ struct _descr {
 	struct gate_struct * base; 
 } __attribute__((__packed__));
 
-void lvtpc_apic_setup(void *dummy);
-void lvtpc_apic_restore(void *dummy);
+void lvtpc_apic_setup(void * dummy);
+void lvtpc_apic_restore(void * dummy);
 int apic_setup(void);
 void apic_restore(void);
 void install_nmi(void);

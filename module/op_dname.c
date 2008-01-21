@@ -84,7 +84,7 @@ int oprof_hash_map_release(void)
 	if (!hash_map_open)
 		return -EFAULT;
 
-	clear_bit(0,&hash_map_open);
+	clear_bit(0, &hash_map_open);
 	return 0;
 }
 
@@ -143,7 +143,7 @@ int wind_dentries_2_4(struct dentry * dentry, struct vfsmount * vfsmnt, struct d
 }
 
 /* called with note_lock held */
-uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
+uint do_path_hash_2_4(struct dentry * dentry, struct vfsmount * vfsmnt)
 {
 	uint value;
 	struct vfsmount * rootmnt;
@@ -173,7 +173,7 @@ uint do_hash(struct dentry * dentry, struct vfsmount * vfsmnt, struct dentry * r
 	uint firsthash;
 	uint incr;
 	uint parent = 0;
-	struct op_hash_index *entry;
+	struct op_hash_index * entry;
 
 	if (!wind_dentries(dentry, vfsmnt, root, rootmnt))
 		goto out;

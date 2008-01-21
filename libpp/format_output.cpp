@@ -510,7 +510,7 @@ void cg_formatter::output(ostream & out, symbol_collection const & syms)
 	symbol_collection::const_iterator end = syms.end();
 
 	for (it = syms.begin(); it < end; ++it) {
-		cg_symbol const *sym = dynamic_cast<const cg_symbol *>(*it);
+		cg_symbol const * sym = dynamic_cast<cg_symbol const *>(*it);
 
 		cg_symbol::children::const_iterator cit;
 		cg_symbol::children::const_iterator cend = sym->callers.end();
@@ -693,7 +693,7 @@ xml_formatter::get_bfd_object(symbol_entry const * symb, op_bfd * & abfd) const
 }
 
 void xml_formatter::
-output_the_symbol_data(ostream &out, symbol_entry const *symb, op_bfd * & abfd)
+output_the_symbol_data(ostream & out, symbol_entry const * symb, op_bfd * & abfd)
 {
 	string const name = symbol_names.name(symb->name);
 	assert(name.size() > 0);
@@ -734,7 +734,7 @@ output_the_symbol_data(ostream &out, symbol_entry const *symb, op_bfd * & abfd)
 	}
 }
 
-void xml_formatter::output_cg_children(ostream &out, 
+void xml_formatter::output_cg_children(ostream & out, 
 	cg_symbol::children const cg_symb, op_bfd * & abfd)
 {
 	cg_symbol::children::const_iterator cit;
@@ -748,7 +748,7 @@ void xml_formatter::output_cg_children(ostream &out,
 		map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
 
 		if (sd_it != symbol_data_table.end()) {
-			symbol_entry const *child = &(*cit);
+			symbol_entry const * child = &(*cit);
 			output_the_symbol_data(out, child, abfd);
 		}
 	}
@@ -978,7 +978,7 @@ output_symbol_core(ostream & out, cg_symbol::children const cg_symb,
 		string const symqname = module + ":" + symname;
 
 		// Find any self references and handle
-	        if ((symname == selfname) && (tag == CALLEES)) {
+		if ((symname == selfname) && (tag == CALLEES)) {
 			self = true;
 			indx = xml_get_symbol_index(qname);
 		} else {

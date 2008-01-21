@@ -53,7 +53,7 @@ public:
 	         count_array_t const & arc_count);
 
 	/// return all the cg symbols
-	const symbol_collection & get_symbols() const;
+	symbol_collection const & get_symbols() const;
 
 	/**
 	 * After population, build the final output, and do
@@ -127,7 +127,7 @@ public:
 	count_array_t samples_count() const;
 
 	// return all the cg symbols
-	const symbol_collection & get_symbols() const;
+	symbol_collection const & get_symbols() const;
 
 private:
 	/**

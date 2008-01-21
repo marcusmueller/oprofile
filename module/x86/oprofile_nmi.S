@@ -18,9 +18,9 @@
 	pushl %edx; \
 	pushl %ecx; \
 	pushl %ebx; \
-	movl $(__KERNEL_DS),%edx; \
-	movl %edx,%ds; \
-	movl %edx,%es;
+	movl $(__KERNEL_DS), %edx; \
+	movl %edx, %ds; \
+	movl %edx, %es;
  
 #define RESTORE_ALL	\
 	popl %ebx;	\
@@ -32,12 +32,12 @@
 	popl %eax;	\
 1:	popl %ds;	\
 2:	popl %es;	\
-	addl $4,%esp;	\
+	addl $4, %esp;	\
 3:	iret;		\
 .section .fixup,"ax";	\
-4:	movl $0,(%esp);	\
+4:	movl $0, (%esp);	\
 	jmp 1b;		\
-5:	movl $0,(%esp);	\
+5:	movl $0, (%esp);	\
 	jmp 2b;		\
 6:	pushl %ss;	\
 	popl %ds;	\
@@ -48,16 +48,16 @@
 .previous;		\
 .section __ex_table,"a";\
 	.align 4;	\
-	.long 1b,4b;	\
-	.long 2b,5b;	\
-	.long 3b,6b;	\
+	.long 1b, 4b;	\
+	.long 2b, 5b;	\
+	.long 3b, 6b;	\
 .previous
 
 ENTRY(op_nmi)
-        pushl %eax
-        SAVE_ALL
-        movl %esp,%edx
-        pushl %edx
-        call op_do_nmi
-        addl $4,%esp
-        RESTORE_ALL
+	pushl %eax
+	SAVE_ALL
+	movl %esp, %edx
+	pushl %edx
+	call op_do_nmi
+	addl $4, %esp
+	RESTORE_ALL

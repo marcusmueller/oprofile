@@ -26,7 +26,7 @@ char * pool_pos;
 char * pool_start;
 char * pool_end;
  
-void oprof_put_note(struct op_note *samp);
+void oprof_put_note(struct op_note * samp);
 
 /* ------------ system calls --------------- */
 
@@ -68,8 +68,8 @@ asmlinkage long pre_stub_exit(int);
  */
 
 struct fdesc {
-	void *ip;
-	void *gp;
+	void * ip;
+	void * gp;
 };
 
 struct fdesc fdesc_clone;
@@ -85,7 +85,7 @@ spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
 /* called with map_lock held */
 static void oprof_output_map(ulong addr, ulong len,
-	ulong offset, struct file *file, int is_execve)
+	ulong offset, struct file * file, int is_execve)
 {
 	struct op_note note;
 
@@ -105,11 +105,11 @@ static void oprof_output_map(ulong addr, ulong len,
 	oprof_put_note(&note);
 }
 
-static int oprof_output_maps(struct task_struct *task)
+static int oprof_output_maps(struct task_struct * task)
 {
 	int size=0;
-	struct mm_struct *mm;
-	struct vm_area_struct *map;
+	struct mm_struct * mm;
+	struct vm_area_struct * map;
 
 	/* we don't need to worry about mm_users here, since there is at
 	   least one user (current), and if there's other code using this
@@ -155,7 +155,7 @@ out:
  * arguments after the system call has been made from the ASM stub. */
 
 asmlinkage long
-my_sys_execve (char *filename, char **argv, char **envp, struct pt_regs *regs)
+my_sys_execve (char * filename, char **argv, char **envp, struct pt_regs * regs)
 {
 	int error;
 
@@ -182,7 +182,7 @@ out:
 static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	ulong fd, ulong offset)
 {
-	struct file *file;
+	struct file * file;
 
 	lock_out_mmap();
  
@@ -318,7 +318,7 @@ asmlinkage void pre_sys_exit(int error_code)
 	MOD_DEC_USE_COUNT;
 }
 
-extern void *sys_call_table[];
+extern void * sys_call_table[];
 
 /* FIXME:  Now that I'm never trying to do a C-level call through these
  * pointers, I should just save, intercept, and restore with void *

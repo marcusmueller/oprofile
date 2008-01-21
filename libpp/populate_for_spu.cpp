@@ -132,17 +132,16 @@ bool is_spu_profile(inverted_profile const & ip)
 	if (!ip.groups.size())
 		return false;
 
-        for (size_t i = 0; i < ip.groups.size(); ++i) {
-                list<image_set>::const_iterator grp_it
-                        = ip.groups[i].begin();
-                list<image_set>::const_iterator const grp_end
-                        = ip.groups[i].end();
+	for (size_t i = 0; i < ip.groups.size(); ++i) {
+		list<image_set>::const_iterator grp_it
+			= ip.groups[i].begin();
+		list<image_set>::const_iterator const grp_end
+			= ip.groups[i].end();
 
-
-                for (; grp_it != grp_end; ++grp_it) {
-        		list<profile_sample_files>::const_iterator sfiles_it =
+		for (; grp_it != grp_end; ++grp_it) {
+			list<profile_sample_files>::const_iterator sfiles_it =
 				grp_it->files.begin();
-		        list<profile_sample_files>::const_iterator sfiles_end =
+			list<profile_sample_files>::const_iterator sfiles_end =
 				grp_it->files.end();
 			for (; sfiles_it != sfiles_end; ++sfiles_it) {
 				if (!sfiles_it->sample_filename.empty()) {
@@ -155,7 +154,7 @@ bool is_spu_profile(inverted_profile const & ip)
 	goto out;
 
 do_check:
-        spu_profile = profile_t::is_spu_sample_file(sfname);
+	spu_profile = profile_t::is_spu_sample_file(sfname);
 
 	if (spu_profile == cell_spu_profile)
 		retval = true;

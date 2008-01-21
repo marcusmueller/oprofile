@@ -30,14 +30,14 @@ static uint op_nr_counters = 4;
 /* The appropriate value is selected in pmu_init() */
 unsigned long pmd_mask = IA64_2_PMD_MASK_VAL;
 
-#define pmd_overflowed(r,c) ((r) & (1 << perf_reg(c)))
-#define set_pmd_neg(v,c) do { \
+#define pmd_overflowed(r, c) ((r) & (1 << perf_reg(c)))
+#define set_pmd_neg(v, c) do { \
 	ia64_set_pmd(perf_reg(c), -(ulong)(v) & pmd_mask); \
 	ia64_srlz_d(); } while (0)
-#define set_pmd(v,c) do { \
+#define set_pmd(v, c) do { \
 	ia64_set_pmd(perf_reg(c), (v) & pmd_mask); \
 	ia64_srlz_d(); } while (0)
-#define set_pmc(v,c) do { ia64_set_pmc(perf_reg(c), (v)); ia64_srlz_d(); } while (0)
+#define set_pmc(v, c) do { ia64_set_pmc(perf_reg(c), (v)); ia64_srlz_d(); } while (0)
 #define get_pmd(c) ia64_get_pmd(perf_reg(c))
 #define get_pmc(c) ia64_get_pmc(perf_reg(c))
 
@@ -51,7 +51,7 @@ unsigned long pmd_mask = IA64_2_PMD_MASK_VAL;
  * This routine should return 0 to resume interrupts.
  */
 inline static void
-op_do_pmu_interrupt(u64 pmc0, struct pt_regs *regs)
+op_do_pmu_interrupt(u64 pmc0, struct pt_regs * regs)
 {
 	uint cpu = op_cpu_id();
 	int ctr;
@@ -67,7 +67,7 @@ op_do_pmu_interrupt(u64 pmc0, struct pt_regs *regs)
 
 
 static void
-op_raw_pmu_interrupt(int irq, void *arg, struct pt_regs *regs)
+op_raw_pmu_interrupt(int irq, void * arg, struct pt_regs * regs)
 {
 	u64 pmc0;
 
@@ -84,7 +84,7 @@ op_raw_pmu_interrupt(int irq, void *arg, struct pt_regs *regs)
 #define MY_OPROFILE_VECTOR (IA64_PERFMON_VECTOR - 2)
 
 static void
-op_set_pmv(void *dummy)
+op_set_pmv(void * dummy)
 {
 	ia64_set_pmv(MY_OPROFILE_VECTOR);
 	ia64_srlz_d();
@@ -149,13 +149,13 @@ restore_handler(void)
  * by this limited interface.  Of course that might require all sorts of
  * validity checking??? */
 static void
-pmc_fill_in(ulong *val, u8 kernel, u8 user, u8 event, u8 um)
+pmc_fill_in(ulong * val, u8 kernel, u8 user, u8 event, u8 um)
 {
 	/* enable interrupt generation */
-	*val |= (1<<5);
+	*val |= (1 << 5);
 
 	/* setup as a privileged monitor */
-	*val |= (1<<6);
+	*val |= (1 << 6);
 
 	/* McKinley requires pmc4 to have bit 23 set (enable PMU).
 	 * It is supposedly ignored in other pmc registers.
@@ -163,14 +163,14 @@ pmc_fill_in(ulong *val, u8 kernel, u8 user, u8 event, u8 um)
 	 * set it for everyone.
 	 */
 
-	*val |= (1<<23);
+	*val |= (1 << 23);
 
 	/* enable/disable chosen OS and USR counting */
-	(user)   ? (*val |= (1<<3))
-		 : (*val &= ~(1<<3));
+	(user)   ? (*val |= (1 << 3))
+		 : (*val &= ~(1 << 3));
 
-	(kernel) ? (*val |= (1<<0))
-		 : (*val &= ~(1<<0));
+	(kernel) ? (*val |= (1 << 0))
+		 : (*val &= ~(1 << 0));
 
 	/* what are we counting ? */
 	*val &= ~(0xff << 8);
@@ -181,7 +181,7 @@ pmc_fill_in(ulong *val, u8 kernel, u8 user, u8 event, u8 um)
 
 
 static void
-pmu_setup(void *dummy)
+pmu_setup(void * dummy)
 {
 	ulong pmc_val;
 	int ii;
@@ -203,9 +203,9 @@ pmu_setup(void *dummy)
 
 
 void 
-disable_psr(void *dummy)
+disable_psr(void * dummy)
 {
-	struct pt_regs *regs;
+	struct pt_regs * regs;
 	/* disable profiling for my saved state */
 	regs = (struct pt_regs *)((unsigned long) current + IA64_STK_OFFSET);
 	regs--;
@@ -227,7 +227,7 @@ disable_psr(void *dummy)
 	local_cpu_data->pfm_dcr_pp = 0;
 #endif
 #endif
-	ia64_set_pmc(0,0);
+	ia64_set_pmc(0, 0);
 	ia64_srlz_d();
 }
 
@@ -285,8 +285,8 @@ pmu_setup_all(void)
 static void
 op_tasklist_toggle_pp(unsigned int val)
 {
-	struct task_struct *p;
-	struct pt_regs *regs;
+	struct task_struct * p;
+	struct pt_regs * regs;
 
 	read_lock(&tasklist_lock);
 
@@ -309,9 +309,9 @@ op_tasklist_toggle_pp(unsigned int val)
 
 
 static void
-pmu_start(void *info)
+pmu_start(void * info)
 {
-	struct pt_regs *regs;
+	struct pt_regs * regs;
 
 	if (info && (*((uint *)info) != op_cpu_id()))
 		return;
@@ -350,9 +350,9 @@ pmu_start(void *info)
 
 
 static void
-pmu_stop(void *info)
+pmu_stop(void * info)
 {
-	struct pt_regs *regs;
+	struct pt_regs * regs;
 
 	if (info && (*((uint *)info) != op_cpu_id()))
 		return;
@@ -556,9 +556,9 @@ pmu_init(void)
 
 	op_nr_counters = 4;
 
-	if ((err = smp_call_function(pmu_save_registers, NULL, 0, 1))) {
+	if ((err = smp_call_function(pmu_save_registers, NULL, 0, 1)))
 		goto out;
-	}
+
 	pmu_save_registers(NULL);
 
 out:
@@ -574,7 +574,7 @@ pmu_deinit(void)
 }
  
 
-static char *names[] = { "0", "1", "2", "3", };
+static char * names[] = { "0", "1", "2", "3", };
 
 
 static int

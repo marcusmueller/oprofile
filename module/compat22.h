@@ -49,8 +49,8 @@ static inline void oprof_wake_up(struct wait_queue **q)
 	restore_flags(flags);
 }
 
-extern int wind_dentries_2_2(struct dentry *dentry);
-extern uint do_path_hash_2_2(struct dentry *dentry);
+extern int wind_dentries_2_2(struct dentry * dentry);
+extern uint do_path_hash_2_2(struct dentry * dentry);
 #define wind_dentries(d, v, r, m) wind_dentries_2_2(d)
 #define hash_path(f) do_path_hash_2_2((f)->f_dentry)
 
@@ -68,7 +68,7 @@ static inline void unlock_out_mmap(void)
 
 /* different request_region */
 #define request_region_check compat_request_region
-void *compat_request_region (unsigned long start, unsigned long n, char const * name);
+void * compat_request_region (unsigned long start, unsigned long n, char const * name);
 
 #define __exit
 
@@ -85,7 +85,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 #if !defined(CONFIG_SMP)
 
 	#undef smp_call_function
-	static int inline smp_call_function (void (*func) (void *info), void *info,
+	static int inline smp_call_function (void (*func) (void * info), void * info,
 					     int retry, int wait)
 	{
 		return 0;
@@ -93,7 +93,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 
 #endif /* !CONFIG_SMP */
 
-#if V_BEFORE(2,2,18)
+#if V_BEFORE(2, 2, 18)
 
 	/* 2.2.18 introduced module_init */
 	/* Not sure what version aliases were introduced in, but certainly in 2.91.66.  */
@@ -109,7 +109,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 	#define vmalloc_32 vmalloc
 
 	/* 2.2.18 add doubled linked list wait_queue and mutex */
-	#define DECLARE_WAIT_QUEUE_HEAD(q) struct wait_queue *q = NULL
+	#define DECLARE_WAIT_QUEUE_HEAD(q) struct wait_queue * q = NULL
 	#define DECLARE_MUTEX(foo)	struct semaphore foo = MUTEX
 
 	/* 2.2.18 add THIS_MODULE */
@@ -130,14 +130,14 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 	#define unlock_rtc(f) restore_flags(f)
 #endif /* RTC_LOCK */
 
-#if V_AT_LEAST(2,2,20)
+#if V_AT_LEAST(2, 2, 20)
 	#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 #else
 	#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
 #endif
 
 /* 2.2.21 introduced cpuid_edx */
-#if V_BEFORE(2,2,21)
+#if V_BEFORE(2, 2, 21)
 static inline unsigned int cpuid_edx(unsigned int op)
 {
 	unsigned int eax, edx;

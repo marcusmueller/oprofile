@@ -25,7 +25,7 @@ extern char * op_pool_pos;
 extern char * op_pool_start;
 extern char * op_pool_end;
 
-uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt);
+uint do_hash(struct dentry * dentry, struct vfsmount * vfsmnt, struct dentry * root, struct vfsmount * rootmnt);
 
 inline static uint alloc_in_pool(char const * str, uint len);
 inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len);
@@ -42,7 +42,7 @@ inline static uint name_hash(char const * name, uint len, uint parent)
 }
 
 /* empty ascending dname stack */
-inline static void push_dname(struct qstr *dname)
+inline static void push_dname(struct qstr * dname)
 {
 	op_dname_stack[op_dname_top] = dname;
 	if (op_dname_top != DNAME_STACK_MAX)
@@ -51,7 +51,7 @@ inline static void push_dname(struct qstr *dname)
 		printk(KERN_ERR "oprofile: overflowed dname stack !\n");
 }
 
-inline static struct qstr *pop_dname(void)
+inline static struct qstr * pop_dname(void)
 {
 	if (op_dname_top == 0)
 		return NULL;

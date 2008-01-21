@@ -16,8 +16,8 @@
 
 #include "oprofile.h"
 
-void oprof_put_note(struct op_note *samp);
-void __oprof_put_note(struct op_note *samp);
+void oprof_put_note(struct op_note * samp);
+void __oprof_put_note(struct op_note * samp);
 
 extern spinlock_t note_lock;
 
@@ -44,8 +44,8 @@ asmlinkage static long (*old_sys_init_module)(char const *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
 /* called with note_lock held */
-static void oprof_output_map(ulong addr, ulong len,
-	ulong offset, struct file *file, int is_execve)
+static void oprof_output_map(ulong addr, ulong len, ulong offset,
+			     struct file * file, int is_execve)
 {
 	struct op_note note;
 
@@ -66,11 +66,11 @@ static void oprof_output_map(ulong addr, ulong len,
 	__oprof_put_note(&note);
 }
 
-static int oprof_output_maps(struct task_struct *task)
+static int oprof_output_maps(struct task_struct * task)
 {
 	int size=0;
-	struct mm_struct *mm;
-	struct vm_area_struct *map;
+	struct mm_struct * mm;
+	struct vm_area_struct * map;
 
 	/* we don't need to worry about mm_users here, since there is at
 	   least one user (current), and if there's other code using this
@@ -114,7 +114,7 @@ out:
 
 asmlinkage static int my_sys_execve(struct pt_regs regs)
 {
-	char *filename;
+	char * filename;
 	int ret;
 
 	MOD_INC_USE_COUNT;
@@ -141,10 +141,10 @@ out:
         return ret;
 }
 
-static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
-	ulong fd, ulong offset)
+static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags, ulong fd,
+		     ulong offset)
 {
-	struct file *file;
+	struct file * file;
 
 	lock_out_mmap();
 
@@ -180,7 +180,7 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 }
 #endif
 
-asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
+asmlinkage static int my_old_mmap(struct mmap_arg_struct * arg)
 {
 	int ret;
 
@@ -307,7 +307,7 @@ asmlinkage long my_sys_exit(int error_code)
 	return old_sys_exit(error_code);
 }
 
-extern void *sys_call_table[];
+extern void * sys_call_table[];
 
 void op_save_syscalls(void)
 {

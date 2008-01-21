@@ -83,7 +83,7 @@ spu_bfd_iovec_pread(bfd * abfd, void * stream, void * buf,
 #endif
 
 bfd *
-spu_open_bfd(std::string const name, int fd, uint64_t offset_to_spu_elf)
+spu_open_bfd(string const name, int fd, uint64_t offset_to_spu_elf)
 {
 
 	bfd * nbfd = NULL;

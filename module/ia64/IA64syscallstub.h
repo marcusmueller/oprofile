@@ -8,13 +8,13 @@
  * @author Bob Montgomery
  */
 
-/* $Id: IA64syscallstub.h,v 1.2 2002/11/09 01:11:55 phil_e Exp $ */
+/* $Id: IA64syscallstub.h,v 1.3 2008/01/21 21:35:17 movement Exp $ */
 
 #define SYSCALLSTUB_POST(name)		\
 	.sbss;				\
 	.align 8;			\
-	.type .post_saverp_##name,@object;	\
-	.size .post_saverp_##name,8;	\
+	.type .post_saverp_##name, @object;	\
+	.size .post_saverp_##name, 8;	\
 .post_saverp_##name:			\
 	.skip 8;			\
 	.text;				\
@@ -40,22 +40,22 @@ post_stub_##name:			\
 	;;				\
 	ld8 r14=[r14];			\
 	;;				\
-	adds r14=8,r14;			\
+	adds r14=8, r14;		\
 	;;				\
 	ld8 gp=[r14];			\
 	;;				\
-        addl r14=@ltoff(old_sys_##name), gp;    \
+	addl r14=@ltoff(old_sys_##name), gp;    \
 	addl r16=@gprel(.post_saverp_##name), gp;	\
 	;;				\
-        ld8 r14 = [r14];		\
+	ld8 r14=[r14];			\
 	st8 [r16]=r17;	/* save krp */	\
 	;;				\
-        ld8 r14 = [r14];		\
+	ld8 r14=[r14];			\
 	mov gp=r15;	/* restore kgp */	\
 	;;				\
-        ld8 r14 = [r14];		\
+	ld8 r14=[r14];			\
 	;;				\
-        mov b6 = r14;			\
+	mov b6 = r14;			\
 	;;				\
 	br.call.sptk.many b0=b6;	\
 	;;				\
@@ -67,16 +67,16 @@ post_stub_##name:			\
 	;;				\
 	ld8 r14=[r14];			\
 	;;				\
-	adds r14=8,r14;			\
+	adds r14=8, r14;		\
 	;;				\
 	ld8 gp=[r14];			\
 	br.call.sptk.many b0=post_call_stub_##name;	\
 	;;				\
 	addl r16=@gprel(.post_saverp_##name), gp;	\
-        ;;				\
+	;;				\
 	ld8 r14=[r16];			\
-        ;;				\
-        mov b0 = r14;			\
+	;;				\
+	mov b0 = r14;			\
 	mov gp = r15; /* preserved */	\
 	br.cond.sptk.many b0;		\
 	.align 16;			\
@@ -87,7 +87,7 @@ post_stub_##name:			\
 	.global post_call_stub_##name;	\
 	.proc post_call_stub_##name;	\
 post_call_stub_##name:			\
-	alloc loc1=ar.pfs,8,6,8,0;	\
+	alloc loc1=ar.pfs, 8, 6, 8, 0;	\
 	mov loc0=rp;			\
 	mov loc2=r15; /* preserve it */	\
 	mov loc3=r8;			\
@@ -137,7 +137,7 @@ pre_stub_##name:			\
 	;;				\
 	ld8 r14=[r14];			\
 	;;				\
-	adds r14=8,r14;			\
+	adds r14=8, r14;		\
 	;;				\
 	ld8 gp=[r14];			\
 	;;				\
@@ -147,17 +147,17 @@ pre_stub_##name:			\
 	/* kernel rp still in r16 */	\
 	/* module gp in gp */		\
 	;;				\
-        addl r14=@ltoff(old_sys_##name), gp;    \
+	addl r14=@ltoff(old_sys_##name), gp;    \
 	;;				\
-        ld8 r14 = [r14];		\
+	ld8 r14=[r14];			\
 	;;				\
-        ld8 r14 = [r14];		\
+	ld8 r14=[r14];			\
 	mov gp=r15; /* restore kgp */	\
 	;;				\
-        ld8 r14 = [r14];		\
+	ld8 r14=[r14];			\
 	mov rp=r16; /* restore krp */	\
 	;;				\
-        mov b6 = r14;			\
+	mov b6 = r14;			\
 	;;				\
 	/* use the saved krp */		\
 	br.call.sptk.many b6=b6;	\
@@ -170,7 +170,7 @@ pre_stub_##name:			\
 	.global pre_call_stub_##name;	\
 	.proc pre_call_stub_##name;	\
 pre_call_stub_##name:			\
-	alloc loc1=ar.pfs,8,5,8,0;	\
+	alloc loc1=ar.pfs, 8, 5, 8, 0;	\
 	mov loc0=rp;			\
 	mov loc2=r15; /* preserve it */	\
 	mov loc3=r16; /* preserve it */	\

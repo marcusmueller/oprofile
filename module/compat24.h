@@ -45,7 +45,7 @@ extern uint do_path_hash_2_4(struct dentry * dentry, struct vfsmount * vfsmnt);
 #define wq_is_lockable() (1)
 
 /* 2.4.3 introduced rw mmap semaphore  */
-#if V_AT_LEAST(2,4,3)
+#if V_AT_LEAST(2, 4, 3)
 	#define lock_mmap(mm) down_read(&mm->mmap_sem)
 	#define unlock_mmap(mm) up_read(&mm->mmap_sem)
 #else
@@ -54,7 +54,7 @@ extern uint do_path_hash_2_4(struct dentry * dentry, struct vfsmount * vfsmnt);
 #endif
 
 /* 2.4.26 exported the needed stuff for HT support */
-#if V_AT_LEAST(2,4,26) && defined(CONFIG_SMP)
+#if V_AT_LEAST(2, 4, 26) && defined(CONFIG_SMP)
 #define HT_SUPPORT
 #endif
 

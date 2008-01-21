@@ -289,10 +289,10 @@ private:
 	/// only if necessary
 	bool get_bfd_object(symbol_entry const * symb, op_bfd * & abfd) const;
 
-	void output_the_symbol_data(std::ostream &out, symbol_entry const *symb,
-		op_bfd * & abfd);
+	void output_the_symbol_data(std::ostream & out,
+		symbol_entry const * symb, op_bfd * & abfd);
 
-	void output_cg_children(std::ostream &out,
+	void output_cg_children(std::ostream & out,
 		cg_symbol::children const cg_symb, op_bfd * & abfd);
 };
 

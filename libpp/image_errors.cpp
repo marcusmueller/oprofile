@@ -83,5 +83,5 @@ void report_image_errors(list<inverted_profile> const & plist,
 	list<inverted_profile>::const_iterator const end = plist.end();
 
 	for (; it != end; ++it)
-	  report_image_error(*it, false, extra);
+		report_image_error(*it, false, extra);
 }

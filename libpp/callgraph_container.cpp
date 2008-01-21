@@ -386,7 +386,7 @@ process(count_array_t total, double threshold,
 }
 
 
-const symbol_collection & arc_recorder::get_symbols() const
+symbol_collection const & arc_recorder::get_symbols() const
 {
 	return cg_syms;
 }
@@ -598,7 +598,7 @@ count_array_t callgraph_container::samples_count() const
 }
 
 
-const symbol_collection & callgraph_container::get_symbols() const
+symbol_collection const & callgraph_container::get_symbols() const
 {
 	return recorder.get_symbols();
 }

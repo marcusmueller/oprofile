@@ -23,8 +23,8 @@
 static inline unsigned long uvirt_to_kva(pgd_t * pgd, unsigned long adr)
 {
 	unsigned long ret = 0UL;
-	pmd_t *pmd;
-	pte_t *ptep, pte;
+	pmd_t * pmd;
+	pte_t * ptep, pte;
 
 	if (!pgd_none(*pgd)) {
 		pmd = pmd_offset(pgd, adr);

@@ -119,8 +119,8 @@ void handle_options(options::spec const & spec)
 	options::file_filter = path_filter(include_file, exclude_file);
 
 	profile_spec const pspec =
-	  profile_spec::create(spec.common, options::image_path,
-			       options::root_path);
+		profile_spec::create(spec.common, options::image_path,
+				     options::root_path);
 
 	list<string> sample_files = pspec.generate_file_list(exclude_dependent, true);
 

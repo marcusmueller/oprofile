@@ -41,9 +41,9 @@ unsigned long virt_apic_base;
 /*static*/ void set_pte_phys(ulong vaddr, ulong phys)
 {
 	pgprot_t prot;
-	pgd_t *pgd;
-	pmd_t *pmd;
-	pte_t *pte;
+	pgd_t * pgd;
+	pmd_t * pmd;
+	pte_t * pte;
 
 	pgd = pgd_offset_k(vaddr);
 	pmd = pmd_offset(pgd, vaddr);
@@ -67,9 +67,9 @@ unsigned long virt_apic_base;
 /*static*/ void free_fixmap(void)
 {
 	ulong vaddr;
-	pgd_t *pgd;
-	pmd_t *pmd;
-	pte_t *pte;
+	pgd_t * pgd;
+	pmd_t * pmd;
+	pte_t * pte;
 
 	vaddr = virt_apic_base;
 	if (!vaddr)
@@ -104,7 +104,7 @@ unsigned long virt_apic_base;
  */
 void fixmap_setup(void)
 {
-#if V_BEFORE(2,4,10)
+#if V_BEFORE(2, 4, 10)
 #if defined(CONFIG_X86_LOCAL_APIC)
 	static int find_intel_smp(void);
 
@@ -127,7 +127,7 @@ void fixmap_setup(void)
 
 void fixmap_restore(void)
 {
-#if V_BEFORE(2,4,10)
+#if V_BEFORE(2, 4, 10)
 #if defined(CONFIG_X86_LOCAL_APIC)
 	/* Nothing to do */
 #else
@@ -144,9 +144,9 @@ void fixmap_restore(void)
 
 /* ---------------- MP table code ------------------ */
 
-#if V_BEFORE(2,4,10) && defined(CONFIG_X86_LOCAL_APIC)
+#if V_BEFORE(2, 4, 10) && defined(CONFIG_X86_LOCAL_APIC)
 
-static int __init mpf_checksum(unsigned char *mp, int len)
+static int __init mpf_checksum(unsigned char * mp, int len)
 {
 	int sum = 0;
 
@@ -156,7 +156,7 @@ static int __init mpf_checksum(unsigned char *mp, int len)
 	return sum & 0xFF;
 }
 
-static int __init mpf_table_ok(struct intel_mp_floating * mpf, unsigned long *bp)
+static int __init mpf_table_ok(struct intel_mp_floating * mpf, unsigned long * bp)
 {
 	if (*bp != SMP_MAGIC_IDENT)
 		return 0;
@@ -170,8 +170,8 @@ static int __init mpf_table_ok(struct intel_mp_floating * mpf, unsigned long *bp
 
 static int __init smp_scan_config (unsigned long base, unsigned long length)
 {
-	unsigned long *bp = phys_to_virt(base);
-	struct intel_mp_floating *mpf;
+	unsigned long * bp = phys_to_virt(base);
+	struct intel_mp_floating * mpf;
 
 	while (length > 0) {
 		mpf = (struct intel_mp_floating *)bp;
@@ -187,11 +187,10 @@ static int __init find_intel_smp(void)
 {
 	unsigned int address;
 
-	if (smp_scan_config(0x0,0x400) ||
-		smp_scan_config(639*0x400,0x400) ||
-		smp_scan_config(0xF0000,0x10000)) {
+	if (smp_scan_config(0x0, 0x400) ||
+		smp_scan_config(639*0x400, 0x400) ||
+		smp_scan_config(0xF0000, 0x10000))
 		return 1;
-	}
 
 	address = *(unsigned short *)phys_to_virt(0x40E);
 	address <<= 4;

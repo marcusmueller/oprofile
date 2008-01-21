@@ -82,7 +82,7 @@ static void pmc_start(void * info)
 }
 
 
-static void pmc_stop(void *info)
+static void pmc_stop(void * info)
 {
 	uint const cpu = op_cpu_id();
 	struct op_msrs const * const msrs = &cpu_msrs[cpu];
@@ -271,9 +271,9 @@ static int pmc_init(void)
 {
 	int err = 0;
  
-	if ((err = smp_call_function(pmc_save_registers, NULL, 0, 1))) {
+	if ((err = smp_call_function(pmc_save_registers, NULL, 0, 1)))
 		goto out;
-	}
+
 	pmc_save_registers(NULL);
  
 	if ((err = apic_setup()))
@@ -305,7 +305,7 @@ static void pmc_deinit(void)
 }
  
 
-static char *names[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
+static char * names[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8"};
 
 static int pmc_add_sysctls(ctl_table * next)
 {

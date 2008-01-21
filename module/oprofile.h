@@ -103,9 +103,9 @@ struct op_int_operations {
 	/* deinitialise on module unload */
 	void (*deinit)(void);
 	/* add any handler-specific sysctls at the position given by @next. Return 0 on success */
-	int (*add_sysctls)(ctl_table *next);
+	int (*add_sysctls)(ctl_table * next);
 	/* remove handler-specific sysctls */
-	void (*remove_sysctls)(ctl_table *next);
+	void (*remove_sysctls)(ctl_table * next);
 	/* check given profiling parameters are correct. Return 0 on success */
 	int (*check_params)(void);
 	/* setup the handler from profiling parameters. Return 0 on success */
@@ -131,7 +131,7 @@ void oprof_exit(void);
 unsigned long is_map_ready(void);
 int oprof_hash_map_open(void);
 int oprof_hash_map_release(void);
-int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma);
+int oprof_hash_map_mmap(struct file * file, struct vm_area_struct * vma);
 int oprof_map_open(void);
 int oprof_map_release(void);
 int oprof_init_hashmap(void);
@@ -144,7 +144,7 @@ extern struct op_int_operations op_rtc_ops;
 void op_do_profile(uint cpu, long eip, long irq_enabled, int ctr);
 extern struct _oprof_data oprof_data[NR_CPUS];
 extern struct oprof_sysctl sysctl_parms;
-extern int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp);
+extern int lproc_dointvec(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp);
 
 /* functionality provided by the architecture dependent file */
 /* must return OP_RTC if the hardware doesn't support something like

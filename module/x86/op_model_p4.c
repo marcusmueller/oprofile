@@ -57,11 +57,15 @@ struct p4_counter_binding {
 };
 
 struct p4_event_binding {
-	int escr_select;  /* value to put in CCCR */
-	int event_select; /* value to put in ESCR */
+	/* value to put in CCCR */
+	int escr_select;
+	/* value to put in ESCR */
+	int event_select;
 	struct {
-		int virt_counter; /* for this counter... */
-		int escr_address; /* use this ESCR       */
+		/* for this counter... */
+		int virt_counter;
+		/* use this ESCR       */
+		int escr_address;
 	} bindings[2];
 };
 
@@ -78,7 +82,7 @@ struct p4_event_binding {
 #define CTR_FLAME_2    (1 << 6)
 #define CTR_IQ_5       (1 << 7)
 
-static struct p4_counter_binding p4_counters [NUM_COUNTERS_NON_HT] = {
+static struct p4_counter_binding p4_counters[NUM_COUNTERS_NON_HT] = {
 	{ CTR_BPU_0,   MSR_P4_BPU_PERFCTR0,   MSR_P4_BPU_CCCR0 },
 	{ CTR_MS_0,    MSR_P4_MS_PERFCTR0,    MSR_P4_MS_CCCR0 },
 	{ CTR_FLAME_0, MSR_P4_FLAME_PERFCTR0, MSR_P4_FLAME_CCCR0 },
@@ -93,11 +97,11 @@ static struct p4_counter_binding p4_counters [NUM_COUNTERS_NON_HT] = {
 
 /* All cccr we don't use. */
 static int p4_unused_cccr[NUM_UNUSED_CCCRS] = {
-	MSR_P4_BPU_CCCR1,	MSR_P4_BPU_CCCR3,
-	MSR_P4_MS_CCCR1,	MSR_P4_MS_CCCR3,
-	MSR_P4_FLAME_CCCR1,	MSR_P4_FLAME_CCCR3,
-	MSR_P4_IQ_CCCR0,	MSR_P4_IQ_CCCR1,
-	MSR_P4_IQ_CCCR2,	MSR_P4_IQ_CCCR3
+	MSR_P4_BPU_CCCR1, 	MSR_P4_BPU_CCCR3,
+	MSR_P4_MS_CCCR1, 	MSR_P4_MS_CCCR3,
+	MSR_P4_FLAME_CCCR1, 	MSR_P4_FLAME_CCCR3,
+	MSR_P4_IQ_CCCR0, 	MSR_P4_IQ_CCCR1,
+	MSR_P4_IQ_CCCR2, 	MSR_P4_IQ_CCCR3
 };
 
 /* p4 event codes in libop/op_event.h are indices into this table. */
@@ -354,24 +358,24 @@ static struct p4_event_binding p4_events[NUM_EVENTS] = {
 #define ESCR_SET_OS_1(escr, os) ((escr) |= (((os) & 1) << 1))
 #define ESCR_SET_EVENT_SELECT(escr, sel) ((escr) |= (((sel) & 0x3f) << 25))
 #define ESCR_SET_EVENT_MASK(escr, mask) ((escr) |= (((mask) & 0xffff) << 9))
-#define ESCR_READ(escr,high,ev,i) do {rdmsr(ev->bindings[(i)].escr_address, (escr), (high));} while (0)
-#define ESCR_WRITE(escr,high,ev,i) do {wrmsr(ev->bindings[(i)].escr_address, (escr), (high));} while (0)
+#define ESCR_READ(escr, high, ev, i) do {rdmsr(ev->bindings[(i)].escr_address, (escr), (high));} while (0)
+#define ESCR_WRITE(escr, high, ev, i) do {wrmsr(ev->bindings[(i)].escr_address, (escr), (high));} while (0)
 
 #define CCCR_RESERVED_BITS 0x38030FFF
 #define CCCR_CLEAR(cccr) ((cccr) &= CCCR_RESERVED_BITS)
 #define CCCR_SET_REQUIRED_BITS(cccr) ((cccr) |= 0x00030000)
 #define CCCR_SET_ESCR_SELECT(cccr, sel) ((cccr) |= (((sel) & 0x07) << 13))
-#define CCCR_SET_PMI_OVF_0(cccr) ((cccr) |= (1<<26))
-#define CCCR_SET_PMI_OVF_1(cccr) ((cccr) |= (1<<27))
-#define CCCR_SET_ENABLE(cccr) ((cccr) |= (1<<12))
-#define CCCR_SET_DISABLE(cccr) ((cccr) &= ~(1<<12))
+#define CCCR_SET_PMI_OVF_0(cccr) ((cccr) |= (1 << 26))
+#define CCCR_SET_PMI_OVF_1(cccr) ((cccr) |= (1 << 27))
+#define CCCR_SET_ENABLE(cccr) ((cccr) |= (1 << 12))
+#define CCCR_SET_DISABLE(cccr) ((cccr) &= ~(1 << 12))
 #define CCCR_READ(low, high, i) do {rdmsr(p4_counters[(i)].cccr_address, (low), (high));} while (0)
 #define CCCR_WRITE(low, high, i) do {wrmsr(p4_counters[(i)].cccr_address, (low), (high));} while (0)
-#define CCCR_OVF_P(cccr) ((cccr) & (1U<<31))
-#define CCCR_CLEAR_OVF(cccr) ((cccr) &= (~(1U<<31)))
+#define CCCR_OVF_P(cccr) ((cccr) & (1U << 31))
+#define CCCR_CLEAR_OVF(cccr) ((cccr) &= (~(1U << 31)))
 
-#define CTR_READ(l,h,i) do {rdmsr(p4_counters[(i)].counter_address, (l), (h));} while (0)
-#define CTR_WRITE(l,i) do {wrmsr(p4_counters[(i)].counter_address, -(u32)(l), -1);} while (0)
+#define CTR_READ(l, h, i) do {rdmsr(p4_counters[(i)].counter_address, (l), (h));} while (0)
+#define CTR_WRITE(l, i) do {wrmsr(p4_counters[(i)].counter_address, -(u32)(l), -1);} while (0)
 #define CTR_OVERFLOW_P(ctr) (!((ctr) & 0x80000000))
 
 
@@ -483,7 +487,7 @@ static void pmc_setup_one_p4_counter(unsigned int ctr)
 	unsigned int escr = 0;
 	unsigned int high = 0;
 	unsigned int counter_bit;
-	struct p4_event_binding *ev = NULL;
+	struct p4_event_binding * ev = NULL;
 	unsigned int stag;
 
 	stag = get_stagger();
@@ -549,7 +553,7 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 	stag = get_stagger();
 
 	rdmsr(MSR_IA32_MISC_ENABLE, low, high);
-	if (! MISC_PMC_ENABLED_P(low)) {
+	if (!MISC_PMC_ENABLED_P(low)) {
 		printk(KERN_ERR "oprofile: P4 PMC not available\n");
 		return;
 	}
@@ -588,12 +592,12 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 	}
 	
 	for (addr = MSR_P4_MS_ESCR0 + stag;
-	     addr <= MSR_P4_TC_ESCR1; addr += addr_increment()){ 
+	     addr <= MSR_P4_TC_ESCR1; addr += addr_increment()) { 
 		wrmsr(addr, 0, 0);
 	}
 	
 	for (addr = MSR_P4_IX_ESCR0 + stag;
-	     addr <= MSR_P4_CRU_ESCR3; addr += addr_increment()){ 
+	     addr <= MSR_P4_CRU_ESCR3; addr += addr_increment()) { 
 		wrmsr(addr, 0, 0);
 	}
 

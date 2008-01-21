@@ -119,7 +119,7 @@ static int __init enable_apic(void)
 	 * IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	if ((msr_low & (1 << 11)) == 0)
-		wrmsr(MSR_IA32_APICBASE, msr_low | (1<<11), msr_high);
+		wrmsr(MSR_IA32_APICBASE, msr_low | (1 << 11), msr_high);
 
 	/* even if the apic is up we must check for a good APIC */
 
@@ -142,7 +142,7 @@ static int __init enable_apic(void)
 not_local_apic:
 	/* disable the apic only if it was disabled */
 	if ((msr_low & (1 << 11)) == 0)
-		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
+		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1 << 11), msr_high);
 
 	printk(KERN_ERR "oprofile: no suitable local APIC. Falling back to RTC mode.\n");
 	return -ENODEV;

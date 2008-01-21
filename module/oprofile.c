@@ -460,7 +460,7 @@ static int oprof_init_data(void)
 
 		data->buffer = vmalloc(buf_size);
 		if (!data->buffer) {
-			printk(KERN_ERR "oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
+			printk(KERN_ERR "oprofile: failed to allocate eviction buffer of %lu bytes\n", buf_size);
 			oprof_free_mem(i);
 			return -EFAULT;
 		}
@@ -694,9 +694,8 @@ static void do_actual_dump(void)
 {
 	uint cpu;
 
-	for (cpu = 0 ; cpu < smp_num_cpus; cpu++) {
+	for (cpu = 0 ; cpu < smp_num_cpus; cpu++)
 		oprof_ready[cpu] = 2;
-	}
 	oprof_wake_up(&oprof_wait);
 }
 
@@ -764,12 +763,12 @@ static ctl_table oprof_table[] = {
 
 static ctl_table oprof_root[] = {
 	{1, "oprofile", NULL, 0, 0755, oprof_table},
- 	{0,},
+ 	{0, },
 };
 
 static ctl_table dev_root[] = {
 	{CTL_DEV, "dev", NULL, 0, 0555, oprof_root},
-	{0,},
+	{0, },
 };
 
 static struct ctl_table_header * sysctl_header;
@@ -785,9 +784,8 @@ static int __init init_sysctl(void)
 	sysctl_parms.buf_size = OP_DEFAULT_BUF_SIZE;
 	sysctl_parms.note_size = OP_DEFAULT_NOTE_SIZE;
 
-	if ((err = int_ops->add_sysctls(next))) {
+	if ((err = int_ops->add_sysctls(next)))
 		return err;
-	}
 
 	sysctl_header = register_sysctl_table(dev_root, 0);
 	return err;
@@ -825,9 +823,8 @@ int __init oprof_init(void)
 		// try to init, fall back to rtc if not
 		if ((err = int_ops->init())) {
 			int_ops = &op_rtc_ops;
-			if ((err = int_ops->init())) {
+			if ((err = int_ops->init()))
 				return err;
-			}
 			sysctl.cpu_type = CPU_RTC;
 		}
 	} else {

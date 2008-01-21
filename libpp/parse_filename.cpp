@@ -78,8 +78,10 @@ void remove_base_dir(vector<string> & path)
 string const parse_anon(string const & str, string const & str2)
 {
 	string name = str2;
-	name.erase(0,6); // Get rid of "{anon:
-	name.erase(name.size() - 1,1); // Get rid of the trailing '}'
+	// Get rid of "{anon:
+	name.erase(0, 6);
+	// Get rid of the trailing '}'
+	name.erase(name.size() - 1, 1);
 	vector<string> parts = separate_token(str, '.');
 	if (parts.size() != 3)
 		throw invalid_argument("parse_anon() invalid name: " + str);
@@ -155,7 +157,7 @@ parsed_filename parse_filename(string const & filename)
 				       filename);
 	}
 
-	bool anon = path[i].find("{anon:" ,0) == 0;
+	bool anon = path[i].find("{anon:", 0) == 0;
 
 	// skip "{root}", "{kern}" or "{anon:.*}"
 	++i;
@@ -185,7 +187,7 @@ parsed_filename parse_filename(string const & filename)
 	}
 
 	// skip "{root}", "{kern}" or "{anon}"
-	anon = (path[i].find("{anon",0) == 0);
+	anon = (path[i].find("{anon", 0) == 0);
 	++i;
 
 	if (anon) {

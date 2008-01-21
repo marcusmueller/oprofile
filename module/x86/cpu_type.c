@@ -50,7 +50,7 @@ static int p4_threads(void)
  * We expect that data is pointing to an array of unsigned chars as big as there
  * are cpus in an smp system.
  */
-static void do_cpu_id(void *data)
+static void do_cpu_id(void * data)
 {
 	int eax, ebx, ecx, edx;
 	unsigned char * ptr = (unsigned char *) data;

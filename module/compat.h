@@ -21,10 +21,10 @@
 #include <linux/spinlock.h>
 #endif
 
-#define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
-#define V_AT_LEAST(a,b,c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a,b,c))
+#define V_BEFORE(a, b, c) (LINUX_VERSION_CODE < KERNEL_VERSION(a, b, c))
+#define V_AT_LEAST(a, b, c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a, b, c))
 
-#if V_BEFORE(2,4,0)
+#if V_BEFORE(2, 4, 0)
 	#include "compat22.h"
 #else
 	#include "compat24.h"

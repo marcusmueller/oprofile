@@ -57,7 +57,7 @@
 	 */
 GLOBAL_ENTRY(my_ia64_execve)
 	.prologue ASM_UNW_PRLG_RP|ASM_UNW_PRLG_PFS, ASM_UNW_PRLG_GRSAVE(3)
-	alloc loc1=ar.pfs,3,3,4,0
+	alloc loc1=ar.pfs, 3, 3, 4, 0
 	mov loc0=rp
 	mov loc2=gp
 	.body
@@ -65,7 +65,7 @@ GLOBAL_ENTRY(my_ia64_execve)
 	;;				// stop bit between alloc and call
 	mov out1=in1			// argv
 	mov out2=in2			// envp
-	add out3=16,sp			// regs
+	add out3=16, sp			// regs
 	/* 
 	 * We are here with the kernel's gp register value but we need
 	 * to find the module's gp value before we can call our own
@@ -79,21 +79,21 @@ GLOBAL_ENTRY(my_ia64_execve)
 	;;
 	addl r14 = .fptr_execve - .L1_execve, r3
 	;;
-        ld8 r14=[r14]
-        ;;
-        ld8 r15=[r14],8
-        ;;
-        ld8 gp=[r14]
-        ;;
-        mov b6=r15
-        br.call.sptk.many b0=b6
+	ld8 r14=[r14]
 	;;
-.ret0:	cmp4.ge p6,p7=r8,r0
+	ld8 r15=[r14], 8
+	;;
+	ld8 gp=[r14]
+	;;
+	mov b6=r15
+	br.call.sptk.many b0=b6
+	;;
+.ret0:	cmp4.ge p6, p7=r8, r0
 	mov ar.pfs=loc1			// restore ar.pfs
 	sxt4 r8=r8			// return 64-bit result
 	;;
 	stf.spill [sp]=f0
-(p6)	cmp.ne pKern,pUser=r0,r0	// a successful execve() lands us in user-mode...
+(p6)	cmp.ne pKern, pUser=r0, r0	// a successful execve() lands us in user-mode...
 	mov gp=loc2
 	mov rp=loc0
 (p6)	mov ar.pfs=r0			// clear ar.pfs on success
