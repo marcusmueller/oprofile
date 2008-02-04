@@ -56,7 +56,7 @@ void code_spu_ctx_switch(struct transient * trans)
 {
 	clear_trans_current(trans);
 
-	if (!enough_remaining(trans, 7)) {
+	if (!enough_remaining(trans, 6)) {
 		trans->remaining = 0;
 		return;
 	}

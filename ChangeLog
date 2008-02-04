@@ -1,3 +1,8 @@
+2008-02-04  Bob Nelson  <rrnelson@us.ibm.com>
+
+	* daemon/opd_spu.c: Fix number of records to check for
+	  in an SPU context switch
+
 2008-01-21  Daniel Hansel  <daniel.hansel@linux.vnet.ibm.com>
 
 	* various: style cleanups
