@@ -1,3 +1,9 @@
+2008-02-07  Bob Nelson  <rrnelson@us.ibm.com>
+
+	* libutil++/op_bfd.h:  add bool symb_artificial to op_bfd_symbol
+	* libutil++/op_bfd.cpp:  ctor changes, use symb_artificial
+	* libutil++/op_spu_bfd.cpp:  profile SPU 'stack' code
+
 2008-02-04  Bob Nelson  <rrnelson@us.ibm.com>
 
 	* daemon/opd_spu.c: Fix number of records to check for

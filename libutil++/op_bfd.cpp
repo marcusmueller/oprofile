@@ -57,7 +57,8 @@ op_bfd_symbol::op_bfd_symbol(asymbol const * a)
 	: bfd_symbol(a), symb_value(a->value),
 	  section_filepos(a->section->filepos),
 	  section_vma(a->section->vma),
-	  symb_size(0), symb_hidden(false), symb_weak(false)
+	  symb_size(0), symb_hidden(false), symb_weak(false),
+	  symb_artificial(false)
 {
 	// Some sections have unnamed symbols in them. If
 	// we just ignore them then we end up sticking
@@ -77,7 +78,8 @@ op_bfd_symbol::op_bfd_symbol(asymbol const * a)
 op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 	: bfd_symbol(0), symb_value(vma),
 	  section_filepos(0), section_vma(0),
-	  symb_size(size), symb_name(name)
+	  symb_size(size), symb_name(name),
+	  symb_artificial(true)
 {
 }
 
@@ -296,7 +298,7 @@ get_symbol_contents(symbol_index_t sym_index, unsigned char * contents) const
 	op_bfd_symbol const & bfd_sym = syms[sym_index];
 	size_t size = bfd_sym.size();
 	string const name = bfd_sym.name();
-	if (name.size() == 0 || name[0] == '?' || !ibfd.valid())
+	if (name.size() == 0 || bfd_sym.artificial() || !ibfd.valid())
 		return false;
 
 	if (!bfd_get_section_contents(ibfd.abfd, bfd_sym.symbol()->section, 
@@ -413,14 +415,10 @@ void op_bfd::get_vma_range(bfd_vma & start, bfd_vma & end) const
 
 op_bfd_symbol const op_bfd::create_artificial_symbol()
 {
-	// FIXME: prefer a bool artificial; to this ??
-	string symname = "?";
-
-	symname += get_filename();
 
 	bfd_vma start, end;
 	get_vma_range(start, end);
-	return op_bfd_symbol(start, end - start, symname);
+	return op_bfd_symbol(start, end - start, get_filename());
 }
 
 

@@ -54,6 +54,7 @@ public:
 	void size(size_t s) { symb_size = s; }
 	bool hidden() const { return symb_hidden; }
 	bool weak() const { return symb_weak; }
+	bool artificial() const { return symb_artificial; }
 
 	/// compare two symbols by their filepos()
 	bool operator<(op_bfd_symbol const & lhs) const;
@@ -77,6 +78,8 @@ private:
 	bool symb_hidden;
 	/// whether other symbols can override it
 	bool symb_weak;
+        /// symbol is artificially created
+        bool symb_artificial;
 	/// code bytes corresponding to symbol -- used for XML generation
 	std::string symb_bytes;
 };

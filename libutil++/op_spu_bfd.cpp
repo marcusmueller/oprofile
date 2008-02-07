@@ -21,6 +21,10 @@
 #include "string_filter.h"
 #include "cverb.h"
 
+#define OP_SPU_DYN_FLAG		0x10000000	/* kernel module adds this offset */
+						/* to SPU code it can't find in the map */
+#define OP_SPU_MEMSIZE		0x3ffff		/* Physical memory size on an SPU */
+
 using namespace std;
 
 extern verbose vbfd;
@@ -157,6 +161,11 @@ find_sec_code:
 	}
 
 	get_symbols(symbols);
+
+	/* In some cases the SPU library code generates code stubs on the stack. */
+	/* The kernel module remaps those addresses so add an entry to catch/report them. */
+	symbols.push_back(op_bfd_symbol(OP_SPU_DYN_FLAG, OP_SPU_MEMSIZE,
+			  "__send_to_ppe(stack)"));
 
 out:
 	add_symbols(symbols, symbol_filter);
