@@ -1,3 +1,22 @@
+2008-02-15  Will Cohen  <wcohen@redhat.com>
+
+	* gui/oprof_start_util.cpp
+	* libutil++/file_manip.cpp
+	* libutil++/bfd_support.cpp
+	* libutil++/bfd_spu_support.cpp
+	* libutil++/op_spu_bfd.cpp
+	* libutil++/cverb.cpp
+	* libutil++/child_reader.cpp
+	* pp/opgprof_options.cpp
+	* pp/opannotate_options.cpp
+	* pp/oparchive.cpp
+	* pp/common_option.cpp
+	* libpp/sample_container.cpp
+	* libpp/op_header.cpp
+	* libpp/profile.cpp
+	* libabi/opimport.cpp
+	* libregex/demangle_symbol.cpp: Add includes for gcc 4.3 compatibility.
+
 2008-02-07  Bob Nelson  <rrnelson@us.ibm.com>
 
 	* libutil++/op_bfd.h:  add bool symb_artificial to op_bfd_symbol

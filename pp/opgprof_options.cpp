@@ -13,6 +13,7 @@
 #include <list>
 #include <iterator>
 #include <iostream>
+#include <cstdlib>
 
 #include "opgprof_options.h"
 #include "popt_options.h"

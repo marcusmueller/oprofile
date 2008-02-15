@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <set>
 #include <sstream>
+#include <cstring>
 
 #include <sys/types.h>
 #include <sys/stat.h>

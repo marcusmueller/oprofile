@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
+#include <cstdlib>
 
 #include "op_config.h"
 #include "locate_images.h"

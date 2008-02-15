@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
 #include <errno.h>
 #include <string.h>

@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
 #include <qfiledialog.h>
 #include <qmessagebox.h>

@@ -14,6 +14,8 @@
 #include <sys/stat.h>
 
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 
 #include "op_bfd.h"
 #include "locate_images.h"

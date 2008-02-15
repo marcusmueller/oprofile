@@ -13,6 +13,7 @@
 #include <list>
 #include <iterator>
 #include <iostream>
+#include <cstdlib>
 
 #include "profile_spec.h"
 #include "arrange_profiles.h"

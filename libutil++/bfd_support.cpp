@@ -19,6 +19,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstring>
+#include <cstdlib>
 
 using namespace std;
 
