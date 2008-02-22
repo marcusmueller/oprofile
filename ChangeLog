@@ -1,3 +1,8 @@
+2008-02-22  Bob Nelson  <rrnelson@us.ibm.com>
+
+	* utils/opcontrol: Fix loop in dump code when using
+	  --session-dir on a network drive.  (clock issues)
+
 2008-02-15  Will Cohen  <wcohen@redhat.com>
 
 	* gui/oprof_start_util.cpp

@@ -1455,27 +1455,24 @@ do_dump_data()
 	fi
 
 	if test "$KERNEL_SUPPORT" = "yes"; then
-		# find current time
-		TMPFILE=`mktemp /tmp/oprofile.XXXXXX` || exit 1
 		if ! test -w $MOUNT/dump; then
 			if test `id -u` != "0"; then
 				echo "You must be root to dump with this kernel version"
 				exit 1
 			fi
 		fi
+		rm -f "$SESSION_DIR/complete_dump"
 		echo 1 > $MOUNT/dump
-		# loop until there is a file to check and 
-		# the modification data of $MOUNT/dump after TMPFILE
-		while [ \( ! -e "$SESSION_DIR/complete_dump" \) -o \( "$TMPFILE" -nt "$SESSION_DIR/complete_dump" \) ]
+		# loop until the complete_dump file is created to
+		# signal that the dump has been completed
+		while [ \( ! -e "$SESSION_DIR/complete_dump" \) ]
 		do
 			if test ! -d "/proc/$OPROFILED_PID"; then
-				rm $TMPFILE
 				echo "dump fail: either daemon died during last run or dies during dump" >&2
 				return 1
 			fi
 			sleep 1;
 		done
-		rm $TMPFILE
 	else
 		echo 1 > $MOUNT/dump
 		# HACK !
