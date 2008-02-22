@@ -39,6 +39,9 @@ bool copy_file(string const & source, string const & destination)
 	if (stat(source.c_str(), &buf))
 		return false;
 
+	if (!op_file_readable(source))
+		return false;
+
 	ifstream in(source.c_str());
 	if (!in)
 		return false;

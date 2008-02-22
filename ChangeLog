@@ -1,3 +1,33 @@
+2008-02-22  Haavard Skinnemoen  <hskinnemoen@atmel.com>
+
+	*  events/Makefile.am:
+	*  events/avr32/events:
+	*  events/avr32/unit_masks:
+	*  libop/op_cpu_type.c:
+	*  libop/op_cpu_type.h:
+	*  libop/op_events.c:
+	*  utils/ophelp.c: Add AVR32 support
+ 
+2008-02-22  Richard Purdie  <rpurdie@openedhand.com>
+
+	* libutil++/file_manip.cpp:
+	* pp/oparchive.cpp:
+	Check files actually exist before copying or listing the file as part of
+	oparchive --list-files.
+
+	The copy_file function breaks if passed a directory as a file to copy 
+	since it will create a file at the destination causing subtle bugs.
+
+2008-02-22  Andy Fleming <afleming@freescale.com>
+
+	*  events/Makefile.am:
+	*  events/ppc/e300/events:
+	*  events/ppc/e300/unit_masks:
+	*  libop/op_cpu_type.c:
+	*  libop/op_cpu_type.h:
+	*  libop/op_events.c:
+	*  utils/ophelp.c: Add e300 support
+ 
 2008-02-22  Bob Nelson  <rrnelson@us.ibm.com>
 
 	* utils/opcontrol: Fix loop in dump code when using

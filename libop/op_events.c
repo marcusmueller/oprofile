@@ -793,6 +793,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_XSCALE2:
 		case CPU_ARM_MPCORE:
 		case CPU_ARM_V6:
+		case CPU_AVR32:
 			descr->name = "CPU_CYCLES";
 			break;
 
@@ -847,6 +848,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 
 		case CPU_PPC_E500:
 		case CPU_PPC_E500_2:
+		case CPU_PPC_E300:
 			descr->name = "CPU_CLK";
 			break;
 

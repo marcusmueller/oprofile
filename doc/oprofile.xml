@@ -124,7 +124,7 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			see later in this manual for details.  Hyper-threaded Pentium IVs
 			are not supported in 2.4. For 2.4 kernels, the Intel
 			IA-64 CPUs are also supported. For 2.6 kernels, there is additionally
-			support for Alpha processors, MIPS, ARM, x86-64, sparc64, ppc64, and,
+			support for Alpha processors, MIPS, ARM, x86-64, sparc64, ppc64, AVR32, and,
 			in timer mode, PA-RISC and s390.
 		</para></listitem>
 	</varlistentry>
@@ -811,6 +811,7 @@ The table below lists the events selected by default
 <row><entry>ARM/XScale PMU1</entry><entry>arm/xscale1</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>ARM/XScale PMU2</entry><entry>arm/xscale2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>ARM/MPCore</entry><entry>arm/mpcore</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>AVR32</entry><entry>avr32</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>Athlon</entry><entry>i386/athlon</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Pentium Pro</entry><entry>i386/ppro</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Pentium II</entry><entry>i386/pii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>

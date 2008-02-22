@@ -504,12 +504,22 @@ int main(int argc, char const * argv[])
 			"Downloadable from http://www.freescale.com\n");
 		break;
 
+	case CPU_PPC_E300:
+		printf("See PowerPC e300 Core Reference Manual\n"
+			"Downloadable from http://www.freescale.com\n");
+		break;
+
 	case CPU_PPC_7450:
 		printf("See MPC7450 RISC Microprocessor Family Reference "
 		       "Manual\n"
 		       "Chapter 11: Performance Monitor\n"
 		       "Downloadable from http://www.freescale.com\n");
 		break;
+
+	case CPU_AVR32:
+		printf("See AVR32 Architecture Manual\n"
+			"Chapter 6: Performance Counters\n"
+			"http://www.atmel.com/dyn/resources/prod_documents/doc32000.pdf\n");
 
 	case CPU_RTC:
 		break;

@@ -37,6 +37,9 @@ namespace {
 
 void copy_one_file(image_error err, string const & source, string const & dest)
 {
+	if (!op_file_readable(source))
+		return;
+
 	if (options::list_files) {
 		cout << source << endl;
 		return;

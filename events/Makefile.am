@@ -32,6 +32,7 @@ event_files = \
 	arm/xscale2/events arm/xscale2/unit_masks \
 	arm/armv6/events arm/armv6/unit_masks \
 	arm/mpcore/events arm/mpcore/unit_masks \
+	avr32/events avr32/unit_masks \
 	mips/20K/events mips/20K/unit_masks \
 	mips/24K/events mips/24K/unit_masks \
 	mips/25K/events mips/25K/unit_masks \
@@ -46,7 +47,8 @@ event_files = \
 	mips/vr5500/events mips/vr5500/unit_masks \
 	ppc/7450/events ppc/7450/unit_masks \
 	ppc/e500/events ppc/e500/unit_masks \
-	ppc/e500v2/events ppc/e500v2/unit_masks
+	ppc/e500v2/events ppc/e500v2/unit_masks \
+	ppc/e300/events ppc/e300/unit_masks
 
 install-data-local:
 	for i in ${event_files} ; do \
