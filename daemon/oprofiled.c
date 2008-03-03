@@ -249,7 +249,7 @@ static void opd_setup_signals(void)
 	sigaddset(&act.sa_mask, SIGTERM);
 
 	if (sigaction(SIGUSR2, &act, NULL)) {
-		perror("oprofiled: install of SIGUSR1 handler failed: ");
+		perror("oprofiled: install of SIGUSR2 handler failed: ");
 		exit(EXIT_FAILURE);
 	}
 }

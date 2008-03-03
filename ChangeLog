@@ -1,3 +1,7 @@
+2008-03-03  John Levon  <levon@movementarian.org>
+
+	* daemon/oprofiled.c: fix error message typo
+
 2008-02-22  Haavard Skinnemoen  <hskinnemoen@atmel.com>
 
 	*  events/Makefile.am:
