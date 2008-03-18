@@ -339,7 +339,7 @@ void output_summaries(summary_container const & summaries)
 }
 
 
-format_flags const get_format_flags(column_flags const & cf)
+format_flags get_format_flags(column_flags const & cf)
 {
 	format_flags flags(ff_none);
 	flags = format_flags(flags | ff_nr_samples);

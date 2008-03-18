@@ -1,3 +1,10 @@
+2008-03-13  Dave Nomura <dcnltc@us.ibm.com>
+
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* pp/opreport.cpp:
+	gcc 4.3 gives warnings on const function return types
+
 2008-03-03  John Levon  <levon@movementarian.org>
 
 	* daemon/oprofiled.c: fix error message typo

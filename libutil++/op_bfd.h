@@ -166,7 +166,7 @@ public:
 	 * Otherwise, return the filepos of a section with a matching
 	 * vma.
 	 */
-	unsigned long const get_start_offset(bfd_vma vma = 0) const;
+	unsigned long get_start_offset(bfd_vma vma = 0) const;
  
 	/**
 	 * Return the image name of the underlying binary image. For an

@@ -173,7 +173,7 @@ op_bfd::~op_bfd()
 }
 
 
-unsigned long const op_bfd::get_start_offset(bfd_vma vma) const
+unsigned long op_bfd::get_start_offset(bfd_vma vma) const
 {
 	if (!vma || !ibfd.valid()) {
 		filepos_map_t::const_iterator it = filepos_map.find(".text");
