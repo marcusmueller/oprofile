@@ -1114,6 +1114,18 @@ check_event_mapping_data()
 				exit 1
 			fi
 		fi
+
+		# Check if all user/kernel flags per-counter are matching.
+		if [ "$USER_CK" = "" ] ; then    
+			USER_CK=$USER
+			KERNEL_CK=$KERNEL
+		else
+			if test $USER_CK != $USER \
+				-o $KERNEL_CK != $KERNEL ; then
+				echo "ERROR: All kernel/user event flags must match."
+				exit 1
+			fi
+		fi
 	fi
 	if [ "$CPUTYPE" = "ppc64/cell-be" ]; then
 		event_num=`echo $EVENT_STR | awk '{print $1}'`
@@ -1231,13 +1243,13 @@ do_param_setup()
 		if test "$GOTEVENT" != ""; then
 			EVENT=`echo $GOTEVENT | awk -F: '{print $1}'`
 			EVENT_STR=`$OPHELP $EVENT`
-			check_event_mapping_data
 			EVENT_VAL=`echo $EVENT_STR | awk '{print $1}'`
 			COUNT=`echo $GOTEVENT | awk -F: '{print $2}'`
 			UNIT_MASK=`echo $GOTEVENT | awk -F: '{print $3}'`
 			KERNEL=`echo $GOTEVENT | awk -F: '{print $4}'`
 			USER=`echo $GOTEVENT | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
+			check_event_mapping_data
 
 			if test "$EVENT" = "SPU_CYCLES"; then
 			        if test "$SEPARATE_KERNEL" = "1"; then
@@ -1293,6 +1305,19 @@ do_param_setup()
 			OPROFILED_EVENTS=${OPROFILED_EVENTS}$KERNEL:$USER,
 		fi
 	done
+
+	# For PPC64 architectures we need to set the enable_kernel and
+	# enable_user flags for enabling/disabling user/kernel domain
+	# profiling. All per-counter user/kernel flags must match.
+	# This condition is checked previously by check_event_mapping_data.
+	# This statement uses the last event's user/kernel flags to set
+	# /dev/oprofile/enable_kernel and /dev/oprofile/enable_user. 
+	is_non_cell_ppc64_variant $CPUTYPE
+	if test $? -ne 0 ; then
+		set_param "enable_kernel" $KERNEL
+		set_param "enable_user" $USER
+	fi
+
 }
 
 

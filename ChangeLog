@@ -1,3 +1,10 @@
+2008-04-10  Chris J Arges  <arges@linux.vnet.ibm.com>
+
+	* utils/opcontrol:
+	For ppc64 architectures, need to check if all user/kernel flags
+	per counter match. Then use this value to set user/kernel domain
+	profiling.
+
 2008-03-13  Dave Nomura <dcnltc@us.ibm.com>
 
 	* libutil++/op_bfd.cpp:
