@@ -1,3 +1,7 @@
+2008-04-17  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* m4/binutils.m4: Revert previous patch as it was buggy
+
 2008-04-16  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* m4/binutils.m4:  Fix the bfd_get_synthetic_symtab check
