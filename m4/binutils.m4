@@ -10,6 +10,9 @@ AC_CHECK_LIB(dl, dlopen, LIBS="$LIBS -ldl"; DL_LIB="-ldl", DL_LIB="")
 AC_CHECK_LIB(intl, main, LIBS="$LIBS -lintl"; INTL_LIB="-lintl", INTL_LIB="")
 AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR([bfd library not found]))
 
+AC_LANG_PUSH(C)
+SAVE_LIBS=$LIBS
+LIBS=" -lbfd -liberty "
 # Determine if bfd_get_synthetic_symtab macro is available
 OS="`uname`"
 if test "$OS" = "Linux"; then
@@ -36,5 +39,7 @@ if test "$OS" = "Linux"; then
 	rm -f test-for-synth*
 
 fi
+AC_LANG_POP(C)
+LIBS=$SAVE_LIBS
 ]
 )

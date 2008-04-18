@@ -1,3 +1,7 @@
+2008-04-18  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* m4/binutils.m4: A correct fix for the --with-binutils problem
+
 2008-04-17  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* m4/binutils.m4: Revert previous patch as it was buggy
