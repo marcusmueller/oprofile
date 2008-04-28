@@ -109,8 +109,10 @@ void output_cg(FILE * fp, op_bfd const & abfd, profile_t const & cg_db)
 {
 	opd_header const & header = cg_db.get_header();
 	bfd_vma offset = 0;
-	if (header.is_kernel || header.anon_start)
-		offset = abfd.get_start_offset(header.anon_start);
+	if (header.is_kernel)
+		offset = abfd.get_start_offset(0);
+	else
+		offset = header.anon_start;
  
 	profile_t::iterator_pair p_it = cg_db.samples_range();
 	for (; p_it.first != p_it.second; ++p_it.first) {

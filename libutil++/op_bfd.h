@@ -18,6 +18,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <set>
 
 #include "bfd_support.h"
 #include "utility.h"
@@ -78,8 +79,8 @@ private:
 	bool symb_hidden;
 	/// whether other symbols can override it
 	bool symb_weak;
-        /// symbol is artificially created
-        bool symb_artificial;
+	/// symbol is artificially created
+	bool symb_artificial;
 	/// code bytes corresponding to symbol -- used for XML generation
 	std::string symb_bytes;
 };
@@ -189,6 +190,8 @@ public:
 	bool get_symbol_contents(symbol_index_t sym_index,
 		unsigned char * contents) const;
 
+	bool valid() const { return ibfd.valid(); }
+
 private:
 	/// temporary container type for getting symbols
 	typedef std::list<op_bfd_symbol> symbols_found_t;
@@ -256,6 +259,12 @@ private:
 	// corresponding debug bfd object, if one is found
 	mutable bfd_info dbfd;
 
+	/// sections we will avoid to use symbol from, this is needed
+	/// because elf file allows sections with identical vma and we can't
+	/// allow overlapping symbols. Such elf layout is used actually by
+	/// kernel modules where all code section vma are set to 0.
+	std::vector<asection const *> filtered_section;
+
 	typedef std::map<std::string, u32> filepos_map_t;
 	// mapping of section names to filepos in the original binary
 	filepos_map_t filepos_map;
@@ -265,6 +274,8 @@ private:
 	 * the embedded SPU image.
 	 */
 	std::string embedding_filename;
+
+	bool anon_obj;
 };
 
 

@@ -95,7 +95,8 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	:
 	filename(fname),
 	archive_path(extra_images.get_archive_path()),
-	file_size(-1)
+	file_size(-1),
+	anon_obj(false)
 {
 	int fd;
 	struct stat st;
@@ -104,6 +105,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	// O(N²) behavior when we will filter vector element below
 	symbols_found_t symbols;
 	asection const * sect;
+	string suf = ".jo";
 
 	image_error img_ok;
 	string const image_path =
@@ -140,6 +142,12 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 		goto out_fail;
 	}
 
+	string::size_type pos;
+	pos = filename.rfind(suf);
+	if (pos != string::npos && pos == filename.size() - suf.size())
+		anon_obj = true;
+
+
 	// find .text and use it
 	for (sect = ibfd.abfd->sections; sect; sect = sect->next) {
 		if (sect->flags & SEC_CODE) {
@@ -151,6 +159,9 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 			}
 
 			filepos_map[sect->name] = sect->filepos;
+
+			if (sect->vma == 0 && strcmp(sect->name, ".text"))
+				filtered_section.push_back(sect);
 		}
 	}
 
@@ -182,11 +193,6 @@ unsigned long op_bfd::get_start_offset(bfd_vma vma) const
 		return 0;
 	}
 
-	for (asection * sect = ibfd.abfd->sections; sect; sect = sect->next) {
-		if (sect->vma == vma)
-			return sect->filepos;
-	}
-
 	return 0;
 }
 
@@ -205,8 +211,12 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 
 	size_t i;
 	for (i = 0; i < ibfd.nr_syms; ++i) {
-		if (interesting_symbol(ibfd.syms[i]))
-			symbols.push_back(op_bfd_symbol(ibfd.syms[i]));
+		if (!interesting_symbol(ibfd.syms[i]))
+			continue;
+		if (find(filtered_section.begin(), filtered_section.end(),
+			 ibfd.syms[i]->section) != filtered_section.end())
+			continue;
+		symbols.push_back(op_bfd_symbol(ibfd.syms[i]));
 	}
 
 	for (i = 0; i < dbfd.nr_syms; ++i) {
@@ -347,8 +357,9 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		return false;
 
 	bfd_info const & b = dbfd.valid() ? dbfd : ibfd;
+	op_bfd_symbol const & sym = syms[sym_idx];
 
-	linenr_info const info = find_nearest_line(b, syms[sym_idx], offset);
+	linenr_info const info = find_nearest_line(b, sym, offset, anon_obj);
 
 	if (!info.found)
 		return false;
@@ -376,7 +387,10 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 
 	bool const verbose = cverb << (vbfd & vlevel1);
 
-	start = sym.filepos();
+	if (anon_obj)
+		start = sym.vma();
+	else
+		start = sym.filepos();
 	end = start + sym.size();
 
 	if (!verbose)

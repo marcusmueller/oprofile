@@ -28,6 +28,8 @@
 void op_check_header(opd_header const & h1, opd_header const & h2,
                      std::string const & filename);
 
+bool is_jit_sample(std::string const & filename);
+
 /**
  * check mtime of samples file header against file
  * all error are fatal

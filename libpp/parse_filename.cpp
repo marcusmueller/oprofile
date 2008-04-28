@@ -12,10 +12,12 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sys/stat.h>
 
 #include "parse_filename.h"
 #include "file_manip.h"
 #include "string_manip.h"
+#include "locate_images.h"
 
 using namespace std;
 
@@ -108,8 +110,11 @@ string const parse_anon(string const & str, string const & str2)
  *
  * where /name/ denote a unique path component
  */
-parsed_filename parse_filename(string const & filename)
+parsed_filename parse_filename(string const & filename,
+			       extra_images const & extra_found_images)
 {
+	struct stat st;
+
 	string::size_type pos = filename.find_last_of('/');
 	if (pos == string::npos) {
 		throw invalid_argument("parse_filename() invalid filename: " +
@@ -167,11 +172,28 @@ parsed_filename parse_filename(string const & filename)
 			break;
 
 		if (anon) {
-		  result.lib_image = parse_anon(path[i], path[i - 1]);
+			pos = filename_spec.rfind('.');
+			pos = filename_spec.rfind('.', pos-1);
+			if (pos == string::npos) {
+				throw invalid_argument("parse_filename() pid.addr.addr name expected: " +
+						       filename_spec);
+			}
+			string jitdump = filename_spec.substr(0, pos) + ".jo";
+			// if a jitdump file exists, we point to this file
+			if (!stat(jitdump.c_str(), &st)) {
+				// later code assumes an optional prefix path
+				// is stripped from the lib_image.
+				result.lib_image =
+					extra_found_images.strip_path_prefix(jitdump);
+				result.jit_dumpfile_exists = true;
+			} else {
+				result.lib_image =  parse_anon(path[i], path[i - 1]);
+			}
 			i++;
 			break;
+		} else {
+			result.lib_image += "/" + path[i];
 		}
-		result.lib_image += "/" + path[i];
 	}
 
 	if (i == path.size())

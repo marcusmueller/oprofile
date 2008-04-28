@@ -21,6 +21,7 @@
 #include "glob_filter.h"
 #include "locate_images.h"
 #include "op_exception.h"
+#include "op_header.h"
 
 using namespace std;
 
@@ -366,7 +367,11 @@ bool valid_candidate(string const & base_dir, string const & filename,
 	if (!is_prefix(sub, "/{root}/") && !is_prefix(sub, "/{kern}/"))
 		return false;
 
-	filename_spec file_spec(filename);
+	// strip out generated JIT object files for samples of anonymous regions
+	if (is_jit_sample(sub))
+		return false;
+
+	filename_spec file_spec(filename, spec.extra_found_images);
 	if (spec.match(file_spec)) {
 		if (exclude_dependent && file_spec.is_dependent())
 			return false;

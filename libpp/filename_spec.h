@@ -17,6 +17,7 @@
 #include "generic_spec.h"
 
 class profile_spec;
+class extra_images;
 
 /**
  * A class to split and store components of a sample filename.
@@ -30,20 +31,24 @@ class filename_spec
 public:
 	/**
 	 * @param filename  the samples filename
+	 * @param extra  extra binary image location
 	 *
 	 * build a filename_spec from a samples filename
 	 */
-	filename_spec(std::string const & filename);
+	filename_spec(std::string const & filename,
+		      extra_images const & extra);
 
 	filename_spec();
 
 	/**
 	 * @param filename  a sample filename
+	 * @param extra  extra binary image location
 	 *
 	 * setup filename spec according to the samples filename. PP:3.19 to
 	 * 3.25
 	 */
-	void set_sample_filename(std::string const & filename);
+	void set_sample_filename(std::string const & filename,
+				 extra_images const & extra);
 
 	/**
 	 * @param rhs  right hand side of the match operator

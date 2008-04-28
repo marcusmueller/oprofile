@@ -50,6 +50,7 @@ int opd_read_fs_int(char const * path, char const * name, int is_fatal);
 extern sig_atomic_t signal_alarm;
 extern sig_atomic_t signal_hup;
 extern sig_atomic_t signal_term;
+extern sig_atomic_t signal_child;
 extern sig_atomic_t signal_usr1;
 extern sig_atomic_t signal_usr2;
 

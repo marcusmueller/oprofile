@@ -86,7 +86,6 @@ void profile_container::add(profile_t const & profile,
 
 		profile_t::iterator_pair p_it =
 			profile.samples_range(start, end);
-
 		count_type count = accumulate(p_it.first, p_it.second, 0ull);
 
 		// skip entries with no samples
@@ -105,7 +104,7 @@ void profile_container::add(profile_t const & profile,
 		if (debug_info) {
 			string filename;
 			if (abfd.get_linenr(i, start, filename,
-			    symb_entry.sample.file_loc.linenr)) {
+				symb_entry.sample.file_loc.linenr)) {
 				symb_entry.sample.file_loc.filename =
 					debug_names.create(filename);
 			}
@@ -149,7 +148,7 @@ profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 		if (debug_info) {
 			string filename;
 			if (abfd.get_linenr(sym_index, it.vma(), filename,
-					    sample.file_loc.linenr)) {
+					sample.file_loc.linenr)) {
 				sample.file_loc.filename =
 					debug_names.create(filename);
 			}

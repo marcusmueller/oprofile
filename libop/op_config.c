@@ -6,6 +6,7 @@
  * @remark Read the file COPYING
  *
  * @author Nathan Tallent
+ * @Modifications Daniel Hansel
  */
 
 #include "op_config.h"
@@ -23,6 +24,7 @@ char op_samples_dir[PATH_MAX];
 char op_samples_current_dir[PATH_MAX];
 char op_lock_file[PATH_MAX];
 char op_log_file[PATH_MAX];
+char op_pipe_file[PATH_MAX];
 char op_dump_status[PATH_MAX];
 
 /* paths in op_config_24.h */
@@ -54,6 +56,9 @@ init_op_config_dirs(char const * session_dir)
 
 	strcpy(op_lock_file, op_session_dir);
 	strcat(op_lock_file, "/lock");
+
+	strcpy(op_pipe_file, op_session_dir);
+	strcat(op_pipe_file, "/opd_pipe");
 
 	strcpy(op_log_file, op_samples_dir);
 	strcat(op_log_file, "oprofiled.log");

@@ -52,6 +52,7 @@ OProfile is useful in a number of situations. You might want to use OProfile whe
 <listitem><para>cannot use highly intrusive profiling methods</para></listitem>
 <listitem><para>need to profile interrupt handlers</para></listitem>
 <listitem><para>need to profile an application and its shared libraries</para></listitem>
+<listitem><para>need to profile dynamically compiled code of supported virtual machines (see <xref linkend="jitsupport"/>)</para></listitem>
 <listitem><para>need to capture the performance behaviour of entire system</para></listitem>
 <listitem><para>want to examine hardware effects such as cache misses</para></listitem>
 <listitem><para>want detailed source annotation</para></listitem>
@@ -67,8 +68,29 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 <listitem><para>require 100% instruction-accurate profiles</para></listitem>
 <listitem><para>need function call counts or an interstitial profiling API</para></listitem>
 <listitem><para>cannot tolerate any disturbance to the system whatsoever</para></listitem>
-<listitem><para>need to profile interpreted or dynamically compiled code such as Java or Python</para></listitem>
+<listitem><para>need to profile interpreted or dynamically compiled code of non-supported virtual machines</para></listitem>
 </itemizedlist>
+<sect2 id="jitsupport">
+<title>Support for dynamically compiled (JIT) code</title>
+<para>
+Older versions of OProfile were not capable of attributing samples to symbols from dynamically
+compiled code, i.e. "just-in-time (JIT) code". Typical JIT compilers load the JIT code into
+anonymous memory regions. OProfile reported the samples from such code, but the attribution
+provided was simply:
+        <screen>"anon: &lt;tgid&gt;&lt;address range&gt;" </screen>
+Due to this limitation, it wasn't possible to profile applications executed by virtual machines (VMs)
+like the Java Virtual Machine. OProfile now contains an infrastructure to support JITed code.
+A development library is provided to allow developers
+to add support for any VM that produces dynamically compiled code (see the <emphasis>OProfile JIT agent
+developer guide</emphasis>).
+In addition, built-in support is included for the following:</para>
+<itemizedlist><listitem>JVMTI agent library for Java (1.5 and higher)</listitem>
+<listitem>JVMPI agent library for Java (1.5 and lower)</listitem>
+</itemizedlist>
+<para>
+For information on how to use OProfile's JIT support, see <xref linkend="setup-jit"/>.
+</para>
+</sect2>
 </sect1>
 
 <sect1 id="requirements">
@@ -140,6 +162,17 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
 			<filename>liberty</filename> (debian users: libiberty is provided in binutils-dev package), <filename>dl</filename>,
 			plus the standard C++ libraries.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>Required user account</term>
+		<listitem><para>
+			For secure processing of sample data from JIT virtual machines (e.g., Java),
+			the special user account "oprofile" must exist on the system.  The 'configure'
+			and 'make install' operations will print warning/error messages if this
+			account is not found.  Additionally, a runtime error message is printed to
+			the oprofile daemon log when processing JIT samples if this special user
+			account cannot be found.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -228,6 +261,49 @@ is often all you need, but note these arguments to <command>./configure</command
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--with-java</option></term>
+		<listitem>
+			<para>
+			Use this option if you need to profile Java applications.  This option is used
+			to specify the location of the Java Development Kit (JDK)
+			source tree you wish to use. This is necessary to get the interface description
+			of the JVMPI (or JVMTI) interface to compile the JIT support code successfully.
+			</para>
+			<note>
+				<para>
+				The Java Runtime Environment (JRE) does not include the development
+				files that are required to compile the JIT support code, so the full
+				JDK must be installed in order to use this option.
+				</para>
+			</note>
+			<para>
+			By default, the Oprofile JIT support libraries will be installed in
+			<filename>&lt;oprof_install_dir&gt;/lib/oprofile</filename>.  To build
+			and install OProfile and the JIT support libraries as 64-bit, you can
+			do something like the following:
+			<screen>
+			# CFLAGS="-m64" CXXFLAGS="-m64" ./configure \
+			--with-kernel-support --with-java={my_jdk_installdir} \
+			--libdir=/usr/local/lib64
+			</screen>
+			</para>
+			<note>
+				<para>
+				If you encounter errors building 64-bit, you should
+				install libtool 1.5.26 or later since that release of
+				libtool fixes known problems for certain platforms.
+				If you install libtool into a non-standard location,
+				you'll need to edit the invocation of 'aclocal' in
+				OProfile's autogen.sh as follows (assume an install
+				location of /usr/local):
+				</para>
+				<para>
+				<code>aclocal -I m4 -I /usr/local/share/aclocal</code>
+				</para>
+			</note> 
+		</listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--with-kernel-support</option></term>
 		<listitem><para>
 			Use this option with 2.6 and above kernels to indicate the 
@@ -263,7 +339,7 @@ You'll need to have a configured kernel source for the current kernel
 to build the module for 2.4 kernels.  Since all distributions provide different kernels it's unlikely the running kernel match the configured source
 you installed. The safest way is to recompile your own kernel, run it and compile oprofile. It is also recommended that if you have a
 uniprocessor machine, you enable the local APIC / IO_APIC support for
-your kernel (this is automatically enabled for SMP kernels). With many BIOS, kernel >= 2.6.9 and UP kernel it's not sufficient to enable the local APIC you must also turn it on explicitely at boot time by providing "lapic" option to the kernel. On
+your kernel (this is automatically enabled for SMP kernels). With many BIOS, kernel &gt;= 2.6.9 and UP kernel it's not sufficient to enable the local APIC you must also turn it on explicitly at boot time by providing "lapic" option to the kernel. On
 machines with power management, such as laptops, the power management
 must be turned off when using OProfile with 2.4 kernels. The power management software
 in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
@@ -370,6 +446,13 @@ This section gives a brief description of the available OProfile utilities and t
 	<listitem><para>
 		Used for controlling the OProfile data collection, discussed in <xref linkend="controlling" />.
 	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>agent libraries</filename></term>
+	<listitem><para>
+			Used by virtual machines (like the Java VM) to record information about JITed code being profiled. See <xref linkend="setup-jit" />.
+		</para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -835,6 +918,51 @@ The table below lists the events selected by default
 
 </sect1>
  
+<sect1 id="setup-jit">
+	<title>Setting up the JIT profiling feature</title>
+	<para>
+		To gather information about JITed code from a virtual machine,
+		it needs to be instrumented with an agent library. We use the
+		agent libraries for Java in the following example. To use the
+		Java profiling feature, you must build OProfile with the "--with-java" option
+                (<xref linkend="install" />).
+
+	</para>
+
+	<sect2 id="setup-jit-jvm">
+		<title>JVM instrumentation</title>
+		<para>
+			Add this to the startup parameters of the JVM (for JVMTI):
+
+			<screen><option>-agentpath:&lt;libdir&gt;/libjvmti_oprofile.so[=&lt;options&gt;]</option> </screen>
+			or
+			<screen><option>-agentlib:jvmti_oprofile[=&lt;options&gt;]</option> </screen>
+		</para>
+		<para>
+			The JVMPI agent implementation is enabled with the command line option
+			<screen><option>-Xrunjvmpi_oprofile[:&lt;options&gt;]</option> </screen>
+		</para>
+		<para>
+			Currently, there is just one option available -- <option>debug</option>. For JVMPI,
+			the convention for specifying an option is <option>option_name=[yes|no]</option>.
+			For JVMTI, the option specification is simply the option name, implying
+			"yes"; no option specified implies "no".
+		</para>
+                <para>
+                        The agent library (installed in <filename>&lt;oprof_install_dir&gt;/lib/oprofile</filename>)
+                        needs to be in the library search path (e.g. add the library directory
+                        to <constant>LD_LIBRARY_PATH</constant>). If the command line of
+                        the JVM is not accessible, it may be buried within shell scripts or a
+                        launcher program. It may also be possible to set an environment variable to add
+                        the instrumentation.
+                        For Sun JVMs this is <constant>JAVA_TOOL_OPTIONS</constant>. Please check
+                        your JVM documentation for
+                        further information on the agent startup options.
+                </para>
+
+	</sect2>
+</sect1>
+
 <sect1 id="oprofile-gui">
 <title>Using <command>oprof_start</command></title>
 <para>
@@ -1496,6 +1624,11 @@ You can restrict which events to list by appropriate use of the
 <sect2 id="opreport-callgraph">
 <title>Callgraph output</title>
 <para>
+This section provides details on how to use the OProfile callgraph feature.
+</para>
+<sect3 id="op-cg1">
+<title>Callgraph details</title>
+<para>
 When using the <option>opcontrol --callgraph</option> option, you can see what
 functions are calling other functions in the output. Consider the
 following program:
@@ -1583,6 +1716,39 @@ as calling <function>strfry()</function>, but it's clear from the source
 that this doesn't actually happen. See <xref
 linkend="interpreting-callgraph" /> for an explanation.
 </para>
+</sect3>
+<sect3 id="cg-with-jitsupport">
+<title>Callgraph and JIT support</title>
+<para>
+Callgraph output where anonymously mapped code is in the callstack can sometimes be misleading.
+For all such code, the samples for the anonymously mapped code are stored in a samples subdirectory
+named <filename>{anon:anon}/&lt;tgid&gt;.&lt;begin_addr&gt;.&lt;end_addr&gt;</filename>.
+As stated earlier, if this anonymously mapped code is JITed code from a supported VM like Java,
+OProfile creates an ELF file to provide a (somewhat) permanent backing file for the code.
+However, when viewing callgraph output, any anonymously mapped code in the callstack
+will be attributed to <filename>anon (&lt;tgid&gt;: range:&lt;begin_addr&gt;-&lt;end_addr&gt;</filename>,
+even if a <filename>.jo</filename> ELF file had been created for it.  See the example below.
+</para>
+<screen>
+-------------------------------------------------------------------------------
+  1         2.2727  libj9ute23.so            java.bin                 traceV
+  2         4.5455  libj9ute23.so            java.bin                 utsTraceV
+  4         9.0909  libj9trc23.so            java.bin                 fillInUTInterfaces
+  37       84.0909  libj9trc23.so            java.bin                 twGetSequenceCounter
+8         0.0154  libj9prt23.so            java.bin                 j9time_hires_clock
+  27       61.3636  anon (tgid:10014 range:0x100000-0x103000) java.bin                 (no symbols)
+  9        20.4545  libc-2.4.so              java.bin                 gettimeofday
+  8        18.1818  libj9prt23.so            java.bin                 j9time_hires_clock [self]
+-------------------------------------------------------------------------------
+</screen>
+<para>
+The output shows that "anon (tgid:10014 range:0x100000-0x103000)" was a callee of
+<code>j9time_hires_clock</code>, even though the ELF file <filename>10014.jo</filename> was
+created for this profile run.  Unfortunately, there is currently no way to correlate
+that anonymous callgraph entry with its corresponding <filename>.jo</filename> file.
+</para>
+</sect3>
+
 
 </sect2> <!-- opreport-callgraph -->
 
@@ -1673,31 +1839,35 @@ considered different.
 <title>Anonymous executable mappings</title>
 <para>
 Many applications, typically ones involving dynamic compilation into
-machine code, have executable mappings that are not backed by an ELF
-file. <command>opreport</command> has basic support for showing the
+machine code (just-in-time, or "JIT", compilation), have executable mappings that
+are not backed by an ELF file. <command>opreport</command> has basic support for showing the
 samples taken in these regions; for example:
-</para>
 <screen>
-$ opreport /usr/jre1.5.0/bin/java
-CPU: PIII, speed 863.195 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 100000
-CPU_CLK_UNHALT...|
-  samples|      %|
-------------------
-    27344 100.000 java
-        CPU_CLK_UNHALT...|
-          samples|      %|
-        ------------------
-            27236  99.605 anon (tgid:12135 range:0xb2cb8000-0xb2e80000)
-              108  0.3949 java
+$ opreport /usr/bin/mono -l
+CPU: ppc64 POWER5, speed 1654.34 MHz (estimated)
+Counted CYCLES events (Processor Cycles using continuous sampling) with a unit mask of 0x00 (No unit mask) count 100000
+samples  %        image name    		                symbol name
+47       58.7500  mono                     			(no symbols)
+14       17.5000  anon (tgid:3189 range:0xf72aa000-0xf72fa000)  (no symbols)
+9        11.2500  anon (tgid:3189 range:0xf6cca000-0xf6dd9000)  (no symbols)
+.	 .	  .						.
 </screen>
+</para>
 <para>
-Currently, there is no support for getting symbol-based summaries for
-such regions. Note that, since such mappings are dependent upon
-individual invocations of a binary, these mappings are always listed as
-a dependent image, even when using <option>--separate=none</option>.
+Note that, since such mappings are dependent upon individual invocations of
+a binary, these mappings are always listed as a dependent image,
+even when using <option>--separate=none</option>.
 Equally, the results are not affected by the <option>--merge</option>
 option.
+</para>
+<para>
+As shown in the opreport output above, OProfile is unable to attribute the samples to any
+symbol(s) because there is no ELF file for this code.
+Enhanced support for JITed code is now available for some virtual machines; 
+e.g., the Java Virtual Machine.  For details about OProfile output for
+JITed code, see <xref linkend="getting-jit-reports" />.
+</para>
+<para>For more information about JIT support in OProfile, see <xref linkend="jitsupport"/>.
 </para>
 </sect2> <!-- opreport-anon -->
 
@@ -1985,6 +2155,65 @@ Show version.
 </sect2> <!-- opannotate-details -->
 
 </sect1> <!-- opannotate -->
+
+<sect1 id="getting-jit-reports">
+	<title>OProfile results with JIT samples</title>
+	<para>
+		After profiling a Java (or other supported VM) application, the command
+		<screen><command>"opcontrol --dump"</command> </screen>
+		flushes the sample buffers and creates ELF binaries from the
+		intermediate files that were written by the agent library.
+		The ELF binaries are named <filename>&lt;tgid&gt;.jo</filename>.
+		With the symbol information stored in these ELF files, it is
+		possible to map samples to the appropriate symbols.
+	</para>
+	<para>
+		The usual analysis tools (<command>opreport</command> and/or 
+		<command>opannotate</command>) can now be used
+		to get symbols and assembly code for the instrumented VM processes.
+	</para>
+<para>
+Below is an example of a profile report of a Java application that has been
+instrumented with the provided agent library.
+<screen>
+$ opreport -l /usr/lib/jvm/jre-1.5.0-ibm/bin/java
+CPU: Core Solo / Duo, speed 2167 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Unhalted clock cycles) with a unit mask of 0x00 (Unhalted core cycles) count 100000
+samples  %        image name               symbol name
+186020   50.0523  no-vmlinux               no-vmlinux               (no symbols)
+34333     9.2380  7635.jo                  java                     void test.f1()
+19022     5.1182  libc-2.5.so              libc-2.5.so              _IO_file_xsputn@@GLIBC_2.1
+18762     5.0483  libc-2.5.so              libc-2.5.so              vfprintf
+16408     4.4149  7635.jo                  java                     void test$HelloThread.run()
+16250     4.3724  7635.jo                  java                     void test$test_1.f2(int)
+15303     4.1176  7635.jo                  java                     void test.f2(int, int)
+13252     3.5657  7635.jo                  java                     void test.f2(int)
+5165      1.3897  7635.jo                  java                     void test.f4()
+955       0.2570  7635.jo                  java                     void test$HelloThread.run()~
+
+</screen>
+</para>
+<note><para>
+	  Depending on the JVM that is used, certain options of opreport and opannotate
+	  do NOT work since they rely on debug information (e.g. source code line number)
+	  that is not always available. The Sun JVM does provide the necessary debug
+	  information via the JVMTI[PI] interface,
+	  but other JVMs do not.
+  </para></note>
+	<para>
+		As you can see in the opreport output, the JIT support agent for Java
+		generates symbols to include the class and method signature.
+		A symbol with the suffix &tilde;&lt;n&gt; (e.g.
+		<code>void test$HelloThread.run()&tilde;1</code>) means that this is
+		the &lt;n&gt;th occurrence of the identical name. This happens if a method is re-JITed.
+		A symbol with the suffix %&lt;n&gt;, means that the address space of this symbol
+		was reused during the sample session (see <xref linkend="overlapping-symbols" />).
+		The value &lt;n&gt; is the percentage of time that this symbol/code was present in
+		relation to the total lifetime of all overlapping other symbols. A symbol of the form
+		<code>&lt;return_val&gt; &lt;class_name&gt;$&lt;method_sig&gt;</code> denotes an
+		inner class.
+	</para>
+</sect1>
 
 <sect1 id="opgprof">
 <title><command>gprof</command>-compatible output (<command>opgprof</command>)</title>
@@ -2551,6 +2780,32 @@ show such example
 </para>
 </sect2>
 --> 
+
+<sect1 id="overlapping-symbols">
+	<title>Overlapping symbols in JITed code</title>
+	<para>
+	Some virtual machines (e.g., Java) may re-JIT a method, resulting in previously
+	allocated space for a piece of compiled code to be reused. This means that, at one distinct
+	code address, multiple symbols/methods may be present during the run time of the application.
+	</para>
+	<para>
+	Since OProfile samples are buffered and don&prime;t have timing information, there is no way
+	to correlate samples with the (possibly) varying address ranges in which the code for a symbol
+	may reside.
+	An alternative would be flushing the OProfile sampling buffer when we get an unload event,
+	but this could result in high overhead.
+	</para>
+	<para>
+	To moderate the problem of overlapping symbols, OProfile tries to select the symbol that was
+	present at this address range most of the time. Additionally, other overlapping symbols
+	are truncated in the overlapping area.
+	This gives reasonable results, because in reality, address reuse typically takes place
+	during phase changes of the application -- in particular, during application  startup.
+	Thus, for optimum profiling results, start the sampling session after application startup
+	and burn in.
+	</para>
+</sect1>
+
 <sect1 id="hidden-cost">
 <title>Other discrepancies</title>
 <para>
@@ -2566,6 +2821,7 @@ and <ulink url="http://developer.amd.com/devguides.jsp/">http://developer.amd.co
 </para>
 </sect1>
 </chapter>
+
 
 <chapter id="ack">
 <title>Acknowledgments</title>

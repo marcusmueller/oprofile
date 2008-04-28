@@ -46,6 +46,7 @@
 sig_atomic_t signal_alarm;
 sig_atomic_t signal_hup;
 sig_atomic_t signal_term;
+sig_atomic_t signal_child;
 sig_atomic_t signal_usr1;
 sig_atomic_t signal_usr2;
 
@@ -186,6 +187,11 @@ static void opd_sigterm(int val __attribute__((unused)))
 {
 	signal_term = 1;
 }
+
+static void opd_sigchild(int val __attribute__((unused)))
+{
+	signal_child = 1;
+}
  
 
 static void opd_sigusr1(int val __attribute__((unused)))
@@ -230,6 +236,16 @@ static void opd_setup_signals(void)
 
 	if (sigaction(SIGTERM, &act, NULL)) {
 		perror("oprofiled: install of SIGTERM handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	act.sa_handler = opd_sigchild;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGCHLD);
+
+	if (sigaction(SIGCHLD, &act, NULL)) {
+		perror("oprofiled: install of SIGCHLD handler failed: ");
 		exit(EXIT_FAILURE);
 	}
 

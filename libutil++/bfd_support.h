@@ -128,6 +128,6 @@ struct linenr_info {
  */
 linenr_info const
 find_nearest_line(bfd_info const & ibfd, op_bfd_symbol const & sym,
-                  unsigned int offset);
+                  unsigned int offset, bool anon_obj);
 
 #endif /* !BFD_SUPPORT_H */

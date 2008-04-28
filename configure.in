@@ -16,6 +16,7 @@ AM_INIT_AUTOMAKE(oprofile, 0.9.4cvs)
 AM_CONFIG_HEADER(config.h)
 
 AC_PROG_RANLIB
+AC_PROG_LIBTOOL
 
 dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
@@ -67,6 +68,18 @@ fi
 AC_ARG_WITH(module-dir,
 [  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
 AC_SUBST(MODINSTALLDIR)
+
+AC_ARG_WITH(java,
+[  --with-java=java-home        Path to Java home directory], JAVA_HOMEDIR=$withval)
+AC_SUBST(JAVA_HOMEDIR)
+
+if test -n "$JAVA_HOMEDIR"; then
+	AC_CHECK_FILE("$JAVA_HOMEDIR/include/jvmti.h",JVMTI_H_EXISTS="yes",)
+	AC_CHECK_FILE("$JAVA_HOMEDIR/include/jvmpi.h",JVMPI_H_EXISTS="yes",)
+fi
+
+AM_CONDITIONAL(BUILD_JVMTI_AGENT, test -n "$JVMTI_H_EXISTS")
+AM_CONDITIONAL(BUILD_JVMPI_AGENT, test -n "$JVMPI_H_EXISTS")
 
 AX_MALLOC_ATTRIBUTE
 AX_BUILTIN_EXPECT
@@ -210,6 +223,7 @@ AC_OUTPUT(Makefile \
 	libutil++/tests/Makefile \
 	libop/Makefile \
 	libop/tests/Makefile \
+	libopagent/Makefile \
 	libopt++/Makefile \
 	libdb/Makefile \
 	libdb/tests/Makefile \
@@ -235,15 +249,35 @@ AC_OUTPUT(Makefile \
 	doc/opimport.1 \
 	doc/srcdoc/Doxyfile \
 	libpp/Makefile \
+	opjitconv/Makefile \
 	pp/Makefile \
 	gui/Makefile \
 	gui/ui/Makefile \
 	module/Makefile \
 	module/x86/Makefile \
-	module/ia64/Makefile)
+	module/ia64/Makefile \
+	agents/Makefile \
+	agents/jvmti/Makefile \
+	agents/jvmpi/Makefile)
 
 AX_COPY_IF_CHANGE(doc/xsl/catalog-1.xml, doc/xsl/catalog.xml)
 
 if test -z "$QT_LIB"; then
 	echo "Warning: a working Qt not found; no GUI will be built"
 fi
+
+if test "`getent passwd oprofile 2>/dev/null`" == "" || \
+   test "`getent group oprofile 2>/dev/null`" == ""; then
+	if test `id -u` != "0"; then
+		echo "Warning: The user account 'oprofile:oprofile' does not exist on the system."
+		echo "         Please ask your system administrator to add the following user:"
+		echo "             user name : 'oprofile'"
+		echo "             group name: 'oprofile'"
+	else
+		echo "Warning: The user account 'oprofile:oprofile' does not exist on the system."
+		echo "         Please add the following user:"
+		echo "             user name : 'oprofile'"
+		echo "             group name: 'oprofile'"
+	fi
+fi
+

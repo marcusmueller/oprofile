@@ -126,9 +126,18 @@ void profile_t::add_sample_file(string const & filename)
 
 void profile_t::set_offset(op_bfd const & abfd)
 {
-	opd_header const & header = get_header();
-	if (header.anon_start || header.is_kernel)
-		start_offset = abfd.get_start_offset(header.anon_start);
+	// if no bfd file has been located for this samples file, we can't
+	// shift sample because abfd.get_symbol_range() return the whole
+	// address space and setting a non zero start_offset will overflow
+	// in get_symbol_range() caller.
+	if (abfd.valid()) {
+		opd_header const & header = get_header();
+		if (header.anon_start) {
+			start_offset = header.anon_start;
+		} else if (header.is_kernel) {
+			start_offset = abfd.get_start_offset(0);
+		}
+	}
 	cverb << (vdebug) << "start_offset is now " << start_offset << endl;
 }
 

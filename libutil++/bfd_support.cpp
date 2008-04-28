@@ -508,7 +508,7 @@ void bfd_info::get_symbols()
 
 linenr_info const
 find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
-                  unsigned int offset)
+                  unsigned int offset, bool anon_obj)
 {
 	char const * function = "";
 	char const * cfilename = "";
@@ -530,7 +530,10 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 	abfd = b.abfd;
 	syms = b.syms.get();
 	section = sym.symbol()->section;
-	pc = (sym.value() + offset) - sym.filepos();
+	if (anon_obj)
+		pc = offset - sym.symbol()->section->vma;
+	else
+		pc = (sym.value() + offset) - sym.filepos();
 
 	if ((bfd_get_section_flags(abfd, section) & SEC_ALLOC) == 0)
 		goto fail;

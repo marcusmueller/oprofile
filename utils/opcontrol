@@ -6,7 +6,9 @@
 # Copyright 2002
 # Read the file COPYING
 #
-# Authors: John Levon, Philippe Elie, Will Cohen
+# Authors: John Levon, Philippe Elie, Will Cohen, Jens Wilke, Daniel Hansel
+#
+# Copyright IBM Corporation 2007
 #
 # NOTE: This script should be as shell independent as possible
 
@@ -986,7 +988,7 @@ do_kill_daemon()
 			kill -9 `cat $LOCK_FILE`
 		fi
 	done
-
+	sleep 1
 	# already removed unless we forced the kill
 	rm -f "$SESSION_DIR/lock"
 }
@@ -1009,6 +1011,27 @@ create_devices_24()
 	create_device $HASH_MAP_DEVICE_FILE $MAJOR_NR 1
 }
 
+# create jitdump directory and remove any old files from
+# a previous run
+prep_jitdump() {
+	local dumpdir=$SESSION_DIR/jitdump
+	test -d $dumpdir || {
+		mkdir -p $dumpdir;
+		chmod 777 $dumpdir;
+		return;
+	}
+	# VMs may already be running when profiling is started, so
+	# remove only dump files that are not in use
+	for I in $dumpdir/*; do
+		test -f $I || continue;
+		local pid=`basename $I .dump`;
+		if test -d /proc/$pid; then
+			local files=`find /proc/$pid/fd -lname $I`;
+			test -n "$files" && continue;
+		fi
+		rm -f $I;
+	done
+}
 
 # setup and start module
 do_setup()
@@ -1021,6 +1044,8 @@ do_setup()
 	fi
 
 	create_dir "$CURRENT_SAMPLES_DIR"
+
+	prep_jitdump;
 }
 
 
@@ -1386,9 +1411,9 @@ do_start_daemon()
 	echo "Daemon started."
 }
 
-
 do_start()
 {
+	prep_jitdump;
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		echo 1 >$MOUNT/enable
 	fi
@@ -1486,6 +1511,8 @@ do_dump_data()
 				exit 1
 			fi
 		fi
+		# trigger oprofiled to execute opjitconv
+		echo do_jitconv > $SESSION_DIR/opd_pipe
 		rm -f "$SESSION_DIR/complete_dump"
 		echo 1 > $MOUNT/dump
 		# loop until the complete_dump file is created to
@@ -1505,6 +1532,7 @@ do_dump_data()
 	fi
 	return 0;
 }
+
 
 # do_dump
 # returns 0 if successful
@@ -1568,6 +1596,9 @@ do_reset()
 	# daemon use {kern} and {root} subdir, it's not a typo to not use ${}
 	move_and_remove $SAMPLES_DIR/current/{kern}
 	move_and_remove $SAMPLES_DIR/current/{root}
+
+	# clear temp directory for jitted code
+	prep_jitdump;
 
 	hup_daemon
 }
@@ -1726,7 +1757,7 @@ if test -z "$OPDIR"; then
 	OPDIR=`$BINDIR/dirname $OPCONTROL`
 fi
 
-PATH=/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
+PATH=$OPDIR:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 
 check_options_early $@
 

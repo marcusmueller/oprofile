@@ -5,6 +5,8 @@ oprofiled_SOURCES = \
 	oprofiled.c \
 	oprofiled.h \
 	opd_stats.c \
+	opd_pipe.c \
+	opd_pipe.h \
 	opd_sfile.c \
 	opd_sfile.h \
 	opd_kernel.c \

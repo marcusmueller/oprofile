@@ -138,7 +138,7 @@ private:
 	 *
 	 * Phew.
 	 */
-	u32 start_offset;
+	u64 start_offset;
 };
 
 
@@ -163,7 +163,7 @@ class profile_t::const_iterator
 	typedef ordered_samples_t::const_iterator iterator_t;
 public:
 	const_iterator() : start_offset(0) {}
-	const_iterator(iterator_t it_, u32 start_offset_)
+	const_iterator(iterator_t it_, u64 start_offset_)
 		: it(it_), start_offset(start_offset_) {}
 
 	count_type operator*() const { return it->second; }
@@ -181,7 +181,7 @@ public:
 
 private:
 	iterator_t it;
-	u32 start_offset;
+	u64 start_offset;
 };
 
 #endif /* !PROFILE_H */

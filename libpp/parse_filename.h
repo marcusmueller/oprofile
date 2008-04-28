@@ -13,6 +13,8 @@
 
 #include <string>
 
+class extra_images;
+
 /**
  * a convenience class to store result of parse_filename()
  */
@@ -38,6 +40,7 @@ struct parsed_filename
 	 * above components are built
 	 */
 	std::string filename;
+	bool jit_dumpfile_exists;
 };
 
 
@@ -48,6 +51,7 @@ std::ostream & operator<<(std::ostream &, parsed_filename const &);
 /**
  * parse a sample filename
  * @param filename in: a sample filename
+ * @param extra_found_images binary image location
  *
  * filename is split into constituent parts, the lib_image is optional
  * and can be empty on successfull call. All other error are fatal.
@@ -55,6 +59,7 @@ std::ostream & operator<<(std::ostream &, parsed_filename const &);
  *
  * all errors throw an std::invalid_argument exception
  */
-parsed_filename parse_filename(std::string const & filename);
+parsed_filename parse_filename(std::string const & filename,
+			       extra_images const & extra_found_images);
 
 #endif /* !PARSE_FILENAME_H */

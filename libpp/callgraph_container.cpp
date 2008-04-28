@@ -450,7 +450,8 @@ void callgraph_container::populate(list<string> const & cg_files,
 	for (it = cg_files.begin(); it != end; ++it) {
 		cverb << vdebug << "samples file : " << *it << endl;
 
-		parsed_filename caller_file = parse_filename(*it);
+		parsed_filename caller_file =
+			parse_filename(*it, extra_found_images);
 		string const app_name = caller_file.image;
 
 		image_error error;
@@ -469,7 +470,8 @@ void callgraph_container::populate(list<string> const & cg_files,
 			                   image_format_failure, false,
 					   extra_found_images);
 
-		parsed_filename callee_file = parse_filename(*it);
+		parsed_filename callee_file =
+			parse_filename(*it, extra_found_images);
 
 		extra_found_images.find_image_path(callee_file.cg_image,
 				error, false);
@@ -514,17 +516,17 @@ add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
 
 	// We must handle start_offset, this offset can be different for the
 	// caller and the callee: kernel sample traversing the syscall barrier.
-	u32 caller_offset = 0;
+	u32 caller_offset;
+	if (header.is_kernel)
+		caller_offset = caller_bfd.get_start_offset(0);
+	else
+		caller_offset = header.anon_start;
 
-	if (header.is_kernel || header.anon_start)
-		caller_offset = caller_bfd.get_start_offset(header.anon_start);
-
-	u32 callee_offset = 0;
-
-	if (header.cg_to_is_kernel || header.cg_to_anon_start) {
-		callee_offset =
-			callee_bfd.get_start_offset(header.cg_to_anon_start);
-	}
+	u32 callee_offset;
+	if (header.cg_to_is_kernel)
+		callee_offset = callee_bfd.get_start_offset(0);
+	else
+		callee_offset = header.cg_to_anon_start;
 
 	image_name_id image_id = image_names.create(image_name);
 	image_name_id callee_image_id = image_names.create(callee_bfd.get_filename());

@@ -177,6 +177,68 @@ Documentation
  o document gcc 2.95 and linenr info problems especially for inline functions
  o finish the internals manual
 
+JIT support
+-----------
+
+ o We need a more dynamic structure to handle entries_address_ascending and
+   entries_symbols_ascending, actually many scaling problem occur because they
+   are array, this was perfect to get a first implementation focusing on
+   handling overlap and all but the need to qsort/copy arrays at each iteration
+   is a performance killer. Some sort of AVL tree will do the job.
+ o Related to the previous, it's possible to do all processing in opjitconv.c
+   in a single left to right walk of the jitentry list.
+ o see the FIXME at parse_dump.c:parse_code_unload()
+ o Increment JITHEADER_VERSION in jitdump.h to be sure that the new code only
+   accepts dump file created by the new code.
+ o opjitconv.c:replacement_name() should be enough clever to avoid name
+   collision so we can remove the recursive call to disambiguate_symbol_names(),
+   need a hash table or some sort of associative array to check quickly if a
+   name exists, we will need some sort of avl tree so it's probably better
+   to do not implement a hash table only for this purpose.
+ o op_write_native_code() must accept one more parameter, the real code size
+   which can be zero or equal to code_size, this will allow to create elf
+   file w/o any code contents, only a symbol table and .text sections w/o
+   contents (yes ELF format allow that). For dynamic binary translation it'll
+   avoid to dump tons of code for little use, opannotate --assembly will not
+   work on such elf file but it can be a real win. It'll need to add to
+   jitrecord0 a real_size field, and some trickery when building the elf file,
+   taking care about the case we mix zero code size with non zero code size.
+   Perhaps we can use it too for java, filtering native method etc. Actually
+   we allow a simplified form of this feature by allowing to disable/enable
+   code dumping but at the whole dump level not on a symbol basis, quite
+   possible sufficient. [mpj: We're backing away from the idea of dumping
+   JIT records without code.  Since BFD asymbol type does not include symbol size,
+   the op_bfd technique for determining symbol size relies on knowing the true
+   file size; and if code is not included in the .jo file, we don't have true size.]
+ o The pipe used for triggering JIT dump conversion should be used for normal
+   dumping too.
+ o See FIXME in agents/jvmti/libjvmti_oprofile.c:
+   If enablement to get line number info would be configurable through command line,
+   what should be the default on/off?
+ o See FIXME in opjitconv/debug_line.c
+ o The way to use the pipe should be made more secure to avoid denial of service
+   attacks. We have to think about it.
+ o Callgraph does not work properly for the .jo files the JIT support creates.
+   See section Chapter 4, sect 2.3.2 "Callgraph and JIT support". Try to figure
+   out a way to correlate an anonymous sample callgraph entry with
+   the .jo file that may exist for the anonymous code.
+ o see mail from Gisle Dankel:
+   "JIT_SUPPORT: Adding support for file-backed non-ELF JIT code"
+   -> should be changed (if useful) before next release
+ o See FIXME in op_header.cpp:
+   The check for header.mtime of JIT sample files is not correct because currently
+   this mtime value is set to zero due to missing cookie setting for JIT sample files.
+   Some additional check/setting to header.mtime should be made for JIT sample files.
+ o Mono JIT support:
+
+   2007-11-08: with callgraph massi got
+   <massi> oparchive error: parse_filename() invalid filename: /var/lib/oprofile/samples/current/{root}/var/lib/oprofile/samples/current/{root}/home/massi/mono/amd64/bin/mono/{dep}/{anon:anon}/32432.0x40a26000.0x40a36000/CPU_CLK_UNHALTED.100000.0.all.all.all/{dep}/{root}/var/lib/oprofile/samples/current/{root}/home/massi/mono/amd64/bin/mono/{dep}/{anon:anon}/32432.0x40a26000.0x40a36000/CPU_CLK_UNHALTED.100000.0.all.all.all/{cg}/{root}/usr/oprofile/bin/oprofiled/CPU_CLK_
+
+   Massi added Mono JIT support, code on the stack is never unloaded and there is
+   no byte code, code is always compiled to native machine code, this mean than
+   for mono at least we can do callgraph if we can fix this samples filename
+   problem.
+
 General checks to make
 ----------------------
  

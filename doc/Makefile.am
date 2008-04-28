@@ -19,11 +19,14 @@ man_MANS = \
 	opimport.1
 
 htmldir = $(prefix)/share/doc/oprofile
-dist_html_DATA = oprofile.html internals.html opreport.xsd
+dist_html_DATA = oprofile.html internals.html opreport.xsd op-jit-devel.html
 
 if have_xsltproc
 
 oprofile.html: ${top_srcdir}/doc/oprofile.xml
+	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) $(XSLTPROC_FLAGS) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
+
+op-jit-devel.html: ${top_srcdir}/doc/op-jit-devel.xml
 	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) $(XSLTPROC_FLAGS) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
 
 internals.html: ${top_srcdir}/doc/internals.xml
@@ -35,11 +38,15 @@ doc/index.html: ${top_srcdir}/doc/oprofile.xml
 	-mkdir doc/
 	$(XSLTPROC) -o doc/ $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
 
+doc/devel/index.html: ${top_srcdir}/doc/op-jit-devel.xml
+	-mkdir doc/devel/
+	$(XSLTPROC) -o doc/devel/ $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+
 doc/internals/index.html: ${top_srcdir}/doc/internals.xml
 	-mkdir doc/internals/
 	$(XSLTPROC) -o doc/internals/ $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
 
-chunk: doc/index.html doc/internals/index.html
+chunk: doc/index.html doc/internals/index.html doc/devel/index.html
 	cp ${top_srcdir}/doc/buffers.png doc/internals/
 
 else
@@ -48,6 +55,9 @@ oprofile.html:
 	touch $@
 
 internals.html:
+	touch $@
+
+op-jit-devel.html:
 	touch $@
 
 chunk:
@@ -71,6 +81,7 @@ EXTRA_DIST = \
 	oprofile.1 \
 	oprofile.1.in \
 	oprofile.xml \
+	op-jit-devel.xml \
 	internals.xml \
 	buffers.png \
 	xsl/catalog-1.xml.in \

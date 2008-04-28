@@ -13,14 +13,16 @@
 #include "filename_spec.h"
 #include "parse_filename.h"
 #include "generic_spec.h"
+#include "locate_images.h"
 
 
 using namespace std;
 
 
-filename_spec::filename_spec(string const & filename)
+filename_spec::filename_spec(string const & filename,
+			     extra_images const & extra)
 {
-	set_sample_filename(filename);
+	set_sample_filename(filename, extra);
 }
 
 
@@ -54,9 +56,10 @@ bool filename_spec::match(filename_spec const & rhs,
 }
 
 
-void filename_spec::set_sample_filename(string const & filename)
+void filename_spec::set_sample_filename(string const & filename,
+	extra_images const & extra)
 {
-	parsed_filename parsed = parse_filename(filename);
+	parsed_filename parsed = parse_filename(filename, extra);
 
 	image = parsed.image;
 	lib_image = parsed.lib_image;

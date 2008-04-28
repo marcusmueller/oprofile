@@ -546,14 +546,15 @@ add_to_profile_sample_files(profile_sample_files & sample_files,
  */
 profile_sample_files &
 find_profile_sample_files(list<profile_sample_files> & files,
-    parsed_filename const & parsed)
+			  parsed_filename const & parsed,
+			  extra_images const & extra)
 {
 	list<profile_sample_files>::iterator it;
 	list<profile_sample_files>::iterator const end = files.end();
 	for (it = files.begin(); it != end; ++it) {
 		if (!it->sample_filename.empty()) {
 			parsed_filename psample_filename =
-				parse_filename(it->sample_filename);
+			  parse_filename(it->sample_filename, extra);
 			if (psample_filename.lib_image == parsed.lib_image &&
 			    psample_filename.image == parsed.image &&
 			    psample_filename.profile_spec_equal(parsed))
@@ -563,7 +564,8 @@ find_profile_sample_files(list<profile_sample_files> & files,
 		list<string>::const_iterator cit;
 		list<string>::const_iterator const cend = it->cg_files.end();
 		for (cit = it->cg_files.begin(); cit != cend; ++cit) {
-			parsed_filename pcg_filename = parse_filename(*cit);
+			parsed_filename pcg_filename =
+				parse_filename(*cit, extra);
 			if (pcg_filename.lib_image == parsed.lib_image &&
 			    pcg_filename.image == parsed.image &&
 			    pcg_filename.profile_spec_equal(parsed))
@@ -583,11 +585,12 @@ find_profile_sample_files(list<profile_sample_files> & files,
  * on the normal list of profiles otherwise.
  */
 void
-add_to_profile_set(profile_set & set, parsed_filename const & parsed, bool merge_by_lib)
+add_to_profile_set(profile_set & set, parsed_filename const & parsed,
+		   bool merge_by_lib, extra_images const & extra)
 {
 	if (parsed.image == parsed.lib_image && !merge_by_lib) {
 		profile_sample_files & sample_files =
-			find_profile_sample_files(set.files, parsed);
+			find_profile_sample_files(set.files, parsed, extra);
 		add_to_profile_sample_files(sample_files, parsed);
 		return;
 	}
@@ -596,9 +599,11 @@ add_to_profile_set(profile_set & set, parsed_filename const & parsed, bool merge
 	list<profile_dep_set>::iterator const end = set.deps.end();
 
 	for (; it != end; ++it) {
-		if (it->lib_image == parsed.lib_image && !merge_by_lib) {
+		if (it->lib_image == parsed.lib_image && !merge_by_lib &&
+				parsed.jit_dumpfile_exists == false) {
 			profile_sample_files & sample_files =
-				find_profile_sample_files(it->files, parsed);
+				find_profile_sample_files(it->files, parsed,
+							  extra);
 			add_to_profile_sample_files(sample_files, parsed);
 			return;
 		}
@@ -607,7 +612,7 @@ add_to_profile_set(profile_set & set, parsed_filename const & parsed, bool merge
 	profile_dep_set depset;
 	depset.lib_image = parsed.lib_image;
 	profile_sample_files & sample_files =
-		find_profile_sample_files(depset.files, parsed);
+		find_profile_sample_files(depset.files, parsed, extra);
 	add_to_profile_sample_files(sample_files, parsed);
 	set.deps.push_back(depset);
 }
@@ -618,21 +623,22 @@ add_to_profile_set(profile_set & set, parsed_filename const & parsed, bool merge
  * will have ensured the profile "fits", so now it's just a matter of
  * finding which sample file list it needs to go on.
  */
-void add_profile(profile_class & pclass, parsed_filename const & parsed, bool merge_by_lib)
+void add_profile(profile_class & pclass, parsed_filename const & parsed,
+		 bool merge_by_lib, extra_images const & extra)
 {
 	list<profile_set>::iterator it = pclass.profiles.begin();
 	list<profile_set>::iterator const end = pclass.profiles.end();
 
 	for (; it != end; ++it) {
 		if (it->image == parsed.image) {
-			add_to_profile_set(*it, parsed, merge_by_lib);
+			add_to_profile_set(*it, parsed, merge_by_lib, extra);
 			return;
 		}
 	}
 
 	profile_set set;
 	set.image = parsed.image;
-	add_to_profile_set(set, parsed, merge_by_lib);
+	add_to_profile_set(set, parsed, merge_by_lib, extra);
 	pclass.profiles.push_back(set);
 }
 
@@ -649,7 +655,7 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by,
 	list<string>::const_iterator const end = files.end();
 
 	for (; it != end; ++it) {
-		parsed_filename parsed = parse_filename(*it);
+		parsed_filename parsed = parse_filename(*it, extra);
 
 		if (parsed.lib_image.empty())
 			parsed.lib_image = parsed.image;
@@ -663,7 +669,7 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by,
 
 		profile_class & pclass =
 			find_class(temp_classes, parsed, merge_by);
-		add_profile(pclass, parsed, merge_by.lib);
+		add_profile(pclass, parsed, merge_by.lib, extra);
 	}
 
 	profile_classes classes;

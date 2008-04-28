@@ -14,6 +14,7 @@
  * @remark Read the file COPYING
  *
  * @author John Levon
+ * @Modifications Gisle Dankel
  */
 
 #include "opd_anon.h"
@@ -142,13 +143,15 @@ static void get_anon_maps(struct transient * trans)
 	while (fgets(buf, PATH_MAX, fp) != NULL) {
 		char tmp[MAX_IMAGE_NAME_SIZE + 1];
 		char name[MAX_IMAGE_NAME_SIZE + 1];
-		/* Note that this actually includes all mappings,
-		 * since we want stuff like [heap]
+		/* Some anon maps have labels like
+		 * [heap], [stack], [vdso], [vsyscall] ...
+		 * Keep track of these labels. If a map has no name, call it "anon".
+		 * Ignore all mappings starting with "/" (file or shared memory object)
 		 */
 		strcpy(name, "anon");
 		ret = sscanf(buf, "%llx-%llx %20s %20s %20s %20s %20s",
 		             &start, &end, tmp, tmp, tmp, tmp, name);
-		if (ret < 6)
+		if (ret < 6 || name[0] == '/')
 			continue;
 
 		add_anon_mapping(trans, start, end, name);

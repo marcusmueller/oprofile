@@ -12,8 +12,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <dirent.h>
-#include <fnmatch.h>
 #include <utime.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -114,49 +112,20 @@ bool op_file_readable(string const & file)
 	return op_file_readable(file.c_str());
 }
 
-inline static bool is_directory_name(char const * name)
+static void get_pathname(const char * pathname, void * name_list)
 {
-	return name[0] == '.' &&
-		(name[1] == '\0' ||
-		 (name[1] == '.' && name[2] == '\0'));
+	list<string> * file_list = (list<string> *)name_list;
+	file_list->push_back(pathname);
 }
-
 
 bool create_file_list(list<string> & file_list, string const & base_dir,
 		      string const & filter, bool recursive)
 {
-	DIR * dir;
-	struct dirent * ent;
-
-	if (!(dir = opendir(base_dir.c_str())))
-		return false;
-
-	while ((ent = readdir(dir)) != 0) {
-		if (!is_directory_name(ent->d_name) &&
-		    fnmatch(filter.c_str(), ent->d_name, 0) != FNM_NOMATCH) {
-			if (recursive) {
-				struct stat stat_buffer;
-				string name = base_dir + '/' + ent->d_name;
-				if (stat(name.c_str(), &stat_buffer) == 0) {
-					if (S_ISDIR(stat_buffer.st_mode) &&
-					    !S_ISLNK(stat_buffer.st_mode)) {
-						// recursive retrieve
-						create_file_list(file_list,
-								 name, filter,
-								 recursive);
-					} else {
-						file_list.push_back(name);
-					}
-				}
-			} else {
-				file_list.push_back(ent->d_name);
-			}
-		}
-	}
-
-	closedir(dir);
-
-	return true;
+	return !get_matching_pathnames(&file_list, get_pathname,
+				       base_dir.c_str(), filter.c_str(),
+				       recursive ? MATCH_ANY_ENTRY_RECURSION :
+				       NO_RECURSION) ? true : false;
+ 
 }
 
 
@@ -177,7 +146,6 @@ static string erase_trailing_path_separator(string const & path_name)
 
 	return result;
 }
-
 
 string op_dirname(string const & file_name)
 {

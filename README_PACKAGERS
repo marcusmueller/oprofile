@@ -1,0 +1,28 @@
+Building an RPM for OProfile
+==================================
+
+When building an RPM for OProfile, please follow the RPM packaging guidelines
+described in:
+   http://www.rpm.org/RPM-HOWTO/build.html
+
+Requirement for building a binary RPM package
+----------------------------------------
+
+OProfile requires the special user account "oprofile" to exist for purposes
+of processing samples from JIT'ed code (e.g., Java applications).  The build
+process is implemented to warn during 'configure' step and to fail and exit
+during 'make install' step if the special user account does not exist.
+
+When defining the spec file for the OProfile RPM, you should add the automatic
+creation of the special "oprofile" user account.  Please refer to the URL
+below for an example of how this can be done:
+   http://fedoraproject.org/wiki/Packaging/UsersAndGroups
+
+For example, the following commands would add the necessary user account:
+
+   %pre
+   getent group oprofile >/dev/null || groupadd -r oprofile
+   getent passwd oprofile >/dev/null || \
+   useradd -r -g oprofile -d /home/oprofile -s /sbin/nologin \
+       -c "Special user account to be used by OProfile" oprofile
+   exit 0

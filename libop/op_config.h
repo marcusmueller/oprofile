@@ -9,6 +9,7 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * @Modifications Daniel Hansel
  */
 
 #ifndef OP_CONFIG_H
@@ -35,6 +36,7 @@ extern char op_samples_dir[];
 extern char op_samples_current_dir[];
 extern char op_lock_file[];
 extern char op_log_file[];
+extern char op_pipe_file[];
 extern char op_dump_status[];
 
 /* Global directory that stores debug files */

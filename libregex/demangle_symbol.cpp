@@ -13,6 +13,7 @@
 #include "config.h"
 
 #include "demangle_symbol.h"
+#include "demangle_java_symbol.h"
 #include "op_regex.h"
 
 // from libiberty
@@ -43,8 +44,12 @@ string const demangle_symbol(string const & name)
 	string const & tmp = (name[0] == '.' ? name.substr(1) : name);
 	char * unmangled = cplus_demangle(tmp.c_str(), DMGL_PARAMS | DMGL_ANSI);
 
-	if (!unmangled)
+	if (!unmangled) {
+		string result = demangle_java_symbol(name);
+		if (!result.empty())
+			return result;
 		return name;
+	}
 
 	string result(unmangled);
 	free(unmangled);
