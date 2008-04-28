@@ -27,3 +27,4 @@ config.h
 tags
 autom4te.cache
 pch-c++.h.gch
+libtool

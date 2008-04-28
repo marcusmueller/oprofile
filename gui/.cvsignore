@@ -1,5 +1,6 @@
 .buildui
 .deps
+.libs
 oprof_start
 oprof_start.moc.cpp
 Makefile

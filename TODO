@@ -8,6 +8,17 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
 (this is a minimal selection of stuff I think we need)
 
+ o default to a vmlinux location: need agreement from kernel developers
+ o default to --separate=library (with anon, =none, makes not much sense)
+ o prettify image name for .jo files and allow lib-image: to specify it
+ o gisle's fixes
+ o opreport tgid:<tgid> doesn't work even if .jo files with that pid
+ o Fix:
+
+warning: [vdso] (tgid:9236 range:0x7fff98ffd000-0x7fff98fff000) could not be found.
+warning: /no-vmlinux could not be found.
+warning: /usr/lib64/libpanel-applet-2.so.0.2.27.#prelink#.sXCUK1 (deleted) could not be found.
+
  o amd64 32 bit build needs a sys32_lookup_dcookie() translator in the
    kernel
  o decide on -m tgid semantics for anon regions
@@ -16,7 +27,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   speak a bit about lapic kernel option on x86 and recent kernel
  o see the big comment in db_insert.c, it's possible to allow unlimited
    amount of samples with a very minor change in libdb.
- o if oprofilee doesn't recognize the processor selected by the kernel
+ o if oprofile doesn't recognize the processor selected by the kernel
    opcontrol could setup the module in timer mode (remove/reload prolly), and
    warn the user it must upgrade oprofile to get all the feature from its
    hardware.

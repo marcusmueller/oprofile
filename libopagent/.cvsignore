@@ -1,0 +1,8 @@
+*.lo
+*.la
+.deps
+.libs
+Makefile
+Makefile.in
+bfddefines
+bfdheader.h
