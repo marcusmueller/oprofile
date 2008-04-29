@@ -14,6 +14,8 @@
 #include "config.h"
 
 #include <fcntl.h>
+#include <cstring>
+
 #include <sys/stat.h>
 
 #include <cstdlib>

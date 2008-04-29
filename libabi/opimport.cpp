@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 

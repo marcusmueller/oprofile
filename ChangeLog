@@ -1,3 +1,18 @@
+2008-04-29  René Rebe  <rene@exactcode.de>
+
+        * libabi/opimport.cpp:
+        * libpp/op_header.cpp:
+        * libpp/profile.cpp:
+        * libutil++/bfd_support.cpp:
+        * libutil++/cverb.cpp:
+        * libutil++/op_bfd.cpp:
+        * libutil++/op_spu_bfd.cpp:
+        * pp/common_option.cpp:
+        * pp/opannotate_options.cpp:
+        * pp/oparchive.cpp:
+        * pp/opgprof_options.cpp: added explicit includes for C functions
+	  as required for compilation with GCC-4.3
+
 2008-04-28  Daniel Hansel <daniel.hansel@linux.vnet.ibm.com>
 
 	* oprofile/agents/jvmpi/jvmpi_oprofile.cpp:

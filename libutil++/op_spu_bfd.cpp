@@ -12,6 +12,8 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <cstdlib>
+#include <cstring>
 
 #include <iostream>
 #include <cstring>

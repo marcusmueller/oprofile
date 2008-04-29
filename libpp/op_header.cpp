@@ -10,6 +10,7 @@
  * @Modifications Daniel Hansel
  */
 
+#include <cstring>
 #include <iostream>
 #include <cstdlib>
 #include <iomanip>
