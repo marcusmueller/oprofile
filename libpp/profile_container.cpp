@@ -79,7 +79,7 @@ void profile_container::add(profile_t const & profile,
 
 	for (symbol_index_t i = 0; i < abfd.syms.size(); ++i) {
 
-		unsigned long start, end;
+		unsigned long long start = 0, end = 0;
 		symbol_entry symb_entry;
 
 		abfd.get_symbol_range(i, start, end);

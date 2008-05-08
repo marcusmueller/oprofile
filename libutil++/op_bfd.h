@@ -149,7 +149,7 @@ public:
 	 * All errors are fatal.
 	 */
 	void get_symbol_range(symbol_index_t sym_idx,
-			      unsigned long & start, unsigned long & end) const;
+			      unsigned long long & start, unsigned long long & end) const;
 
 	/**
 	 * @param start reference to the start vma

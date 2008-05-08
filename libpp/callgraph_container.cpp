@@ -135,8 +135,8 @@ public:
 	void caller_sym(symbol_index_t i) {
 		sym = symbol_entry();
 
-		unsigned long start;
-		unsigned long end;
+		unsigned long long start;
+		unsigned long long end;
 		b.get_symbol_range(i, start, end);
 
 		samples.clear();

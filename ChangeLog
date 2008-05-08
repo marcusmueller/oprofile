@@ -1,3 +1,11 @@
+2008-05-02  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/profile_container.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: Fix to allow 32-bit opreport to
+	  properly process samples from 64-bit JIT profile agent
+
 2008-04-29  René Rebe  <rene@exactcode.de>
 
         * libabi/opimport.cpp:
