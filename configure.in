@@ -270,14 +270,18 @@ if test "`getent passwd oprofile 2>/dev/null`" == "" || \
    test "`getent group oprofile 2>/dev/null`" == ""; then
 	if test `id -u` != "0"; then
 		echo "Warning: The user account 'oprofile:oprofile' does not exist on the system."
-		echo "         Please ask your system administrator to add the following user:"
+		echo "         To perform a 'make install', this special user account must exist."
+		echo "         Please ask your system administrator to add the following user and group:"
 		echo "             user name : 'oprofile'"
 		echo "             group name: 'oprofile'"
+		echo "         The 'oprofile' group must be the default group for the 'oprofile' user."
 	else
 		echo "Warning: The user account 'oprofile:oprofile' does not exist on the system."
-		echo "         Please add the following user:"
+		echo "         To perform a 'make install', this special user account must exist."
+		echo "         Please add the following user and group:"
 		echo "             user name : 'oprofile'"
 		echo "             group name: 'oprofile'"
+		echo "         The 'oprofile' group must be the default group for the 'oprofile' user."
 	fi
 fi
 

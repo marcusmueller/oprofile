@@ -1,3 +1,8 @@
+2008-05-09  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in:
+	* Makefile.am: Improve error messages for special user account checks
+
 2008-05-08  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libpp/callgraph_container.cpp:

@@ -44,7 +44,7 @@ install-exec-local:
 	@getent group oprofile >/dev/null || (echo "Error: The special group 'oprofile' does not exist" && exit 1) ;
 	@getent passwd oprofile >/dev/null || (echo "Error: The special user 'oprofile' does not exist" && exit 1) ;
 	@if test `id -gn oprofile 2>/dev/null` != "oprofile"; then \
-		echo "Error: The special user 'oprofile' does not belong to the special group 'oprofile'."; \
+		echo "Error: The special user 'oprofile' must have the default group set to 'oprofile'."; \
 		exit 1; \
 	fi
 
@@ -59,7 +59,7 @@ install-exec-local:
 	@getent group oprofile >/dev/null || (echo "Error: The special group 'oprofile' does not exist" && exit 1) ;
 	@getent passwd oprofile >/dev/null || (echo "Error: The special user 'oprofile' does not exist" && exit 1) ;
 	@if test `id -gn oprofile 2>/dev/null` != "oprofile"; then \
-		echo "Error: The special user 'oprofile' does not belong to the special group 'oprofile'."; \
+		echo "Error: The special user 'oprofile' must have the default group set to 'oprofile'."; \
 		exit 1; \
 	fi
 
