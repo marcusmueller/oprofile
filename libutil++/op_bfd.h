@@ -187,6 +187,23 @@ public:
 	/// return true if binary contain some debug information
 	bool has_debug_info() const;
 
+	/**
+	 * @param sym_idx symbol index
+	 *
+	 * Return true or false, indicating whether or not the
+	 * symbol referenced by the passed sym_idx has code available.
+	 * Some symbols have no code associated with them; for example,
+	 * artificial symbols created for anonymous memory samples or for
+	 * stripped binaries with no symbol debug info.  Additionally,
+	 * if the bfd object associated with the symbol is not valid,
+	 * this function will also return false.
+	 *
+	 * NOTE:  This call should be made prior to invoking
+	 *        get_symbol_contents to avoid unnecessarily allocating
+	 *        memory for the symbol contents.
+	 */
+	bool symbol_has_contents(symbol_index_t sym_idx);
+
 	bool get_symbol_contents(symbol_index_t sym_index,
 		unsigned char * contents) const;
 

@@ -305,13 +305,21 @@ bfd_vma op_bfd::offset_to_pc(bfd_vma offset) const
 }
 
 bool op_bfd::
+symbol_has_contents(symbol_index_t sym_idx)
+{
+	op_bfd_symbol const & bfd_sym = syms[sym_idx];
+	string const name = bfd_sym.name();
+	if (name.size() == 0 || bfd_sym.artificial() || !ibfd.valid())
+		return false;
+	else
+		return true;
+}
+
+bool op_bfd::
 get_symbol_contents(symbol_index_t sym_index, unsigned char * contents) const
 {
 	op_bfd_symbol const & bfd_sym = syms[sym_index];
 	size_t size = bfd_sym.size();
-	string const name = bfd_sym.name();
-	if (name.size() == 0 || bfd_sym.artificial() || !ibfd.valid())
-		return false;
 
 	if (!bfd_get_section_contents(ibfd.abfd, bfd_sym.symbol()->section, 
 				 contents, 

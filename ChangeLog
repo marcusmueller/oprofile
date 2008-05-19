@@ -1,3 +1,14 @@
+2008-05-19  Maynard Johnson <maynardj@us.ibm.com>
+
+	* libpp/format_output.cpp:
+	* libpp/xml_utils.cpp:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h: Do not to try to get symbol contents
+	  for artificial symbols and other cases where no symbol contents
+	  exist.  Also change to use scoped array for symbol contents
+	  instead of automatic allocation from the stack to avoid allocation
+	  attempt exceeding max stack size.
+
 2008-05-09  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in:

@@ -723,7 +723,7 @@ output_the_symbol_data(ostream & out, symbol_entry const * symb, op_bfd * & abfd
 
 			if (need_details) {
 				get_bfd_object(symb, abfd);
-				if (abfd)
+				if (abfd && abfd->symbol_has_contents(symb->sym_index))
 					xml_support->output_symbol_bytes(bytes_out, symb, sd_it->second, *abfd);
 			}
 		}

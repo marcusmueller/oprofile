@@ -374,8 +374,8 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 			       size_t sym_id, op_bfd const & abfd)
 {
 	size_t size = symb->size;
-	unsigned char contents[size];
-	if (abfd.get_symbol_contents(symb->sym_index, contents)) {
+	scoped_array<unsigned char> contents(new unsigned char[size]);
+	if (abfd.get_symbol_contents(symb->sym_index, contents.get())) {
 		string const name = symbol_names.name(symb->name);
 		out << open_element(BYTES, true) << init_attr(TABLE_ID, sym_id);
 		out << close_element(NONE, true);
