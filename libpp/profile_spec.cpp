@@ -303,6 +303,7 @@ profile_spec profile_spec::create(list<string> const & args,
 {
 	profile_spec spec;
 	set<string> tag_seen;
+	vector<string> temp_image_or_lib;
 
 	list<string>::const_iterator it = args.begin();
 	list<string>::const_iterator end = args.end();
@@ -317,7 +318,7 @@ profile_spec profile_spec::create(list<string> const & args,
 			spec.parse(*it);
 		} else {
 			string const file = op_realpath(*it);
-			spec.set_image_or_lib_name(file);
+			temp_image_or_lib.push_back(file);
 		}
 	}
 
@@ -327,6 +328,10 @@ profile_spec profile_spec::create(list<string> const & args,
 
 	spec.extra_found_images.populate(image_path, spec.get_archive_path(),
 					 root_path);
+	vector<string>::const_iterator im = temp_image_or_lib.begin();
+	vector<string>::const_iterator last = temp_image_or_lib.end();
+	for (; im != last; ++im)
+		spec.set_image_or_lib_name(*im);
 
 	return spec;
 }

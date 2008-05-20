@@ -1,5 +1,10 @@
 2008-05-19  Maynard Johnson <maynardj@us.ibm.com>
 
+	* libpp/profile_spec.cpp: Fix bug in differential profile
+	  when using archive spec and an image spec
+
+2008-05-19  Maynard Johnson <maynardj@us.ibm.com>
+
 	* libpp/format_output.cpp:
 	* libpp/xml_utils.cpp:
 	* libutil++/op_bfd.cpp:
