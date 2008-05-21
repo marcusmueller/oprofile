@@ -62,7 +62,9 @@
 #if (defined(__powerpc__) && !defined(__powerpc64__)) || defined(__hppa__)\
 	|| (defined(__s390__) && !defined(__s390x__)) \
 	|| (defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32) \
-	    && defined(__MIPSEB__))
+	    && defined(__MIPSEB__)) \
+        || (defined(__arm__) && defined(__ARM_EABI__) \
+            && defined(__ARMEB__))
 static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 {
 	return syscall(__NR_lookup_dcookie, (unsigned long)(cookie >> 32),

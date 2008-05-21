@@ -1,3 +1,7 @@
+2008-05-21  George McCollister  <georgem@novatech-llc.com>
+
+	* daemon/opd_cookie.c: Fix ARM big-endian syscall
+
 2008-05-20  Jason Yeh  <jason.yeh@amd.com>
 
 	* events/x86_64/hammer/events:
