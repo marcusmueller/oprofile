@@ -1,3 +1,7 @@
+2008-06-03  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_alloc_counter.c: Use counters actually available.
+
 2008-05-21  George McCollister  <georgem@novatech-llc.com>
 
 	* daemon/opd_cookie.c: Fix ARM big-endian syscall

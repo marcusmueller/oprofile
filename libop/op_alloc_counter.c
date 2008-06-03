@@ -12,6 +12,8 @@
  */
 
 #include <stdlib.h>
+#include <ctype.h>
+#include <dirent.h>
 
 #include "op_events.h"
 #include "op_libiberty.h"
@@ -143,6 +145,42 @@ allocate_counter(counter_arc_head const * ctr_arc, int max_depth, int depth,
 	return 0;
 }
 
+/* determine which directories are counter directories
+ */
+static int perfcounterdir(const struct dirent * entry)
+{
+	return (isdigit(entry->d_name[0]));
+}
+
+
+/**
+ * @param mask pointer where to place bit mask of unavailable counters
+ *
+ * return >= 0 number of counters that are available
+ *        < 0  could not determine number of counters
+ *
+ */
+static int op_get_counter_mask(u32 * mask)
+{
+	struct dirent **counterlist;
+	int count, i;
+	/* assume nothing is available */
+	u32 available=0;
+
+	count = scandir("/dev/oprofile", &counterlist, perfcounterdir,
+			alphasort);
+	if (count < 0)
+		/* unable to determine bit mask */
+		return -1;
+	/* convert to bit map (0 where counter exists) */
+	for (i=0; i<count; ++i) {
+		available |= 1 << atoi(counterlist[i]->d_name);
+		free(counterlist[i]);
+	}
+	*mask=~available;
+	free(counterlist);
+	return count;
+}
 
 size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
                               op_cpu cpu_type)
@@ -150,8 +188,11 @@ size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
 	counter_arc_head * ctr_arc;
 	size_t * counter_map;
 	int nr_counters;
+	u32 unavailable_counters = 0;
 
-	nr_counters = op_get_nr_counters(cpu_type);
+	nr_counters = op_get_counter_mask(&unavailable_counters);
+	if (nr_counters < 0) 
+		nr_counters = op_get_nr_counters(cpu_type);
 	if (nr_counters < nr_events)
 		return 0;
 
@@ -159,7 +200,8 @@ size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
 
 	counter_map = xmalloc(nr_counters * sizeof(size_t));
 
-	if (!allocate_counter(ctr_arc, nr_events, 0, 0, counter_map)) {
+	if (!allocate_counter(ctr_arc, nr_events, 0, unavailable_counters,
+			      counter_map)) {
 		free(counter_map);
 		counter_map = 0;
 	}
