@@ -74,6 +74,7 @@ EXTRA_DIST = \
         ChangeLog-2006 \
 	ChangeLog-2007 \
 	autogen.sh \
+	README_PACKAGERS \
 	include/sstream \
 	module/Makefile.in \
 	module/compat.c \
