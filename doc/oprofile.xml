@@ -169,8 +169,10 @@ For information on how to use OProfile's JIT support, see <xref linkend="setup-j
 		<listitem><para>
 			For secure processing of sample data from JIT virtual machines (e.g., Java),
 			the special user account "oprofile" must exist on the system.  The 'configure'
-			and 'make install' operations will print warning/error messages if this
-			account is not found.  Additionally, a runtime error message is printed to
+			and 'make install' operations will print warning messages if this
+			account is not found.  If you intend to profile JITed code, you must create
+			a group account named 'oprofile' and then create the 'oprofile' user account,
+			setting the default group to 'oprofile'.  A runtime error message is printed to
 			the oprofile daemon log when processing JIT samples if this special user
 			account cannot be found.
 		</para></listitem>
@@ -264,8 +266,9 @@ is often all you need, but note these arguments to <command>./configure</command
 		<term><option>--with-java</option></term>
 		<listitem>
 			<para>
-			Use this option if you need to profile Java applications.  This option is used
-			to specify the location of the Java Development Kit (JDK)
+			Use this option if you need to profile Java applications.  Also, see
+			<xref linkend="requirements"/>, "Required user account".  This option
+			is used to specify the location of the Java Development Kit (JDK)
 			source tree you wish to use. This is necessary to get the interface description
 			of the JVMPI (or JVMTI) interface to compile the JIT support code successfully.
 			</para>

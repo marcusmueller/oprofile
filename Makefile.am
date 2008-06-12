@@ -1,3 +1,5 @@
+#### ATTENTION ####
+#    The agents directory must be kept as the last subdir
 SUBDIRS = \
 	. \
 	m4 \
@@ -18,6 +20,10 @@ SUBDIRS = \
 	doc \
 	gui \
 	agents
+#### ATTENTION ####
+#    The agents directory must be kept as the last subdir
+
+
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -41,27 +47,11 @@ install-exec-local:
 	-mkdir -p $(MODINSTALLDIR)/oprofile
 	cp module/oprofile-module.o $(MODINSTALLDIR)/oprofile/oprofile.o
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
-	@getent group oprofile >/dev/null || (echo "Error: The special group 'oprofile' does not exist" && exit 1) ;
-	@getent passwd oprofile >/dev/null || (echo "Error: The special user 'oprofile' does not exist" && exit 1) ;
-	@if test `id -gn oprofile 2>/dev/null` != "oprofile"; then \
-		echo "Error: The special user 'oprofile' must have the default group set to 'oprofile'."; \
-		exit 1; \
-	fi
 
 clean-local:
 	rm -f module/*.o module/@OPROFILE_MODULE_ARCH@/*.o \
 	module/.*.o.cmd module/.*.o.flags \
 	module/@OPROFILE_MODULE_ARCH@/.*.o.cmd module/@OPROFILE_MODULE_ARCH@/.*.o.flags
-
-else
-
-install-exec-local:
-	@getent group oprofile >/dev/null || (echo "Error: The special group 'oprofile' does not exist" && exit 1) ;
-	@getent passwd oprofile >/dev/null || (echo "Error: The special user 'oprofile' does not exist" && exit 1) ;
-	@if test `id -gn oprofile 2>/dev/null` != "oprofile"; then \
-		echo "Error: The special user 'oprofile' must have the default group set to 'oprofile'."; \
-		exit 1; \
-	fi
 
 endif
 

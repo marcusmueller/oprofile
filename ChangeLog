@@ -1,5 +1,13 @@
 2008-06-11  Maynard Johnson <maynardj@us.ibm.com>
 
+	* configure.in:
+	* Makefile.am:
+	* agents/Makefile.am:
+	* doc/oprofile.xml: Change make install error to warning
+	  if special user account does not exist
+
+2008-06-11  Maynard Johnson <maynardj@us.ibm.com>
+
 	* Makefile.am: Add README_PACKAGERS to EXTRA_DIST
 
 2008-06-03  Will Cohen  <wcohen@redhat.com>
