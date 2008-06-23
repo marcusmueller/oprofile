@@ -503,6 +503,11 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 		goto out;
 	}
 
+	if ((rc = get_matching_pathnames(&jd_fnames, get_pathname,
+		jitdump_dir, "*.dump", NO_RECURSION)) < 0
+			|| list_empty(&jd_fnames))
+		goto rm_tmp;
+
 	/* Get user information (i.e. UID and GID) for special user 'oprofile'.
 	 */
 	pw_oprofile = getpwnam("oprofile");
@@ -521,11 +526,6 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 		goto rm_tmp;
 	}
 	
-	if ((rc = get_matching_pathnames(&jd_fnames, get_pathname,
-		jitdump_dir, "*.dump", NO_RECURSION)) < 0
-	    || list_empty(&jd_fnames))
-		goto rm_tmp;
-
 	samples_dir = xmalloc(samples_dir_len + 1);
 	sprintf(samples_dir, "%s%s", session_dir, samples_subdir);
 	if (get_matching_pathnames(&anon_dnames, get_pathname,

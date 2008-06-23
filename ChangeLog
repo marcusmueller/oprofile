@@ -1,3 +1,10 @@
+2008-06-23  Maynard Johnson <maynardj@us.ibm.com>
+
+	* opjitconv/opjitconv.c: Switch to special user account
+	  after determining whether or not we have JIT dump files
+	  to process in order to avoid unnecessary error messages
+	  in oprofiled.log
+
 2008-06-11  Maynard Johnson <maynardj@us.ibm.com>
 
 	* configure.in:
