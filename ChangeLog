@@ -1,5 +1,10 @@
 2008-06-23  Maynard Johnson <maynardj@us.ibm.com>
 
+	* daemon/opd_stats.c: Do not force printing of sample_invalid_eip
+	  since this is not available from pre-2.6.24 kernels
+
+2008-06-23  Maynard Johnson <maynardj@us.ibm.com>
+
 	* opjitconv/opjitconv.c: Switch to special user account
 	  after determining whether or not we have JIT dump files
 	  to process in order to avoid unnecessary error messages
