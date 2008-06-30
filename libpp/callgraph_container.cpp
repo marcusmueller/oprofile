@@ -179,7 +179,7 @@ public:
 	bool callee_sym(u32 off) {
 		sym = symbol_entry();
 
-		symbol_index_t i;
+		symbol_index_t i = 0;
 		op_bfd_symbol const * bfdsym =
 			get_symbol_by_filepos(b, boffset, off, i);
 

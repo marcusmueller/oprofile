@@ -1,3 +1,8 @@
+2008-06-30  Shunichi Fuji  <palglowr@gmail.com>
+
+	* libpp/callgraph_container.cpp: Fix compile warning
+	  using gcc 4.3.1 for uninitialized variable
+
 2008-06-23  Maynard Johnson <maynardj@us.ibm.com>
 
 	* daemon/opd_stats.c: Do not force printing of sample_invalid_eip
