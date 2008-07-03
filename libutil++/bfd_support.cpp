@@ -12,8 +12,11 @@
 
 #include "op_bfd.h"
 #include "op_fileio.h"
+#include "op_config.h"
 #include "string_manip.h"
+#include "file_manip.h"
 #include "cverb.h"
+#include "locate_images.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -42,13 +45,22 @@ void check_format(string const & file, bfd ** ibfd)
 }
 
 
-bool separate_debug_file_exists(string const & name, unsigned long const crc)
+bool separate_debug_file_exists(string & name, unsigned long const crc, 
+                                extra_images const & extra)
 {
 	unsigned long file_crc = 0;
 	// The size of 2 * 1024 elements for the buffer is arbitrary.
 	char buffer[2 * 1024];
-	
-	ifstream file(name.c_str());
+
+	image_error img_ok;
+	string const image_path = extra.find_image_path(name, img_ok, true);
+
+	if (img_ok != image_ok)
+		return false;
+
+	name = image_path;
+
+	ifstream file(image_path.c_str());
 	if (!file)
 		return false;
 
@@ -281,40 +293,35 @@ bfd * fdopen_bfd(string const & file, int fd)
 }
 
 
-bool find_separate_debug_file(bfd * ibfd, string const & dir_in,
-                              string const & global_in, string & filename)
+bool find_separate_debug_file(bfd * ibfd, string const & filepath_in, 
+                              string & debug_filename, extra_images const & extra)
 {
-	string dir(dir_in);
-	string global(global_in);
+	string filepath(filepath_in);
 	string basename;
 	unsigned long crc32;
 	
 	if (!get_debug_link_info(ibfd, basename, crc32))
 		return false;
-	
-	if (dir.size() > 0 && dir.at(dir.size() - 1) != '/')
-		dir += '/';
-	
-	if (global.size() > 0 && global.at(global.size() - 1) != '/')
-		global += '/';
+
+	// Work out the image file's directory prefix
+	string filedir = op_dirname(filepath);
+	// Make sure it starts with /
+	if (filedir.size() > 0 && filedir.at(filedir.size() - 1) != '/')
+		filedir += '/';
+
+	string first_try(filedir + ".debug/" + basename);
+	string second_try(DEBUGDIR + filedir + basename);
+	string third_try(filedir + basename);
 
 	cverb << vbfd << "looking for debugging file " << basename 
 	      << " with crc32 = " << hex << crc32 << endl;
-	
-	string first_try(dir + basename);
-	string second_try(dir + ".debug/" + basename);
 
-	if (dir.size() > 0 && dir[0] == '/')
-		dir = dir.substr(1);
-
-	string third_try(global + dir + basename);
-	
-	if (separate_debug_file_exists(first_try, crc32)) 
-		filename = first_try; 
-	else if (separate_debug_file_exists(second_try, crc32))
-		filename = second_try;
-	else if (separate_debug_file_exists(third_try, crc32))
-		filename = third_try;
+	if (separate_debug_file_exists(first_try, crc32, extra)) 
+		debug_filename = first_try; 
+	else if (separate_debug_file_exists(second_try, crc32, extra))
+		debug_filename = second_try;
+	else if (separate_debug_file_exists(third_try, crc32, extra))
+		debug_filename = third_try;
 	else
 		return false;
 	

@@ -21,6 +21,7 @@
 #include <set>
 
 #include "bfd_support.h"
+#include "locate_images.h"
 #include "utility.h"
 #include "cached_value.h"
 #include "op_types.h"
@@ -260,6 +261,9 @@ private:
 
 	/// path to archive
 	std::string archive_path;
+
+	/// reference to extra_images
+	extra_images const & extra_found_images;
 
 	/// file size in bytes
 	off_t file_size;

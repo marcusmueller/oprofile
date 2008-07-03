@@ -13,6 +13,7 @@
 
 #include "utility.h"
 #include "op_types.h"
+#include "locate_images.h"
 
 #include <bfd.h>
 #include <stdint.h>
@@ -84,9 +85,9 @@ private:
  */
 extern bool
 find_separate_debug_file(bfd * ibfd, 
-                         std::string const & dir_in,
-                         std::string const & global_in,
-                         std::string & filename);
+                         std::string const & filepath_in,
+                         std::string & debug_filename,
+                         extra_images const & extra);
 
 /// open the given BFD
 bfd * open_bfd(std::string const & file);

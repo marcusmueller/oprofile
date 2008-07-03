@@ -97,6 +97,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	:
 	filename(fname),
 	archive_path(extra_images.get_archive_path()),
+	extra_found_images(extra_images),
 	file_size(-1),
 	anon_obj(false)
 {
@@ -341,11 +342,8 @@ bool op_bfd::has_debug_info() const
 		return debug_info.reset(true);
 
 	// check to see if there is an .debug file
-	string const global(archive_path + DEBUGDIR);
-	string const image_path = archive_path + filename;
-	string const dirname(image_path.substr(0, image_path.rfind('/')));
 
-	if (find_separate_debug_file(ibfd.abfd, dirname, global, debug_filename)) {
+	if (find_separate_debug_file(ibfd.abfd, filename, debug_filename, extra_found_images)) {
 		cverb << vbfd << "now loading: " << debug_filename << endl;
 		dbfd.abfd = open_bfd(debug_filename);
 		if (dbfd.has_debug_info())

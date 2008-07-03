@@ -43,6 +43,7 @@ op_bfd::op_bfd(uint64_t spu_offset, string const & fname,
 	       extra_images const & extra_images, bool & ok)
 	:
 	archive_path(extra_images.get_archive_path()),
+	extra_found_images(extra_images),
 	file_size(-1),
 	embedding_filename(fname)
 {

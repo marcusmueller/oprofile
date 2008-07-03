@@ -1,4 +1,17 @@
-2008-07-03  Maynard Johnson <maynardj@us.ibm.com>
+2008-07-03  Richard Purdie  <rpurdie@openedhand.com>
+
+	* libutil++/bfd_support.cpp:
+	* libutil++/bfd_support.h:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_spu_bfd.cpp:
+	* pp/oparchive.cpp: Switch separate_debug_file_exists()
+	  and hence find_separate_debug_file() to use
+	  extra_images::find_image_path() so debug files in --root
+	  directories are correctly found
+
+2008-07-03  Maynard Johnson  <maynardj@us.ibm.com>
+
 	* ChangeLog:  Correct date of previous entry
 	* README_PACKAGERS: Add more advice to packagers
 	  regarding the new JIT support libraries

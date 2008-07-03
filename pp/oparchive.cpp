@@ -116,11 +116,10 @@ int oparchive(options::spec const & spec)
 		 */
 		bfd * ibfd = open_bfd(real_exe_name);
 		if (ibfd) {
-			string global(archive_path + DEBUGDIR);
 			string dirname = op_dirname(real_exe_name);
 			string debug_filename;
-			if (find_separate_debug_file(ibfd, dirname, global,
-				debug_filename)) {
+			if (find_separate_debug_file(ibfd, real_exe_name,
+				debug_filename, classes.extra_found_images)) {
 				/* found something copy it over */
 				string dest_debug_dir = options::outdirectory +
 					dirname + "/.debug/";
