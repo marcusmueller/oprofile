@@ -60,12 +60,57 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
+#include <bfd.h>
 
 #include "opagent.h"
-#include "bfdheader.h"
 #include "op_config.h"
 #include "jitdump.h"
 
+// Declare BFD-related global variables.
+static char * _bfd_target_name;
+static int _bfd_arch;
+static unsigned int _bfd_mach;
+
+// Define BFD-related global variables.
+static int define_bfd_vars(void)
+{
+	bfd * bfd;
+	bfd_boolean r;
+	int len;
+#define MAX_PATHLENGTH 2048
+	char mypath[MAX_PATHLENGTH];
+     
+	len = readlink("/proc/self/exe", mypath, sizeof(mypath));
+     
+	if (len < 0) {
+		fprintf(stderr, "libopagent: readlink /proc/self/exe failed\n");
+		return -1;
+	}
+	if (len >= MAX_PATHLENGTH) {
+		fprintf(stderr, "libopagent: readlink /proc/self/exe returned"
+			" path length longer than %d.\n", MAX_PATHLENGTH);
+
+		return -1;
+	}
+	mypath[len] = '\0';
+
+	bfd_init();
+	bfd = bfd_openr(mypath, NULL);
+	if (bfd == NULL) {
+		bfd_perror("bfd_openr error. Cannot get required BFD info");
+		return -1;
+	}
+	r = bfd_check_format(bfd, bfd_object);
+	if (!r) {
+		bfd_perror("bfd_get_arch error. Cannot get required BFD info");
+		return -1;
+	}
+	_bfd_target_name =  bfd->xvec->name;
+	_bfd_arch = bfd_get_arch(bfd);
+	_bfd_mach = bfd_get_mach(bfd);
+
+	return 0;
+}
 /**
  * Define the version of the opagent library.
  */
@@ -112,15 +157,16 @@ op_agent_t op_open_agent(void)
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
-
+	if (define_bfd_vars())
+		return NULL;
 	header.magic = JITHEADER_MAGIC;
 	header.version = JITHEADER_VERSION;
-	header.totalsize = sizeof(header) + strlen(BFD_TARGET_NAME) + 1;
+	header.totalsize = sizeof(header) + strlen(_bfd_target_name) + 1;
 	/* calculate amount of padding '\0' */
 	pad_cnt = PADDING_8ALIGNED(header.totalsize);
 	header.totalsize += pad_cnt;
-	header.bfd_arch = BFD_ARCH;
-	header.bfd_mach = BFD_MACH;
+	header.bfd_arch = _bfd_arch;
+	header.bfd_mach = _bfd_mach;
 	if (gettimeofday(&tv, NULL)) {
 		fprintf(stderr, "gettimeofday failed\n");
 		return NULL;
@@ -132,7 +178,7 @@ op_agent_t op_open_agent(void)
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
-	if (!fwrite(BFD_TARGET_NAME, strlen(BFD_TARGET_NAME) + 1, 1,
+	if (!fwrite(_bfd_target_name, strlen(_bfd_target_name) + 1, 1,
 		    dumpfile)) {
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;

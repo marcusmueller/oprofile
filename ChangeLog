@@ -1,3 +1,10 @@
+2008-07-01  Maynard Johnson <maynardj@us.ibm.com>
+
+	* libopagent/Makefile.am:
+	* libopagent/opagent.c:
+	* remove libopagent/bfddefines.c: Move code from bfddefines
+	  to libopagent to fix cross-compile error
+
 2008-06-30  Shunichi Fuji  <palglowr@gmail.com>
 
 	* libpp/callgraph_container.cpp: Fix compile warning
