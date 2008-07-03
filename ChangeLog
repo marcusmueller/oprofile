@@ -1,4 +1,9 @@
-2008-07-01  Maynard Johnson <maynardj@us.ibm.com>
+2008-07-03  Maynard Johnson <maynardj@us.ibm.com>
+	* ChangeLog:  Correct date of previous entry
+	* README_PACKAGERS: Add more advice to packagers
+	  regarding the new JIT support libraries
+
+2008-07-03  Maynard Johnson <maynardj@us.ibm.com>
 
 	* libopagent/Makefile.am:
 	* libopagent/opagent.c:
