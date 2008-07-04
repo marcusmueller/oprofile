@@ -8,6 +8,8 @@ Please visit the oprofile website at : http://oprofile.sf.net/
 oprofile was written by John Levon <levon@movementarian.org>
 and Philippe Elie <phil.el@wanadoo.fr>.
 
+Maynard Johnson <maynardj@us.ibm.com> is the current maintainer.
+
 Dave Jones <davej@suse.de> provided bug fixes and support for
 the AMD Athlon, and AMD Hammer families of CPUs.
 

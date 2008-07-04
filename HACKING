@@ -106,16 +106,17 @@ but a notification of what needs changing is good enough. Any changes that
 affect the docs (man-pages or oprofile.xml) must include documentation updates
 as appropriate. Also see below.
 
-You may after a while be given direct commit rights. You should be subscribed
-to both the main list and the commits mailing list if you do. Your cvs commit
-message only needs to briefly describe what your change does - the change log
-should have the detailed description. Any non-trivial change needs approval
-from either John or Phil, unless stated otherwise. The CVS tree will freeze
-occassionally for release, in which case no commits are allowed at all without
-agreement of John and Phil. CVS admin changes (-kb, .cvsignore etc.) do not
-need a change log, and neither does changes to TODO. If you make a change
-that affects the user (feature improvement, new feature, bug fix, UI change),
-see the next section.
+You may after a while be given direct commit rights. You should be
+subscribed to both the main list and the commits mailing list if you do.
+Your cvs commit message only needs to briefly describe what your change
+does - the change log should have the detailed description. Any
+non-trivial change needs approval from either John, Phil or Maynard,
+unless stated otherwise. The CVS tree will freeze occassionally for
+release, in which case no commits are allowed at all without agreement
+of John, Phil, or Maynard. CVS admin changes (-kb, .cvsignore etc.) do
+not need a change log, and neither does changes to TODO. If you make a
+change that affects the user (feature improvement, new feature, bug fix,
+UI change), see the next section.
 
 The oprofile website
 --------------------
