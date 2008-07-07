@@ -1,3 +1,8 @@
+2008-07-07  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* HACKING: Ask contributors to include Signed-off-by
+	  line with their patches
+
 2008-07-03  Richard Purdie  <rpurdie@openedhand.com>
 
 	* libutil++/bfd_support.cpp:
