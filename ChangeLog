@@ -1,3 +1,7 @@
+2008-07-17  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.4
+
 2008-07-17  Will Cohen  <wcohen@redhat.com>
 
 	* libop/op_alloc_counter.c: Assume perfmon managing PMU hw
