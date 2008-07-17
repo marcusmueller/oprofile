@@ -1,3 +1,8 @@
+2008-07-17  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_alloc_counter.c: Assume perfmon managing PMU hw
+	  when no counters
+
 2008-07-07  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* HACKING: Ask contributors to include Signed-off-by
