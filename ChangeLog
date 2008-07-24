@@ -1,3 +1,14 @@
+2008-07-24  Jean Pihet <jpihet@mvista.com>
+
+	* events/arm/armv7/events:
+	* events/arm/armv7/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c: Added ARMv7 support to be consistent with the
+	  kernel, added ARMv7 specific events.
+	  Tested on OMAP3430 and OMAP3530 chipsets.
+
 2008-07-17  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.4

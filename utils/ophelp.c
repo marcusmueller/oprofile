@@ -433,6 +433,11 @@ int main(int argc, char const * argv[])
 		printf("See ARM11 Technical Reference Manual\n");
   		break;
 
+	case CPU_ARM_V7:
+		printf("See ARM11 Technical Reference Manual\n"
+			"Cortex A8 DDI (ARM DDI 0344B, revision r1p1)\n");
+		break;
+
 	case CPU_PPC64_PA6T:
 		printf("See PA6T Power Implementation Features Book IV\n"
 			   "Chapter 7 Performance Counters\n");
