@@ -1,3 +1,8 @@
+2008-08-31  Maynard Johnson <maynardj@us.ibm.com>
+
+	* configure.in: Fix to allow libtool to recognize
+	  alternate binutils dir passed via --with-binutils
+
 2008-07-24  Jean Pihet <jpihet@mvista.com>
 
 	* events/arm/armv7/events:

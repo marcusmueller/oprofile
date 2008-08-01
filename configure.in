@@ -39,9 +39,9 @@ if test "$BINUTILSDIR" != ""; then
 	if test "$CXXFLAGS" = ""; then
 		CXXFLAGS="-g -O2"
 	fi
-	CFLAGS="$CFLAGS -I $BINUTILSDIR/include"
-	CXXFLAGS="$CXXFLAGS -I $BINUTILSDIR/include"
-	LDFLAGS="$LDFLAGS -L $BINUTILSDIR/lib -Xlinker -R -Xlinker $BINUTILSDIR/lib"
+	CFLAGS="$CFLAGS -I$BINUTILSDIR/include"
+	CXXFLAGS="$CXXFLAGS -I$BINUTILSDIR/include"
+	LDFLAGS="$LDFLAGS -L$BINUTILSDIR/lib -Xlinker -R -Xlinker $BINUTILSDIR/lib"
 fi
 
 AC_ARG_WITH(gcc,
@@ -50,7 +50,7 @@ AC_ARG_WITH(gcc,
 if test "$GCCDIR" != ""; then
 	CC="$GCCDIR/bin/gcc"
 	CXX="$GCCDIR/bin/g++"
-	LDFLAGS="$LDFLAGS -L $GCCDIR/lib -Xlinker -R -Xlinker $GCCDIR/lib"
+	LDFLAGS="$LDFLAGS -L$GCCDIR/lib -Xlinker -R -Xlinker $GCCDIR/lib"
 fi
 
 AC_PROG_CC
