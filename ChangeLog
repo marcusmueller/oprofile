@@ -1,4 +1,4 @@
-2008-08-31  Maynard Johnson <maynardj@us.ibm.com>
+2008-07-31  Maynard Johnson <maynardj@us.ibm.com>
 
 	* configure.in: Fix to allow libtool to recognize
 	  alternate binutils dir passed via --with-binutils
