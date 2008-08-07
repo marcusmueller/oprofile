@@ -364,6 +364,9 @@ bool interesting_symbol(asymbol * sym)
 	if (!strcmp("gcc2_compiled.", sym->name))
 		return false;
 
+        if (sym->flags & BSF_SECTION_SYM)
+                return false;
+
 	return true;
 }
 

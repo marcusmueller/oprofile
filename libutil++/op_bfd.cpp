@@ -91,6 +91,11 @@ bool op_bfd_symbol::operator<(op_bfd_symbol const & rhs) const
 	return filepos() < rhs.filepos();
 }
 
+unsigned long op_bfd_symbol::symbol_endpos(void) const
+{
+	return bfd_symbol->section->filepos + bfd_symbol->section->size;
+}
+
 
 op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	       extra_images const & extra_images, bool & ok)
@@ -245,7 +250,8 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	while (it != symbols.end()) {
 		symbols_found_t::iterator temp = it;
 		++temp;
-		if (temp != symbols.end() && (it->vma() == temp->vma())) {
+		if (temp != symbols.end() && (it->vma() == temp->vma()) &&
+			(it->filepos() == temp->filepos())) {
 			if (boring_symbol(*it, *temp)) {
 				it = symbols.erase(it);
 			} else {
@@ -382,7 +388,12 @@ size_t op_bfd::symbol_size(op_bfd_symbol const & sym,
 			   op_bfd_symbol const * next) const
 {
 	unsigned long long start = sym.filepos();
-	unsigned long long end = next ? next->filepos() : file_size;
+	unsigned long long end;
+
+	if (next && (sym.section() != next->section()))
+		end = sym.symbol_endpos();
+	else
+		end = next ? next->filepos() : file_size;
 
 	return end - start;
 }

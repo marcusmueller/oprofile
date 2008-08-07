@@ -50,6 +50,8 @@ public:
 	bfd_vma vma() const { return symb_value + section_vma; }
 	unsigned long value() const { return symb_value; }
 	unsigned long filepos() const { return symb_value + section_filepos; }
+	unsigned long symbol_endpos(void) const;
+	asection const * section(void) const { return bfd_symbol->section; }
 	std::string const & name() const { return symb_name; }
 	asymbol const * symbol() const { return bfd_symbol; }
 	size_t size() const { return symb_size; }

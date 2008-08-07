@@ -1,4 +1,11 @@
-2008-07-31  Maynard Johnson <maynardj@us.ibm.com>
+2008-08-07  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libutil++/bfd_support.cpp:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h: Fix a couple problems relating
+	  to overlay symbols for Cell SPE applications
+
+2008-07-31  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: Fix to allow libtool to recognize
 	  alternate binutils dir passed via --with-binutils
