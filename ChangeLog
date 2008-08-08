@@ -1,3 +1,8 @@
+2008-08-08  Daniel Hansel <daniel.hansel@linux.vnet.ibm.com>
+
+	* daemon/init.c: Fixed call of execvp() to execute opjitconv if
+	  it is installed in a custom directory
+
 2008-08-07  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/bfd_support.cpp:
