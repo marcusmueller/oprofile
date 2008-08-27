@@ -325,40 +325,6 @@ do_init()
 				;;
 		esac
 	fi
-
-	vecho "Parameters used:"
-	vecho "SESSION_DIR $SESSION_DIR"
-	vecho "LOCK_FILE   $LOCK_FILE"
-	vecho "SAMPLES_DIR $SAMPLES_DIR"
-	vecho "CURRENT_SAMPLES_DIR $CURRENT_SAMPLES_DIR"
-	vecho "CPUTYPE $CPUTYPE"
-	if test "$BUF_SIZE" != "0"; then
-		vecho "BUF_SIZE $BUF_SIZE"
-	else
-		vecho "BUF_SIZE default value"
-	fi
-	if test "$BUF_WATERSHED" != "0"; then
-		vecho "BUF_WATERSHED $BUF_WATERSHED"
-	else
-		vecho "BUF_WATERSHED default value"
-	fi
-	if test "$KERNEL_SUPPORT" = "yes"; then
-		if test "$CPU_BUF_SIZE" != "0"; then
-			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
-		else
-		    vecho "CPU_BUF_SIZE default value"
-		fi
-	fi
-
-	vecho "SEPARATE_LIB $SEPARATE_LIB"
-	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
-	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
-	vecho "SEPARATE_CPU $SEPARATE_CPU"
-	vecho "CALLGRAPH $CALLGRAPH"
-	vecho "VMLINUX $VMLINUX"
-	vecho "KERNEL_RANGE $KERNEL_RANGE"
-	vecho "XENIMAGE $XENIMAGE"
-	vecho "XEN_RANGE $XEN_RANGE"
 }
 
 
@@ -915,6 +881,40 @@ do_options()
 			exit 1
 		fi
 	fi
+
+	vecho "Parameters used:"
+	vecho "SESSION_DIR $SESSION_DIR"
+	vecho "LOCK_FILE   $LOCK_FILE"
+	vecho "SAMPLES_DIR $SAMPLES_DIR"
+	vecho "CURRENT_SAMPLES_DIR $CURRENT_SAMPLES_DIR"
+	vecho "CPUTYPE $CPUTYPE"
+	if test "$BUF_SIZE" != "0"; then
+		vecho "BUF_SIZE $BUF_SIZE"
+	else
+		vecho "BUF_SIZE default value"
+	fi
+	if test "$BUF_WATERSHED" != "0"; then
+		vecho "BUF_WATERSHED $BUF_WATERSHED"
+	else
+		vecho "BUF_WATERSHED default value"
+	fi
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		if test "$CPU_BUF_SIZE" != "0"; then
+			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
+		else
+		    vecho "CPU_BUF_SIZE default value"
+		fi
+	fi
+
+	vecho "SEPARATE_LIB $SEPARATE_LIB"
+	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
+	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
+	vecho "SEPARATE_CPU $SEPARATE_CPU"
+	vecho "CALLGRAPH $CALLGRAPH"
+	vecho "VMLINUX $VMLINUX"
+	vecho "KERNEL_RANGE $KERNEL_RANGE"
+	vecho "XENIMAGE $XENIMAGE"
+	vecho "XEN_RANGE $XEN_RANGE"
 }
 
 

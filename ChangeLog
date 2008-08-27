@@ -1,3 +1,7 @@
+2008-08-27  Jatin Nansi <jnansi@redhat.com>
+
+	* utils/opcontrol: vecho parameters after "--verbose" option processed
+
 2008-08-08  Daniel Hansel <daniel.hansel@linux.vnet.ibm.com>
 
 	* daemon/init.c: Fixed call of execvp() to execute opjitconv if
