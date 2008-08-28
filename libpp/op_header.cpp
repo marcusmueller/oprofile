@@ -165,7 +165,7 @@ string const op_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 		return str;
 	}
 
-	struct op_event * event = op_find_event(cpu_type, type);
+	struct op_event * event = op_find_event(cpu_type, type, um);
 
 	if (!event) {
 		cerr << "Could not locate event " << int(type) << endl;
@@ -205,7 +205,7 @@ string const op_xml_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 	if (cpu_type == CPU_TIMER_INT || cpu_type == CPU_RTC)
 		return xml_utils::get_timer_setup((size_t)count);
 
-	struct op_event * event = op_find_event(cpu_type, type);
+	struct op_event * event = op_find_event(cpu_type, type, um);
 	if (!event) {
 		cerr << "Could not locate event " << int(type) << endl;
 		return "";

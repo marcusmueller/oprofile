@@ -73,6 +73,7 @@ typedef enum {
 	CPU_PPC_E300, /**< e300 */
 	CPU_AVR32, /**< AVR32 */
 	CPU_ARM_V7, /**< ARM V7 */
+ 	CPU_ARCH_PERFMON, /**< Intel architectural perfmon */
 	MAX_CPU_TYPE
 } op_cpu;
 

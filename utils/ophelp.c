@@ -401,6 +401,13 @@ int main(int argc, char const * argv[])
 		printf("See Intel Architecture Developer's Manual Volume 3, Appendix A and\n"
 		"Intel Architecture Optimization Reference Manual (730795-001)\n\n");
 		break;
+
+	case CPU_ARCH_PERFMON:
+		printf("See Intel 64 and IA-32 Architectures Software Developer's Manual\n"
+		"Volume 3B (Document 253669) Chapter 18 for architectural perfmon events\n"
+		"This is a limited set of fallback events because oprofile doesn't know your CPU\n");
+		break;
+	
 	case CPU_IA64:
 	case CPU_IA64_1:
 	case CPU_IA64_2:

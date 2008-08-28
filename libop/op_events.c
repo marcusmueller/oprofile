@@ -16,6 +16,7 @@
 #include "op_fileio.h"
 #include "op_string.h"
 #include "op_cpufreq.h"
+#include "op_hw_specific.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -26,6 +27,8 @@ static LIST_HEAD(um_list);
 
 static char const * filename;
 static unsigned int line_nr;
+
+static void delete_event(struct op_event * event);
 
 static void parse_error(char const * context)
 {
@@ -329,7 +332,8 @@ static void read_events(char const * file)
 		seen_um = 0;
 		seen_minimum = 0;
 		event = new_event();
-
+		event->filter = -1;
+		
 		c = line;
 		while (next_token(&c, &name, &value)) {
 			if (strcmp(name, "name") == 0) {
@@ -351,7 +355,10 @@ static void read_events(char const * file)
 				if (seen_counters)
 					parse_error("duplicate counters: tag");
 				seen_counters = 1;
-				event->counter_mask = parse_counter_mask(value);
+				if (!strcmp(value, "cpuid"))
+					event->counter_mask = arch_get_counter_mask();
+				else
+					event->counter_mask = parse_counter_mask(value);
 				free(value);
 			} else if (strcmp(name, "um") == 0) {
 				if (seen_um)
@@ -368,6 +375,9 @@ static void read_events(char const * file)
 				free(value);
 			} else if (strcmp(name, "desc") == 0) {
 				event->desc = value;
+			} else if (strcmp(name, "filter") == 0) { 
+				event->filter = parse_int(value);
+				free(value);
 			} else {
 				parse_error("unknown tag");
 			}
@@ -423,6 +433,18 @@ static void check_unit_mask(struct op_unit_mask const * um,
 	}
 }
 
+static void arch_filter_events(op_cpu cpu_type)
+{
+	struct list_head * pos, * pos2;
+	unsigned filter = arch_get_filter(cpu_type);
+	if (!filter)
+		return;
+	list_for_each_safe (pos, pos2, &events_list) { 
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
+		if (event->filter >= 0 && ((1U << event->filter) & filter))
+			delete_event(event);
+	}
+}
 
 static void load_events(op_cpu cpu_type)
 {
@@ -459,6 +481,8 @@ static void load_events(op_cpu cpu_type)
 	read_unit_masks(um_file);
 	read_events(event_file);
 
+	arch_filter_events(cpu_type);
+
 	/* sanity check: all unit mask must be used */
 	list_for_each(pos, &um_list) {
 		struct op_unit_mask * um = list_entry(pos, struct op_unit_mask, um_next);
@@ -471,10 +495,10 @@ static void load_events(op_cpu cpu_type)
 	free(event_dir);
 }
 
-
 struct list_head * op_events(op_cpu cpu_type)
 {
 	load_events(cpu_type);
+	arch_filter_events(cpu_type);
 	return &events_list;
 }
 
@@ -522,19 +546,23 @@ void op_free_events(void)
 }
 
 
-static struct op_event * find_event(u32 nr)
+static struct op_event * find_event_um(u32 nr, u32 um)
 {
 	struct list_head * pos;
+	unsigned int i;
 
 	list_for_each(pos, &events_list) {
 		struct op_event * event = list_entry(pos, struct op_event, event_next);
-		if (event->val == nr)
-			return event;
+		if (event->val == nr) { 
+			for (i = 0; i < event->unit->num; i++) { 
+				if (event->unit->um[i].value == um)
+					return event;		
+			} 
+		}
 	}
 
 	return NULL;
 }
-
 
 static FILE * open_event_mapping_file(char const * cpu_name) 
 {
@@ -687,13 +715,13 @@ struct op_event * find_event_by_name(char const * name)
 }
 
 
-struct op_event * op_find_event(op_cpu cpu_type, u32 nr)
+struct op_event * op_find_event(op_cpu cpu_type, u32 nr, u32 um)
 {
 	struct op_event * event;
 
 	load_events(cpu_type);
 
-	event = find_event(nr);
+	event = find_event_um(nr, um);
 
 	return event;
 }
@@ -701,38 +729,43 @@ struct op_event * op_find_event(op_cpu cpu_type, u32 nr)
 
 int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 {
-	int ret = OP_OK_EVENT;
-	struct op_event * event;
+	int ret = OP_INVALID_EVENT;
 	size_t i;
 	u32 ctr_mask = 1 << ctr;
+	struct list_head * pos;
 
 	load_events(cpu_type);
 
-	event = find_event(nr);
+	list_for_each(pos, &events_list) {
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
+		if (event->val != nr)
+			continue;
 
-	if (!event) {
-		ret |= OP_INVALID_EVENT;
-		return ret;
-	}
+		ret = OP_OK_EVENT;
 
-	if ((event->counter_mask & ctr_mask) == 0)
-		ret |= OP_INVALID_COUNTER;
+		if ((event->counter_mask & ctr_mask) == 0)
+			ret |= OP_INVALID_COUNTER;
 
-	if (event->unit->unit_type_mask == utm_bitmask) {
-		for (i = 0; i < event->unit->num; ++i)
-			um &= ~(event->unit->um[i].value);			
-		
-		if (um)
-			ret |= OP_INVALID_UM;
+		if (event->unit->unit_type_mask == utm_bitmask) {
+			for (i = 0; i < event->unit->num; ++i)
+				um &= ~(event->unit->um[i].value);			
+			
+			if (um)
+				ret |= OP_INVALID_UM;
+			
+		} else {
+			for (i = 0; i < event->unit->num; ++i) {
+				if (event->unit->um[i].value == um)
+					break;
+			}
+			
+			if (i == event->unit->num)
+				ret |= OP_INVALID_UM;
 
-	} else {
-		for (i = 0; i < event->unit->num; ++i) {
-			if (event->unit->um[i].value == um)
-				break;
 		}
 
-		if (i == event->unit->num)
-			ret |= OP_INVALID_UM;
+		if (ret == OP_OK_EVENT)
+			return ret;
 	}
 
 	return ret;
@@ -759,6 +792,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ATHLON:
 		case CPU_HAMMER:
 		case CPU_FAMILY10:
+		case CPU_ARCH_PERFMON:
 			descr->name = "CPU_CLK_UNHALTED";
 			break;
 

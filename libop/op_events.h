@@ -56,6 +56,7 @@ struct op_event {
 	char * name;		/**< the event name */
 	char * desc;      	/**< the event description */
 	int min_count;		/**< minimum counter value allowed */
+	int filter;		/**< architecture specific filter or -1 */
 	struct list_head event_next;   /**< next event in list */
 };
 
@@ -63,7 +64,7 @@ struct op_event {
 struct list_head * op_events(op_cpu cpu_type);
 
 /** Find a given event, returns NULL on error */
-struct op_event * op_find_event(op_cpu cpu_type, u32 nr);
+struct op_event * op_find_event(op_cpu cpu_type, u32 nr, u32 um);
 
 /** Find a given event by name */
 struct op_event * find_event_by_name(char const * name);

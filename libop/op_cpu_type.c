@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "op_cpu_type.h"
+#include "op_hw_specific.h"
 
 struct cpu_descr {
 	char const * pretty;
@@ -75,6 +76,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "e300", "ppc/e300", CPU_PPC_E300, 4 },
 	{ "AVR32", "avr32", CPU_AVR32, 3 },
 	{ "ARM V7 PMNC", "arm/armv7", CPU_ARM_V7, 5 },
+ 	{ "Intel Architectural Perfmon", "i386/arch_perfmon", CPU_ARCH_PERFMON, 0},
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -152,8 +154,14 @@ char const * op_get_cpu_name(op_cpu cpu_type)
 
 int op_get_nr_counters(op_cpu cpu_type)
 {
+	int cnt;
+
 	if (cpu_type <= CPU_NO_GOOD || cpu_type >= MAX_CPU_TYPE)
 		return 0;
+
+	cnt = arch_num_counters(cpu_type);
+	if (cnt >= 0)
+		return cnt;
 
 	return cpu_descrs[cpu_type].nr_counters;
 }
