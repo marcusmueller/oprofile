@@ -41,7 +41,13 @@ if test "$BINUTILSDIR" != ""; then
 	fi
 	CFLAGS="$CFLAGS -I$BINUTILSDIR/include"
 	CXXFLAGS="$CXXFLAGS -I$BINUTILSDIR/include"
-	LDFLAGS="$LDFLAGS -L$BINUTILSDIR/lib -Xlinker -R -Xlinker $BINUTILSDIR/lib"
+	AC_ARG_WITH(binutils-libname,
+		[  --with-binutils-libname       Lib dir name under binutils installation; @<:@lib@:>@]],
+		BINUTILSLIB=$withval)
+	if test "$BINUTILSLIB" = ""; then
+		BINUTILSLIB="lib"
+	fi
+	LDFLAGS="$LDFLAGS -L$BINUTILSDIR/$BINUTILSLIB -Xlinker -R -Xlinker $BINUTILSDIR/$BINUTILSLIB"
 fi
 
 AC_ARG_WITH(gcc,

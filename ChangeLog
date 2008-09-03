@@ -1,3 +1,7 @@
+2008-08-28  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in: Add configure option for non-standard binutils lib
+
 2008-08-28  Andi Kleen  <andi@firstfloor.org>
 
 	* events/i386/arch_perfmon/events:
