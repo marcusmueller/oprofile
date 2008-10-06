@@ -11,8 +11,6 @@ AC_DEFUN([AX_CELL_SPU],
 # library to support Cell BE SPU profiling.
 
 AC_LANG_PUSH(C)
-SAVE_LIBS=$LIBS
-LIBS=" -lbfd -liberty "
 
 AC_CHECK_LIB(bfd, bfd_openr_iovec,
 	[bfd_openr_iovec_exists="yes"],
@@ -38,7 +36,6 @@ if test "$bfd_openr_iovec_exists" = "yes"; then
 fi
 
 AC_LANG_POP(C)
-LIBS=$SAVE_LIBS
 
 arch="unknown"
 AC_ARG_WITH(target,

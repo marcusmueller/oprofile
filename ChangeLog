@@ -1,3 +1,9 @@
+2008-10-06  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in:
+	* m4/binutils.m4:
+	* m4/cellspubfdsupport.m4: Handle BFD's new dependency on libz
+
 2008-08-28  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: Add configure option for non-standard binutils lib
