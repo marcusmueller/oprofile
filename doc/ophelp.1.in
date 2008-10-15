@@ -27,6 +27,10 @@ Show the events for the given numerical CPU type.
 Show the symbolic CPU name.
 .br
 .TP
+.BI "--xml / -X"
+List events in XML format.
+.br
+.TP
 .BI "--help / -? / --usage"
 Show help message.
 .br
