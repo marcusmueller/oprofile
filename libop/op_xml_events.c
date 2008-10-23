@@ -1,19 +1,28 @@
+/**
+ * @file op_xml_events.c
+ * routines for generating event files in XML
+ *
+ * @remark Copyright 2008 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Dave Nomura
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include "op_events.h"
 #include "op_list.h"
 #include "op_cpu_type.h"
-#include "xml_out.h"
+#include "op_xml_out.h"
 
 static op_cpu cpu_type;
-#define MAX_BUFFER 1024
-static char buffer[MAX_BUFFER];
-
-void open_xml_events(char * title, char * doc, op_cpu the_cpu_type)
+#define MAX_BUFFER 4096
+void open_xml_events(char const * title, char const * doc, op_cpu the_cpu_type)
 {
-	char * schema_version = "1.0";
+	char const * schema_version = "1.0";
+	char buffer[MAX_BUFFER];
 
-	buffer[0] = 0;
+	buffer[0] = '\0';
 	cpu_type = the_cpu_type;
 	open_xml_element(HELP_EVENTS, 0, buffer);
 	open_xml_element(HELP_HEADER, 1, buffer);
@@ -26,13 +35,15 @@ void open_xml_events(char * title, char * doc, op_cpu the_cpu_type)
 
 void close_xml_events(void)
 {
-	buffer[0] = 0;
+	char buffer[MAX_BUFFER];
+
+	buffer[0] = '\0';
 	close_xml_element(HELP_EVENTS, 0, buffer);
 	printf("%s", buffer);
 }
 
-static void
-xml_do_arch_specific_event_help(struct op_event * event, char * buffer)
+static void xml_do_arch_specific_event_help(struct op_event const * event,
+					    char * buffer)
 {
 	switch (cpu_type) {
 	case CPU_PPC64_CELL:
@@ -44,13 +55,14 @@ xml_do_arch_specific_event_help(struct op_event * event, char * buffer)
 }
 
 
-void xml_help_for_event(struct op_event * event)
+void xml_help_for_event(struct op_event const * event)
 {
-	uint j;
+	uint i;
 	int nr_counters;
 	int has_nested = strcmp(event->unit->name, "zero");
+	char buffer[MAX_BUFFER];
 
-	buffer[0] = 0;
+	buffer[0] = '\0';
 	open_xml_element(HELP_EVENT, 1, buffer);
 	init_xml_str_attr(HELP_EVENT_NAME, event->name, buffer);
 	xml_do_arch_specific_event_help(event, buffer);
@@ -63,15 +75,14 @@ void xml_help_for_event(struct op_event * event)
 	if (has_nested) {
 		close_xml_element(NONE, 1, buffer);
 		open_xml_element(HELP_UNIT_MASKS, 1, buffer);
-		init_xml_int_attr(HELP_DEFAULT_MASK,
-				  event->unit->default_mask, buffer);
+		init_xml_int_attr(HELP_DEFAULT_MASK, event->unit->default_mask, buffer);
 		close_xml_element(NONE, 1, buffer);
-		for (j = 0; j < event->unit->num; j++) {
+		for (i = 0; i < event->unit->num; i++) {
 			open_xml_element(HELP_UNIT_MASK, 1, buffer);
 			init_xml_int_attr(HELP_UNIT_MASK_VALUE,
-					  event->unit->um[j].value, buffer);
+					  event->unit->um[i].value, buffer);
 			init_xml_str_attr(HELP_UNIT_MASK_DESC,
-					  event->unit->um[j].desc, buffer);
+					  event->unit->um[i].desc, buffer);
 			close_xml_element(NONE, 0, buffer);
 		}
 		close_xml_element(HELP_UNIT_MASKS, 0, buffer);

@@ -21,4 +21,8 @@ libop_a_SOURCES = \
 	op_config.c \
 	op_config.h \
 	op_config_24.h \
-	op_sample_file.h
+	op_sample_file.h \
+	op_xml_events.c \
+	op_xml_events.h \
+	op_xml_out.c \
+	op_xml_out.h

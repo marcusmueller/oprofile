@@ -1,15 +1,15 @@
 /**
- * @file xml_out.h
+ * @file op_xml_out.h
  * utility routines for writing XML
  *
- * @remark Copyright 2006 OProfile authors
+ * @remark Copyright 2008 OProfile authors
  * @remark Read the file COPYING
  *
  * @author Dave Nomura
  */
 
-#ifndef XML_OUT_H
-#define XML_OUT_H
+#ifndef OP_XML_OUT_H
+#define OP_XML_OUT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,7 +58,7 @@ typedef enum {
 	HELP_UNIT_MASK_DESC
 	} tag_t;
 
-char * xml_tag_name(tag_t tag);
+char const * xml_tag_name(tag_t tag);
 void open_xml_element(tag_t tag, int with_attrs, char * result);
 void close_xml_element(tag_t tag, int has_nested, char * result);
 void init_xml_int_attr(tag_t attr, int value, char * result);
@@ -69,4 +69,4 @@ void init_xml_str_attr(tag_t attr, char const * str, char * result);
 }
 #endif
 
-#endif /* XML_OUT_H */
+#endif /* OP_XML_OUT_H */

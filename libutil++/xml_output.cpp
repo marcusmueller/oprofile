@@ -11,7 +11,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "xml_out.h"
+#include "op_xml_out.h"
 #include "xml_output.h"
 
 using namespace std;
@@ -31,7 +31,7 @@ string open_element(tag_t tag, bool with_attrs)
 	ostringstream out;
 	char buf[MAX_XML_BUF];
 
-	buf[0] = 0;
+	buf[0] = '\0';
 	open_xml_element(tag, with_attrs, buf);
 	out << buf;
 	return out.str();
@@ -43,7 +43,7 @@ string close_element(tag_t tag, bool has_nested)
 	ostringstream out;
 	char buf[MAX_XML_BUF];
 
-	buf[0] = 0;
+	buf[0] = '\0';
 	close_xml_element(tag, has_nested, buf);
 	out << buf;
 	return out.str();
@@ -55,7 +55,7 @@ string init_attr(tag_t attr, size_t value)
 	ostringstream out;
 	char buf[MAX_XML_BUF];
 
-	buf[0] = 0;
+	buf[0] = '\0';
 	init_xml_int_attr(attr, value, buf);
 	out << buf;
 	return out.str();
@@ -67,7 +67,7 @@ string init_attr(tag_t attr, double value)
 	ostringstream out;
 	char buf[MAX_XML_BUF];
 
-	buf[0] = 0;
+	buf[0] = '\0';
 	init_xml_dbl_attr(attr, value, buf);
 	out << buf;
 	return out.str();
@@ -79,7 +79,7 @@ string init_attr(tag_t attr, string const & str)
 	ostringstream out;
 	char buf[MAX_XML_BUF];
 
-	buf[0] = 0;
+	buf[0] = '\0';
 	init_xml_str_attr(attr, str.c_str(), buf);
 	out << buf;
 	return out.str();

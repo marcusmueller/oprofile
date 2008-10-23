@@ -1,13 +1,28 @@
+2008-10-23  Dave Nomura  <dcnltc@us.ibm.com>
+
+	* libutil++/xml_output.cpp:
+	* libutil/xml_out.c:
+	* libutil/xml_out.h:
+	* libutil/xml_events.c:
+	* libutil/xml_events.h:
+	* libutil/Makefile.am:
+	* libop/op_xml_out.c:
+	* libop/op_xml_out.h:
+	* libop/op_xml_events.c:
+	* libop/op_xml_events.h:
+	* libop/Makefile.am: moved xml util routines to libop and fixed some
+	  other problems in the previous patch
+
 2008-10-15  Dave Nomura  <dcnltc@us.ibm.com>
 
-	* utils/ophelp.c
-	* libutil++/xml_output.cpp
-	* libutil++/xml_output.h
-	* libutil/xml_out.c
-	* libutil/xml_out.h
-	* libutil/xml_events.c
-	* libutil/xml_events.h
-	* libutil/Makefile.am : added -X option to ophelp to generate XML
+	* utils/ophelp.c:
+	* libutil++/xml_output.cpp:
+	* libutil++/xml_output.h:
+	* libutil/xml_out.c:
+	* libutil/xml_out.h:
+	* libutil/xml_events.c:
+	* libutil/xml_events.h:
+	* libutil/Makefile.am: added -X option to ophelp to generate XML
 
 2008-10-06  Maynard Johnson  <maynardj@us.ibm.com>
 

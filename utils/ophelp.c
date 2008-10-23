@@ -24,7 +24,7 @@
 #include "op_alloc_counter.h"
 #include "op_parse_event.h"
 #include "op_libiberty.h"
-#include "xml_events.h"
+#include "op_xml_events.h"
 
 static char const ** chosen_events;
 struct parsed_event * parsed_events;
@@ -302,8 +302,8 @@ int main(int argc, char const * argv[])
 	struct list_head * pos;
 	char const * pretty;
 	size_t nr_counter;
-	char title[MAX_LINE];
-	char events_doc[MAX_LINE*10];
+	char title[10 * MAX_LINE];
+	char const * event_doc = "";
 
 	atexit(cleanup);
 
@@ -390,13 +390,13 @@ int main(int argc, char const * argv[])
 
 	/* default: list all events */
 
-	events_doc[0] = 0;
 	switch (cpu_type) {
 	case CPU_HAMMER:
 	case CPU_FAMILY10:
 		break;
 	case CPU_ATHLON:
-		sprintf (events_doc, "See AMD document x86 optimisation guide (22007.pdf), Appendix D\n\n");
+		event_doc =
+			"See AMD document x86 optimisation guide (22007.pdf), Appendix D\n\n";
 		break;
 	case CPU_PPRO:
 	case CPU_PII:
@@ -406,56 +406,64 @@ int main(int argc, char const * argv[])
 	case CPU_P4_HT2:
 	case CPU_CORE:
 	case CPU_CORE_2:
-		sprintf(events_doc, "See Intel Architecture Developer's Manual Volume 3, Appendix A and\n"
-		"Intel Architecture Optimization Reference Manual (730795-001)\n\n");
+		event_doc =
+			"See Intel Architecture Developer's Manual Volume 3, Appendix A and\n"
+			"Intel Architecture Optimization Reference Manual (730795-001)\n\n";
 		break;
 
 	case CPU_ARCH_PERFMON:
-		sprintf(events_doc, "See Intel 64 and IA-32 Architectures Software Developer's Manual\n"
-		"Volume 3B (Document 253669) Chapter 18 for architectural perfmon events\n"
-		"This is a limited set of fallback events because oprofile doesn't know your CPU\n");
+		event_doc =
+			"See Intel 64 and IA-32 Architectures Software Developer's Manual\n"
+			"Volume 3B (Document 253669) Chapter 18 for architectural perfmon events\n"
+			"This is a limited set of fallback events because oprofile doesn't know your CPU\n";
 		break;
 	
 	case CPU_IA64:
 	case CPU_IA64_1:
 	case CPU_IA64_2:
-		sprintf(events_doc, "See Intel Itanium Processor Reference Manual\n"
-		       "for Software Development (Document 245320-003),\n"
-		       "Intel Itanium Processor Reference Manual\n"
-		       "for Software Optimization (Document 245473-003),\n"
-		       "Intel Itanium 2 Processor Reference Manual\n"
-		       "for Software Development and Optimization (Document 251110-001)\n\n");
+		event_doc =
+			"See Intel Itanium Processor Reference Manual\n"
+			"for Software Development (Document 245320-003),\n"
+			"Intel Itanium Processor Reference Manual\n"
+			"for Software Optimization (Document 245473-003),\n"
+			"Intel Itanium 2 Processor Reference Manual\n"
+			"for Software Development and Optimization (Document 251110-001)\n\n";
 		break;
 	case CPU_AXP_EV4:
 	case CPU_AXP_EV5:
 	case CPU_AXP_PCA56:
 	case CPU_AXP_EV6:
 	case CPU_AXP_EV67:
-		sprintf(events_doc, "See Alpha Architecture Reference Manual\n"
-		       "http://download.majix.org/dec/alpha_arch_ref.pdf\n");
+		event_doc =
+			"See Alpha Architecture Reference Manual\n"
+			"http://download.majix.org/dec/alpha_arch_ref.pdf\n";
 		break;
 	case CPU_ARM_XSCALE1:
 	case CPU_ARM_XSCALE2:
-		sprintf(events_doc, "See Intel XScale Core Developer's Manual\n"
-		       "Chapter 8 Performance Monitoring\n");
+		event_doc =
+			"See Intel XScale Core Developer's Manual\n"
+			"Chapter 8 Performance Monitoring\n";
 		break;
 	case CPU_ARM_MPCORE:
-		sprintf(events_doc, "See ARM11 MPCore Processor Technical Reference Manual r1p0\n"
-		       "Page 3-70, performance counters\n");
+		event_doc =
+			"See ARM11 MPCore Processor Technical Reference Manual r1p0\n"
+			"Page 3-70, performance counters\n";
 		break;
 
 	case CPU_ARM_V6:
-		sprintf(events_doc, "See ARM11 Technical Reference Manual\n");
+		event_doc = "See ARM11 Technical Reference Manual\n";
   		break;
 
 	case CPU_ARM_V7:
-		sprintf(events_doc, "See ARM11 Technical Reference Manual\n"
-			"Cortex A8 DDI (ARM DDI 0344B, revision r1p1)\n");
+		event_doc =
+			"See ARM11 Technical Reference Manual\n"
+			"Cortex A8 DDI (ARM DDI 0344B, revision r1p1)\n";
 		break;
 
 	case CPU_PPC64_PA6T:
-		sprintf(events_doc, "See PA6T Power Implementation Features Book IV\n"
-			   "Chapter 7 Performance Counters\n");
+		event_doc =
+			"See PA6T Power Implementation Features Book IV\n"
+			"Chapter 7 Performance Counters\n";
 		break;
 
 	case CPU_PPC64_POWER4:
@@ -465,81 +473,97 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_POWER5pp:
 	case CPU_PPC64_970:
 	case CPU_PPC64_970MP:
-		sprintf(events_doc, "Obtain PowerPC64 processor documentation at:\n"
-			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n");
+		event_doc =
+			"Obtain PowerPC64 processor documentation at:\n"
+			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n";
 		break;
 
 	case CPU_PPC64_CELL:
-		sprintf(events_doc, "Obtain Cell Broadband Engine documentation at:\n"
-			"http://www-306.ibm.com/chips/techlib/techlib.nsf/products/Cell_Broadband_Engine\n");
+		event_doc =
+			"Obtain Cell Broadband Engine documentation at:\n"
+			"http://www-306.ibm.com/chips/techlib/techlib.nsf/products/Cell_Broadband_Engine\n";
 		break;
 
 	case CPU_MIPS_20K:
-		sprintf(events_doc, "See Programming the MIPS64 20Kc Processor Core User's "
-		       "manual available from www.mips.com\n");
+		event_doc =
+			"See Programming the MIPS64 20Kc Processor Core User's "
+		"manual available from www.mips.com\n";
 		break;
 	case CPU_MIPS_24K:
-		sprintf(events_doc, "See Programming the MIPS32 24K Core "
-		       "available from www.mips.com\n");
+		event_doc =
+			"See Programming the MIPS32 24K Core "
+			"available from www.mips.com\n";
 		break;
 	case CPU_MIPS_25K:
-		sprintf(events_doc, "See Programming the MIPS64 25Kf Processor Core User's "
-		       "manual available from www.mips.com\n");
+		event_doc =
+			"See Programming the MIPS64 25Kf Processor Core User's "
+			"manual available from www.mips.com\n";
 		break;
 	case CPU_MIPS_34K:
-		sprintf(events_doc, "See Programming the MIPS32 34K Core Family "
-		       "available from www.mips.com\n");
+		event_doc =
+			"See Programming the MIPS32 34K Core Family "
+			"available from www.mips.com\n";
 		break;
 	case CPU_MIPS_5K:
-		sprintf(events_doc, "See Programming the MIPS64 5K Processor Core Family "
-		       "Software User's manual available from www.mips.com\n");
+		event_doc =
+			"See Programming the MIPS64 5K Processor Core Family "
+			"Software User's manual available from www.mips.com\n";
 		break;
 	case CPU_MIPS_R10000:
 	case CPU_MIPS_R12000:
-		sprintf(events_doc, "See NEC R10000 / R12000 User's Manual\n"
-		       "http://www.necelam.com/docs/files/U10278EJ3V0UM00.pdf\n");
+		event_doc =
+			"See NEC R10000 / R12000 User's Manual\n"
+			"http://www.necelam.com/docs/files/U10278EJ3V0UM00.pdf\n";
 		break;
 	case CPU_MIPS_RM7000:
-		sprintf(events_doc, "See RM7000 Family User Manual "
-		       "available from www.pmc-sierra.com\n");
+		event_doc =
+			"See RM7000 Family User Manual "
+			"available from www.pmc-sierra.com\n";
 		break;
 	case CPU_MIPS_RM9000:
-		sprintf(events_doc, "See RM9000x2 Family User Manual "
-		       "available from www.pmc-sierra.com\n");
+		event_doc =
+			"See RM9000x2 Family User Manual "
+			"available from www.pmc-sierra.com\n";
 		break;
 	case CPU_MIPS_SB1:
 	case CPU_MIPS_VR5432:
-		sprintf(events_doc, "See NEC VR5443 User's Manual, Volume 1\n"
-		       "http://www.necelam.com/docs/files/1375_V1.pdf\n");
+		event_doc =
+			"See NEC VR5443 User's Manual, Volume 1\n"
+			"http://www.necelam.com/docs/files/1375_V1.pdf\n";
 		break;
 	case CPU_MIPS_VR5500:
-		sprintf(events_doc, "See NEC R10000 / R12000 User's Manual\n"
-		     "http://www.necel.com/nesdis/image/U16677EJ3V0UM00.pdf\n");
+		event_doc =
+			"See NEC R10000 / R12000 User's Manual\n"
+			"http://www.necel.com/nesdis/image/U16677EJ3V0UM00.pdf\n";
 		break;
 
 	case CPU_PPC_E500:
 	case CPU_PPC_E500_2:
-		sprintf(events_doc, "See PowerPC e500 Core Complex Reference Manual\n"
+		event_doc =
+			"See PowerPC e500 Core Complex Reference Manual\n"
 			"Chapter 7: Performance Monitor\n"
-			"Downloadable from http://www.freescale.com\n");
+			"Downloadable from http://www.freescale.com\n";
 		break;
 
 	case CPU_PPC_E300:
-		sprintf(events_doc, "See PowerPC e300 Core Reference Manual\n"
-			"Downloadable from http://www.freescale.com\n");
+		event_doc =
+			"See PowerPC e300 Core Reference Manual\n"
+			"Downloadable from http://www.freescale.com\n";
 		break;
 
 	case CPU_PPC_7450:
-		sprintf(events_doc, "See MPC7450 RISC Microprocessor Family Reference "
-		       "Manual\n"
-		       "Chapter 11: Performance Monitor\n"
-		       "Downloadable from http://www.freescale.com\n");
+		event_doc =
+			"See MPC7450 RISC Microprocessor Family Reference "
+			"Manual\n"
+			"Chapter 11: Performance Monitor\n"
+			"Downloadable from http://www.freescale.com\n";
 		break;
 
 	case CPU_AVR32:
-		sprintf(events_doc, "See AVR32 Architecture Manual\n"
+		event_doc =
+			"See AVR32 Architecture Manual\n"
 			"Chapter 6: Performance Counters\n"
-				"http://www.atmel.com/dyn/resources/prod_documents/doc32000.pdf\n");
+			"http://www.atmel.com/dyn/resources/prod_documents/doc32000.pdf\n";
 
 		case CPU_RTC:
 			break;
@@ -549,15 +573,15 @@ int main(int argc, char const * argv[])
 		case CPU_TIMER_INT:
 		case CPU_NO_GOOD:
 		case MAX_CPU_TYPE:
-		printf("%d is not a valid processor type.\n", cpu_type);
-		exit(EXIT_FAILURE);
+			printf("%d is not a valid processor type.\n", cpu_type);
+			exit(EXIT_FAILURE);
 	}
 
 	sprintf(title, "oprofile: available events for CPU type \"%s\"\n\n", pretty);
 	if (want_xml)
-		open_xml_events(title, events_doc, cpu_type);
+		open_xml_events(title, event_doc, cpu_type);
 	else
-		printf("%s%s", title, events_doc);
+		printf("%s%s", title, event_doc);
 
 	list_for_each(pos, events) {
 		struct op_event * event = list_entry(pos, struct op_event, event_next);

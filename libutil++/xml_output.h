@@ -10,7 +10,7 @@
 
 #ifndef XML_OUTPUT_H
 #define XML_OUTPUT_H
-#include "xml_out.h"
+#include "op_xml_out.h"
 
 std::string tag_name(tag_t tag);
 std::string open_element(tag_t tag, bool with_attrs = false);

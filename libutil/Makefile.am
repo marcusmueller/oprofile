@@ -28,8 +28,4 @@ libutil_a_SOURCES = \
 	op_version.c \
 	op_version.h \
 	op_growable_buffer.c \
-	op_growable_buffer.h \
-	xml_events.c \
-	xml_events.h \
-	xml_out.c \
-	xml_out.h
+	op_growable_buffer.h
