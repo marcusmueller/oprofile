@@ -1,3 +1,8 @@
+2008-10-27  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libutil++/op_spu_bfd.cpp: Initialize anon_obj to false for op_bfd
+	  objects for Cell SPE embedded binaries
+
 2008-10-23  Dave Nomura  <dcnltc@us.ibm.com>
 
 	* libutil++/xml_output.cpp:

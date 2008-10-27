@@ -45,7 +45,8 @@ op_bfd::op_bfd(uint64_t spu_offset, string const & fname,
 	archive_path(extra_images.get_archive_path()),
 	extra_found_images(extra_images),
 	file_size(-1),
-	embedding_filename(fname)
+	embedding_filename(fname),
+	anon_obj(false)
 {
 	int fd;
 	struct stat st;
