@@ -33,7 +33,8 @@ if test "$OS" = "Linux"; then
 			extern const bfd_target bfd_elf64_powerpc_vec;
 			extern const bfd_target bfd_elf64_powerpcle_vec;
 			char * ppc_name = bfd_elf64_powerpc_vec.name;
-			char * ppcle_name = bfd_elf64_powerpcle_vec.name;]])
+			char * ppcle_name = bfd_elf64_powerpcle_vec.name;
+			printf("%s %s\n", ppc_name, ppcle_name);]])
 		])
 	$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS -o  test-for-synth > /dev/null 2>&1
 	if test -f test-for-synth; then

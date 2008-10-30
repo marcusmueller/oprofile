@@ -1,3 +1,8 @@
+2008-10-30  William Cohen  <wcohen@redhat.com>
+
+	* m4/binutils.m4: Defeat compiler optimization in configure
+	  check for bfd_get_synthetic_symtab
+
 2008-10-27  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/op_spu_bfd.cpp: Initialize anon_obj to false for op_bfd
