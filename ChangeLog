@@ -1,3 +1,7 @@
+2008-11-05  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libutil++/file_manip.cpp: Add mode arg to open
+
 2008-10-30  William Cohen  <wcohen@redhat.com>
 
 	* m4/binutils.m4: Defeat compiler optimization in configure

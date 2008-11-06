@@ -44,16 +44,15 @@ bool copy_file(string const & source, string const & destination)
 	if (!in)
 		return false;
 
-	int fd = open(destination.c_str(), O_RDWR|O_CREAT);
+	mode_t mode = buf.st_mode & ~S_IFMT;
+	if (!(mode & S_IWUSR))
+		mode |= S_IWUSR;
+
+	int fd = open(destination.c_str(), O_RDWR|O_CREAT, mode);
 	if (fd < 0)
 		return false;
 	close(fd);
 
-	mode_t mode = buf.st_mode & ~S_IFMT;
-	if (!(mode & S_IWUSR))
-		mode |= S_IWUSR;
-	if (chmod(destination.c_str(), mode))
-		return false;
 
 	// ignore error here: a simple user can copy a root.root 744 file
 	// but can't chown the copied file to root.
