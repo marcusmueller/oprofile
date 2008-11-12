@@ -1,3 +1,8 @@
+2008-11-12  Andi Kleen  <andi@firstfloor.org>
+
+	* events/i386/arch_perfmon/events: Fix event name to avoid
+	  parsing error
+
 2008-11-05  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/file_manip.cpp: Add mode arg to open
