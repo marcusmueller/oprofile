@@ -545,6 +545,19 @@ void op_free_events(void)
 	}
 }
 
+/* There can be actually multiple events here, so this is not quite correct */
+static struct op_event * find_event_any(u32 nr)
+{
+	struct list_head * pos;
+
+	list_for_each(pos, &events_list) {
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
+		if (event->val == nr)
+			return event;
+	}
+
+	return NULL;
+}
 
 static struct op_event * find_event_um(u32 nr, u32 um)
 {
@@ -726,6 +739,12 @@ struct op_event * op_find_event(op_cpu cpu_type, u32 nr, u32 um)
 	return event;
 }
 
+struct op_event * op_find_event_any(op_cpu cpu_type, u32 nr)
+{
+	load_events(cpu_type);
+
+	return find_event_any(nr);
+}
 
 int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 {

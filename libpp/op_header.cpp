@@ -168,8 +168,12 @@ string const op_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 	struct op_event * event = op_find_event(cpu_type, type, um);
 
 	if (!event) {
-		cerr << "Could not locate event " << int(type) << endl;
-		return str;
+		event = op_find_event_any(cpu_type, type);
+		if (!event) { 
+			cerr << "Could not locate event " << int(type) << endl;
+			str = "Unknown event";
+			return str;
+		}
 	}
 
 	char const * um_desc = 0;
@@ -207,8 +211,11 @@ string const op_xml_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 
 	struct op_event * event = op_find_event(cpu_type, type, um);
 	if (!event) {
-		cerr << "Could not locate event " << int(type) << endl;
-		return "";
+		event = op_find_event_any(cpu_type, type);
+		if (!event) { 
+			cerr << "Could not locate event " << int(type) << endl;
+			return "";
+		}
 	}
 
 	if (cpu_type != CPU_RTC) {

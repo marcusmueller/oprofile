@@ -65,6 +65,7 @@ struct list_head * op_events(op_cpu cpu_type);
 
 /** Find a given event, returns NULL on error */
 struct op_event * op_find_event(op_cpu cpu_type, u32 nr, u32 um);
+struct op_event * op_find_event_any(op_cpu cpu_type, u32 nr);
 
 /** Find a given event by name */
 struct op_event * find_event_by_name(char const * name);

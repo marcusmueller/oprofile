@@ -1,5 +1,12 @@
 2008-11-12  Andi Kleen  <andi@firstfloor.org>
 
+	* libop/op_events.c
+	* libop/op_events.h
+	* libpp/op_header.cpp: Fix regression in arch perfmon code
+	  (see bug #2161762)
+
+2008-11-12  Andi Kleen  <andi@firstfloor.org>
+
 	* events/i386/arch_perfmon/events: Fix event name to avoid
 	  parsing error
 
