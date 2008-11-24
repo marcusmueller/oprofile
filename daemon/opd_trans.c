@@ -82,7 +82,7 @@ int enough_remaining(struct transient * trans, size_t size)
 }
 
 
-static void opd_put_sample(struct transient * trans, unsigned long long pc)
+static void opd_put_sample(struct transient *trans, unsigned long long pc)
 {
 	unsigned long long event;
 
@@ -194,7 +194,7 @@ static void code_cookie_switch(struct transient * trans)
 	if (vmisc) {
 		char const * name = verbose_cookie(trans->cookie);
 		verbprintf(vmisc, "COOKIE_SWITCH to cookie %s(%llx)\n",
-		           name, trans->cookie);
+			   name, trans->cookie);
 	}
 }
 
@@ -246,11 +246,11 @@ static void code_xen_enter(struct transient * trans)
 	verbprintf(vmisc, "XEN_ENTER_SWITCH to xen\n");
 	trans->in_kernel = 1;
 	trans->current = NULL;
-	/* subtlety: we must keep trans->cookie cached, even though it's 
-	 * meaningless for Xen - we won't necessarily get a cookie switch 
-	 * on Xen exit. See comments in opd_sfile.c. It seems that we can 
-	 * get away with in_kernel = 1 as long as we supply the correct 
-	 * Xen image, and its address range in startup find_kernel_image 
+	/* subtlety: we must keep trans->cookie cached, even though it's
+	 * meaningless for Xen - we won't necessarily get a cookie switch
+	 * on Xen exit. See comments in opd_sfile.c. It seems that we can
+	 * get away with in_kernel = 1 as long as we supply the correct
+	 * Xen image, and its address range in startup find_kernel_image
 	 * is modified to look in the Xen image also
 	 */
 }
@@ -264,13 +264,13 @@ handler_t handlers[LAST_CODE + 1] = {
 	&code_cpu_switch,
 	&code_cookie_switch,
 	&code_kernel_enter,
- 	&code_user_enter,
+	&code_user_enter,
 	&code_module_loaded,
 	/* tgid handled differently */
 	&code_unknown,
 	&code_trace_begin,
 	&code_unknown,
- 	&code_xen_enter,
+	&code_xen_enter,
 #if defined(__powerpc__)
 	&code_spu_profiling,
 	&code_spu_ctx_switch,

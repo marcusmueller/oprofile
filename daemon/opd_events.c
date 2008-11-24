@@ -35,7 +35,7 @@ static double cpu_speed;
 static void malformed_events(void)
 {
 	fprintf(stderr, "oprofiled: malformed events passed "
-	        "on the command line\n");
+		"on the command line\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -141,9 +141,9 @@ struct opd_event * find_counter_event(unsigned long counter)
 
 
 void fill_header(struct opd_header * header, unsigned long counter,
-                 vma_t anon_start, vma_t cg_to_anon_start,
-                 int is_kernel, int cg_to_is_kernel,
-                 int spu_samples, uint64_t embed_offset, time_t mtime)
+		 vma_t anon_start, vma_t cg_to_anon_start,
+		 int is_kernel, int cg_to_is_kernel,
+		 int spu_samples, uint64_t embed_offset, time_t mtime)
 {
 	struct opd_event * event = find_counter_event(counter);
 

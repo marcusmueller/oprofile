@@ -437,7 +437,7 @@ void sfile_log_sample(struct transient const * trans)
 
 	if (trans->current->anon)
 		pc -= trans->current->anon->start;
- 
+
 	if (vsamples)
 		verbose_sample(trans, pc);
 

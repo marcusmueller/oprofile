@@ -48,7 +48,7 @@ event:0x47 counters:0,1,2,3 um:zero minimum:500 name:MISALIGNED_ACCESSES : Misal
 event:0x48 counters:0,1,2,3 um:zero minimum:500 name:MICRO_ARCH_LATE_CANCEL_ACCESS : Microarchitectural late cancel of an access
 event:0x49 counters:0,1,2,3 um:zero minimum:500 name:MICRO_ARCH_EARLY_CANCEL_ACCESS : Microarchitectural early cancel of an access
 event:0x4a counters:0,1,2,3 um:ecc minimum:500 name:1_BIT_ECC_ERRORS : Single-bit ECC errors recorded by scrubber
-event:0x4b counters:0,1,2,3 um:prefetch minimum:500 name:PREFETCH_INSTRUCTIONS_DISPATCHED : The number of prefetch instructions dispatched by the decoder 
+event:0x4b counters:0,1,2,3 um:prefetch minimum:500 name:PREFETCH_INSTRUCTIONS_DISPATCHED : The number of prefetch instructions dispatched by the decoder
 event:0x4c counters:0,1,2,3 um:locked_instruction_dcache_miss minimum:500 name:LOCKED_INSTRUCTIONS_DCACHE_MISSES : The number of dta cache misses by locked instructions.
 event:0x4d counters:0,1,2,3 um:l1_dtlb_hit minimum:500 name:L1_DTLB_HIT : L1 DTLB hit
 event:0x52 counters:0,1,2,3 um:soft_prefetch minimum:500 name:INEFFECTIVE_SW_PREFETCHES : Number of software prefetches that did not fetch data outside of processor core

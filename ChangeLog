@@ -1,3 +1,14 @@
+2008-11-24  Robert Richter <robert.richter@amd.com>
+
+	* daemon/opd_events.c:
+	* daemon/opd_events.h:
+	* daemon/opd_mangling.c:
+	* daemon/opd_mangling.h:
+	* daemon/opd_sfile.c:
+	* daemon/opd_trans.c:
+	* events/x86-64/family10/events:
+	* utils/opcontrol: fix whitespaces
+
 2008-11-12  Andi Kleen  <andi@firstfloor.org>
 
 	* libop/op_events.c

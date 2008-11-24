@@ -15,7 +15,7 @@
 SYSCTL=do_sysctl
 
 # A replacement function for the sysctl (procps package) utility which is
-# missing on some distribution (e.g. slack 7.0). 
+# missing on some distribution (e.g. slack 7.0).
 # Handles only the -w option of sysctl.
 do_sysctl()
 {
@@ -44,7 +44,7 @@ error_if_empty()
 {
 	if test -z "$2"; then
 		echo "No value given for option $1" >&2
-		do_help 
+		do_help
 		exit 1
 	fi
 }
@@ -85,7 +85,7 @@ move_and_remove()
 # verbose echo
 vecho()
 {
-	if test -n "$VERBOSE"; then 
+	if test -n "$VERBOSE"; then
 		echo $@
 	fi
 }
@@ -102,10 +102,10 @@ is_tool_available()
 	return 0
 }
 
- 
+
 # print help message
 do_help()
-{ 
+{
    echo "opcontrol: usage:
    -l/--list-events list event types and unit masks
    -?/--help        this message
@@ -123,7 +123,7 @@ do_help()
    --save=name      save data from current session to session_name
    --deinit         unload the oprofile module and oprofilefs
 
-   -e/--event=eventspec 
+   -e/--event=eventspec
 
       Choose an event. May be specified multiple times. Of the form
       "default" or "name:count:unitmask:kernel:user", where :
@@ -237,17 +237,17 @@ do_init_daemon_vars()
 	# load settings from config file, keeping command-line value
 	# of SESSION_DIR if necessary.
 	if test -n "$SESSION_DIR"; then
-	       SAVED=$SESSION_DIR
+		SAVED=$SESSION_DIR
 	fi
 	do_load_setup
 	if test -n "$SAVED"; then
-	       SESSION_DIR=$SAVED
+		SESSION_DIR=$SAVED
 	fi
 
 	# daemon parameters (as in op_config.h).  Note that we preserve
 	# any previous value of SESSION_DIR
 	if test -z "$SESSION_DIR"; then
-	       SESSION_DIR="/var/lib/oprofile"
+		SESSION_DIR="/var/lib/oprofile"
 	fi
 	LOCK_FILE="$SESSION_DIR/lock"
 	SAMPLES_DIR="$SESSION_DIR/samples"
@@ -313,7 +313,7 @@ do_init()
 	decide_oprofile_device
 
 	DEFAULT_EVENT=`$OPHELP --get-default-event`
- 
+
 	IS_TIMER=0
 	IS_PERFMON=0
 	if test "$CPUTYPE" = "timer"; then
@@ -331,12 +331,12 @@ do_init()
 create_dir()
 {
 	if test ! -d "$1"; then
-	       mkdir -p "$1"
-	       if test "$?" != "0"; then
-		       echo "Couldn't mkdir -p $1" >&2
-		       exit 1
-	       fi
-	       chmod 755 "$1"
+		mkdir -p "$1"
+		if test "$?" != "0"; then
+			echo "Couldn't mkdir -p $1" >&2
+			exit 1
+		fi
+		chmod 755 "$1"
 	fi
 }
 
@@ -368,7 +368,7 @@ do_save_setup()
 			echo "CHOSEN_EVENTS_${f}=$GOTEVENT" >>$SETUP_FILE
 		done
 	fi
- 
+
 	echo "NR_CHOSEN=$NR_CHOSEN" >>$SETUP_FILE
 
 	echo "SEPARATE_LIB=$SEPARATE_LIB" >> $SETUP_FILE
@@ -391,13 +391,13 @@ do_save_setup()
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
 	fi
 	echo "CALLGRAPH=$CALLGRAPH" >> $SETUP_FILE
- 	if test "$KERNEL_RANGE"; then
- 	        echo "KERNEL_RANGE=$KERNEL_RANGE" >> $SETUP_FILE
- 	fi
+	if test "$KERNEL_RANGE"; then
+		echo "KERNEL_RANGE=$KERNEL_RANGE" >> $SETUP_FILE
+	fi
 	echo "XENIMAGE=$XENIMAGE" >> $SETUP_FILE
- 	if test "$XEN_RANGE"; then
- 	        echo "XEN_RANGE=$XEN_RANGE" >> $SETUP_FILE
- 	fi
+	if test "$XEN_RANGE"; then
+		echo "XEN_RANGE=$XEN_RANGE" >> $SETUP_FILE
+	fi
 }
 
 
@@ -494,8 +494,8 @@ get_image_range()
 		vecho "KERNEL_RANGE $KERNEL_RANGE"
 	fi
 }
- 
- 
+
+
 # validate --separate= parameters. This function is called with IFS=,
 # so on each argument is splitted
 validate_separate_args()
@@ -514,7 +514,7 @@ validate_separate_args()
 				;;
 			kernel)
 				# first implied by second
-				SEPARATE_LIB=1 
+				SEPARATE_LIB=1
 				SEPARATE_KERNEL=1
 				;;
 			thread)
@@ -548,7 +548,7 @@ verify_counters()
 {
 	if test "$IS_TIMER" = 1; then
 		if test "$NR_CHOSEN" != 0; then
-	 		echo "You cannot specify any performance counter events" >&2
+			echo "You cannot specify any performance counter events" >&2
 			echo "because OProfile is in timer mode." >&2
 			exit 1
 		fi
@@ -632,12 +632,12 @@ do_options()
 			printf %s $1 "$possibleval" | grep ^- >/dev/null 2>&1
 			if test "$?" != "0"; then
 				val=$possibleval
-				if [ "$#" -ge 1 ]; then 
+				if [ "$#" -ge 1 ]; then
 					shift
 				fi
 			fi
 		fi
- 
+
 		case "$arg" in
 
 			--init)
@@ -842,11 +842,11 @@ do_options()
 				EXCLUSIVE_ARGV="$arg"
 				exec $OPHELP
 				;;
-				
+
 			*)
 				echo "Unknown option \"$arg\". See opcontrol --help" >&2
 				exit 1
-				;; 
+				;;
 		esac
 	done
 
@@ -902,7 +902,7 @@ do_options()
 		if test "$CPU_BUF_SIZE" != "0"; then
 			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
 		else
-		    vecho "CPU_BUF_SIZE default value"
+			vecho "CPU_BUF_SIZE default value"
 		fi
 	fi
 
@@ -968,7 +968,7 @@ do_kill_daemon()
 	COUNT=0
 	while test -n "`pidof oprofiled`"
 	do
-		sleep 1 
+		sleep 1
 
 		# because oprofiled only sets a variable inside the
 		# signal handler itself, it's possible to miss a
@@ -1002,7 +1002,7 @@ rm_devices_24()
 }
 
 
-create_devices_24() 
+create_devices_24()
 {
 	MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
 
@@ -1095,8 +1095,8 @@ is_non_cell_ppc64_variant()
 			return 1;
 			;;
 		*)
-	        	return 0;
-	        	;;
+			return 0;
+			;;
 	esac
 }
 
@@ -1119,21 +1119,21 @@ check_event_mapping_data()
 		MMCR0_VAL=`echo $MMCR0 | awk -F: '{print $2}'`
 		MMCR1_VAL=`echo $MMCR1 | awk -F: '{print $2}'`
 		MMCRA_VAL=`echo $MMCRA | awk -F: '{print $2}'`
-	
+
 		## mmcr0, mmcr1, mmcra are for all ppc64 counters
 		# Save first event mmcr settings to compare with additional
 		# events.  All events must have the same mmcrx values i.e. be in
 		# the same group.  Only one event is assigned per counter,
 		# hence there will not be a conflict on the counters
-		if [ "$MMCR0_CK_VAL" = "" ] ; then    
+		if [ "$MMCR0_CK_VAL" = "" ] ; then
 			MMCR0_CK_VAL=$MMCR0_VAL
 			MMCR1_CK_VAL=$MMCR1_VAL
 			MMCRA_CK_VAL=$MMCRA_VAL
 		else
-			# make sure all events are from the same group 
-                        if test $MMCR0_CK_VAL != $MMCR0_VAL \
-                                -o $MMCR1_CK_VAL != $MMCR1_VAL \
-                                -o $MMCRA_CK_VAL != $MMCRA_VAL ; then
+			# make sure all events are from the same group
+			if test $MMCR0_CK_VAL != $MMCR0_VAL \
+				-o $MMCR1_CK_VAL != $MMCR1_VAL \
+				-o $MMCRA_CK_VAL != $MMCRA_VAL ; then
 				echo "ERROR: The specified events are not from the same group."
 				echo "       Use 'opcontrol --list-events' to see event groupings."
 				exit 1
@@ -1141,7 +1141,7 @@ check_event_mapping_data()
 		fi
 
 		# Check if all user/kernel flags per-counter are matching.
-		if [ "$USER_CK" = "" ] ; then    
+		if [ "$USER_CK" = "" ] ; then
 			USER_CK=$USER
 			KERNEL_CK=$KERNEL
 		else
@@ -1165,7 +1165,7 @@ check_event_mapping_data()
 			fi
 		fi
 		if [ "$event_num" = "1" ] ; then
-                        # CYCLES is compatible with any event except SPU_CYCLES
+			# CYCLES is compatible with any event except SPU_CYCLES
 			if [ "$SPU_CYCLES" = "2" ] ; then
 				echo "ERROR: PPU CYCLES and SPU CYCLES cannot be counted simultaneously." >&2
 				exit 1
@@ -1174,9 +1174,9 @@ check_event_mapping_data()
 				return
 			fi
 		else
-		    if [ "$SPU_CYCLES" = "2" ] ; then
-			echo "ERROR: SPU CYCLES cannot be counted with any other events." >&2
-			exit 1
+			if [ "$SPU_CYCLES" = "2" ] ; then
+				echo "ERROR: SPU CYCLES cannot be counted with any other events." >&2
+				exit 1
 			fi
 		fi
 		len=`echo -n $event_num | wc -m`
@@ -1188,10 +1188,10 @@ check_event_mapping_data()
 			if test $GRP_NUM_CK_VAL != $GRP_NUM_VAL ; then
 				echo "ERROR: The specified events are not from the same group." >&2
 				echo "       Use 'opcontrol --list-events' to see event groupings." >&2
-                                exit 1
-                        fi
-                fi
-	fi 
+				exit 1
+			fi
+		fi
+	fi
 }
 
 
@@ -1277,8 +1277,8 @@ do_param_setup()
 			check_event_mapping_data
 
 			if test "$EVENT" = "SPU_CYCLES"; then
-			        if test "$SEPARATE_KERNEL" = "1"; then
-			                SEPARATE_KERNEL=0
+				if test "$SEPARATE_KERNEL" = "1"; then
+					SEPARATE_KERNEL=0
 					echo "Ignoring --separate=kernel option with SPU_CYCLES"
 				fi
 				if test "$SEPARATE_LIB" = "0"; then
@@ -1307,7 +1307,7 @@ do_param_setup()
 				set_param rtc_value $COUNT
 				$SYSCTL -w dev.oprofile.rtc_value=$COUNT
 			else
-				set_ctr_param $CTR enabled 1				
+				set_ctr_param $CTR enabled 1
 				set_ctr_param $CTR event $EVENT_VAL
 				let loop_count=1
 				for i in ${EVENT_STR}; do
@@ -1319,7 +1319,7 @@ do_param_setup()
 						set_ctr_param "" $KEY $VAL
 					fi
 					let loop_count="$loop_count"+1
-				done				
+				done
 				set_ctr_param $CTR count $COUNT
 				set_ctr_param $CTR kernel $KERNEL
 				set_ctr_param $CTR user $USER
@@ -1336,7 +1336,7 @@ do_param_setup()
 	# profiling. All per-counter user/kernel flags must match.
 	# This condition is checked previously by check_event_mapping_data.
 	# This statement uses the last event's user/kernel flags to set
-	# /dev/oprofile/enable_kernel and /dev/oprofile/enable_user. 
+	# /dev/oprofile/enable_kernel and /dev/oprofile/enable_user.
 	is_non_cell_ppc64_variant $CPUTYPE
 	if test $? -ne 0 ; then
 		set_param "enable_kernel" $KERNEL
@@ -1348,7 +1348,7 @@ do_param_setup()
 
 do_start_daemon()
 {
- 
+
 	if test -f "$LOCK_FILE"; then
 		kill -0 `cat $LOCK_FILE` 2>/dev/null
 		if test "$?" -eq 0; then
@@ -1358,7 +1358,7 @@ do_start_daemon()
 			rm -f "$LOCK_FILE"
 		fi
 	fi
- 
+
 	do_setup
 	check_valid_args
 	get_image_range "linux"
@@ -1383,7 +1383,7 @@ do_start_daemon()
 	if ! test "$XENIMAGE" = "none"; then
 		OPD_ARGS="$OPD_ARGS --xen-image=$XENIMAGE --xen-range=$XEN_RANGE"
 	fi
- 
+
 	if ! test -z "$IMAGE_FILTER"; then
 		OPD_ARGS="$OPD_ARGS --image=$IMAGE_FILTER"
 	fi
@@ -1395,7 +1395,7 @@ do_start_daemon()
 	vecho "executing oprofiled $OPD_ARGS"
 
 	$OPROFILED $OPD_ARGS
- 
+
 	COUNT=0
 	while ! test -f "$SESSION_DIR/lock"
 	do
@@ -1438,7 +1438,7 @@ do_status()
 			echo "Event $f: $GOTEVENT"
 		done
 	fi
- 
+
 	SEPARATE=""
 	if test "$SEPARATE_LIB" = "1"; then
 		SEPARATE="library";
@@ -1552,11 +1552,11 @@ hup_daemon()
 {
 	if test -f "$LOCK_FILE"; then
 		echo -n "Signalling daemon... "
-		kill -HUP `cat $LOCK_FILE` 
+		kill -HUP `cat $LOCK_FILE`
 		echo "done"
 	fi
 }
- 
+
 
 # move all the sample files to a sample directory
 do_save_session()
@@ -1629,7 +1629,7 @@ do_operations()
 	if test "$STATUS" = "yes"; then
 		do_status
 	fi
- 
+
 	if test "$SETUP" = "yes"; then
 		check_valid_args
 		do_save_setup
@@ -1668,7 +1668,7 @@ do_operations()
 		do_deinit
 	fi
 }
- 
+
 # early check for --version, --help and --session-dir
 check_options_early()
 {
@@ -1695,7 +1695,7 @@ check_options_early()
 				SESSION_DIR="$val"
 				# do not exit early
 				;;
- 
+
 		esac
 	done
 }
@@ -1780,24 +1780,24 @@ check_oprofile_available
 do_init
 if test `id -u` != "0"; then
     if test -z "$2"; then
-	case "$1" in 
-	--dump|-d)
-	    ONLY_DUMP=yes
-	    do_dump
-	    exit 0;
-	    ;;
-	--list-events|-l)
-	    exec $OPHELP
-	    exit 0;
-	    ;;
-	*)
-	    echo "Normal users are limited to either '--dump' or '--list-events'." >&2
-	    exit 1
-	    ;;
+	case "$1" in
+	    --dump|-d)
+		ONLY_DUMP=yes
+		do_dump
+		exit 0;
+		;;
+	    --list-events|-l)
+		exec $OPHELP
+		exit 0;
+		;;
+	    *)
+		echo "Normal users are limited to either '--dump' or '--list-events'." >&2
+		exit 1
+		;;
 	esac
     else
-	    echo "Normal users are limited to either '--dump' or '--list-events'." >&2
-	    exit 1
+	echo "Normal users are limited to either '--dump' or '--list-events'." >&2
+	exit 1
     fi
 fi
 
