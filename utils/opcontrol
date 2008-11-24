@@ -945,7 +945,7 @@ do_stop()
 do_kill_daemon()
 {
 	if test ! -f "$LOCK_FILE"; then
-		# no error message, do_kill_deamon imply stop and stop already
+		# no error message, do_kill_daemon imply stop and stop already
 		# output "Daemon not running"
 		return
 	fi

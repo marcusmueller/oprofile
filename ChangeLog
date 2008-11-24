@@ -1,5 +1,9 @@
 2008-11-24  Robert Richter <robert.richter@amd.com>
 
+	* utils/opcontrol: Correct spelling error
+
+2008-11-24  Robert Richter <robert.richter@amd.com>
+
 	* daemon/opd_events.c:
 	* daemon/opd_events.h:
 	* daemon/opd_mangling.c:
