@@ -1,3 +1,8 @@
+2008-12-12  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libop/Makefile.am: Add Andi Kleen's new op_hw_specific.h
+	  file to to Makefile.am
+
 2008-11-24  Robert Richter <robert.richter@amd.com>
 
 	* utils/opcontrol: Correct spelling error
