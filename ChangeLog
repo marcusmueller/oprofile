@@ -1,3 +1,9 @@
+2008-12-23  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* utils/opcontrol: reverse the logic in
+	  is_non_cell_ppc64_variant to avoid the need
+	  for maintenance as new ppc64 variants are addded
+
 2008-12-12  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libop/Makefile.am: Add Andi Kleen's new op_hw_specific.h

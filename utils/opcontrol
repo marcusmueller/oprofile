@@ -1090,9 +1090,14 @@ set_ctr_param()
 is_non_cell_ppc64_variant()
 {
 	case "$1" in
-		ppc64/power4 | ppc64/power5 | ppc64/power5+ | ppc64/power5++ |\
-		ppc64/power6 | ppc64/970 | ppc64/970MP | ppc64/pa6t )
-			return 1;
+		ppc64/*)
+			tmp="${1/cell/CELL}"
+			if test "$1" = "$tmp"; then
+			#No substituion occurred, so cputype is not cell
+				return 1
+			else
+				return 0
+			fi
 			;;
 		*)
 			return 0;
