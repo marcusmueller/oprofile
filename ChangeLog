@@ -1,3 +1,7 @@
+2009-01-05  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* m4/binutils.m4: Fix error in AC_CHECK_LIB action
+
 2008-12-23  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* utils/opcontrol: reverse the logic in

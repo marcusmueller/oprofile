@@ -13,7 +13,7 @@ AC_CHECK_LIB(intl, main, LIBS="$LIBS -lintl"; INTL_LIB="-lintl", INTL_LIB="")
 AC_CHECK_LIB(bfd, bfd_openr,,
 	[AC_CHECK_LIB(z, compress,
 dnl Use a different bfd function here so as not to use cached result from above
-		[AC_CHECK_LIB(bfd, bfd_fdopenr, LIBS="$LIBS -lz",
+		[AC_CHECK_LIB(bfd, bfd_fdopenr, LIBS="-lbfd -lz $LIBS",
 			[AC_MSG_ERROR([bfd library not found])], -lz)
 		],
 		[AC_MSG_ERROR([libz library not found; required by libbfd])])
