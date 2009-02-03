@@ -123,6 +123,10 @@ For information on how to use OProfile's JIT support, see <xref linkend="setup-j
                        of 2.6.22 or more recent.  Additionally, full support of SPE profiling requires a BFD library
                        from binutils code dated January 2007 or later.  To ensure the proper BFD support exists, run
                        the <code>configure</code> utility with <code>--with-target=cell-be</code>.
+
+		       Profiling the Cell Broadband Engine using SPU events requires a kernel version of 2.6.29-rc1
+		       or  more recent.
+
                        <note>Attempting to profile SPEs with kernel versions older than 2.6.22 may cause the
                        system to crash.</note>
 		</para></listitem>
@@ -1193,6 +1197,12 @@ separation parameters (separate=cpu,lib) to ensure that sufficient information
 is collected in the sample data in order to generate a complete report.  The
 --merge=cpu option can be used to obtain a more readable report if analyzing
 the performance of each separate SPU is not necessary.
+</para>
+<para>
+Profiling with an SPU event (events 4100 through 4163) is not compatible with any other
+event.  Further more, only one SPU event can be specified at a time.  The hardware only
+supports profiling on one SPU per node at a time.  The OProfile kernel code time slices
+between the eight SPUs to collect data on all SPUs.
 </para>
 <para>
 SPU profile reports have some unique characteristics compared to reports for

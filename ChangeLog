@@ -1,3 +1,10 @@
+2009-02-03  Carl Love  <cel@us.ibm.com>
+
+	* utils/opcontrol:
+	* doc/oprofile.xml:
+	* events/ppc64/cell-be/events:
+	* events/ppc64/cell-be/unit_masks: Added IBM CELL SPU event profiling support
+
 2009-01-05  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* m4/binutils.m4: Fix error in AC_CHECK_LIB action

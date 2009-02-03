@@ -1159,42 +1159,76 @@ check_event_mapping_data()
 	fi
 	if [ "$CPUTYPE" = "ppc64/cell-be" ]; then
 		event_num=`echo $EVENT_STR | awk '{print $1}'`
-		if [ "$event_num" = "2" ] ; then
-			if [ "$CYCLES" = "1" \
-				-o "$GRP_NUM_CK_VAL" != "" ] ; then
-				echo "ERROR: SPU CYCLES cannot be counted with any other events." >&2
-				exit 1
+		# PPU event and cycle events can be measured at
+		# the same time.  SPU event can not be measured
+		# at the same time as any other event.  Similarly for
+		# SPU Cycles
+
+		# We use EVNT_MSK to track what events have already
+		# been seen.  Valid values are:
+		#    NULL string -  no events seen yet
+		#    1 - PPU CYCLES or PPU Event seen
+		#    2 - SPU CYCLES seen
+		#    3 - SPU EVENT seen
+
+		# check if event is PPU_CYCLES
+		if [ "$event_num" = "1" ]; then
+			if [ "$EVNT_MSK" = "1" ] || [ "$EVNT_MSK" = "" ]; then
+				EVNT_MSK=1
 			else
-				SPU_CYCLES=2
-				return
+				echo "PPU CYCLES not compatible with previously specified event"
+				exit 1
+		fi
+
+		# check if event is SPU_CYCLES
+		elif [ "$event_num" = "2" ]; then
+			if [ "$EVNT_MSK" = "" ]; then
+				EVNT_MSK=2
+			else
+				echo "SPU CYCLES not compatible with any other event"
+				exit 1
+			fi
+
+		# check if event is SPU Event profiling
+		elif [ "$event_num" -ge "4100" ] && [ "$event_num" -le "4163" ] ; then
+			if [ "$EVNT_MSK" = "" ]; then
+				EVNT_MSK=3
+			else
+				echo "SPU event profiling not compatible with any other event"
+				exit 1
+			fi
+
+			# Check to see that the kernel supports SPU event
+			# profiling.  Note, if the file exits it should have
+			# the LSB bit set to 1 indicating SPU event profiling
+			# support. For now, it is sufficient to test that the
+			# file exists.
+			if test ! -f /dev/oprofile/cell_support; then
+				echo "Kernel does not support SPU event profiling"
+				exit 1
+			fi
+
+			# check if event is PPU Event profiling (all other
+			# events are PPU events)
+		else
+			if [ "$EVNT_MSK" = "1" ] || [ "$EVNT_MSK" = "" ]; then
+				EVNT_MSK=1
+			else
+				echo "PPU profiling not compatible with previously specified event"
+				exit 1
 			fi
 		fi
-		if [ "$event_num" = "1" ] ; then
-			# CYCLES is compatible with any event except SPU_CYCLES
-			if [ "$SPU_CYCLES" = "2" ] ; then
-				echo "ERROR: PPU CYCLES and SPU CYCLES cannot be counted simultaneously." >&2
-				exit 1
-			else
-				CYCLES=1
-				return
-			fi
-		else
-			if [ "$SPU_CYCLES" = "2" ] ; then
-				echo "ERROR: SPU CYCLES cannot be counted with any other events." >&2
-				exit 1
-			fi
-		fi
-		len=`echo -n $event_num | wc -m`
-		num_chars_in_grpid=`expr $len - 2`
-		GRP_NUM_VAL=`echo | awk '{print substr("'"${event_num}"'",1,"'"${num_chars_in_grpid}"'")}'`
-		if [ "$GRP_NUM_CK_VAL" = "" ] ; then
-			GRP_NUM_CK_VAL=$GRP_NUM_VAL
-		else
-			if test $GRP_NUM_CK_VAL != $GRP_NUM_VAL ; then
-				echo "ERROR: The specified events are not from the same group." >&2
-				echo "       Use 'opcontrol --list-events' to see event groupings." >&2
-				exit 1
-			fi
+	fi
+	len=`echo -n $event_num | wc -m`
+	num_chars_in_grpid=`expr $len - 2`
+	GRP_NUM_VAL=`echo | awk '{print substr("'"${event_num}"'",1,"'"${num_chars_in_grpid}"'")}'`
+	if [ "$GRP_NUM_CK_VAL" = "" ] ; then
+		GRP_NUM_CK_VAL=$GRP_NUM_VAL
+	else
+		if test $GRP_NUM_CK_VAL != $GRP_NUM_VAL ; then
+			echo "ERROR: The specified events are not from the same group." >&2
+			echo "       Use 'opcontrol --list-events' to see event groupings." >&2
+			exit 1
 		fi
 	fi
 }

@@ -108,12 +108,42 @@ event:0xdbe counters:0,1,2,3 um:PPU_0_cycles          minimum:10000	name:stq_ful
 event:0xdbf counters:0,1,2,3 um:PPU_0_cycles          minimum:10000	name:stb_not_empty		: At least one store gather buffer not empty.
 
 # Cell BE Island 4 - Synergistic Processor Unit (SPU)
-
+#
+# OPROFILE FOR CELL ONLY SUPPORTS PROFILING ON ONE SPU EVENT AT A TIME
+#
 # CBE Signal Group 41 - SPU (NClk)
+event:0x1004 counters:0 um:SPU_02_cycles          minimum:10000	name:dual_instrctn_commit	: Dual instruction committed.
+event:0x1005 counters:0 um:SPU_02_cycles          minimum:10000	name:sngl_instrctn_commit	: Single instruction committed.
+event:0x1006 counters:0 um:SPU_02_cycles          minimum:10000	name:ppln0_instrctn_commit	: Pipeline 0 instruction committed.
+event:0x1007 counters:0 um:SPU_02_cycles          minimum:10000	name:ppln1_instrctn_commit	: Pipeline 1 instruction committed.
+event:0x1008 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:instrctn_ftch_stll	: Instruction fetch stall.
+event:0x1009 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:lcl_strg_bsy		: Local storage busy.
+event:0x100A counters:0 um:SPU_02_cycles          minimum:10000	name:dma_cnflct_ld_st	: DMA may conflict with load or store.
+event:0x100B counters:0 um:SPU_02_cycles          minimum:10000	name:str_to_lcl_strg	: Store instruction to local storage issued.
+event:0x100C counters:0 um:SPU_02_cycles          minimum:10000	name:ld_frm_lcl_strg	: Load intruction from local storage issued.
+event:0x100D counters:0 um:SPU_02_cycles          minimum:10000	name:fpu_exctn		: Floating-Point Unit (FPU) exception.
+event:0x100E counters:0 um:SPU_02_cycles          minimum:10000	name:brnch_instrctn_commit	: Branch instruction committed.
+event:0x100F counters:0 um:SPU_02_cycles          minimum:10000	name:change_of_flow	: Non-sequential change of the SPU program counter, which can be caused by branch, asynchronous interrupt, stalled wait on channel, error correction code (ECC) error, and so forth.
+event:0x1010 counters:0 um:SPU_02_cycles          minimum:10000	name:brnch_not_tkn		: Branch not taken.
+event:0x1011 counters:0 um:SPU_02_cycles          minimum:10000	name:brnch_mss_prdctn	: Branch miss prediction; not exact. Certain other code sequences can cause additional pulses on this signal (see Note 2).
+event:0x1012 counters:0 um:SPU_02_cycles          minimum:10000	name:brnch_hnt_mss_prdctn	: Branch hint miss prediction; not exact. Certain other code sequences can cause additional pulses on this signal (see Note 2).
+event:0x1013 counters:0 um:SPU_02_cycles          minimum:10000	name:instrctn_seqnc_err	: Instruction sequence error.
+event:0x1015 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl_wrt	: Stalled waiting on any blocking channel write (see Note 3).
+event:0x1016 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl0	: Stalled waiting on External Event Status (Channel 0) (see Note 3).
+event:0x1017 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl3	: Stalled waiting on Signal Notification 1 (Channel 3) (see Note 3).
+event:0x1018 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl4	: Stalled waiting on Signal Notification 2 (Channel 4) (see Note 3).
+event:0x1019 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl21	: Stalled waiting on DMA Command Opcode or ClassID Register (Channel 21) (see Note 3).
+event:0x101A counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl24	: Stalled waiting on Tag Group Status (Channel 24) (see Note 3).
+event:0x101B counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl25	: Stalled waiting on List Stall-and-Notify Tag Status (Channel 25) (see Note 3).
+event:0x101C counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl28	: Stalled waiting on PPU Mailbox (Channel 28) (see Note 3).
+event:0x1022 counters:0 um:SPU_02_cycles_or_edges minimum:10000	name:stlld_wait_on_chnl29	: Stalled waiting on SPU Mailbox (Channel 29) (see Note 3).
+
 
 # CBE Signal Group 42 - SPU Trigger (NClk)
+event:0x10A1 counters:0 um:SPU_Trigger_cycles_or_edges minimum:10000	name:stld_wait_chnl_op	: Stalled waiting on channel operation (See Note 2).
 
 # CBE Signal Group 43 - SPU Event (NClk)
+event:0x1107 counters:0 um:SPU_Event_cycles_or_edges minimum:10000	name:instrctn_ftch_stll	: Instruction fetch stall.
 
 # Cell BE Island 6 - Element Interconnect Bus (EIB)
 
