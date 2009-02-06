@@ -431,6 +431,38 @@ void bfd_info::close()
 
 
 #if SYNTHESIZE_SYMBOLS
+/* On ppc64 platforms where there is no symbol information in the image bfd,
+ * the debuginfo syms need to be mapped back to the sections of the image bfd
+ * in order to gather enough information about the symbol.  That's the purpose
+ * of the translate_debuginfo_syms() function.
+ */
+void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
+{
+#define MAX_SECT 1024
+	bfd_section * image_sect[MAX_SECT];
+	int img_sect_cnt = 0;
+	bfd * image_bfd = image_bfd_info->abfd;
+
+	for (bfd_section * sect = image_bfd->sections; sect && img_sect_cnt < MAX_SECT;
+	     sect = sect->next) {
+		// A comment section marks the end of the needed sections
+		if (strstr(sect->name, ".comment") == sect->name)
+			break;
+		image_sect[sect->index] = sect;
+		img_sect_cnt++;
+	}
+
+	asymbol * sym = dbg_syms[0];
+	for (int i = 0; i < nr_dbg_syms; sym = dbg_syms[++i]) {
+		if (sym->section->owner && sym->section->owner == abfd) {
+			if (sym->section->index < img_sect_cnt) {
+				sym->section = image_sect[sym->section->index];
+				sym->the_bfd = image_bfd;
+			}
+		}
+	}
+}
+
 bool bfd_info::get_synth_symbols()
 {
 	extern const bfd_target bfd_elf64_powerpc_vec;
@@ -449,8 +481,21 @@ bool bfd_info::get_synth_symbols()
 
 	asymbol ** mini_syms = (asymbol **)buf;
 	buf = NULL;
+	bfd * synth_bfd;
 
-	long nr_synth_syms = bfd_get_synthetic_symtab(abfd, nr_mini_syms,
+	/* For ppc64, a debuginfo file by itself does not hold enough symbol
+	 * information for us to properly attribute samples to symbols.  If
+	 * the image file's bfd has no symbols (as in a super-stripped library),
+	 * then we need to do the extra processing in translate_debuginfo_syms.
+	 */
+	if (image_bfd_info && image_bfd_info->nr_syms == 0) {
+		translate_debuginfo_syms(mini_syms, nr_mini_syms);
+		synth_bfd = image_bfd_info->abfd;
+	} else
+		synth_bfd = abfd;
+	
+	long nr_synth_syms = bfd_get_synthetic_symtab(synth_bfd,
+	                                              nr_mini_syms,
 	                                              mini_syms, 0,
 	                                              NULL, &synth_syms);
 
@@ -485,6 +530,12 @@ bool bfd_info::get_synth_symbols()
 {
 	return false;
 }
+
+void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
+{
+	return;
+}
+
 #endif /* SYNTHESIZE_SYMBOLS */
 
 

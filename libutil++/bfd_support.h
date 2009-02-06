@@ -24,7 +24,7 @@ class op_bfd_symbol;
 
 /// holder for BFD state we must keep
 struct bfd_info {
-	bfd_info() : abfd(0), nr_syms(0), synth_syms(0) {}
+	bfd_info() : abfd(0), nr_syms(0), synth_syms(0), image_bfd_info(0) {}
 
 	~bfd_info();
 
@@ -47,6 +47,8 @@ struct bfd_info {
 	/// nr. symbols
 	size_t nr_syms;
 
+	void set_image_bfd_info(bfd_info * ibfd) { image_bfd_info = ibfd; }
+
 private:
 	/**
 	 * Acquire the synthetic symbols if we need to.
@@ -61,6 +63,22 @@ private:
 	 */
 	asymbol * synth_syms;
 
+	/**
+	 * Under certain circumstances, correct handling of the bfd for a
+	 * debuginfo file is not possible without access to the bfd for
+	 * the actual image file.  The image_bfd_info field provides access to
+	 * that bfd when this bfd_info is for a debuginfo file; otherwise
+	 * image_bfd_info is NULL.
+	 */ 
+	bfd_info * image_bfd_info;
+
+	/**
+	 * This function is intended to use the cached image bfd as needed
+	 * when processing debuginfo files.  The implementation is not
+	 * necessarily architecture-independent; e.g., see the implementation
+	 * for the elf64_powerpc[le] bfd targets in bfd_support.cpp.
+	 */
+	void translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms);
 };
 
 

@@ -215,6 +215,7 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	// have much choice at the moment.
 	has_debug_info();
 
+	dbfd.set_image_bfd_info(&ibfd);
 	dbfd.get_symbols();
 
 	size_t i;

@@ -1,3 +1,9 @@
+2009-02-06  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libutil++/bfd_support.cpp:
+	* libutil++/bfd_support.h:
+	* libutil++/op_bfd.cpp: Fixup debuginfo processing for ppc64
+
 2009-02-03  Carl Love  <cel@us.ibm.com>
 
 	* utils/opcontrol:
