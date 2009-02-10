@@ -46,7 +46,10 @@ int main(void)
 	char tmp[PATH_MAX];
 	size_t i = 0;
 
-	chdir("/usr");
+	if (chdir("/usr")) {
+		fprintf(stderr, "chdir(\"/usr\") failed for %s\n", tests[i][0]);
+		exit(EXIT_FAILURE);
+	}
 
 	while (tests[i][0]) {
 		if (!realpath(tests[i][0], tmp)) {

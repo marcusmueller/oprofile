@@ -1,3 +1,10 @@
+2009-02-09  Kjetil Barvik  <barvik@broadpark.no>
+
+	* libabi/tests/abi_test.cpp:
+	* libregex/tests/java_test.cpp:
+	* libregex/tests/regex_test.cpp:
+	* libutil/tests/file_tests.c: Fix gcc warnings
+
 2009-02-06  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/bfd_support.cpp:

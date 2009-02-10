@@ -21,6 +21,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <stdlib.h>
+
 using namespace std;
 
 static int nr_error = 0;
