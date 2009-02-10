@@ -18,8 +18,8 @@
 #include <fstream>
 #include <iostream>
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 

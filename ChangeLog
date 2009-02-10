@@ -1,3 +1,11 @@
+2009-02-10  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libabi/tests/abi_test.cpp:
+	* libregex/tests/java_test.cpp:
+	* libregex/tests/regex_test.cpp: Use C++ style #includes
+	  for stdlib and string
+	
+
 2009-02-09  Kjetil Barvik  <barvik@broadpark.no>
 
 	* libabi/tests/abi_test.cpp:
