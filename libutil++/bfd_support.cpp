@@ -531,7 +531,8 @@ bool bfd_info::get_synth_symbols()
 	return false;
 }
 
-void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
+void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms __attribute__ ((unused)),
+					long nr_dbg_syms __attribute__ ((unused)))
 {
 	return;
 }

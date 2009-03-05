@@ -1,3 +1,7 @@
+2009-03-05  Robert Richter <robert.richter@amd.com>
+
+	* libutil++/bfd_support.cpp: suppress 'unused parameter' warning
+
 2009-02-10  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libabi/tests/abi_test.cpp:
