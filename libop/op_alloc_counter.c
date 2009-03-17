@@ -188,9 +188,20 @@ size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
 	counter_arc_head * ctr_arc;
 	size_t * counter_map;
 	int nr_counters;
+	op_cpu curr_cpu_type;
 	u32 unavailable_counters = 0;
 
-	nr_counters = op_get_counter_mask(&unavailable_counters);
+	/* Either ophelp or one of the libop tests may invoke this
+	 * function with a non-native cpu_type.  If so, we should not
+	 * call op_get_counter_mask because that will look for real counter
+	 * information in oprofilefs.
+	 */
+	curr_cpu_type = op_get_cpu_type();
+	if (cpu_type != curr_cpu_type)
+		nr_counters = op_get_nr_counters(cpu_type);
+	else
+		nr_counters = op_get_counter_mask(&unavailable_counters);
+
 	/* no counters then probably perfmon managing perfmon hw */
 	if (nr_counters <= 0) {
 		nr_counters = op_get_nr_counters(cpu_type);

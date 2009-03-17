@@ -1,3 +1,8 @@
+2009-03-17  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libop/op_allocate_counter.c: Make map_event_to_counter handle
+	  a non-native cpu_type
+
 2009-03-05  Robert Richter <robert.richter@amd.com>
 
 	* libutil++/bfd_support.cpp: suppress 'unused parameter' warning
