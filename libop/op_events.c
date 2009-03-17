@@ -812,6 +812,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_HAMMER:
 		case CPU_FAMILY10:
 		case CPU_ARCH_PERFMON:
+		case CPU_FAMILY11H:
 			descr->name = "CPU_CLK_UNHALTED";
 			break;
 

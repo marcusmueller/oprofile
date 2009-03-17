@@ -29,6 +29,7 @@ event_files = \
 	rtc/events rtc/unit_masks \
 	x86-64/hammer/events x86-64/hammer/unit_masks \
 	x86-64/family10/events x86-64/family10/unit_masks \
+	x86-64/family11h/events x86-64/family11h/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
 	arm/armv6/events arm/armv6/unit_masks \

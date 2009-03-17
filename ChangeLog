@@ -1,3 +1,13 @@
+2009-03-17  Suraveee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
+	* events/Makefile.am
+	* events/x86-64/family11h/events: New event file
+	* events/x86-64/family11h/unit_masks: New Unitmask file
+	* libop/op_cpu_type.c: Adding family11h
+	* libop/op_cpu_type.h: Adding family11h
+	* libop/op_events.c: Adding family11h
+	* utils/ophelp.c: Adding family11h and update documents
+
 2009-03-17  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libop/op_allocate_counter.c: Make map_event_to_counter handle

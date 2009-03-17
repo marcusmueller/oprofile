@@ -74,6 +74,7 @@ typedef enum {
 	CPU_AVR32, /**< AVR32 */
 	CPU_ARM_V7, /**< ARM V7 */
  	CPU_ARCH_PERFMON, /**< Intel architectural perfmon */
+	CPU_FAMILY11H, /**< AMD family 11h */
 	MAX_CPU_TYPE
 } op_cpu;
 

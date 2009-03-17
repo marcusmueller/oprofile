@@ -392,11 +392,24 @@ int main(int argc, char const * argv[])
 
 	switch (cpu_type) {
 	case CPU_HAMMER:
+		event_doc =
+			"See BIOS and Kernel Developer's Guide for AMD Athlon and AMD Opteron Processors\n"
+			"(26094.pdf), Section 10.2\n\n";
+		break;
 	case CPU_FAMILY10:
+		event_doc =
+			"See BIOS and Kernel Developer's Guide for AMD Family 10h Processors\n"
+			"(31116.pdf), Section 3.14\n\n";
+		break;
+	case CPU_FAMILY11H:
+		event_doc =
+			"See BIOS and Kernel Developer's Guide for AMD Family 11h Processors\n"
+			"(41256.pdf), Section 3.14\n\n";
 		break;
 	case CPU_ATHLON:
 		event_doc =
-			"See AMD document x86 optimisation guide (22007.pdf), Appendix D\n\n";
+			"See AMD Athlon Processor x86 Code Optimization Guide\n"
+			"(22007.pdf), Appendix D\n\n";
 		break;
 	case CPU_PPRO:
 	case CPU_PII:
