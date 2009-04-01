@@ -26,7 +26,9 @@ oprofiled_SOURCES = \
 	opd_perfmon.c \
 	opd_anon.h \
 	opd_anon.c \
-	opd_spu.c
+	opd_spu.c \
+	opd_extended.h \
+	opd_extended.c
 
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 

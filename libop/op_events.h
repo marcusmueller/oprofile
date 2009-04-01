@@ -57,6 +57,7 @@ struct op_event {
 	char * desc;      	/**< the event description */
 	int min_count;		/**< minimum counter value allowed */
 	int filter;		/**< architecture specific filter or -1 */
+	char * ext;		/**< extended events */
 	struct list_head event_next;   /**< next event in list */
 };
 

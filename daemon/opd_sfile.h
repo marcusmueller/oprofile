@@ -62,6 +62,8 @@ struct sfile {
 	int ignored;
 	/** opened sample files */
 	odb_t files[OP_MAX_COUNTERS];
+	/** extended sample files */
+	odb_t * ext_files;
 	/** hash table of opened cg sample files */
 	struct list_head cg_hash[CG_HASH_SIZE];
 };

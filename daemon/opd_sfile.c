@@ -17,6 +17,7 @@
 #include "opd_anon.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
+#include "opd_extended.h"
 #include "oprofiled.h"
 
 #include "op_libiberty.h"
@@ -183,6 +184,11 @@ create_sfile(unsigned long hash, struct transient const * trans,
 	for (i = 0 ; i < op_nr_counters ; ++i)
 		odb_init(&sf->files[i]);
 
+	if (trans->ext)
+		opd_ext_sfile_create(sf);
+	else
+		sf->ext_files = NULL;
+
 	for (i = 0; i < CG_HASH_SIZE; ++i)
 		list_init(&sf->cg_hash[i]);
 
@@ -278,6 +284,8 @@ static void sfile_dup(struct sfile * to, struct sfile * from)
 	for (i = 0 ; i < op_nr_counters ; ++i)
 		odb_init(&to->files[i]);
 
+	opd_ext_sfile_dup(to, from);
+
 	for (i = 0; i < CG_HASH_SIZE; ++i)
 		list_init(&to->cg_hash[i]);
 
@@ -294,6 +302,9 @@ static odb_t * get_file(struct transient const * trans, int is_cg)
 	struct list_head * pos;
 	unsigned long hash;
 	odb_t * file;
+
+	if ((trans->ext) != NULL)
+		return opd_ext_sfile_get(trans, is_cg);
 
 	if (trans->event >= op_nr_counters) {
 		fprintf(stderr, "%s: Invalid counter %lu\n", __FUNCTION__,
@@ -446,7 +457,7 @@ void sfile_log_sample(struct transient const * trans)
 		return;
 	}
 
-	err = odb_update_node(file, (uint64_t)pc);
+	err = odb_update_node(file, (odb_key_t)pc);
 	if (err) {
 		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();
@@ -461,6 +472,8 @@ static int close_sfile(struct sfile * sf, void * data __attribute__((unused)))
 	/* it's OK to close a non-open odb file */
 	for (i = 0; i < op_nr_counters; ++i)
 		odb_close(&sf->files[i]);
+
+	opd_ext_sfile_close(sf);
 
 	return 0;
 }
@@ -480,6 +493,8 @@ static int sync_sfile(struct sfile * sf, void * data __attribute__((unused)))
 
 	for (i = 0; i < op_nr_counters; ++i)
 		odb_sync(&sf->files[i]);
+
+	opd_ext_sfile_sync(sf);
 
 	return 0;
 }

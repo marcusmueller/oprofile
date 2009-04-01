@@ -27,6 +27,7 @@
 #include "op_xml_events.h"
 
 static char const ** chosen_events;
+static int num_chosen_events;
 struct parsed_event * parsed_events;
 static op_cpu cpu_type = CPU_NO_GOOD;
 static char * cpu_string;
@@ -75,25 +76,35 @@ static void help_for_event(struct op_event * event)
 	do_arch_specific_event_help(event);
 	nr_counters = op_get_nr_counters(cpu_type);
 
+	/* Sanity check */
+	if (!event)
+		return;
+
 	printf("%s", event->name);
 
-	printf(": (counter: ");
+	if(event->counter_mask != 0) {
+		printf(": (counter: ");
 
-	mask = event->counter_mask;
-	if (hweight(mask) == nr_counters) {
-		printf("all");
-	} else {
-		for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
-			if (mask & (1 << i)) {
-				printf("%d", i);
-				mask &= ~(1 << i);
-				if (mask)
-					printf(", ");
+		mask = event->counter_mask;
+		if (hweight(mask) == nr_counters) {
+			printf("all");
+		} else {
+			for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
+				if (mask & (1 << i)) {
+					printf("%d", i);
+					mask &= ~(1 << i);
+					if (mask)
+						printf(", ");
+				}
 			}
 		}
+		printf(")");
 	}
 
-	printf(")\n\t%s (min count: %d)\n", event->desc, event->min_count);
+	if(event->ext != NULL)
+		printf(" (ext: %s)", event->ext);
+
+	printf("\n\t%s (min count: %d)\n", event->desc, event->min_count);
 
 	if (strcmp(event->unit->name, "zero")) {
 
@@ -144,17 +155,13 @@ static void check_event(struct parsed_event * pev,
 
 static void resolve_events(void)
 {
-	size_t count;
+	size_t count, count_events;
 	size_t i, j;
 	size_t * counter_map;
 	size_t nr_counters = op_get_nr_counters(cpu_type);
-	struct op_event const * selected_events[nr_counters];
+	struct op_event const * selected_events[num_chosen_events];
 
-	count = parse_events(parsed_events, nr_counters, chosen_events);
-	if (count > nr_counters) {
-		fprintf(stderr, "Not enough hardware counters.\n");
-		exit(EXIT_FAILURE);
-	}
+	count = parse_events(parsed_events, num_chosen_events, chosen_events);
 
 	for (i = 0; i < count; ++i) {
 		for (j = i + 1; j < count; ++j) {
@@ -172,12 +179,23 @@ static void resolve_events(void)
 		}
 	}
 
-	for (i = 0; i < count; ++i) {
+	for (i = 0, count_events = 0; i < count; ++i) {
 		struct parsed_event * pev = &parsed_events[i];
 
 		selected_events[i] = find_event_by_name(pev->name);
 
 		check_event(pev, selected_events[i]);
+
+		if (selected_events[i]->ext == NULL) {
+			count_events++;
+		}
+	}
+	if (count_events > nr_counters) {
+		fprintf(stderr, "Not enough hardware counters. "
+				"Need %lu counters but only has %lu.\n",
+				(unsigned long) count_events,
+				(unsigned long) nr_counters);
+		exit(EXIT_FAILURE);
 	}
 
 	counter_map = map_event_to_counter(selected_events, count, cpu_type);
@@ -188,7 +206,13 @@ static void resolve_events(void)
 	}
 
 	for (i = 0; i < count; ++i)
-		printf("%d ", (unsigned int) counter_map[i]);
+		if(counter_map[i] == (size_t)-1)
+			if (selected_events[i]->ext != NULL)
+				printf("%s ", (char*) selected_events[i]->ext);
+			else
+				printf("N/A ");
+		else
+			printf("%d ", (unsigned int) counter_map[i]);
 	printf("\n");
 
 	free(counter_map);
@@ -199,9 +223,8 @@ static void show_unit_mask(void)
 {
 	struct op_event * event;
 	size_t count;
-	size_t nr_counter = op_get_nr_counters(cpu_type);
 
-	count = parse_events(parsed_events, nr_counter, chosen_events);
+	count = parse_events(parsed_events, num_chosen_events, chosen_events);
 	if (count > 1) {
 		fprintf(stderr, "More than one event specified.\n");
 		exit(EXIT_FAILURE);
@@ -275,6 +298,12 @@ static void get_options(int argc, char const * argv[])
 	/* non-option, must be a valid event name or event specs */
 	chosen_events = poptGetArgs(optcon);
 
+	if(chosen_events) {
+		num_chosen_events = 0;
+		while (chosen_events[num_chosen_events] != NULL)
+			num_chosen_events++;
+	}
+
 	/* don't free the context now, we need chosen_events */
 }
 
@@ -283,7 +312,7 @@ static void get_options(int argc, char const * argv[])
 static void cleanup(void)
 {
 	int i;
-	for (i = 0; i < op_get_nr_counters(cpu_type); ++i) {
+	for (i = 0; i < num_chosen_events; ++i) {
 		if (parsed_events[i].name)
 			free(parsed_events[i].name);
 	}
@@ -301,7 +330,6 @@ int main(int argc, char const * argv[])
 	struct list_head * events;
 	struct list_head * pos;
 	char const * pretty;
-	size_t nr_counter;
 	char title[10 * MAX_LINE];
 	char const * event_doc = "";
 
@@ -325,8 +353,7 @@ int main(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	nr_counter = op_get_nr_counters(cpu_type);
-	parsed_events = (struct parsed_event *)xcalloc(nr_counter,
+	parsed_events = (struct parsed_event *)xcalloc(num_chosen_events,
 		sizeof(struct parsed_event));
 
 	pretty = op_get_cpu_type_str(cpu_type);

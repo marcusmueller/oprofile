@@ -13,6 +13,7 @@
  
 #include "opd_events.h"
 #include "opd_printf.h"
+#include "opd_extended.h"
 #include "oprofiled.h"
 
 #include "op_string.h"
@@ -128,6 +129,12 @@ void opd_parse_events(char const * events)
 struct opd_event * find_counter_event(unsigned long counter)
 {
 	size_t i;
+	struct opd_event * ret = NULL;
+
+	if (counter >= OP_MAX_COUNTERS) {
+		if((ret = opd_ext_find_counter_event(counter)) != NULL)
+			return ret;
+	}
 
 	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {
 		if (counter == opd_events[i].counter)

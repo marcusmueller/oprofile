@@ -302,6 +302,7 @@ static struct op_event * new_event(void)
 
 
 /* event:0x00 counters:0 um:zero minimum:4096 name:ISSUES : Total issues */
+/* event:0x00 ext:xxxxxx um:zero minimum:4096 name:ISSUES : Total issues */
 static void read_events(char const * file)
 {
 	struct op_event * event = NULL;
@@ -309,7 +310,7 @@ static void read_events(char const * file)
 	char * name;
 	char * value;
 	char const * c;
-	int seen_event, seen_counters, seen_um, seen_minimum, seen_name;
+	int seen_event, seen_counters, seen_um, seen_minimum, seen_name, seen_ext;
 	FILE * fp = fopen(file, "r");
 
 	if (!fp) {
@@ -329,10 +330,12 @@ static void read_events(char const * file)
 		seen_name = 0;
 		seen_event = 0;
 		seen_counters = 0;
+		seen_ext = 0;
 		seen_um = 0;
 		seen_minimum = 0;
 		event = new_event();
 		event->filter = -1;
+		event->ext = NULL;
 		
 		c = line;
 		while (next_token(&c, &name, &value)) {
@@ -360,6 +363,11 @@ static void read_events(char const * file)
 				else
 					event->counter_mask = parse_counter_mask(value);
 				free(value);
+			} else if (strcmp(name, "ext") == 0) {
+				if (seen_ext)
+					parse_error("duplicate ext: tag");
+				seen_ext = 1;
+				event->ext = value;
 			} else if (strcmp(name, "um") == 0) {
 				if (seen_um)
 					parse_error("duplicate um: tag");

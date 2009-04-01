@@ -82,7 +82,7 @@ int enough_remaining(struct transient * trans, size_t size)
 }
 
 
-static void opd_put_sample(struct transient *trans, unsigned long long pc)
+static void opd_put_sample(struct transient * trans, unsigned long long pc)
 {
 	unsigned long long event;
 
@@ -299,7 +299,8 @@ void opd_process_samples(char const * buffer, size_t count)
 		.cpu = -1,
 		.tid = -1,
 		.embedded_offset = UNUSED_EMBEDDED_OFFSET,
-		.tgid = -1
+		.tgid = -1,
+		.ext = NULL
 	};
 
 	/* FIXME: was uint64_t but it can't compile on alpha where uint64_t

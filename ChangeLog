@@ -1,3 +1,21 @@
+2009-04-01  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
+	* daemon/Makefile.am:
+	* daemon/opd_events.c:
+	* daemon/opd_extended.h: New File
+	* daemon/opd_extended.c: New File
+	* daemon/opd_printf.h:
+	* daemon/opd_sfile.h:
+	* daemon/opd_sfile.c:
+	* daemon/opd_stats.c:
+	* daemon/opd_trans.h:
+	* daemon/opd_trans.c:
+	* daemon/oprofiled.c:
+	* libop/op_events.h:
+	* libop/op_events.c:
+	* libop/op_alloc_counter.c:
+	* utils/ophelp.c: Add Extended Feature Interface
+
 2009-03-17  Suraveee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* events/Makefile.am
