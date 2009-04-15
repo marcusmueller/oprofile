@@ -1,3 +1,8 @@
+2009-04-15  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libpp/xml_utils.cpp: Fix binary count total in XML output
+	  when using --separate=lib
+
 2009-04-08  William Cohen  <wcohen@redhat.com>
 
 	* configure.in: Add check for basename declaration

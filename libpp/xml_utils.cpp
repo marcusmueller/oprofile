@@ -605,9 +605,6 @@ void binary_info::close_binary(sym_iterator it)
 	if (nr_modules > 0) {
 		module_info & m = my_modules[nr_modules-1];
 		m.set_end(it);
-
-		// propagate module summary to binary
-		add_to_summary(m.get_summary());
 	}
 }
 
@@ -637,10 +634,9 @@ add_module_symbol(string const & module, string const & app,
 			// close out current module
 			module_info & mod = my_modules[m-1];
 			mod.set_end(it);
-			add_to_summary(mod.get_summary());
 		}
 
-		// no module, so add symbol count to binary count
+		// add symbol count to binary count
 		add_to_summary((*it)->sample.counts);
 		return;
 	}
