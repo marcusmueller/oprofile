@@ -28,7 +28,12 @@ oprofiled_SOURCES = \
 	opd_anon.c \
 	opd_spu.c \
 	opd_extended.h \
-	opd_extended.c
+	opd_extended.c \
+	opd_ibs.h \
+	opd_ibs.c \
+	opd_ibs_macro.h \
+	opd_ibs_trans.h \
+	opd_ibs_trans.c
 
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 

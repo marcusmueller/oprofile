@@ -1,3 +1,19 @@
+2009-04-17  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
+	* daemon/Makefile.am:
+	* daemon/opd_extended.c:
+	* daemon/opd_ibs.c: New File
+	* daemon/opd_ibs.h: New File
+	* daemon/opd_ibs_macro.h: New File
+	* daemon/opd_ibs_trans.c: New File
+	* daemon/opd_ibs_trans.h: New File
+	* daemon/opd_interface.h:
+	* daemon/opd_sfile.c:
+	* daemon/opd_sfile.h:
+	* daemon/opd_trans.c:
+	* libdb/db_insert.c:
+	* libdb/odb.h: Add IBS support, patch 1 of 4
+
 2009-04-15  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libpp/xml_utils.cpp: Fix binary count total in XML output

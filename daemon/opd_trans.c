@@ -258,6 +258,9 @@ static void code_xen_enter(struct transient * trans)
 extern void code_spu_profiling(struct transient * trans);
 extern void code_spu_ctx_switch(struct transient * trans);
 
+extern void code_ibs_fetch_sample(struct transient * trans);
+extern void code_ibs_op_sample(struct transient * trans);
+
 handler_t handlers[LAST_CODE + 1] = {
 	&code_unknown,
 	&code_ctx_switch,
@@ -274,8 +277,12 @@ handler_t handlers[LAST_CODE + 1] = {
 #if defined(__powerpc__)
 	&code_spu_profiling,
 	&code_spu_ctx_switch,
-#endif
+#else
 	&code_unknown,
+	&code_unknown,
+#endif
+	&code_ibs_fetch_sample,
+	&code_ibs_op_sample,
 };
 
 extern void (*special_processor)(struct transient *);

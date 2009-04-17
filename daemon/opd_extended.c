@@ -19,12 +19,15 @@
  * if extended feature is enabled */
 static int opd_ext_feat_index;
 
+extern struct opd_ext_handlers ibs_handlers;
+
 /**
  * OProfile Extended Feature Table
  *
  * This table contains a list of extended features.
  */
 static struct opd_ext_feature ext_feature_table[] = {
+	{"ibs", &ibs_handlers },
 	{ NULL, NULL }
 };
 

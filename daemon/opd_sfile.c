@@ -127,7 +127,7 @@ trans_match(struct transient const * trans, struct sfile const * sfile,
 }
 
 
-static int
+int
 sfile_equal(struct sfile const * sf, struct sfile const * sf2)
 {
 	return do_match(sf, sf2->cookie, sf2->app_cookie, sf2->kernel,
@@ -275,7 +275,7 @@ lru:
 }
 
 
-static void sfile_dup(struct sfile * to, struct sfile * from)
+void sfile_dup(struct sfile * to, struct sfile * from)
 {
 	size_t i;
 
@@ -428,6 +428,13 @@ static void sfile_log_arc(struct transient const * trans)
 
 void sfile_log_sample(struct transient const * trans)
 {
+	sfile_log_sample_count(trans, 1);
+}
+
+
+void sfile_log_sample_count(struct transient const * trans,
+                            unsigned long int count)
+{
 	int err;
 	vma_t pc = trans->pc;
 	odb_t * file;
@@ -457,7 +464,9 @@ void sfile_log_sample(struct transient const * trans)
 		return;
 	}
 
-	err = odb_update_node(file, (odb_key_t)pc);
+	err = odb_update_node_with_offset(file,
+					  (odb_key_t)pc,
+					  count);
 	if (err) {
 		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();
