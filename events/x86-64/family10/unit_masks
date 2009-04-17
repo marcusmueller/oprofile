@@ -3,17 +3,22 @@
 #
 # Copyright OProfile authors
 # Copyright (c) 2006-2008 Advanced Micro Devices
-# Contributed by Ray Bryant <raybry at amd.com>
+# Contributed by Ray Bryant <raybry at amd.com>,
 #		Jason Yeh <jason.yeh at amd.com>
 #		Suravee Suthikulpanit <suravee.suthikulpanit at amd.com>
 #
 # Sources: BIOS and Kernel Developer's Guide for AMD Family 10h Processors,
-#          Publication# 31116, Revision 3.00, September 7, 2007
+#          Publication# 31116, Revision 3.20, February 04, 2009
 #
 #          Software Optimization Guide for AMD Family 10h Processors,
 #          Publication# 40546, Revision 3.04, September 2007
 #
-# This file was last updated on 11 January 2008.
+# Revision: 1.1
+#
+# ChangeLog: 06 April 2009.
+# 	- Add IBS-derived events
+# 	- Update from BKDG Rev 3.00 to Rev 3.20
+# 	- Add Events 165h, 1c0h, 1cfh, 1d3h-1d5h
 #
 name:zero type:mandatory default:0x0
 	0x0 No unit mask
@@ -50,7 +55,7 @@ name:segregload type:bitmask default:0x7f
 name:fpu_instr type:bitmask default:0x07
 	0x01 x87 instructions
 	0x02 MMX & 3DNow instructions
-	0x04 SSE & SSE2 instructions
+	0x04 SSE instructions (SSE, SSE2, SSE3, and SSE4A)
 name:fpu_fastpath type:bitmask default:0x07
 	0x01 With low op in position 0
 	0x02 With low op in position 1
@@ -60,15 +65,13 @@ name:fpu_exceptions type:bitmask default:0x0f
 	0x02 SSE retype microfaults
 	0x04 SSE reclass microfaults
 	0x08 SSE and x87 microtraps
-name:page_access type:bitmask default:0xff
+name:page_access type:bitmask default:0x3f
 	0x01 DCT0 Page hit
 	0x02 DCT0 Page miss
 	0x04 DCT0 Page conflict
 	0x08 DCT1 Page hit
 	0x10 DCT1 Page miss
 	0x20 DCT1 Page Conflict
-	0x40 Write request
-	0x80 Read request
 name:mem_page_overflow  type:bitmask default:0x03
 	0x01 DCT0 Page Table Overflow
 	0x02 DCT1 Page Table Overflow
@@ -163,7 +166,7 @@ name:cacheblock type:bitmask default:0x3d
 	0x04 Read Block (Dcache load miss refill)
 	0x08 Read Block Shared (Icache refill)
 	0x10 Read Block Modified (Dcache store miss refill)
-	0x20 Change to Dirty (first store to clean block already in cache)
+	0x20 Change-to-Dirty (first store to clean block already in cache)
 name:dataprefetch type:bitmask default:0x03
 	0x01 Cancelled prefetches
 	0x02 Prefetch attempts
@@ -171,14 +174,16 @@ name:memreqtype type:bitmask default:0x83
 	0x01 Requests to non-cacheable (UC) memory
 	0x02 Requests to write-combining (WC) memory or WC buffer flushes to WB memory
 	0x80 Streaming store (SS) requests
-name:systemreadresponse type:bitmask default:0x17
+name:systemreadresponse type:bitmask default:0x1f
 	0x01 Exclusive
 	0x02 Modified
 	0x04 Shared
+	0x08 Owned
 	0x10 Data Error
-name:l1_dtlb_miss_l2_hit type:bitmask default:0x03
+name:l1_dtlb_miss_l2_hit type:bitmask default:0x07
 	0x01 L2 4K TLB hit
 	0x02 L2 2M TLB hit
+	0x04 L2 1G TLB hit (RevC)
 name:l1_l2_dtlb_miss type:bitmask default:0x07
 	0x01 4K TLB reload
 	0x02 2M TLB reload
@@ -216,7 +221,7 @@ name:httransmit type:bitmask default:0xbf
 	0x02 Data DWORD sent
 	0x04 Buffer release DWORD sent
 	0x08 Nop DW sent (idle)
-	0x10 Address extension DWORD sent
+	0x10 Address DWORD sent
 	0x20 Per packet CRC sent
 	0x80 SubLink Mask
 name:lock_ops type:bitmask default:0x0f
@@ -289,7 +294,7 @@ name:cpu_read_lat_0_3 type:bitmask default:0xff
 	0x01 Read block 
 	0x02 Read block shared
 	0x04 Read block modified
-	0x08 Change to Dirty
+	0x08 Change-to-Dirty
 	0x10 From local node to node 0
 	0x20 From local node to node 1
 	0x40 From local node to node 2
@@ -298,7 +303,7 @@ name:cpu_read_lat_4_7 type:bitmask default:0xff
 	0x01 Read block 
 	0x02 Read block shared
 	0x04 Read block modified
-	0x08 Change to Dirty
+	0x08 Change-to-Dirty
 	0x10 From local node to node 4
 	0x20 From local node to node 5
 	0x40 From local node to node 6
@@ -334,9 +339,18 @@ name:l3_evict type:bitmask default:0x0f
 	0x02 Exclusive
 	0x04 Owned
 	0x08 Modified
-name:icache_invalidated type:bitmask default:0x0f
+name:icache_invalidated type:bitmask default:0x03
 	0x01 Invalidating probe that did not hit any in-flight instructions
 	0x02 Invalidating probe that hit one or more in-flight instructions
-	0x04 SMC that did not hit any in-flight instructions
-	0x08 SMC that hit one or more in-flight instructions
+name:page_size_mismatches type:bitmask default:0x07
+	0x01 Guest page size is larger than the host page size
+	0x02 MTRR mismatch
+	0x04 Host page size is larger than the guest page size
+name:retired_x87_fp type:bitmask default:0x07
+	0x01 Add/subtract ops
+	0x02 Multiply ops
+	0x04 Divide ops
+name:ibs_op type:bitmask default:0x01
+	0x00 Using IBS OP cycle count mode
+	0x01 Using IBS OP dispatch count mode
 

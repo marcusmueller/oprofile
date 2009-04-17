@@ -1,5 +1,11 @@
 2009-04-17  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
+	* events/x86-64/family10/events:
+	* events/x86-64/family10/unit_masks: Add IBS support, patch 2 of 4
+
+
+2009-04-17  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
 	* daemon/Makefile.am:
 	* daemon/opd_extended.c:
 	* daemon/opd_ibs.c: New File
