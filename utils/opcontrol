@@ -118,7 +118,8 @@ do_help()
    -d/--dump        flush the collected profiling data
    -t/--stop        stop data collection
    -h/--shutdown    stop data collection and kill daemon
-   -V/--verbose[=all,sfile,arcs,samples,module,misc]     be verbose in the daemon log
+   -V/--verbose[=all,sfile,arcs,samples,module,misc,ext]
+                    be verbose in the daemon log
    --reset          clears out data from current session
    --save=name      save data from current session to session_name
    --deinit         unload the oprofile module and oprofilefs
@@ -296,6 +297,12 @@ do_init()
 	SEPARATE_THREAD=0
 	SEPARATE_CPU=0
 	CALLGRAPH=0
+	IBS_FETCH_EVENTS=""
+	IBS_FETCH_COUNT=0
+	IBS_FETCH_UNITMASK=0
+	IBS_OP_EVENTS=""
+	IBS_OP_COUNT=0
+	IBS_OP_UNITMASK=0
 
 	OPROFILED="$OPDIR/oprofiled"
 
@@ -561,13 +568,16 @@ verify_counters()
 		for f in `seq 0 $((NR_CHOSEN - 1))`; do
 			get_event $f
 			if test "$GOTEVENT" != ""; then
+				verify_ibs $GOTEVENT
 				OPHELP_ARGS="$OPHELP_ARGS $GOTEVENT"
 			fi
 		done
 
-		HW_CTRS=`$OPHELP --check-events $OPHELP_ARGS --callgraph=$CALLGRAPH`
-		if test "$?" != 0; then
-			exit 1
+		if test ! -z "$OPHELP_ARGS" ; then
+			HW_CTRS=`$OPHELP --check-events $OPHELP_ARGS --callgraph=$CALLGRAPH`
+			if test "$?" != 0; then
+				exit 1
+			fi
 		fi
 	fi
 }
@@ -983,7 +993,16 @@ do_kill_daemon()
 		fi
 
 		COUNT=`expr $COUNT + 1`
-		if test "$COUNT" -eq 15; then
+
+		# IBS can generate a large number of samples/events.
+		# Therefore, extend the delay before killing
+		if test "$IBS_FETCH_COUNT" != "0" \
+		     -o "$IBS_OP_COUNT" != "0" ; then
+			DELAY_KILL=60
+		else
+			DELAY_KILL=15
+		fi
+		if test "$COUNT" -eq "$DELAY_KILL"; then
 			echo "Daemon stuck shutting down; killing !"
 			kill -9 `cat $LOCK_FILE`
 		fi
@@ -1299,6 +1318,17 @@ do_param_setup()
 		set_ctr_param $f count 0
 	done
 
+	# Check if driver has IBS support
+	if test -d $MOUNT/ibs_fetch; then
+		# Reset driver's IBS fetch setting
+		set_param ibs_fetch/enable 0
+	fi
+	
+	if test -d $MOUNT/ibs_op ; then
+		# Reset driver's IBS op setting
+		set_param ibs_op/enable 0
+	fi	
+
 	verify_counters
 
 	OPROFILED_EVENTS=
@@ -1342,6 +1372,13 @@ do_param_setup()
 
 				fi
 			fi
+
+			if [ "$CTR" = "ibs_fetch" -o "$CTR" = "ibs_op" ] ; then
+				# Handle IBS events setup
+				do_param_setup_ibs
+				continue
+			fi
+
 			if test "$EVENT" = "RTC_INTERRUPTS"; then
 				set_param rtc_value $COUNT
 				$SYSCTL -w dev.oprofile.rtc_value=$COUNT
@@ -1411,7 +1448,9 @@ do_start_daemon()
 		--separate-thread=$SEPARATE_THREAD \
 		--separate-cpu=$SEPARATE_CPU"
 
-	OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
+	if ! test -z "$OPROFILED_EVENTS"; then
+		OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
+	fi
 
 	if test "$VMLINUX" = "none"; then
 		OPD_ARGS="$OPD_ARGS --no-vmlinux"
@@ -1430,6 +1469,8 @@ do_start_daemon()
 	if test -n "$VERBOSE"; then
 		OPD_ARGS="$OPD_ARGS --verbose=$VERBOSE"
 	fi
+
+	help_start_daemon_with_ibs
 
 	vecho "executing oprofiled $OPD_ARGS"
 
@@ -1786,6 +1827,134 @@ try_reset_sample_file()
 		fi
 	fi
 }
+
+#
+# Begin IBS Specific Functions
+#
+verify_ibs()
+{
+	IBS_EVENT=`echo $1| awk -F: '{print $1}'`
+	IBS_COUNT=`echo $1 | awk -F: '{print $2}'`
+	IBS_MASK=`echo $1 | awk -F: '{print $3}'`
+	
+	IBS_TYPE=`$OPHELP --check-events $1`
+	if test "$?" != "0" ; then
+		exit 1
+	fi
+			
+	if [ "$IBS_TYPE" = "ibs_fetch " ] ; then
+		# Check IBS_COUNT consistency
+		if test "$IBS_FETCH_COUNT" = "0" ; then 
+			IBS_FETCH_COUNT=$IBS_COUNT
+			IBS_FETCH_MASK=$IBS_MASK
+		elif test "$IBS_FETCH_COUNT" != "$IBS_COUNT" ; then
+			echo "All IBS Fetch must have the same count."
+			exit 1
+		fi
+
+		# Check IBS_MASK consistency
+		if test "$IBS_FETCH_MASK" != "$IBS_MASK" ; then
+			echo "All IBS Fetch must have the same unitmask."
+			exit 1
+		fi
+
+	elif [ "$IBS_TYPE" = "ibs_op " ] ; then
+		# Check IBS_COUNT consistency
+		if test "$IBS_OP_COUNT" = "0" ; then 
+			IBS_OP_COUNT=$IBS_COUNT
+			IBS_OP_MASK=$IBS_MASK
+		elif test "$IBS_OP_COUNT" != "$IBS_COUNT" ; then
+			echo "All IBS Op must have the same count."
+			exit 1
+		fi
+
+		# Check IBS_MASK consistency
+		if test "$IBS_OP_MASK" != "$IBS_MASK" ; then
+			echo "All IBS Op must have the same unitmask."
+			exit 1
+		fi
+	fi
+
+	return
+}
+
+
+do_param_setup_ibs()
+{
+	if test "$KERNEL_SUPPORT" != "yes" ; then
+		echo "ERROR: No kernel support for IBS profiling."
+		exit 1	
+	fi
+
+	
+	# Check if driver has IBS support
+	if test ! -d $MOUNT/ibs_fetch -o ! -d $MOUNT/ibs_op ; then
+		echo "ERROR: No kernel support for IBS profiling."
+		exit 1	
+	fi	
+
+	if test `echo $EVENT |  \
+	awk '{ print substr($0, 0, 10)}'` = "IBS_FETCH_" ; then
+		if test "$COUNT" != "0"; then
+			if [ "$IBS_FETCH_EVENTS" == "" ] ; then
+				IBS_FETCH_EVENTS="$EVENT"
+			else
+				IBS_FETCH_EVENTS="$IBS_FETCH_EVENTS,$EVENT"
+			fi
+			IBS_FETCH_COUNT=$COUNT
+			set_param ibs_fetch/max_count $COUNT
+			set_param ibs_fetch/rand_enable 1
+			set_param ibs_fetch/enable 1
+		else
+			set_param ibs_fetch/enable 0
+		fi
+
+	elif test `echo $EVENT |  \
+	awk '{ print substr($0, 0, 7)}'` = "IBS_OP_" ; then
+		if test "$COUNT" != "0"; then
+			if [ "$IBS_OP_EVENTS" == "" ] ; then
+				IBS_OP_EVENTS="$EVENT"
+			else
+				IBS_OP_EVENTS="$IBS_OP_EVENTS,$EVENT"
+			fi
+			IBS_OP_COUNT=$COUNT
+			IBS_OP_UNITMASK=$UNIT_MASK
+
+			set_param ibs_op/max_count $COUNT
+			set_param ibs_op/enable 1
+
+			# NOTE: We default to use dispatched_op if available. 
+			#       Some of the older family10 system does not have
+			#       dispatched_ops feature.
+			#	dispatched op is enabled by bit 1 of the unitmask
+			if test -f $MOUNT/ibs_op/dispatched_ops ; then
+				IBS_OP_DISPATCHED_OP=$(( IBS_OP_UNITMASK & 0x1 ))
+				set_param ibs_op/dispatched_ops $IBS_OP_DISPATCHED_OP
+			fi
+		else
+			set_param ibs_op/enable 0
+		fi
+	fi
+}
+
+
+help_start_daemon_with_ibs()
+{
+	if test "$IBS_FETCH_COUNT" != "0" -o "$IBS_OP_COUNT" != "0" ; then
+		OPD_ARGS="${OPD_ARGS} --ext-feature=ibs:"
+		if test "$IBS_FETCH_COUNT" != "0"; then
+			OPD_ARGS="${OPD_ARGS}fetch:$IBS_FETCH_EVENTS:$IBS_FETCH_COUNT:$IBS_FETCH_UNITMASK|"
+		fi
+
+		if test "$IBS_OP_COUNT" != "0"; then
+			OPD_ARGS="${OPD_ARGS}op:$IBS_OP_EVENTS:$IBS_OP_COUNT:$IBS_OP_UNITMASK"
+		fi
+	fi
+}
+
+#
+# End IBS Specific Functions
+#
 
 # main
 
