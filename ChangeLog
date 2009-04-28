@@ -1,3 +1,8 @@
+2009-04-22  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* agents/jvmpi/jvmpi_oprofile.cpp: Change this file to use LGPL license
+	  to allow JVMPI agent library to link to non-GPL code
+
 2009-04-17  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* utils/opcontrol: Add IBS support, patch 4 of 4
