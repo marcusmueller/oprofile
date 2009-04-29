@@ -1,3 +1,14 @@
+2009-04-28  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/Makefile.am:
+	* events/ppc64/power7/event_mappings: (new)
+	* events/ppc64/power7/events: (new)
+	* events/ppc64/power7/unit_masks: (new)
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c:  Add support for IBM POWER7 processor
+
 2009-04-22  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* agents/jvmpi/jvmpi_oprofile.cpp: Change this file to use LGPL license

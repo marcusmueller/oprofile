@@ -75,6 +75,7 @@ typedef enum {
 	CPU_ARM_V7, /**< ARM V7 */
  	CPU_ARCH_PERFMON, /**< Intel architectural perfmon */
 	CPU_FAMILY11H, /**< AMD family 11h */
+	CPU_PPC64_POWER7, /**< ppc64 POWER7 family */
 	MAX_CPU_TYPE
 } op_cpu;
 

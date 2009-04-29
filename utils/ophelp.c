@@ -513,6 +513,7 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_POWER5pp:
 	case CPU_PPC64_970:
 	case CPU_PPC64_970MP:
+	case CPU_PPC64_POWER7:
 		event_doc =
 			"Obtain PowerPC64 processor documentation at:\n"
 			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n";

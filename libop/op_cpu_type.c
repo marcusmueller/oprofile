@@ -78,6 +78,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM V7 PMNC", "arm/armv7", CPU_ARM_V7, 5 },
  	{ "Intel Architectural Perfmon", "i386/arch_perfmon", CPU_ARCH_PERFMON, 0},
 	{ "AMD64 family11h", "x86-64/family11h", CPU_FAMILY11H, 4 },
+	{ "ppc64 POWER7", "ppc64/power7", CPU_PPC64_POWER7, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
