@@ -403,20 +403,21 @@ next:
 
 
 /* usefull for make check */
-static void check_unit_mask(struct op_unit_mask const * um,
+static int check_unit_mask(struct op_unit_mask const * um,
 	char const * cpu_name)
 {
 	u32 i;
+	int err = 0;
 
 	if (!um->used) {
 		fprintf(stderr, "um %s is not used\n", um->name);
-		exit(EXIT_FAILURE);
+		err = EXIT_FAILURE;
 	}
 
 	if (um->unit_type_mask == utm_mandatory && um->num != 1) {
 		fprintf(stderr, "mandatory um %s doesn't contain exactly one "
 			"entry (%s)\n", um->name, cpu_name);
-		exit(EXIT_FAILURE);
+		err = EXIT_FAILURE;
 	} else if (um->unit_type_mask == utm_bitmask) {
 		u32 default_mask = um->default_mask;
 		for (i = 0; i < um->num; ++i)
@@ -425,7 +426,7 @@ static void check_unit_mask(struct op_unit_mask const * um,
 		if (default_mask) {
 			fprintf(stderr, "um %s default mask is not valid "
 				"(%s)\n", um->name, cpu_name);
-			exit(EXIT_FAILURE);
+			err = EXIT_FAILURE;
 		}
 	} else {
 		for (i = 0; i < um->num; ++i) {
@@ -436,9 +437,10 @@ static void check_unit_mask(struct op_unit_mask const * um,
 		if (i == um->num) {
 			fprintf(stderr, "exclusive um %s default value is not "
 				"valid (%s)\n", um->name, cpu_name);
-			exit(EXIT_FAILURE);
+			err = EXIT_FAILURE;
 		}
 	}
+	return err;
 }
 
 static void arch_filter_events(op_cpu cpu_type)
@@ -461,6 +463,7 @@ static void load_events(op_cpu cpu_type)
 	char * event_file;
 	char * um_file;
 	char * dir;
+	int err = 0;
 	struct list_head * pos;
 
 	if (!list_empty(&events_list))
@@ -495,12 +498,14 @@ static void load_events(op_cpu cpu_type)
 	list_for_each(pos, &um_list) {
 		struct op_unit_mask * um = list_entry(pos, struct op_unit_mask, um_next);
 
-		check_unit_mask(um, cpu_name);
+		err |= check_unit_mask(um, cpu_name);
 	}
-	
+
 	free(um_file);
 	free(event_file);
 	free(event_dir);
+	if (err)
+		exit(err);
 }
 
 struct list_head * op_events(op_cpu cpu_type)

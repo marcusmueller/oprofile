@@ -1,3 +1,8 @@
+2009-04-29  Andi Kleen  <ak@linux.intel.com>
+
+	* libop/op_events.c: Allow make check to accumulate some errors
+	  before exiting
+
 2009-04-28  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/Makefile.am:
