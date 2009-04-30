@@ -1,5 +1,10 @@
 2009-04-29  Andi Kleen  <ak@linux.intel.com>
 
+	* libop/op_events.c: Add support for include and unit mask merging
+	  statements in event files
+
+2009-04-29  Andi Kleen  <ak@linux.intel.com>
+
 	* libop/op_events.c: Allow make check to accumulate some errors
 	  before exiting
 
