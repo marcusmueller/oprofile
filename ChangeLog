@@ -1,3 +1,7 @@
+2009-04-30  Andi Kleen  <ak@linux.intel.com>
+
+	* events/i386/arch_perfmon/events: Update event names to conform to manual.
+
 2009-05-01  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in:
