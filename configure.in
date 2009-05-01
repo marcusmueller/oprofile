@@ -147,7 +147,7 @@ AX_CHECK_DOCBOOK
 dnl finally restore the original libs setting
 LIBS="$ORIG_SAVE_LIBS"
 LIBERTY_LIBS="-liberty $DL_LIB $INTL_LIB"
-BFD_LIBS="-lbfd -liberty $DL_LIB $INTL_LIB"
+BFD_LIBS="-lbfd -liberty $DL_LIB $INTL_LIB $Z_LIB"
 POPT_LIBS="-lpopt"
 AC_SUBST(LIBERTY_LIBS)
 AC_SUBST(BFD_LIBS)

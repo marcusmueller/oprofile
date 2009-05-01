@@ -10,10 +10,10 @@ AC_CHECK_FUNCS(xmemdup)
 AC_CHECK_LIB(dl, dlopen, LIBS="$LIBS -ldl"; DL_LIB="-ldl", DL_LIB="")
 AC_CHECK_LIB(intl, main, LIBS="$LIBS -lintl"; INTL_LIB="-lintl", INTL_LIB="")
 
-AC_CHECK_LIB(bfd, bfd_openr,,
+AC_CHECK_LIB(bfd, bfd_openr, LIBS="-lbfd $LIBS"; Z_LIB="",
 	[AC_CHECK_LIB(z, compress,
 dnl Use a different bfd function here so as not to use cached result from above
-		[AC_CHECK_LIB(bfd, bfd_fdopenr, LIBS="-lbfd -lz $LIBS",
+		[AC_CHECK_LIB(bfd, bfd_fdopenr, LIBS="-lbfd -lz $LIBS"; Z_LIB="-lz",
 			[AC_MSG_ERROR([bfd library not found])], -lz)
 		],
 		[AC_MSG_ERROR([libz library not found; required by libbfd])])

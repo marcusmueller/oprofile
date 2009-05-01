@@ -1,3 +1,8 @@
+2009-05-01  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in:
+	* m4/binutils.m4: Workaround to make oprofile build on recent SUSE
+
 2009-04-29  Andi Kleen  <ak@linux.intel.com>
 
 	* libop/op_events.c: Add support for include and unit mask merging
