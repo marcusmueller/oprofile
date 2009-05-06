@@ -1,3 +1,7 @@
+2009-05-06  Andi Kleen  <ak@linux.intel.com>
+
+	* utils/ophelp.c: Use word wrap to output event descriptions
+
 2009-05-01  Andi Kleen  <ak@linux.intel.com>
 
 	* events/i386/arch_perfmon/events: Update event names to conform to manual.

@@ -61,6 +61,23 @@ static void do_arch_specific_event_help(struct op_event * event)
 	}
 }
 
+#define LINE_LEN 99
+
+static void word_wrap(int indent, int *column, char *msg)
+{
+	while (*msg) {
+		int wlen = strcspn(msg, " ");
+		if (*column + wlen > LINE_LEN) {
+			printf("\n%*s", indent, "");
+			*column = indent;
+		}
+		printf("%.*s ", wlen, msg);
+		*column += wlen + 1;
+		msg += wlen;
+		msg += strspn(msg, " ");
+	}
+}
+
 /**
  * help_for_event - output event name and description
  * @param i  event number
@@ -69,9 +86,11 @@ static void do_arch_specific_event_help(struct op_event * event)
  */
 static void help_for_event(struct op_event * event)
 {
+	int column;
 	uint i, j;
 	uint mask;
 	size_t nr_counters;
+	char buf[32];
 
 	do_arch_specific_event_help(event);
 	nr_counters = op_get_nr_counters(cpu_type);
@@ -104,7 +123,12 @@ static void help_for_event(struct op_event * event)
 	if(event->ext != NULL)
 		printf(" (ext: %s)", event->ext);
 
-	printf("\n\t%s (min count: %d)\n", event->desc, event->min_count);
+	printf(")\n\t");
+	column = 8;
+	word_wrap(8, &column, event->desc);
+	snprintf(buf, sizeof buf, "(min count: %d)", event->min_count);
+	word_wrap(8, &column, buf);
+	putchar('\n');
 
 	if (strcmp(event->unit->name, "zero")) {
 
@@ -113,9 +137,11 @@ static void help_for_event(struct op_event * event)
 		printf("\t----------\n");
 
 		for (j = 0; j < event->unit->num; j++) {
-			printf("\t0x%.2x: %s\n",
-			       event->unit->um[j].value,
-			       event->unit->um[j].desc);
+			printf("\t0x%.2x: ",
+			       event->unit->um[j].value);
+			column = 14;
+			word_wrap(14, &column, event->unit->um[j].desc);
+			putchar('\n');
 		}
 	}
 }
