@@ -1,3 +1,14 @@
+2009-05-07  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* oprof-compat/events/Makefile.am:
+	* oprof-compat/events/ppc64/ibm-compat-v1/event_mappings: (new)
+	* oprof-compat/events/ppc64/ibm-compat-v1/events: (new)
+	* oprof-compat/events/ppc64/ibm-compat-v1/unit_masks: (new)
+	* oprof-compat/libop/op_cpu_type.c:
+	* oprof-compat/libop/op_cpu_type.h:
+	* oprof-compat/libop/op_events.c:
+	* oprof-compat/utils/ophelp.c:  Add support for IBM ppc64 architected events
+
 2009-05-06  Andi Kleen  <ak@linux.intel.com>
 
 	* utils/ophelp.c: Use word wrap to output event descriptions

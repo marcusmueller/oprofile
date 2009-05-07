@@ -76,6 +76,7 @@ typedef enum {
  	CPU_ARCH_PERFMON, /**< Intel architectural perfmon */
 	CPU_FAMILY11H, /**< AMD family 11h */
 	CPU_PPC64_POWER7, /**< ppc64 POWER7 family */
+	CPU_PPC64_IBM_COMPAT_V1, /**< IBM PPC64 processor compat mode version 1 */
 	MAX_CPU_TYPE
 } op_cpu;
 
