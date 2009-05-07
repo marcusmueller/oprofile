@@ -1,3 +1,17 @@
+2009-05-07  Andi Kleen  <ak@linux.intel.com>
+	* utils/ophelp.c:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* libop/op_hw_specific.h: Add workaround_nehalem_aaj79
+	* events/Makefile.am:
+	* events/i386/atom/events: Add Atom support (New file)
+	* events/i386/atom/unit_masks: Add Atom support (New file)
+	* events/i386/nehalem/events: Add Nehalem support (New file)
+	* events/i386/nehalem/unit_masks: Add Nehalem support (New file)
+	* events/i386/core_i7/events: Add Core i7 support (New file)
+	* events/i386/core_i7/unit_masks: Add Core i7 support (New file)
+
 2009-05-07  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* oprof-compat/events/Makefile.am:
