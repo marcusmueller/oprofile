@@ -1,5 +1,10 @@
 2009-05-13  Maynard Johnson  <maynardj@us.ibm.com>
 
+	* pp/oparchive.cpp: Fixes for oparchive session-dir as reported in
+	  bugs 2646389 and 2646376
+
+2009-05-13  Maynard Johnson  <maynardj@us.ibm.com>
+
 	* utils/opcontrol: Fix for session-dir setup, bug report 2646398
 
 2009-05-13  Brian Bloniarz  <bmb@athenacr.com>

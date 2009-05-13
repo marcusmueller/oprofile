@@ -163,13 +163,13 @@ int oparchive(options::spec const & spec)
 		copy_one_file(image_ok, sample_name, sample_archive_file);
 	}
 
-	/* copy over the /var/lib/oprofile/abi file if it exists */
-	string abi_name = "/var/lib/oprofile/abi";
+	/* copy over the <session-dir>/abi file if it exists */
+	string abi_name = string(op_session_dir) + "/abi";
 	copy_one_file(image_ok, archive_path + abi_name,
 	              options::outdirectory + abi_name);
 
-	/* copy over the /var/lib/oprofile/oprofiled.log file */
-	string log_name = "/var/lib/oprofile/oprofiled.log";
+	/* copy over the <session-dir>/samples/oprofiled.log file */
+	string log_name = string(op_samples_dir) + "/oprofiled.log";
 	copy_one_file(image_ok, archive_path + log_name,
 	              options::outdirectory + log_name);
 
