@@ -1385,7 +1385,7 @@ do_param_setup()
 			else
 				set_ctr_param $CTR enabled 1
 				set_ctr_param $CTR event $EVENT_VAL
-				let loop_count=1
+				loop_count=1
 				for i in ${EVENT_STR}; do
 					#Skip first argument of EVENT_STR (event val) since we've already
 					#processed that value.
@@ -1394,7 +1394,7 @@ do_param_setup()
 						VAL=`echo $i | awk -F: '{print $2}'`
 						set_ctr_param "" $KEY $VAL
 					fi
-					let loop_count="$loop_count"+1
+					loop_count=$((loop_count+1))
 				done
 				set_ctr_param $CTR count $COUNT
 				set_ctr_param $CTR kernel $KERNEL

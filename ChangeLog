@@ -1,3 +1,7 @@
+2009-05-13  Brian Bloniarz  <bmb@athenacr.com>
+
+	* utils/opcontrol: Replace bash built-in let with posix statements
+
 2009-05-07  Andi Kleen  <ak@linux.intel.com>
 	* utils/ophelp.c:
 	* libop/op_cpu_type.c:
