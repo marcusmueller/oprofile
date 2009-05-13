@@ -1773,6 +1773,7 @@ check_options_early()
 			--session-dir)
 				error_if_empty $arg $val
 				SESSION_DIR="$val"
+				DO_SETUP=yes
 				# do not exit early
 				;;
 
