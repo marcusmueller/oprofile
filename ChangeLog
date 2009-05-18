@@ -1,3 +1,7 @@
+2009-05-18  Brian Bloniarz   <bmb@athenacr.com>
+
+	* libutil/op_file.c: Fix crash when chasing broken symlinks
+
 2009-05-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* pp/oparchive.cpp: Fixes for oparchive session-dir as reported in
