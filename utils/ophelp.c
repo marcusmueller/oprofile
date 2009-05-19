@@ -338,9 +338,11 @@ static void get_options(int argc, char const * argv[])
 static void cleanup(void)
 {
 	int i;
-	for (i = 0; i < num_chosen_events; ++i) {
-		if (parsed_events[i].name)
-			free(parsed_events[i].name);
+	if (parsed_events) {
+		for (i = 0; i < num_chosen_events; ++i) {
+			if (parsed_events[i].name)
+				free(parsed_events[i].name);
+		}
 	}
 	op_free_events();
 	if (optcon)
