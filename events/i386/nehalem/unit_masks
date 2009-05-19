@@ -128,7 +128,7 @@ name:longest_lat_cache type:bitmask default:0x4F
 	0x41 miss This event counts each cache miss condition for references to the last level cache
 name:cpu_clk_unhalted type:bitmask default:0x00
 	0x00 thread_p Counts the number of thread cycles while the thread is not in a halt state
-	0x01 ref_p Increments at the frequency of TSC when not halted
+	0x01 ref_p Increments at the frequency of a slower reference clock when not halted
 name:l1d_cache_ld type:bitmask default:0x01
 	0x01 i_state Counts L1 data cache read requests where the cache line to be loaded is in the I (invalid) state, i
 	0x02 s_state Counts L1 data cache read requests where the cache line to be loaded is in the S (shared) state

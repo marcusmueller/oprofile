@@ -1,3 +1,10 @@
+2009-05-19  Andi Kleen  <ak@linux.intel.com>
+ 	* events/i386/atom/events: Use hardcoded counters. Readd
+ 	UNHALTED_REFERENCE_CLOCK.
+ 	* events/i386/nehalem/events:
+ 	* events/i386/nehalem/unit_masks: Use hardcoded counters.
+ 	Clarify CPU_CLOCKS_UNHALTED.REF_P
+
 2009-05-19 Andi Kleen <ak@linux.intel.com>
  	* libop/op_hw_specific.h: (arch_get_filter):
  	Return -1 when CPUID is not available.

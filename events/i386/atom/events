@@ -2,13 +2,13 @@
 # Intel Atom (Silverthorne) events
 #
 # architectural perfmon events
-event:0x3c counters:cpuid um:cpu_clk_unhalted minimum:6000 name:CPU_CLK_UNHALTED : Clock cycles when not halted
-event:0x3c counters:cpuid um:one minimum:6000 name:UNHALTED_REFERENCE_CYCLES : Unhalted reference cycles
-event:0xc0 counters:cpuid um:one minimum:6000 name:INST_RETIRED : number of instructions retired
-event:0x2e counters:cpuid um:x41 minimum:6000 name:LLC_MISSES : Last level cache demand requests from this core that missed the LLC
-event:0x2e counters:cpuid um:x4f minimum:6000 name:LLC_REFS : Last level cache demand requests from this core
-event:0xc4 counters:cpuid um:br_inst_retired minimum:500 name:BR_INST_RETIRED : number of branch instructions retired
-event:0xc5 counters:cpuid um:zero minimum:500 name:BR_MISS_PRED_RETIRED : number of mispredicted branches retired (precise)
+event:0x3c counters:0,1 um:cpu_clk_unhalted minimum:6000 name:CPU_CLK_UNHALTED : Clock cycles when not halted
+event:0x3c counters:0,1 um:one minimum:6000 name:UNHALTED_REFERENCE_CYCLES : Unhalted reference cycles
+event:0xc0 counters:0,1 um:one minimum:6000 name:INST_RETIRED : number of instructions retired
+event:0x2e counters:0,1 um:x41 minimum:6000 name:LLC_MISSES : Last level cache demand requests from this core that missed the LLC
+event:0x2e counters:0,1 um:x4f minimum:6000 name:LLC_REFS : Last level cache demand requests from this core
+event:0xc4 counters:0,1 um:br_inst_retired minimum:500 name:BR_INST_RETIRED : number of branch instructions retired
+event:0xc5 counters:0,1 um:zero minimum:500 name:BR_MISS_PRED_RETIRED : number of mispredicted branches retired (precise)
 #
 event:0x02 counters:0,1 um:store_forwards minimum:6000 name:STORE_FORWARDS : Good store forwards
 event:0x06 counters:0,1 um:segment_reg_loads minimum:6000 name:SEGMENT_REG_LOADS : Number of segment register loads
