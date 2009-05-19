@@ -1,3 +1,7 @@
+2009-05-19 Andi Kleen <ak@linux.intel.com>
+ 	* libop/op_hw_specific.h: (arch_get_filter):
+ 	Return -1 when CPUID is not available.
+
 2009-05-18  Brian Bloniarz   <bmb@athenacr.com>
 
 	* libutil/op_file.c: Fix crash when chasing broken symlinks

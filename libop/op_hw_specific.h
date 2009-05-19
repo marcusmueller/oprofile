@@ -61,7 +61,7 @@ static inline unsigned arch_get_filter(op_cpu cpu_type)
 		workaround_nehalem_aaj79(&ebx);
 		return ebx & num_to_mask(eax >> 24);
 	}
-	return 0;
+	return -1U;
 }
 
 static inline int arch_num_counters(op_cpu cpu_type) 
