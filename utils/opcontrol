@@ -1887,7 +1887,6 @@ do_param_setup_ibs()
 		exit 1	
 	fi
 
-	
 	# Check if driver has IBS support
 	if test ! -d $MOUNT/ibs_fetch -o ! -d $MOUNT/ibs_op ; then
 		echo "ERROR: No kernel support for IBS profiling."
@@ -1895,9 +1894,9 @@ do_param_setup_ibs()
 	fi	
 
 	if test `echo $EVENT |  \
-	awk '{ print substr($0, 0, 10)}'` = "IBS_FETCH_" ; then
+	awk '{ print substr($0, 1, 10)}'` = "IBS_FETCH_" ; then
 		if test "$COUNT" != "0"; then
-			if [ "$IBS_FETCH_EVENTS" == "" ] ; then
+			if [ "$IBS_FETCH_EVENTS" = "" ] ; then
 				IBS_FETCH_EVENTS="$EVENT"
 			else
 				IBS_FETCH_EVENTS="$IBS_FETCH_EVENTS,$EVENT"
@@ -1911,9 +1910,9 @@ do_param_setup_ibs()
 		fi
 
 	elif test `echo $EVENT |  \
-	awk '{ print substr($0, 0, 7)}'` = "IBS_OP_" ; then
+	awk '{ print substr($0, 1, 7)}'` = "IBS_OP_" ; then
 		if test "$COUNT" != "0"; then
-			if [ "$IBS_OP_EVENTS" == "" ] ; then
+			if [ "$IBS_OP_EVENTS" = "" ] ; then
 				IBS_OP_EVENTS="$EVENT"
 			else
 				IBS_OP_EVENTS="$IBS_OP_EVENTS,$EVENT"

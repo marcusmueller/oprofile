@@ -1,5 +1,9 @@
 2009-05-27 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
+	* utils/opcontrol: Fix IBS initialization
+
+2009-05-27 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
  	* daemon/oprofiled.c:
 	* daemon/opd_ext.c: Fix extended feature initialization
 
