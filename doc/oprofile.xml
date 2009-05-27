@@ -129,7 +129,13 @@ For information on how to use OProfile's JIT support, see <xref linkend="setup-j
 
                        <note>Attempting to profile SPEs with kernel versions older than 2.6.22 may cause the
                        system to crash.</note>
-		</para></listitem>
+                       </para>
+		
+			<para>
+			Instruction-Based Sampling (IBS) profile on AMD family10h processors requires 
+			kernel version 2.6.28-rc2 or later.
+			</para>
+		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>modutils 2.4.6 or above</term>
@@ -145,7 +151,7 @@ For information on how to use OProfile's JIT support, see <xref linkend="setup-j
 			required. In marketing terms this translates to anything
 			between an Intel Pentium Pro (not Pentium Classics) and
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
-			Athlon, and Duron CPUs are also supported.  Other IA32
+			Athlon, Opteron, Phenom, and Turion CPUs are also supported.  Other IA32
 			CPU types only support the RTC mode of OProfile; please
 			see later in this manual for details.  Hyper-threaded Pentium IVs
 			are not supported in 2.4. For 2.4 kernels, the Intel
@@ -910,6 +916,8 @@ The table below lists the events selected by default
 <row><entry>Pentium 4 (non-HT)</entry><entry>i386/p4</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
 <row><entry>Pentium 4 (HT)</entry><entry>i386/p4-ht</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
 <row><entry>Hammer</entry><entry>x86-64/hammer</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Family10h</entry><entry>x86-64/family10</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Family11h</entry><entry>x86-64/family11h</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
@@ -1011,8 +1019,8 @@ events other than the default event chosen by OProfile.
 </note>
 <para>
 The Intel hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
-from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
-implementation is detailed in <ulink
+from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. 
+The AMD Athlon/Opteron/Phenom/Turion implementation is detailed in <ulink
 url="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf">
 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>.
 For PowerPC64 processors in IBM iSeries, pSeries, and blade server systems, processor documentation
@@ -1119,7 +1127,7 @@ particular set of events which are to be recorded, and CCCRs bind ESCRs to count
 operation. Unfortunately the relationship between these registers is quite complex; they cannot all be used with one
 another at any time. There is, however, a subset of 8 counters, 8 ESCRs, and 8 CCCRs which can be used independently of
 one another, so OProfile only accesses those registers, treating them as a bank of 8 "normal" counters, similar
-to those in the P6 or Athlon families of CPU.
+to those in the P6 or Athlon/Opteron/Phenom/Turion families of CPU.
 </para>
 <para>
 There is currently no support for Precision Event-Based Sampling (PEBS), nor any advanced uses of the Debug Store
@@ -1229,6 +1237,89 @@ with -g to facilitate finding the right source file(s) on which to focus.
 </itemizedlist>
 
 </sect2>
+
+<sect2 id="amd-ibs-support">
+<title>AMD64 (x86_64) Instruction-Based Sampling (IBS) support</title>
+
+<para>
+Instruction-Based Sampling (IBS) is a new performance measurement technique
+available on AMD Family 10h processors. Traditional performance counter
+sampling is not precise enough to isolate performance issues to individual
+instructions. IBS, however, precisely identifies instructions which are not
+making the best use of the processor pipeline and memory hierarchy.
+For more information, please refer to the "Instruction-Based Sampling:
+A New Performance Analysis Technique for AMD Family 10h Processors" (
+<ulink url="http://developer.amd.com/assets/AMD_IBS_paper_EN.pdf">
+http://developer.amd.com/assets/AMD_IBS_paper_EN.pdf</ulink>).
+There are two types of IBS profile types, described in the following sections.
+</para>
+
+<sect3 id="ibs-fetch">
+<title>IBS Fetch</title>
+
+<para>
+IBS fetch sampling is a statistical sampling method which counts completed
+fetch operations. When the number of completed fetch operations reaches the
+maximum fetch count (the sampling period), IBS tags the fetch operation and
+monitors that operation until it either completes or aborts. When a tagged
+fetch completes or aborts, a sampling interrupt is generated and an IBS fetch
+sample is taken. An IBS fetch sample contains a timestamp, the identifier of
+the interrupted process, the virtual fetch address, and several event flags
+and values that describe what happened during the fetch operation. 
+</para>
+
+</sect3>
+
+<sect3 id="ibs-op">
+<title>IBS Op</title>
+
+<para>
+IBS op sampling selects, tags, and monitors macro-ops as issued from AMD64
+instructions. Two options are available for selecting ops for sampling:
+</para>
+
+<itemizedlist>
+<listitem>
+Cycles-based selection counts CPU clock cycles. The op is tagged and monitored
+when the count reaches a threshold (the sampling period) and a valid op is
+available. 
+</listitem>
+
+<listitem>
+Dispatched op-based selection counts dispatched macro-ops.
+When the count reaches a threshold, the next valid op is tagged and monitored. 
+</listitem>
+</itemizedlist>
+
+<para>
+In both cases, an IBS sample is generated only if the tagged op retires.
+Thus, IBS op event information does not measure speculative execution activity.
+The execution stages of the pipeline monitor the tagged macro-op. When the
+tagged macro-op retires, a sampling interrupt is generated and an IBS op
+sample is taken. An IBS op sample contains a timestamp, the identifier of
+the interrupted process, the virtual address of the AMD64 instruction from
+which the op was issued, and several event flags and values that describe
+what happened when the macro-op executed.
+</para>
+
+</sect3>
+
+<para>
+Enabling IBS profiling is done simply by specifying IBS performance events
+through the "--event=" options. These events are listed in the
+<function>opcontrol --list-events</function>.
+</para>
+
+<screen>
+opcontrol --event=IBS_FETCH_XXX:&lt;count&gt;:&lt;um&gt;:&lt;kernel&gt;:&lt;user&gt;
+opcontrol --event=IBS_OP_XXX:&lt;count&gt;:&lt;um&gt;:&lt;kernel&gt;:&lt;user&gt;
+
+Note: * All IBS fetch event must have the same event count and unitmask,
+        as do those for IBS op.
+</screen>
+
+</sect2>
+
 
 <sect2 id="misuse">
 <title>Dangerous counter settings</title>
@@ -2477,7 +2568,7 @@ problem and OProfile can do nothing about it.
 <title>Interrupt masking</title>
 <para>
 OProfile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
-Athlon and Duron processors. These interrupts can occur even in section of the
+Athlon, Opteron, Phenom, and Turion processors. These interrupts can occur even in section of the
 Linux where interrupts are disabled, allowing collection of samples in virtually
 all executable code.  The RTC, timer interrupt mode, and Itanium 2 collection mechanisms
 use maskable interrupts. Thus, the RTC and Itanium 2 data collection mechanism have "sample

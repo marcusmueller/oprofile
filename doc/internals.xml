@@ -900,6 +900,226 @@ field formatters, with the <varname>symbol_entry</varname> passed in.
 
 </chapter>
 
+<chapter id="ext">
+<title>Extended Feature Interface</title>
+
+<sect1 id="ext-intro">
+<title>Introduction</title>
+
+<para>
+The Extended Feature Interface is a standard callback interface 
+designed to allow extension to the OProfile daemon's sample processing. 
+Each feature defines a set of callback handlers which can be enabled or 
+disabled through the OProfile daemon's command-line option.
+This interface can be used to implement support for architecture-specific
+features or features not commonly used by general OProfile users. 
+</para>
+
+</sect1>
+
+<sect1 id="ext-name-and-handlers">
+<title>Feature Name and Handlers</title>
+
+<para>
+Each extended feature has an entry in the <varname>ext_feature_table</varname>
+in <filename>opd_extended.cpp</filename>. Each entry contains a feature name,
+and a corresponding set of handlers. Feature name is a unique string, which is
+used to identify a feature in the table. Each feature provides a set
+of handlers, which will be executed by the OProfile daemon from pre-determined
+locations to perform certain tasks. At runtime, the OProfile daemon calls a feature
+handler wrapper from one of the predetermined locations to check whether
+an extended feature is enabled, and whether a particular handler exists.
+Only the handlers of the enabled feature will be executed.
+</para>
+
+</sect1>
+
+<sect1 id="ext-enable">
+<title>Enabling Features</title>
+
+<para>
+Each feature is enabled using the OProfile daemon (oprofiled) command-line
+option "--ext-feature=&lt;extended-feature-name&gt;:[args]". The
+"extended-feature-name" is used to determine the feature to be enabled.
+The optional "args" is passed into the feature-specific initialization handler
+(<function>ext_init</function>). Currently, only one extended feature can be
+enabled at a time.
+</para>
+
+</sect1>
+
+<sect1 id="ext-types-of-handlers">
+<title>Type of Handlers</title>
+
+<para>
+Each feature is responsible for providing its own set of handlers.
+Types of handler are:
+</para>
+
+<sect2 id="ext_init">
+<title>ext_init Handler</title>
+
+<para>
+"ext_init" handles initialization of an extended feature. It takes
+"args" parameter which is passed in through the "oprofiled --ext-feature=&lt;
+extended-feature-name&gt;:[args]". This handler is executed in the function
+<function>opd_options()</function> in the file <filename>daemon/oprofiled.c
+</filename>.
+</para>
+
+<note>
+<para>
+The ext_init handler is required for all features.
+</para>
+</note>
+
+</sect2>
+
+<sect2 id="ext_print_stats">
+<title>ext_print_stats Handler</title>
+
+<para>
+"ext_print_stats" handles the extended feature statistics report. It adds
+a new section in the OProfile daemon statistics report, which is normally
+outputed to the file
+<filename>/var/lib/oprofile/samples/oprofiled.log</filename>.
+This handler is executed in the function <function>opd_print_stats()</function>
+in the file <filename>daemon/opd_stats.c</filename>.
+</para>
+
+</sect2>
+
+<sect2 id="ext_sfile_handlers">
+<title>ext_sfile Handler</title>
+
+<para>
+"ext_sfile" contains a set of handlers related to operations on the extended
+sample files (sample files for events related to extended feature).
+These operations include <function>create_sfile()</function>,
+<function>sfile_dup()</function>, <function>close_sfile()</function>,
+<function>sync_sfile()</function>, and <function>get_file()</function>
+as defined in <filename>daemon/opd_sfile.c</filename>.
+An additional field, <varname>odb_t * ext_file</varname>, is added to the 
+<varname>struct sfile</varname> for storing extended sample files
+information. 
+
+</para>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="ext-implementation">
+<title>Extended Feature Reference Implementation</title>
+
+<sect2 id="ext-ibs">
+<title>Instruction-Based Sampling (IBS)</title>
+
+<para>
+An example of extended feature implementation can be seen by
+examining the AMD Instruction-Based Sampling support.
+</para>
+
+<sect3 id="ibs-init">
+<title>IBS Initialization</title>
+
+<para>
+Instruction-Based Sampling (IBS) is a new performance measurement technique
+available on AMD Family 10h processors. Enabling IBS profiling is done simply
+by specifying IBS performance events through the "--event=" options.
+</para>
+
+<screen>
+opcontrol --event=IBS_FETCH_XXX:&lt;count&gt;:&lt;um&gt;:&lt;kernel&gt;:&lt;user&gt;
+opcontrol --event=IBS_OP_XXX:&lt;count&gt;:&lt;um&gt;:&lt;kernel&gt;:&lt;user&gt;
+
+Note: * Count and unitmask for all IBS fetch events must be the same,
+	as do those for IBS op.
+</screen>
+
+<para>
+IBS performance events are listed in <function>opcontrol --list-events</function>.
+When users specify these events, opcontrol verifies them using ophelp, which
+checks for the <varname>ext:ibs_fetch</varname> or <varname>ext:ibs_op</varname>
+tag in <filename>events/x86-64/family10/events</filename> file.
+Then, it configures the driver interface (/dev/oprofile/ibs_fetch/... and
+/dev/oprofile/ibs_op/...) and starts the OProfile daemon as follows.
+</para>
+
+<screen>
+oprofiled \
+    --ext-feature=ibs:\
+	fetch:&lt;IBS_FETCH_EVENT1&gt;,&lt;IBS_FETCH_EVENT2&gt;,...,:&lt;IBS fetch count&gt;:&lt;IBS Fetch um&gt;|\
+	op:&lt;IBS_OP_EVENT1&gt;,&lt;IBS_OP_EVENT2&gt;,...,:&lt;IBS op count&gt;:&lt;IBS op um&gt;
+</screen>
+
+<para>
+Here, the OProfile daemon parses the <varname>--ext-feature</varname>
+option and checks the feature name ("ibs") before calling the 
+the initialization function to handle the string
+containing IBS events, counts, and unitmasks.
+Then, it stores each event in the IBS virtual-counter table
+(<varname>struct opd_event ibs_vc[OP_MAX_IBS_COUNTERS]</varname>) and
+stores the event index in the IBS Virtual Counter Index (VCI) map
+(<varname>ibs_vci_map[OP_MAX_IBS_COUNTERS]</varname>) with IBS event value
+as the map key.
+</para>
+</sect3>
+
+<sect3 id="ibs-data-processing">
+<title>IBS Data Processing</title>
+
+<para>
+During a profile session, the OProfile daemon identifies IBS samples in the 
+event buffer using the <varname>"IBS_FETCH_CODE"</varname> or 
+<varname>"IBS_OP_CODE"</varname>. These codes trigger the handlers 
+<function>code_ibs_fetch_sample()</function> or 
+<function>code_ibs_op_sample()</function> listed in the
+<varname>handler_t handlers[]</varname> vector in 
+<filename>daemon/opd_trans.c </filename>. These handlers are responsible for
+processing IBS samples and translate them into IBS performance events.
+</para>
+
+<para>
+Unlike traditional performance events, each IBS sample can be derived into 
+multiple IBS performance events. For each event that the user specifies,
+a combination of bits from Model-Specific Registers (MSR) are checked
+against the bitmask defining the event. If the condition is met, the event
+will then be recorded. The derivation logic is in the files
+<filename>daemon/opd_ibs_macro.h</filename> and
+<filename>daemon/opd_ibs_trans.[h,c]</filename>. 
+</para>
+
+</sect3>
+
+<sect3 id="ibs-sample-file">
+<title>IBS Sample File</title>
+
+<para>
+Traditionally, sample file information <varname>(odb_t)</varname> is stored
+in the <varname>struct sfile::odb_t file[OP_MAX_COUNTER]</varname>.
+Currently, <varname>OP_MAX_COUNTER</varname> is 8 on non-alpha, and 20 on
+alpha-based system. Event index (the counter number on which the event
+is configured) is used to access the corresponding entry in the array.
+Unlike the traditional performance event, IBS does not use the actual
+counter registers (i.e. <filename>/dev/oprofile/0,1,2,3</filename>).
+Also, the number of performance events generated by IBS could be larger than
+<varname>OP_MAX_COUNTER</varname> (currently upto 13 IBS-fetch and 46 IBS-op 
+events). Therefore IBS requires a special data structure and sfile
+handlers (<varname>struct opd_ext_sfile_handlers</varname>) for managing
+IBS sample files. IBS-sample-file information is stored in a memory 
+allocated by handler <function>ibs_sfile_create()</function>, which can
+be accessed through <varname>struct sfile::odb_t * ext_files</varname>.
+</para>
+
+</sect3>
+
+</sect2>
+
+</sect1>
+
+</chapter>
+
 <glossary id="glossary">
 <title>Glossary of OProfile source concepts and types</title>
 
