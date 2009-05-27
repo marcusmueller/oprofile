@@ -85,8 +85,10 @@ int opd_ext_initialize(char const * value)
 	int ret = EXIT_FAILURE;
 	char * tmp = NULL, * name = NULL, * args = NULL;
 
-	if(!value)
-		return ret;
+	if(!value) {
+		opd_ext_feat_index = -1;
+		return 0;
+	}
 
 	tmp = op_xstrndup(value, strlen(value));
 

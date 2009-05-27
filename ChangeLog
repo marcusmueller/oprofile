@@ -1,12 +1,19 @@
 2009-05-27 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
+ 	* daemon/oprofiled.c:
+	* daemon/opd_ext.c: Fix extended feature initialization
+
+2009-05-27 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
 	* doc/oprofile.xml:
 	* doc/internals.xml: Add Extended-Interface and IBS documentation,
 	
 2009-05-19 Andi Kleen  <ak@linux.intel.com>
+
  	* utils/ophelp.c: (cleanup) Fix cleanup crash.
  
 2009-05-19  Andi Kleen  <ak@linux.intel.com>
+
  	* events/i386/atom/events: Use hardcoded counters. Readd
  	UNHALTED_REFERENCE_CLOCK.
  	* events/i386/nehalem/events:
@@ -14,6 +21,7 @@
  	Clarify CPU_CLOCKS_UNHALTED.REF_P
 
 2009-05-19 Andi Kleen <ak@linux.intel.com>
+
  	* libop/op_hw_specific.h: (arch_get_filter):
  	Return -1 when CPUID is not available.
 

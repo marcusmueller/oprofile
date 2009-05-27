@@ -434,10 +434,8 @@ static void opd_options(int argc, char const * argv[])
 		}
 	}
 
-	if (ext_feature != NULL) {
-		if(opd_ext_initialize(ext_feature) != EXIT_SUCCESS)
-			exit(EXIT_FAILURE);
-	}
+	if(opd_ext_initialize(ext_feature) != EXIT_SUCCESS)
+		exit(EXIT_FAILURE);
 
 	if (events == NULL && no_event_ok == 0) {
 		fprintf(stderr, "oprofiled: no events specified.\n");
