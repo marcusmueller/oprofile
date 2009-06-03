@@ -7,14 +7,20 @@
 #		Suravee Suthikulpanit <suravee.suthikulpanit at amd.com>
 #
 # Sources: BIOS and Kernel Developer's Guide for AMD Family 10h Processors,
-#          Publication# 31116, Revision 3.20, February 04, 2009
+#          Publication# 31116, Revision 3.28, May 28, 2009
 #
 #          Software Optimization Guide for AMD Family 10h Processors,
 #          Publication# 40546, Revision 3.04, September 2007
 #
-# Revision: 1.1
+# Revision: 1.2
 #
-# ChangeLog: 06 April 2009.
+# ChangeLog: 
+#	03 June 2009.
+# 	- Update from BKDG Rev 3.20 to Rev 3.28
+#	- Add Event 4EDh
+#	- Modify unitmasks for 4E0h-4E3h
+#
+#	06 April 2009.
 # 	- Add IBS-derived events
 # 	- Update from BKDG Rev 3.00 to Rev 3.20
 # 	- Add Events 165h, 1c0h, 1cfh, 1d3h-1d5h
@@ -159,6 +165,7 @@ event:0x4e0 counters:0,1,2,3 um:l3_cache minimum:500 name:READ_REQUEST_L3_CACHE 
 event:0x4e1 counters:0,1,2,3 um:l3_cache minimum:500 name:L3_CACHE_MISSES : Number of L3 cache misses from each core
 event:0x4e2 counters:0,1,2,3 um:l3_fill minimum:500 name:L3_FILLS_CAUSED_BY_L2_EVICTIONS : Number of L3 fills caused by L2 evictions per core
 event:0x4e3 counters:0,1,2,3 um:l3_evict minimum:500 name:L3_EVICTIONS : Number of L3 cache line evictions by cache state
+event:0x4ed counters:0,1,2,3 um:non_cancelled_l3_read_requests minimum:500 name:NON_CANCELLED_L3_READ_REQUESTS : Non-cancelled L3 Read Requests
 
 ###############################
 # IBS FETCH EVENTS

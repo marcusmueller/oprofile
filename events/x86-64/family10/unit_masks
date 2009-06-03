@@ -8,14 +8,20 @@
 #		Suravee Suthikulpanit <suravee.suthikulpanit at amd.com>
 #
 # Sources: BIOS and Kernel Developer's Guide for AMD Family 10h Processors,
-#          Publication# 31116, Revision 3.20, February 04, 2009
+#          Publication# 31116, Revision 3.28, May 28, 2009
 #
 #          Software Optimization Guide for AMD Family 10h Processors,
 #          Publication# 40546, Revision 3.04, September 2007
 #
-# Revision: 1.1
+# Revision: 1.2
 #
-# ChangeLog: 06 April 2009.
+# ChangeLog: 
+#	03 June 2009.
+# 	- Update from BKDG Rev 3.20 to Rev 3.28
+#	- Add Event 4EDh
+#	- Modify unitmasks for 4E0h-4E3h
+#
+#	06 April 2009.
 # 	- Add IBS-derived events
 # 	- Update from BKDG Rev 3.00 to Rev 3.20
 # 	- Add Events 165h, 1c0h, 1cfh, 1d3h-1d5h
@@ -321,24 +327,28 @@ name:l3_cache type:bitmask default:0xf7
 	0x01 Read block Exclusive (Data cache read)
 	0x02 Read block Shared (Instruciton cache read)
 	0x04 Read block Modify
-	0x10 Core 0 select
-	0x20 Core 1 select
-	0x40 Core 2 select
-	0x80 Core 3 select
+	0x10 Reserved (Must be selected)
+	0x20 Reserved (Must be selected)
+	0x40 Reserved (Must be selected)
+	0x80 Reserved (Must be selected)
 name:l3_fill type:bitmask default:0xff
 	0x01 Shared
 	0x02 Exclusive
 	0x04 Owned
 	0x08 Modified
-	0x10 Core 0 select
-	0x20 Core 1 select
-	0x40 Core 2 select
-	0x80 Core 3 select
-name:l3_evict type:bitmask default:0x0f
+	0x10 Reserved (Must be selected)
+	0x20 Reserved (Must be selected)
+	0x40 Reserved (Must be selected)
+	0x80 Reserved (Must be selected)
+name:l3_evict type:bitmask default:0xff
 	0x01 Shared
 	0x02 Exclusive
 	0x04 Owned
 	0x08 Modified
+	0x10 Reserved (Must be selected)
+	0x20 Reserved (Must be selected)
+	0x40 Reserved (Must be selected)
+	0x80 Reserved (Must be selected)
 name:icache_invalidated type:bitmask default:0x03
 	0x01 Invalidating probe that did not hit any in-flight instructions
 	0x02 Invalidating probe that hit one or more in-flight instructions
@@ -353,4 +363,11 @@ name:retired_x87_fp type:bitmask default:0x07
 name:ibs_op type:bitmask default:0x01
 	0x00 Using IBS OP cycle count mode
 	0x01 Using IBS OP dispatch count mode
-
+name:non_cancelled_l3_read_requests type:bitmask default:0xf7
+	0x01 RbBlk
+	0x02 RbBlkS
+	0x04 RbBlkM
+	0x10 Reserved (Must be selected)
+	0x20 Reserved (Must be selected)
+	0x40 Reserved (Must be selected)
+	0x80 Reserved (Must be selected)

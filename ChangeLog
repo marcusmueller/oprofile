@@ -1,3 +1,10 @@
+2009-06-03 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
+	* events/x86-64/family10/events:
+	* events/x86-64/family10/unit_masks: Update events and unitmasks
+	  for the AMD Six-core Opteron processor support from
+	  publication 31116 revision 3.28
+
 2009-05-27 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* utils/opcontrol: Fix IBS initialization
