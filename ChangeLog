@@ -1,3 +1,8 @@
+2009-06-05 Andi Kleen <ak@linux.intel.com>
+
+	* libop/tests/alloc_counter_tests.c:
+	Don't use non existent unit masks in P4 counter tests.
+
 2009-06-03 Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* events/x86-64/family10/events:
