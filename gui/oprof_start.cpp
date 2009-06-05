@@ -502,7 +502,7 @@ bool oprof_start::alloc_selected_events() const
 
 	set<QListViewItem *>::const_iterator it;
 	for (it = selected_events.begin(); it != selected_events.end(); ++it)
-		events.push_back(find_event_by_name((*it)->text(0).latin1()));
+		events.push_back(find_event_by_name((*it)->text(0).latin1(),0,0));
 
 	size_t * map =
 		map_event_to_counter(&events[0], events.size(), cpu_type);

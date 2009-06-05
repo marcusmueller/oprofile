@@ -844,15 +844,39 @@ char const * find_mapping_for_event(u32 nr, op_cpu cpu_type)
 	return map;
 }
 
+static int match_event(int i, struct op_event *event, unsigned um)
+{
+	unsigned v = event->unit->um[i].value;
 
-struct op_event * find_event_by_name(char const * name)
+	switch (event->unit->unit_type_mask) {
+	case utm_exclusive:
+	case utm_mandatory:
+		return v == um;
+
+	case utm_bitmask:
+		return (v & um) || (!v && v == 0);
+	}
+
+	abort();
+}
+
+struct op_event * find_event_by_name(char const * name, unsigned um, int um_valid)
 {
 	struct list_head * pos;
 
 	list_for_each(pos, &events_list) {
 		struct op_event * event = list_entry(pos, struct op_event, event_next);
-		if (strcmp(event->name, name) == 0)
+		if (strcmp(event->name, name) == 0) {
+			if (um_valid) {
+				unsigned i;
+
+				for (i = 0; i < event->unit->num; i++)
+					if (match_event(i, event, um))
+						return event;
+				continue;
+			}
 			return event;
+		}
 	}
 
 	return NULL;

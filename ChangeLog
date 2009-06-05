@@ -1,3 +1,16 @@
+2009-06-05  Andi Kleen  <ak@linux.intel.com>
+
+	* libop/op_events.h: (find_event_by_name):
+	* libop/op_events.c: (find_event_by_name): Match unit mask.
+	* libop/op_parse_event.c: (parse_events): Set unit_mask_valid
+	* libop/op_parse_event.h: (parsed_eventd): Add unit_mask_valid
+	* libop/tests/alloc_counter_tests.c: (do_test):
+	* libop/tests/parse_event_tests.c:
+	* daemon/opd_ibs: (ibs_parse_and_set_events):
+	* gui/oprof_start.cpp (alloc_selected_events):
+	* utils/ophelp.c: (resolve_events, show_unit_mask):
+	  Update find_event_by_name call.
+
 2009-06-05 Andi Kleen <ak@linux.intel.com>
 
 	* libop/tests/alloc_counter_tests.c:

@@ -155,8 +155,13 @@ static void check_event(struct parsed_event * pev,
 	int const callgraph_min_count_scale = 15;
 
 	if (!event) {
-		fprintf(stderr, "No event named %s is available.\n",
-		        pev->name);
+		event = find_event_by_name(pev->name, 0, 0);
+		if (event)
+			fprintf(stderr, "Invalid unit mask %x for event %s\n",
+				pev->unit_mask, pev->name);
+		else
+			fprintf(stderr, "No event named %s is available.\n",
+				pev->name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -208,8 +213,9 @@ static void resolve_events(void)
 	for (i = 0, count_events = 0; i < count; ++i) {
 		struct parsed_event * pev = &parsed_events[i];
 
-		selected_events[i] = find_event_by_name(pev->name);
-
+		/* For 0 unit mask always do wild card match */
+		selected_events[i] = find_event_by_name(pev->name, pev->unit_mask,
+					pev->unit_mask ? pev->unit_mask_valid : 0);
 		check_event(pev, selected_events[i]);
 
 		if (selected_events[i]->ext == NULL) {
@@ -256,7 +262,7 @@ static void show_unit_mask(void)
 		exit(EXIT_FAILURE);
 	}
 
-	event = find_event_by_name(parsed_events[0].name);
+	event = find_event_by_name(parsed_events[0].name, 0, 0);
 
 	if (!event) {
 		fprintf(stderr, "No such event found.\n");

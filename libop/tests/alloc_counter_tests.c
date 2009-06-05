@@ -159,7 +159,8 @@ static void do_test(struct allocated_counter const * it)
 	nr_events = parse_events(parsed, MAX_EVENTS, it->events);
 
 	for (i = 0; i < nr_events; ++i) {
-		event[i] = find_event_by_name(parsed[i].name);
+		event[i] = find_event_by_name(parsed[i].name, parsed[i].unit_mask,
+		                              parsed[i].unit_mask_valid);
 		if (!event[i]) {
 			if (it->failure == fail_to_find_event)
 				goto free_events;

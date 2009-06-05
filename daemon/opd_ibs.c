@@ -332,7 +332,7 @@ static int ibs_parse_and_set_events(char * str)
 		}
 
 		// Resove event number
-		event = find_event_by_name(tok1);
+		event = find_event_by_name(tok1, 0, 0);
 		if (!event)
 			return -1;
 
