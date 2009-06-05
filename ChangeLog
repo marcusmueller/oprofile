@@ -1,3 +1,8 @@
+2009-06-05  William Cohen  <wcohen@redhat.com>
+
+	* libutil++/bfd_support.cpp: Avoid calling bfd_find_nearest_line
+	  with NULL syms argument
+
 2009-06-05  Andi Kleen  <ak@linux.intel.com>
 
 	* libop/op_events.h: (find_event_by_name):

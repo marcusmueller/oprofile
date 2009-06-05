@@ -594,6 +594,8 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 
 	abfd = b.abfd;
 	syms = b.syms.get();
+	if (!syms)
+		goto fail;
 	section = sym.symbol()->section;
 	if (anon_obj)
 		pc = offset - sym.symbol()->section->vma;
