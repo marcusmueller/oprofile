@@ -315,7 +315,7 @@ private:
 	void output_symbol_core(std::ostream & out,
 		cg_symbol::children const cg_symb,
 		std::string const selfname, std::string const qname,
-		size_t lo, size_t hi, bool is_module, tag_t tag);
+		bool is_module, tag_t tag);
 };
 
 } // namespace format_output 
