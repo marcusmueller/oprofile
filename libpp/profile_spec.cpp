@@ -326,6 +326,17 @@ profile_spec profile_spec::create(list<string> const & args,
 	if (spec.session.empty())
 		spec.session.push_back("current");
 
+	bool ok = true;
+	vector<string>::const_iterator ip_it = image_path.begin();
+	for ( ; ip_it != image_path.end(); ++ip_it) {
+		if (!is_directory(spec.get_archive_path() + "/" + *ip_it)) {
+			cerr << spec.get_archive_path() + "/" + *ip_it << " isn't a valid directory\n";
+			ok = false;
+		}
+	}
+	if (!ok)
+		throw op_runtime_error("invalid --image-path= options");
+
 	spec.extra_found_images.populate(image_path, spec.get_archive_path(),
 					 root_path);
 	vector<string>::const_iterator im = temp_image_or_lib.begin();

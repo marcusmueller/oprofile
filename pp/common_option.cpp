@@ -180,18 +180,6 @@ options::spec get_options(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	bool ok = true;
-	vector<string>::const_iterator it = options::image_path.begin();
-	for ( ; it != options::image_path.end(); ++it) {
-		if (!is_directory(*it)) {
-			cerr << *it << " isn't a valid directory\n";
-			ok = false;
-		}
-	}
-
-	if (!ok)
-		throw op_runtime_error("invalid --image-path= options");
-
 	// XML generator needs command line options for its header
 	ostringstream str;
 	for (int i = 1; i < argc; ++i)

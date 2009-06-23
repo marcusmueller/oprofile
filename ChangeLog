@@ -1,3 +1,9 @@
+2009-06-23  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libpp/profile_spec.cpp:
+	* pp/common_option.cpp: Fix image-path option to be appended
+	  to archive path
+
 2009-06-18  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libpp/format_output.h:
