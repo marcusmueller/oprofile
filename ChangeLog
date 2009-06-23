@@ -1,5 +1,11 @@
 2009-06-23  Maynard Johnson  <maynardj@us.ibm.com>
 
+	* libutil++/bfd_support.cpp: Discard symbols from sections that do
+	  not have SEC_LOAD flag set; this prevents issues with bogus symbol
+	  size computation, resulting in "samples_range(): start > end" message
+
+2009-06-23  Maynard Johnson  <maynardj@us.ibm.com>
+
 	* libpp/profile_spec.cpp:
 	* pp/common_option.cpp: Fix image-path option to be appended
 	  to archive path
