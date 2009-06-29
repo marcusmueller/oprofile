@@ -1,3 +1,9 @@
+2009-06-29  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/ppc64/power7/events:
+	* events/ppc64/power7/event_mappings: Update to IBM POWER7 events
+	  and groups
+
 2009-06-23  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/bfd_support.cpp: Discard symbols from sections that do
