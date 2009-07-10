@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iterator>
 #include <iostream>
+#include <dirent.h>
 
 #include "file_manip.h"
 #include "op_config.h"
@@ -22,6 +23,7 @@
 #include "locate_images.h"
 #include "op_exception.h"
 #include "op_header.h"
+#include "op_fileio.h"
 
 using namespace std;
 
@@ -370,7 +372,7 @@ vector<string> filter_session(vector<string> const & session,
 	return result;
 }
 
-
+static bool invalid_sample_file;
 bool valid_candidate(string const & base_dir, string const & filename,
                      profile_spec const & spec, bool exclude_dependent,
                      bool exclude_cg)
@@ -382,6 +384,55 @@ bool valid_candidate(string const & base_dir, string const & filename,
 	string const & sub = filename.substr(base_dir.size(), string::npos);
 	if (!is_prefix(sub, "/{root}/") && !is_prefix(sub, "/{kern}/"))
 		return false;
+
+	/* When overflows occur in the oprofile kernel driver's sample
+	 * buffers (caused by too high of a sampling rate), it's possible
+	 * for samples to be mis-attributed.  A common scenario is that,
+	 * while profiling process 'abc' running binary 'xzy', the task
+	 * switch for 'abc' gets dropped somehow.  Then, samples are taken
+	 * for the 'xyz' binary.  In the attempt to attribute the samples to
+	 * the associated binary, the oprofile kernel code examines the
+	 * the memory mappings for the last process for which it recorded
+	 * a task switch.  When profiling at a very high rate, the oprofile
+	 * daemon is often the process that is mistakenly examined.  Then the
+	 * sample from binary 'xyz' is matched to some file that's open in
+	 * oprofiled's memory space.  Because oprofiled has many sample files
+	 * open at any given time, there's a good chance the sample's VMA is
+	 * contained within one of those sample files.  So, once finding this
+	 * bogus match, the oprofile kernel records a cookie switch for the
+	 * sample file.  This scenario is made even more likely if a high
+	 * sampling rate (e.g., profiling on several events) is paired with
+	 * callgraph data collection.
+	 *
+	 * When the daemon processes this sample data from the kernel, it
+	 * creates a sample file for the sample file, resulting in something
+	 * of the form:
+	 *    <session-dir>/[blah]<session-dir>/[blah]
+	 *
+	 * When the sample data is post-processed, the sample file is parsed to
+	 * try to determine the name of the binary, but it gets horribly confused.
+	 * At best, the post-processing tool will spit out some warning messages,
+	 * such as:
+	 * warning:
+	 * /lib64/libdl-2.9.so/CYCLES.10000.0.all.all.all/{dep}/{root}/var/lib/oprofile/samples/current/{root}/lib64/libdl-2.9.so/{dep}/{root}/lib64/libdl-2.9.so/PM_RUN_CYC_GRP12.10000.0.all.all.all
+	 * could not be found.
+	 *
+	 * At worst, the parsing may result in an "invalid argument" runtime error
+	 * because of the inability to parse a sample file whose name contains that
+	 * of another sample file.  This typically seems to happen when callgraph
+	 * data is being collected.
+	 *
+	 * The next several lines of code checks if the passed filename
+	 * contains <session-dir>/samples; if so, we discard it as an
+	 * invalid sample file.
+	 */
+
+	unsigned int j = base_dir.rfind('/');
+	string session_samples_dir = base_dir.substr(0, j);
+	if (sub.find(session_samples_dir) != string::npos) {
+		invalid_sample_file = true;
+		return false;
+	}
 
 	// strip out generated JIT object files for samples of anonymous regions
 	if (is_jit_sample(sub))
@@ -396,6 +447,56 @@ bool valid_candidate(string const & base_dir, string const & filename,
 
 	return false;
 }
+
+
+/**
+ * Print a warning message if we detect any sample buffer overflows
+ * occurred in the kernel driver. 
+ */
+void warn_if_kern_buffs_overflow(string const & session_samples_dir)
+{
+	DIR * dir;
+	struct dirent * dirent;
+	string stats_path;
+	int ret = 0;
+	
+	stats_path = session_samples_dir + "stats/";
+	ret = op_read_int_from_file((stats_path + "event_lost_overflow").
+				    c_str(), 0);
+
+	if (!(dir = opendir(stats_path.c_str()))) {
+		ret = -1;
+		goto done;
+	}
+
+	while ((dirent = readdir(dir)) && !ret) {
+		int cpu_nr;
+		string path;
+		if (sscanf(dirent->d_name, "cpu%d", &cpu_nr) != 1)
+			continue;
+		path = stats_path + dirent->d_name + "/";
+		ret = op_read_int_from_file((path + "sample_lost_overflow").
+					    c_str(), 0);
+	}
+	closedir(dir);
+
+ done:
+	if (ret == -1) {
+		cerr << "Overflow stats not available" << endl;
+	}
+	else if (ret > 0) {
+		cerr << "WARNING! The OProfile kernel driver reports sample "
+		     << "buffer overflows." << endl;
+		cerr << "Such overflows can result in incorrect sample attribution"
+		     << ", invalid sample" << endl
+		     <<	"files and other symptoms.  "
+		     << "See the oprofiled.log for details." << endl;
+		cerr << "You should adjust your sampling frequency to eliminate"
+		     << " (or at least minimize)" << endl
+		     <<	"these overflows." << endl;
+	}
+}
+
 
 }  // anonymous namespace
 
@@ -430,6 +531,7 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 			continue;
 
 		string base_dir;
+		invalid_sample_file = false;
 		if ((*cit)[0] != '.' && (*cit)[0] != '/')
 			base_dir = archive_path + op_samples_dir;
 		base_dir += *cit;
@@ -439,8 +541,10 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 		list<string> files;
 		create_file_list(files, base_dir, "*", true);
 
-		if (!files.empty())
+		if (!files.empty()) {
 			found_file = true;
+			warn_if_kern_buffs_overflow(base_dir + "/");
+		}
 
 		list<string>::const_iterator it = files.begin();
 		list<string>::const_iterator fend = files.end();
@@ -449,6 +553,12 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 			    exclude_dependent, exclude_cg)) {
 				unique_files.insert(*it);
 			}
+		}
+		if (invalid_sample_file) {
+			cerr << "Warning: Invalid sample files found in "
+			     << base_dir << endl;
+			cerr << "This problem can be caused by too high of a sampling rate."
+			     << endl;
 		}
 	}
 

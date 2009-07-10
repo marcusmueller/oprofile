@@ -1,3 +1,9 @@
+2009-07-10  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libpp/profile_spec.cpp:
+	* pp/oparchive.cpp:
+	* utils/opcontrol:  Handle bad samples from kernel due to overflows
+
 2009-06-29  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/ppc64/power7/events:

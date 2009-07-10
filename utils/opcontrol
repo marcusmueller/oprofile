@@ -1010,6 +1010,7 @@ do_kill_daemon()
 	sleep 1
 	# already removed unless we forced the kill
 	rm -f "$SESSION_DIR/lock"
+	cp -r /dev/oprofile/stats "$SAMPLES_DIR/current"
 }
 
 
@@ -1676,6 +1677,7 @@ do_reset()
 	# daemon use {kern} and {root} subdir, it's not a typo to not use ${}
 	move_and_remove $SAMPLES_DIR/current/{kern}
 	move_and_remove $SAMPLES_DIR/current/{root}
+	move_and_remove $SAMPLES_DIR/current/stats
 
 	# clear temp directory for jitted code
 	prep_jitdump;

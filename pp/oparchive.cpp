@@ -18,6 +18,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <dirent.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -51,6 +52,52 @@ void copy_one_file(image_error err, string const & source, string const & dest)
 		cerr << "can't copy from " << source << " to " << dest
 		     << " cause: " << strerror(errno) << endl;
 	}
+}
+
+void copy_stats(string const & session_samples_dir,
+		string const & archive_path)
+{
+	DIR * dir;
+	struct dirent * dirent;
+	string stats_path;
+	
+	stats_path = session_samples_dir + "stats/";
+
+	if (!(dir = opendir(stats_path.c_str()))) {
+		cerr << "Session overflow stats not available" << endl;
+		return;
+	}
+
+	string sample_base_dir = session_samples_dir.substr(archive_path.size());
+	string archive_stats = options::outdirectory + sample_base_dir + "stats/";
+	string archive_stats_path = archive_stats + "event_lost_overflow";
+	if (!options::list_files &&
+	    create_path(archive_stats_path.c_str())) {
+		cerr << "Unable to create directory for "
+		     <<	archive_stats << "." << endl;
+		exit (EXIT_FAILURE);
+	}
+
+	copy_one_file(image_ok, stats_path + "/event_lost_overflow", archive_stats_path);
+
+	while ((dirent = readdir(dir))) {
+		int cpu_nr;
+		string path;
+		if (sscanf(dirent->d_name, "cpu%d", &cpu_nr) != 1)
+			continue;
+		path = string(dirent->d_name) + "/" + "sample_lost_overflow";
+		archive_stats_path = archive_stats + path;
+		if (!options::list_files &&
+		    create_path(archive_stats_path.c_str())) {
+			cerr << "Unable to create directory for "
+			     <<	archive_stats_path << "." << endl;
+			exit (EXIT_FAILURE);
+		}
+		copy_one_file(image_ok, stats_path + path, archive_stats_path);
+
+	}
+	closedir(dir);
+
 }
 
 int oparchive(options::spec const & spec)
@@ -141,6 +188,11 @@ int oparchive(options::spec const & spec)
 	/* copy over each of the sample files */
 	list<string>::iterator sit = sample_files.begin();
 	list<string>::iterator const send = sample_files.end();
+
+	string a_sample_file = *sit;
+	int offset = a_sample_file.find('{');
+	string base_samples_dir = a_sample_file.substr(0, offset);
+	copy_stats(base_samples_dir, archive_path);
 
 	cverb << vdebug << "(sample_names)" << endl << endl;
 
