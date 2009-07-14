@@ -63,6 +63,7 @@ EXTRA_DIST = \
 	ChangeLog-2005 \
         ChangeLog-2006 \
 	ChangeLog-2007 \
+	ChangeLog-2008 \
 	autogen.sh \
 	README_PACKAGERS \
 	include/sstream \
