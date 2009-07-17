@@ -1,3 +1,8 @@
+2009-07-17  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libutil++/bfd_support.cpp: Fix logic error from previous
+	  patch to this file
+
 2009-07-14  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* Makefile.am: Add ChangeLog-2008 to EXTRA_DIST

@@ -367,7 +367,7 @@ bool interesting_symbol(asymbol * sym)
         if (sym->flags & BSF_SECTION_SYM)
                 return false;
 
-	if (!sym->section->flags & SEC_LOAD)
+	if (!(sym->section->flags & SEC_LOAD))
 		return false;
 
 	return true;
