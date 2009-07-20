@@ -365,7 +365,7 @@ bool op_bfd::has_debug_info() const
 }
 
 
-bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
+bool op_bfd::get_linenr(symbol_index_t sym_idx, bfd_vma offset,
 			string & source_filename, unsigned int & linenr) const
 {
 	if (!has_debug_info())

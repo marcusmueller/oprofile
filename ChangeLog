@@ -1,3 +1,11 @@
+2009-07-20  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* libutil++/bfd_support.h(find_nearest_line):
+	* libutil++/bfd_support.cpp(find_nearest_line):
+	* libutil++/op_bfd.h(op_bfd::get_linenr):
+	* libutil++/op_bfd.cpp(op_bfd::get_linenr): Change the type of offset
+	  from unsigned int to bfd_vma to accommodate addresses above 4G
+
 2009-07-17  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/bfd_support.cpp: Fix logic error from previous
