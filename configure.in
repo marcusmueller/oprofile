@@ -12,7 +12,7 @@
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
-AM_INIT_AUTOMAKE(oprofile, 0.9.5cvs)
+AM_INIT_AUTOMAKE(oprofile, 0.9.5)
 AM_CONFIG_HEADER(config.h)
 
 AC_CHECK_DECLS([basename], [], [], [[#include <libgen.h>]])
