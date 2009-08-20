@@ -117,11 +117,13 @@ static void help_for_event(struct op_event * event)
 				}
 			}
 		}
-		printf(")");
-	}
-
-	if(event->ext != NULL)
-		printf(" (ext: %s)", event->ext);
+	} else	if (event->ext != NULL) {
+		/* Handling extended feature interface */
+		printf(": (ext: %s", event->ext);
+	} else {
+		/* Handling arch_perfmon case */
+		printf(": (counter: all");
+	}   
 
 	printf(")\n\t");
 	column = 8;

@@ -77,6 +77,7 @@ char const * xml_tag_map[] = {
 		"desc",
 		"counter_mask",
 		"min_count",
+		"ext",
 	"unit_masks",
 		"default",
 	"unit_mask",

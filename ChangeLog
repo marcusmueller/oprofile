@@ -1,3 +1,11 @@
+2009-08-20  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
+	* libop/op_xml_events.c: 
+	* libop/op_xml_out.h: 
+	* libop/op_xml_out.c: Fix ophelp -X output for IBS events
+	* utils/ophelp.c: Fix ophelp output for "counter:cpuid" and 
+	  "ext:xxx" case.
+
 2009-07-31  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.6cvs

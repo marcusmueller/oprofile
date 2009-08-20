@@ -70,6 +70,8 @@ void xml_help_for_event(struct op_event const * event)
 
 	nr_counters = op_get_nr_counters(cpu_type);
 	init_xml_int_attr(HELP_COUNTER_MASK, event->counter_mask, buffer);
+	if (event->ext)
+		init_xml_str_attr(HELP_EXT, event->ext, buffer);
 	init_xml_int_attr(HELP_MIN_COUNT, event->min_count, buffer);
 
 	if (has_nested) {
