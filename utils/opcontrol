@@ -943,7 +943,8 @@ do_stop()
 		return
 	fi
 
-	if test $KERNEL_SUPPORT = "yes"; then
+	if test $KERNEL_SUPPORT = "yes" \
+	    && test 0 != $(cat /dev/oprofile/enable); then
 		echo "Stopping profiling."
 		echo 0 >/dev/oprofile/enable
 	fi
