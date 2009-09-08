@@ -1,5 +1,10 @@
 2009-09-08  Robert Richter <robert.richter@amd.com>
 
+	* utils/opcontrol: fix deinit; kill daemon only if running to prevent
+	  unnecessary "Daemon not running" message
+
+2009-09-08  Robert Richter <robert.richter@amd.com>
+
 	* utils/opcontrol: fix help message
 
 2009-09-04  Robert Richter <robert.richter@amd.com>

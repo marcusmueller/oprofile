@@ -728,8 +728,10 @@ do_options()
 
 			--deinit)
 				DUMP=yes
-				STOP=yes
-				KILL_DAEMON=yes
+				test ! -f "$LOCK_FILE" || {
+					STOP=yes
+					KILL_DAEMON=yes
+				}
 				DEINIT=yes
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
 				EXCLUSIVE_ARGV="$arg"
