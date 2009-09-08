@@ -106,7 +106,8 @@ is_tool_available()
 # print help message
 do_help()
 {
-   echo "opcontrol: usage:
+    cat >&2 <<EOF
+opcontrol: usage:
    -l/--list-events list event types and unit masks
    -?/--help        this message
    -v/--version     show version
@@ -162,7 +163,7 @@ do_help()
    --xen                         Xen image (for Xen only)
    --active-domains=<list>       List of domains in profiling session (for Xen only)
                                  (list contains domain ids separated by commas)
-" >&2
+EOF
 }
 
 
