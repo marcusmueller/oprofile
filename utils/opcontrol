@@ -587,7 +587,7 @@ verify_counters()
 # setup any needed default value in chosen events
 normalise_events()
 {
-	if test "$NR_CHOSEN" -le 0; then
+	if test "$NR_CHOSEN" -le 0 || test "$IS_TIMER" = 1; then
 		return
 	fi
 
@@ -1453,8 +1453,12 @@ do_start_daemon()
 		--separate-thread=$SEPARATE_THREAD \
 		--separate-cpu=$SEPARATE_CPU"
 
-	if ! test -z "$OPROFILED_EVENTS"; then
-		OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
+	if test "$IS_TIMER" = 1; then
+		OPD_ARGS="$OPD_ARGS --events="
+	else
+		if ! test -z "$OPROFILED_EVENTS"; then
+			OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
+		fi
 	fi
 
 	if test "$VMLINUX" = "none"; then
