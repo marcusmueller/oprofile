@@ -1,3 +1,10 @@
+2009-10-09  Robert Richter <robert.richter@amd.com>
+
+	* libop/op_xml_events.c:
+	* libop/op_xml_out.c:
+	* libop/op_xml_out.h:
+	* libutil++/xml_output.cpp: fix buffer overflows in xml generator
+
 2009-09-14  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* utils/opcontrol: Fix timer mode

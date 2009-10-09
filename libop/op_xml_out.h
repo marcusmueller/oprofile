@@ -60,11 +60,11 @@ typedef enum {
 	} tag_t;
 
 char const * xml_tag_name(tag_t tag);
-void open_xml_element(tag_t tag, int with_attrs, char * result);
-void close_xml_element(tag_t tag, int has_nested, char * result);
-void init_xml_int_attr(tag_t attr, int value, char * result);
-void init_xml_dbl_attr(tag_t attr, double value, char * result);
-void init_xml_str_attr(tag_t attr, char const * str, char * result);
+void open_xml_element(tag_t tag, int with_attrs, char *buffer, size_t size);
+void close_xml_element(tag_t tag, int has_nested, char *buffer, size_t size);
+void init_xml_int_attr(tag_t attr, int value, char *buffer, size_t size);
+void init_xml_dbl_attr(tag_t attr, double value, char *buffer, size_t size);
+void init_xml_str_attr(tag_t attr, char const *str, char *buffer, size_t size);
 
 #ifdef __cplusplus
 }
