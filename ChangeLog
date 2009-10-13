@@ -1,3 +1,8 @@
+2009-10-13  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* utils/opcontrol: Remove incorrect redundant invocation of
+	  get_image_range
+
 2009-10-09  Robert Richter <robert.richter@amd.com>
 
 	* libop/op_xml_events.c:

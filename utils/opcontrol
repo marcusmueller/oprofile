@@ -799,8 +799,6 @@ do_options()
 				error_if_empty $arg $val
 				VMLINUX=$val
 				DO_SETUP=yes
-				# check validity
-				get_image_range "linux"
 				;;
 			--no-vmlinux)
 				VMLINUX=none
@@ -815,7 +813,6 @@ do_options()
 				error_if_empty $arg $val
 				XENIMAGE=$val
 				DO_SETUP=yes
-				get_image_range "xen"
 				;;
 			--active-domains)
 				error_if_empty $arg $val
