@@ -1,3 +1,8 @@
+2009-10-14  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* agents/jvmpi/jvmpi_oprofile.cpp: Add extra #includes since new
+	  libstdc++ header files do not include standard C header files
+
 2009-10-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* utils/opcontrol: Remove incorrect redundant invocation of

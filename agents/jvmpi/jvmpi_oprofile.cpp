@@ -27,10 +27,12 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <cstring>
 #include <stdexcept>
 #include <cerrno>
 
 extern "C" {
+#include <stdint.h>
 #include <jvmpi.h>
 #include <opagent.h>
 }
