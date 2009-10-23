@@ -1,3 +1,9 @@
+2009-10-23  Suravee Suthikulpanit  <suravee.suthikulpanit@amd.com>
+
+	* events/x86-64/family10/events:
+	* events/x86-64/family10/unit_masks: Update events and unitmasks
+	  from publication 31116 revision 3.34 and fixes
+
 2009-10-23  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* README_PACKAGERS: Add mention of new opjitconv binary
