@@ -1,3 +1,7 @@
+2009-10-23  Robert Richter  <robert.richter@amd.com>
+
+	* autogen.sh: create copies with libtoolize instead of symlinks
+
 2009-10-23  Suravee Suthikulpanit  <suravee.suthikulpanit@amd.com>
 
 	* events/x86-64/family10/events:
