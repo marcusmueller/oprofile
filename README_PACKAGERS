@@ -22,7 +22,11 @@ New files to install as of release 0.9.4
 As of release 0.9.4, OProfile includes a JIT support library called libopagent.
 This library is needed at runtime when profiling JITed code from supported
 virtual machines.  The install location for this library is:
-	<libdir>/oprofile
+	<oprof-install-dir>/<libdir>/oprofile
+
+And there's a new binary file to install that's used for JIT profiling called
+opjitconv.  As with the other oprofile executables, this file is installed in
+the <oprof-install-dir>/bin directory.
 
 OProfile also includes support for profiling Java applications.  This support
 must be configured by way of the '--with-java=<path_to_jdk>' configure

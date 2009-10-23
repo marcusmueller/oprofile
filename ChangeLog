@@ -1,3 +1,7 @@
+2009-10-23  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* README_PACKAGERS: Add mention of new opjitconv binary
+
 2009-10-14  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* agents/jvmpi/jvmpi_oprofile.cpp: Add extra #includes since new
