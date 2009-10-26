@@ -1,3 +1,7 @@
+2009-10-26  Robert Richter <robert.richter@amd.com>
+
+	* doc/oprofile.1.in: fix user-space daemon logfile in man page
+
 2009-10-26  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/bfd_support.cpp:

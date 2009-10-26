@@ -156,7 +156,7 @@ Configuration file for opcontrol
 .I @prefix@/share/oprofile/
 Event description files used by OProfile.
 .TP
-.I /var/lib/oprofile/oprofiled.log
+.I /var/lib/oprofile/samples/oprofiled.log
 The user-space daemon logfile.
 .TP
 .I /var/lib/oprofile/opdev, /var/lib/oprofile/ophashmapdev, /var/lib/oprofile/opnotedev
