@@ -432,21 +432,16 @@ void bfd_info::close()
 		bfd_close(abfd);
 }
 
-
-#if SYNTHESIZE_SYMBOLS
-/* On ppc64 platforms where there is no symbol information in the image bfd,
- * the debuginfo syms need to be mapped back to the sections of the image bfd
- * in order to gather enough information about the symbol.  That's the purpose
- * of the translate_debuginfo_syms() function.
- */
 void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 {
-#define MAX_SECT 1024
-	bfd_section * image_sect[MAX_SECT];
-	int img_sect_cnt = 0;
+	bfd_section ** image_sect;
+	unsigned int img_sect_cnt = 0;
 	bfd * image_bfd = image_bfd_info->abfd;
 
-	for (bfd_section * sect = image_bfd->sections; sect && img_sect_cnt < MAX_SECT;
+	image_sect = (bfd_section **) malloc(image_bfd->section_count * (sizeof(bfd_section *)));
+
+	for (bfd_section * sect = image_bfd->sections;
+	     sect && img_sect_cnt < image_bfd->section_count;
 	     sect = sect->next) {
 		// A comment section marks the end of the needed sections
 		if (strstr(sect->name, ".comment") == sect->name)
@@ -458,14 +453,16 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 	asymbol * sym = dbg_syms[0];
 	for (int i = 0; i < nr_dbg_syms; sym = dbg_syms[++i]) {
 		if (sym->section->owner && sym->section->owner == abfd) {
-			if (sym->section->index < img_sect_cnt) {
+			if ((unsigned int)sym->section->index < img_sect_cnt) {
 				sym->section = image_sect[sym->section->index];
 				sym->the_bfd = image_bfd;
 			}
 		}
 	}
+	free(image_sect);
 }
 
+#if SYNTHESIZE_SYMBOLS
 bool bfd_info::get_synth_symbols()
 {
 	extern const bfd_target bfd_elf64_powerpc_vec;
@@ -533,13 +530,6 @@ bool bfd_info::get_synth_symbols()
 {
 	return false;
 }
-
-void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms __attribute__ ((unused)),
-					long nr_dbg_syms __attribute__ ((unused)))
-{
-	return;
-}
-
 #endif /* SYNTHESIZE_SYMBOLS */
 
 
@@ -568,6 +558,9 @@ void bfd_info::get_symbols()
 	syms.reset(new asymbol *[nr_syms]);
 
 	nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
+
+	if (image_bfd_info)
+		translate_debuginfo_syms(syms.get(), nr_syms);
 
 	cverb << vbfd << "bfd_canonicalize_symtab: " << dec
 	      << nr_syms << hex << endl;
