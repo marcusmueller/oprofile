@@ -249,7 +249,7 @@ void xml_utils::output_xml_header(string const & command_options,
 	// both here and in the schema file when major changes are made to
 	// the schema.  changes to opreport, or minor changes to the schema
 	// can be indicated by changes to the fraction part.
-	string const schema_version = "2.0";
+	string const schema_version = "3.0";
 
 	// This is the XML version, not schema version.
 	string const xml_header = "<?xml version=\"1.0\" ?>";

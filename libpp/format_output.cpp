@@ -941,8 +941,8 @@ xml_cg_formatter(callgraph_container const & cg, symbol_collection & s,
 
 void xml_cg_formatter::
 output_symbol_core(ostream & out, cg_symbol::children const cg_symb,
-	string const selfname, string const qname,
-	bool is_module, tag_t tag)
+       string const selfname, string const qname,
+       size_t lo, size_t hi, bool is_module, tag_t tag)
 {
 	cg_symbol::children::const_iterator cit;
 	cg_symbol::children::const_iterator cend = cg_symb.end();
@@ -953,6 +953,10 @@ output_symbol_core(ostream & out, cg_symbol::children const cg_symb,
 		bool self = false;
 		ostringstream str;
 		size_t indx;
+
+		// output symbol's summary data for each profile class
+		for (size_t p = lo; p <= hi; ++p)
+			xml_support->output_summary_data(str, cit->sample.counts, p);
 
 		if (cverb << vxml)
 			out << "<!-- symbol_ref=" << symbol_names.name(cit->name) <<
@@ -995,12 +999,15 @@ output_symbol_core(ostream & out, cg_symbol::children const cg_symb,
 
 void xml_cg_formatter::
 output_symbol(ostream & out,
-	symbol_entry const * symb, size_t lo __attribute__ ((unused)),
-	size_t hi __attribute__ ((unused)), bool is_module)
+	symbol_entry const * symb, size_t lo, size_t hi, bool is_module)
 {
 	cg_symbol const * cg_symb = dynamic_cast<cg_symbol const *>(symb);
 	ostringstream str;
 	size_t indx;
+
+	// output symbol's summary data for each profile class
+	for (size_t p = lo; p <= hi; ++p)
+		xml_support->output_summary_data(str, symb->sample.counts, p);
 
 	if (cverb << vxml)
 		out << "<!-- symbol_ref=" << symbol_names.name(symb->name) <<
@@ -1025,12 +1032,12 @@ output_symbol(ostream & out,
 
 	out << open_element(CALLERS);
 	if (cg_symb)
-		output_symbol_core(out, cg_symb->callers, selfname, qname, is_module, CALLERS);
+		output_symbol_core(out, cg_symb->callers, selfname, qname, lo, hi, is_module, CALLERS);
 	out << close_element(CALLERS);
 
 	out << open_element(CALLEES);
 	if (cg_symb)
-		output_symbol_core(out, cg_symb->callees, selfname, qname, is_module, CALLEES);
+		output_symbol_core(out, cg_symb->callees, selfname, qname, lo, hi, is_module, CALLEES);
 
 	out << close_element(CALLEES);
 

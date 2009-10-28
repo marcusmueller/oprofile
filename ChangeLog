@@ -1,3 +1,13 @@
+2009-10-28  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* doc/opreport.xsd: Fix up schema and bump version to match 2009-06-18 fix;
+	  other schema fixups for correctness and to facilitate XML document-to-schema
+	  validation works
+	* libpp/xml_utils.cpp: bump schema version
+	* libpp/format_output.cpp:
+	* libpp/format_output.h: Fix regression in XML callgraph output
+	  caused by 2009-06-18 fix
+
 2009-10-26  Robert Richter <robert.richter@amd.com>
 
 	* doc/oprofile.1.in: fix user-space daemon logfile in man page

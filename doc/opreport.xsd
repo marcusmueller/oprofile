@@ -23,7 +23,7 @@
       <xs:attribute name="schemaversion" use="required">
         <xs:simpleType>
           <xs:restriction base = "xs:string">
-            <xs:pattern value = "2\.[0-9]+"/>
+            <xs:pattern value = "3\.[0-9]+"/>
           </xs:restriction>
         </xs:simpleType>       </xs:attribute>
 
@@ -110,7 +110,7 @@
   <xs:element name="process">
     <xs:complexType>
       <xs:sequence>
-	<xs:element minOccurs="1" maxOccurs="unbounded" ref="count"/>
+	<xs:element minOccurs="1" maxOccurs="1" ref="count"/>
         <xs:element minOccurs="1" maxOccurs="unbounded" ref="thread"/>
       </xs:sequence>
       <xs:attribute name="pid" type="xs:integer" use="required"/>
@@ -121,7 +121,7 @@
   <xs:element name="thread">
     <xs:complexType>
       <xs:sequence>
-		<xs:element minOccurs="1" maxOccurs="unbounded" ref="count"/>
+		<xs:element minOccurs="1" maxOccurs="1" ref="count"/>
         <xs:element minOccurs="1" maxOccurs="unbounded" ref="module"/>
       </xs:sequence>
       <xs:attribute name="tid" type="xs:integer" use="required"/>
@@ -131,7 +131,7 @@
   <xs:element name="binary">
     <xs:complexType>
       <xs:sequence>
-		<xs:element minOccurs="1" maxOccurs="unbounded" ref="count"/>
+		<xs:element minOccurs="1" maxOccurs="1" ref="count"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="symbol"/>
         <!-- When the separate=lib option is used an binary
 		     can contain a list of library Modules.  -->
@@ -144,7 +144,7 @@
   <xs:element name="module">
     <xs:complexType>
       <xs:sequence>
-		<xs:element minOccurs="1" maxOccurs="unbounded" ref="count"/>
+		<xs:element minOccurs="0" maxOccurs="1" ref="count"/>
         <xs:element minOccurs="1" maxOccurs="unbounded" ref="symbol"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
@@ -153,17 +153,19 @@
 
   <xs:element name="callees">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice>
 		<xs:element minOccurs="0" maxOccurs="unbounded" ref="module"/>
-      </xs:sequence>
+		<xs:element minOccurs="0" maxOccurs="unbounded" ref="symbol"/>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="callers">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice>
 		<xs:element minOccurs="0" maxOccurs="unbounded" ref="module"/>
-      </xs:sequence>
+		<xs:element minOccurs="0" maxOccurs="unbounded" ref="symbol"/>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
 
@@ -199,9 +201,9 @@
   <xs:element name="symbol">
     <xs:complexType>
       <xs:sequence>
-  	    <xs:element minOccurs="1" maxOccurs="unbounded" ref="count"/>
         <xs:element minOccurs="0" maxOccurs="1" ref="callers"/>
         <xs:element minOccurs="0" maxOccurs="1" ref="callees"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="count"/>
       </xs:sequence>
 	  <!-- idref is an index into symboltable table-->
       <xs:attribute name="idref" type="xs:nonNegativeInteger" use="required"/>
