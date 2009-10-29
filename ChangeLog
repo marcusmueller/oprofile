@@ -1,3 +1,7 @@
+2009-10-29  William Cohen  <wcohen@redhat.com>
+
+	* daemon/opd_perfmon.c: Fix start-daemon problem on ia64
+
 2009-10-29  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/ppc64/power7/events:
