@@ -1,3 +1,9 @@
+2009-10-29  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/ppc64/power7/events:
+	* events/ppc64/power7/event_mappings: Updates to POWER7 events and
+	  groups
+
 2009-10-28  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* doc/opreport.xsd: Fix up schema and bump version to match 2009-06-18 fix;
