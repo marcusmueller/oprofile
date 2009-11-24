@@ -1,3 +1,7 @@
+2009-11-24  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.6
+
 2009-10-29  William Cohen  <wcohen@redhat.com>
 
 	* daemon/opd_perfmon.c: Fix start-daemon problem on ia64
