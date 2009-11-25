@@ -1,3 +1,7 @@
+2009-11-25  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.7cvs
+
 2009-11-24  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.6
