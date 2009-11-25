@@ -1,3 +1,14 @@
+2009-11-25  Chen Jie  <chenj@lemote.com>
+
+	* events/Makefile.am:
+	* events/mips/loongson2/events: New File
+	* events/mips/loongson2/unit_masks: New File
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c: Add default event for loongson2
+	* libutil/op_cpufreq.c: Add freq estimation for high performance mips processors
+	* utils/ophelp.c: Add support for ICT loongson2
+
 2009-11-25  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: bump version in AM_INIT_AUTOMAKE to 0.9.7cvs

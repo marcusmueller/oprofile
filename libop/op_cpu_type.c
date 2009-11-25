@@ -82,6 +82,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 compat version 1", "ppc64/ibm-compat-v1", CPU_PPC64_IBM_COMPAT_V1, 4 },
    	{ "Intel Core/i7", "i386/core_i7", CPU_CORE_I7, 4 },
    	{ "Intel Atom", "i386/atom", CPU_ATOM, 2 },
+	{ "Loongson2", "mips/loongson2", CPU_MIPS_LOONGSON2, 2 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

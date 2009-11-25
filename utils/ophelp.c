@@ -617,6 +617,11 @@ int main(int argc, char const * argv[])
 			"http://www.necel.com/nesdis/image/U16677EJ3V0UM00.pdf\n";
 		break;
 
+	case CPU_MIPS_LOONGSON2:
+		event_doc = 
+			"See loongson2 RISC Microprocessor Family Reference Manual\n";
+		break;
+
 	case CPU_PPC_E500:
 	case CPU_PPC_E500_2:
 		event_doc =
