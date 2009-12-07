@@ -1,3 +1,8 @@
+2009-12-07  Robert Richter  <robert.richter@amd.com>
+
+	* agents/Makefile.am:
+	* configure.in: adding config option to disable oprofile user check
+
 2009-11-25  Chen Jie  <chenj@lemote.com>
 
 	* events/Makefile.am:
