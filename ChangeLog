@@ -1,3 +1,7 @@
+2010-01-20  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* m4/qt.m4: Fix qt lib check so it works on base 64-bit system
+
 2009-12-07  Robert Richter  <robert.richter@amd.com>
 
 	* agents/Makefile.am:
