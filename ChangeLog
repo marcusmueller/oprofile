@@ -1,3 +1,8 @@
+2010-03-01  Gabor Loki  <loki@inf.u-szeged.hu>
+
+	* daemon/opd_pipe.c: Fix memory leak
+	* utils/opcontrol: Fix messages sending method to opd_pipe
+
 2010-01-20  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* m4/qt.m4: Fix qt lib check so it works on base 64-bit system

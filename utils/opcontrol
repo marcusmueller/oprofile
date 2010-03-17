@@ -1598,7 +1598,7 @@ do_dump_data()
 			fi
 		fi
 		# trigger oprofiled to execute opjitconv
-		echo do_jitconv > $SESSION_DIR/opd_pipe
+		echo do_jitconv >> $SESSION_DIR/opd_pipe
 		rm -f "$SESSION_DIR/complete_dump"
 		echo 1 > $MOUNT/dump
 		# loop until the complete_dump file is created to

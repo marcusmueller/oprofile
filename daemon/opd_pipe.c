@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+static FILE * fifo_fd = NULL;
 static int fifo;
 
 void opd_create_pipe(void)
@@ -48,6 +49,8 @@ void opd_open_pipe(void)
 
 void opd_close_pipe(void)
 {
+	if (fifo_fd)
+		fclose(fifo_fd);
 	close(fifo);
 }
 
@@ -73,7 +76,7 @@ int is_jitconv_requested(void)
 	/* read up to 99 lines to check for 'do_jitconv' */
 	for (i = 0; i < 99; i++) {
 		/* just break if no new line is found */
-		if (fgets(line, 256, fd) == NULL)
+		if (fgets(line, 256, fifo_fd) == NULL)
 			break;
 		line[strlen(line) - 1] = '\0';
 
