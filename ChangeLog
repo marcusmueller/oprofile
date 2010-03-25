@@ -1,3 +1,11 @@
+2010-03-25  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/mips/loongson2/events: New File
+	* events/mips/loongson2/unit_masks: New File
+	   I neglected to do 'cvs add' for these new two new files
+           back on Nov 25, 2009 when I committed the initial
+           loongson2 support.  This change corrects that error.
+
 2010-03-01  Gabor Loki  <loki@inf.u-szeged.hu>
 
 	* daemon/opd_pipe.c: Fix memory leak
