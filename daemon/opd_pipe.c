@@ -21,8 +21,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-static FILE * fifo_fd = NULL;
 static int fifo;
+static FILE * fifo_fd = NULL;
 
 void opd_create_pipe(void)
 {
@@ -61,14 +61,14 @@ int is_jitconv_requested(void)
 	static long nr_drops = 0;
 	/* modulus to output only a few warnings to avoid flooding oprofiled.log */
 	static int mod_cnt_drops = 1;
-	FILE * fd;
 	char line[256];
 	int i, ret = 0;
 
 	/* get a file descriptor to the pipe */
-	fd = fdopen(fifo, "r");
+	if (!fifo_fd)
+		fifo_fd = fdopen(fifo, "r");
 
-	if (fd == NULL) {
+	if (fifo_fd == NULL) {
 		perror("oprofiled: couldn't create file descriptor: ");
 		exit(EXIT_FAILURE);
 	}
