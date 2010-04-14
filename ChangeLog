@@ -1,3 +1,10 @@
+2010-04-13  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* libutil++/bfd_support.cpp: Fix up translate_debuginfo_syms
+	  so it doesn't rely on section index values being the same
+	  between real image and debuginfo file (to resolve problem
+	  reported by Will Cohen on Fedora 12)
+
 2010-03-25  Oliver Schneider  <oliver@assarbad.net>
 
 	* libpp/parse_filename.cpp:  Catch case where a basic_string::erase
