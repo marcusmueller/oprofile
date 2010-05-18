@@ -1,3 +1,8 @@
+2010-05-18  Daniel Hansel  <daniel.hansel@linux.vnet.ibm.com>
+
+	* doc/oprofile.xml: Document that only kernel versions 2.6.13 or
+	  later provide support for anonymous mapped regions
+
 2010-04-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libutil++/bfd_support.cpp: Fix up translate_debuginfo_syms
