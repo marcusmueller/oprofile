@@ -1,3 +1,7 @@
+2010-06-11  William Cohen <wcohen@redhat.com>
+
+        * libregex/stl.pat.in: Avoid machine specific configuration.
+
 2010-05-18  Daniel Hansel  <daniel.hansel@linux.vnet.ibm.com>
 
 	* doc/oprofile.xml: Document that only kernel versions 2.6.13 or
