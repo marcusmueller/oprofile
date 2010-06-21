@@ -1,3 +1,13 @@
+2010-06-21  John Villalovos <john.l.villalovos@intel.com>
+
+	* libop/op_cpu_type.[h,c]:
+	* libop/op_events.c:
+	* utils/ophelp.c: Add "i386/nehalem" as a valid cpu_type.  This will
+	allow the kernel in the future (if desired) to use "i386/nehalem"
+	instead of "i386/core_i7".  Core i7 processors can be either Nehalem
+	or Westmere microarchitecture but the "i386/core_i7" cpu_type in
+	Oprofile is only for Nehalem microarchitecture processors.
+
 2010-06-11  William Cohen <wcohen@redhat.com>
 
         * libregex/stl.pat.in: Avoid machine specific configuration.

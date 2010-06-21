@@ -970,6 +970,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_FAMILY11H:
  		case CPU_ATOM:
  		case CPU_CORE_I7:
+		case CPU_NEHALEM:
 		case CPU_MIPS_LOONGSON2:
 			descr->name = "CPU_CLK_UNHALTED";
 			break;
