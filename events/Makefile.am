@@ -38,7 +38,9 @@ event_files = \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
 	arm/armv6/events arm/armv6/unit_masks \
+	arm/armv7-common/events arm/armv7-common/unit_masks \
 	arm/armv7/events arm/armv7/unit_masks \
+	arm/armv7-ca9/events arm/armv7-ca9/unit_masks \
 	arm/mpcore/events arm/mpcore/unit_masks \
 	avr32/events avr32/unit_masks \
 	mips/20K/events mips/20K/unit_masks \

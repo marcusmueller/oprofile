@@ -70,12 +70,12 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
 	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
 	{ "ppc64 PA6T", "ppc64/pa6t", CPU_PPC64_PA6T, 6 },
-	{ "ARM MPCore", "arm/mpcore", CPU_ARM_MPCORE, 2 },
+	{ "ARM 11MPCore", "arm/mpcore", CPU_ARM_MPCORE, 2 },
 	{ "ARM V6 PMU", "arm/armv6", CPU_ARM_V6, 3 },
 	{ "ppc64 POWER5++", "ppc64/power5++", CPU_PPC64_POWER5pp, 6 },
 	{ "e300", "ppc/e300", CPU_PPC_E300, 4 },
 	{ "AVR32", "avr32", CPU_AVR32, 3 },
-	{ "ARM V7 PMNC", "arm/armv7", CPU_ARM_V7, 5 },
+	{ "ARM Cortex-A8", "arm/armv7", CPU_ARM_V7, 5 },
  	{ "Intel Architectural Perfmon", "i386/arch_perfmon", CPU_ARCH_PERFMON, 0},
 	{ "AMD64 family11h", "x86-64/family11h", CPU_FAMILY11H, 4 },
 	{ "ppc64 POWER7", "ppc64/power7", CPU_PPC64_POWER7, 6 },
@@ -84,6 +84,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
    	{ "Intel Atom", "i386/atom", CPU_ATOM, 2 },
 	{ "Loongson2", "mips/loongson2", CPU_MIPS_LOONGSON2, 2 },
 	{ "Intel Nehalem microarchitecture", "i386/nehalem", CPU_NEHALEM, 4 },
+	{ "ARM Cortex-A9", "arm/armv7-ca9", CPU_ARM_V7_CA9, 7 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

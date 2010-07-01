@@ -535,8 +535,14 @@ int main(int argc, char const * argv[])
 
 	case CPU_ARM_V7:
 		event_doc =
-			"See ARM11 Technical Reference Manual\n"
+			"See Cortex-A8 Technical Reference Manual\n"
 			"Cortex A8 DDI (ARM DDI 0344B, revision r1p1)\n";
+		break;
+
+	case CPU_ARM_V7_CA9:
+		event_doc =
+			"See Cortex-A9 Technical Reference Manual\n"
+			"Cortex A9 DDI (ARM DDI 0388E, revision r2p0)\n";
 		break;
 
 	case CPU_PPC64_PA6T:

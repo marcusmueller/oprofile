@@ -72,7 +72,7 @@ typedef enum {
 	CPU_PPC64_POWER5pp,  /**< ppc64 Power5++ family */
 	CPU_PPC_E300, /**< e300 */
 	CPU_AVR32, /**< AVR32 */
-	CPU_ARM_V7, /**< ARM V7 */
+	CPU_ARM_V7, /**< ARM Cortex-A8 */
  	CPU_ARCH_PERFMON, /**< Intel architectural perfmon */
 	CPU_FAMILY11H, /**< AMD family 11h */
 	CPU_PPC64_POWER7, /**< ppc64 POWER7 family */
@@ -81,6 +81,7 @@ typedef enum {
    	CPU_ATOM, /* First generation Intel Atom */
 	CPU_MIPS_LOONGSON2, /* < loongson2 family */
 	CPU_NEHALEM, /* Intel Nehalem microarchitecture */
+	CPU_ARM_V7_CA9, /**< ARM Cortex-A9 */
 	MAX_CPU_TYPE
 } op_cpu;
 

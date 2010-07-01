@@ -1,3 +1,16 @@
+2010-07-01  Will Deacon  <will.deacon@arm.com>
+
+	* events/arm/armv7-common/events:
+	* events/arm/armv7-common/unit_masks:
+	* events/arm/armv7/events: factor out ARMv7 common architectural events
+	* events/Makefile.am:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c: correct usage of core terminology for v7 and MPCore
+	* events/arm/armv7-ca9/events:
+	* events/arm/armv7-ca9/unit_masks: add support for Cortex-A9 events
+
 2010-06-21  John Villalovos <john.l.villalovos@intel.com>
 
 	* libop/op_cpu_type.[h,c]:
