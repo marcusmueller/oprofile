@@ -1,3 +1,12 @@
+2010-07-13  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/arm/armv7-common/events: (new)
+	* events/arm/armv7-common/unit_masks: (new)
+	* events/arm/armv7-ca9/events: (new)
+	* events/arm/armv7-ca9/unit_masks: (new)
+	  I neglected to do 'cvs add' for these new files in the
+	  previous commit; doing so now.
+
 2010-07-01  Will Deacon  <will.deacon@arm.com>
 
 	* events/arm/armv7-common/events:
