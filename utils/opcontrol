@@ -1011,7 +1011,6 @@ do_kill_daemon()
 	sleep 1
 	# already removed unless we forced the kill
 	rm -f "$SESSION_DIR/lock"
-	cp -r /dev/oprofile/stats "$SAMPLES_DIR/current"
 }
 
 
@@ -1616,6 +1615,8 @@ do_dump_data()
 		# HACK !
 		sleep 2
 	fi
+	cp -r /dev/oprofile/stats "$SAMPLES_DIR/current"
+
 	return 0;
 }
 

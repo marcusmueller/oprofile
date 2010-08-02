@@ -1,3 +1,11 @@
+2010-08-02  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* utils/opcontrol:
+	* libpp/profile_spec.cpp:
+	* pp/oparchive.cpp:  Moved the copying of stats to opcontrol::do_dump_data
+	  and removed the unnecessary and confusing message that indicated
+	  when overflow stats were not available.
+
 2010-07-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/arm/armv7-common/events: (new)
