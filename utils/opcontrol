@@ -147,21 +147,31 @@ opcontrol: usage:
        cpu:      per CPU profiles
        all:      all of the above
 
-   -c/--callgraph=#depth         enable callgraph sample collection with a maximum depth.
-                                 Use 0 to disable callgraph profiling.
+   -c/--callgraph=#depth         enable callgraph sample collection with a
+                                 maximum depth. Use '0' to disable callgraph
+                                 profiling.
    --session-dir=dir             place sample database in dir instead of
                                  default location (/var/lib/oprofile)
    -i/--image=name[,names]       list of binaries to profile (default is "all")
    --vmlinux=file                vmlinux kernel image
    --no-vmlinux                  no kernel image (vmlinux) available
    --kernel-range=start,end      kernel range vma address in hexadecimal
-   --buffer-size=num             kernel buffer size in sample units
-   --buffer-watershed            kernel buffer watershed in sample units (2.6 only=
-   --cpu-buffer-size=num         per-cpu buffer size in units (2.6 only)
-   --note-table-size             kernel notes buffer size in notes units (2.4 only)
+   --buffer-size=num             kernel buffer size in sample units.
+                                 Rules: A non-zero value goes into effect after
+                                 a '--shutdown/start' sequence.  A value of
+                                 zero sets this parameter back to default value
+                                 but does not go into effect until after a
+                                 '--deinit/init' sequence.
+   --buffer-watershed            kernel buffer watershed in sample units (2.6
+                                 kernel). Same rules as defined for
+                                 buffer-size.
+   --cpu-buffer-size=num         per-cpu buffer size in units (2.6 kernel)
+                                 Same rules as defined for buffer-size.
+   --note-table-size             kernel notes buffer size in notes units (2.4
+                                 kernel)
 
    --xen                         Xen image (for Xen only)
-   --active-domains=<list>       List of domains in profiling session (for Xen only)
+   --active-domains=<list>       List of domains in profiling session (for Xen)
                                  (list contains domain ids separated by commas)
 EOF
 }

@@ -1,3 +1,9 @@
+2010-08-13  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* utils/opcontrol:
+	* doc/opcontrol.1.in: Update help and man page for opcontrol to indicate
+	  that buffer values may be reset to default values by passing a '0'
+
 2010-08-02  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* utils/opcontrol:
