@@ -1,3 +1,15 @@
+2010-08-26  Paul Lind  <plind@mips.com>
+
+	* libop/op_cpu_type.[h,c]:
+	* libop/op_events.c:
+	* utils/ophelp.c: Add "mips/74K" and "mips/1004K" as valid cpu types,
+	  and change number of available 34K counters to 2.
+	* libop/tests/alloc_counter_tests.c: correct 34K test to 2 counters.
+	* events/mips/24K/events: correct the performance counters for 24K.
+	* events/mips/34K/events: correct the performance counters for 34K.
+	* events/mips/74K/[events,unit_masks]: Add events for 74K.
+	* events/mips/1004K/[events,unit_masks]: Add events for 1004K.
+
 2010-08-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* utils/opcontrol:

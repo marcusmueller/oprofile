@@ -591,6 +591,16 @@ int main(int argc, char const * argv[])
 			"See Programming the MIPS32 34K Core Family "
 			"available from www.mips.com\n";
 		break;
+	case CPU_MIPS_74K:
+		event_doc =
+			"See Programming the MIPS32 74K Core Family "
+			"available from www.mips.com\n";
+		break;
+	case CPU_MIPS_1004K:
+		event_doc =
+			"See Programming the MIPS32 1004K Core Family "
+			"available from www.mips.com\n";
+		break;
 	case CPU_MIPS_5K:
 		event_doc =
 			"See Programming the MIPS64 5K Processor Core Family "

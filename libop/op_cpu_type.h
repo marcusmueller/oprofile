@@ -82,6 +82,8 @@ typedef enum {
 	CPU_MIPS_LOONGSON2, /* < loongson2 family */
 	CPU_NEHALEM, /* Intel Nehalem microarchitecture */
 	CPU_ARM_V7_CA9, /**< ARM Cortex-A9 */
+	CPU_MIPS_74K, /**< MIPS 74K */
+	CPU_MIPS_1004K, /**< MIPS 1004K */
 	MAX_CPU_TYPE
 } op_cpu;
 
