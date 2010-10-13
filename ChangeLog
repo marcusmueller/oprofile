@@ -1,3 +1,8 @@
+2010-10-13  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/mips/Makefile.am: Correction to 8/26 MIPS patch
+	  to add events and unit_masks to makefile
+
 2010-10-07  William Cohen  <wcohen@redhat.com>
 
 	* events/i386/arch_perfmon/events: Correct filter values.

@@ -56,6 +56,8 @@ event_files = \
 	mips/vr5432/events mips/vr5432/unit_masks \
 	mips/vr5500/events mips/vr5500/unit_masks \
 	mips/loongson2/events mips/loongson2/unit_masks \
+	mips/1004K/events mips/1004K/unit_masks \
+	mips/74K/events mips/74K/unit_masks \
 	ppc/7450/events ppc/7450/unit_masks \
 	ppc/e500/events ppc/e500/unit_masks \
 	ppc/e500v2/events ppc/e500v2/unit_masks \
