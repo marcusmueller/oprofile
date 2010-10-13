@@ -78,7 +78,8 @@ void extractor::extract(T & targ, void const * src_,
 	unsigned char const * src = static_cast<unsigned char const *>(src_)
 		+ theabi.need(off);
 	size_t nbytes = theabi.need(sz);
-	
+
+	targ = 0;
 	if (nbytes == 0)
 		return;
 	
@@ -91,7 +92,6 @@ void extractor::extract(T & targ, void const * src_,
 		     << " bytes @ " << off << " = " << (src - begin)
 		     << " : ";
 
-	targ = 0;
 	if (little_endian)
 		while(nbytes--)
 			targ = (targ << 8) | src[nbytes];

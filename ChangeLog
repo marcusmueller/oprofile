@@ -1,5 +1,10 @@
 2010-10-13  Maynard Johnson  <maynardj@us.ibm.com>
 
+	* libabi/opimport.cpp: Fix uninitialized variable warning when
+	  building with gcc 4.4
+
+2010-10-13  Maynard Johnson  <maynardj@us.ibm.com>
+
 	* events/mips/Makefile.am: Correction to 8/26 MIPS patch
 	  to add events and unit_masks to makefile
 
