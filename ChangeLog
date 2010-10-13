@@ -1,3 +1,7 @@
+2010-10-07  William Cohen  <wcohen@redhat.com>
+
+	* events/i386/arch_perfmon/events: Correct filter values.
+
 2010-08-26  Paul Lind  <plind@mips.com>
 
 	* libop/op_cpu_type.[h,c]:
