@@ -1,3 +1,9 @@
+2010-10-15  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* doc/ophelp.xsd:
+	* libop/op_xml_events.c: Fix schema validation issues and error in
+	  xml generation
+
 2010-10-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* libabi/opimport.cpp: Fix uninitialized variable warning when

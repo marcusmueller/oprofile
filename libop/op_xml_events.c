@@ -25,10 +25,11 @@ void open_xml_events(char const * title, char const * doc, op_cpu the_cpu_type)
 
 	buffer[0] = '\0';
 	cpu_type = the_cpu_type;
-	open_xml_element(HELP_EVENTS, 0, buffer, MAX_BUFFER);
+	open_xml_element(HELP_EVENTS, 1, buffer, MAX_BUFFER);
+	init_xml_str_attr(SCHEMA_VERSION, schema_version, buffer, MAX_BUFFER);
+	close_xml_element(NONE, 1, buffer, MAX_BUFFER);
 	open_xml_element(HELP_HEADER, 1, buffer, MAX_BUFFER);
 	init_xml_str_attr(HELP_TITLE, title, buffer, MAX_BUFFER);
-	init_xml_str_attr(SCHEMA_VERSION, schema_version, buffer, MAX_BUFFER);
 	init_xml_str_attr(HELP_DOC, doc, buffer, MAX_BUFFER);
 	close_xml_element(NONE, 0, buffer, MAX_BUFFER);
 	printf("%s", buffer);
