@@ -87,6 +87,9 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A9", "arm/armv7-ca9", CPU_ARM_V7_CA9, 7 },
 	{ "MIPS 74K", "mips/74K", CPU_MIPS_74K, 4},
 	{ "MIPS 1004K", "mips/1004K", CPU_MIPS_1004K, 2},
+	{ "AMD64 family12h", "x86-64/family12h", CPU_FAMILY12H, 4 },
+	{ "AMD64 family14h", "x86-64/family14h", CPU_FAMILY14H, 4 },
+	{ "AMD64 family15h", "x86-64/family15h", CPU_FAMILY15H, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

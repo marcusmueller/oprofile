@@ -84,6 +84,9 @@ typedef enum {
 	CPU_ARM_V7_CA9, /**< ARM Cortex-A9 */
 	CPU_MIPS_74K, /**< MIPS 74K */
 	CPU_MIPS_1004K, /**< MIPS 1004K */
+	CPU_FAMILY12H, /**< AMD family 12h */
+	CPU_FAMILY14H, /**< AMD family 14h */
+	CPU_FAMILY15H, /**< AMD family 15h */
 	MAX_CPU_TYPE
 } op_cpu;
 
