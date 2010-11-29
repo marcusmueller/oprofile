@@ -363,6 +363,7 @@ name:retired_x87_fp type:bitmask default:0x07
 name:ibs_op type:bitmask default:0x01
 	0x00 Using IBS OP cycle count mode
 	0x01 Using IBS OP dispatch count mode
+	0x02 Enable IBS OP Memory Access Log 
 name:non_cancelled_l3_read_requests type:bitmask default:0xf7
 	0x01 RbBlk
 	0x02 RbBlkS

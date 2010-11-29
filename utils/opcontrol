@@ -1867,13 +1867,20 @@ verify_ibs()
 			IBS_FETCH_COUNT=$IBS_COUNT
 			IBS_FETCH_MASK=$IBS_MASK
 		elif test "$IBS_FETCH_COUNT" != "$IBS_COUNT" ; then
-			echo "All IBS Fetch must have the same count."
+			echo "ERROR: All IBS Fetch must have the same count."
 			exit 1
 		fi
 
 		# Check IBS_MASK consistency
 		if test "$IBS_FETCH_MASK" != "$IBS_MASK" ; then
-			echo "All IBS Fetch must have the same unitmask."
+			echo "ERROR: All IBS Fetch must have the same unitmask."
+			exit 1
+		fi
+
+		# Check IBS_FETCH_COUNT within range
+		if test "$IBS_FETCH_COUNT" -gt 1048575 ; then 
+			echo "ERROR: IBS Fetch count is too large."
+			echo "       The maximum IBS-fetch count is 1048575."
 			exit 1
 		fi
 
@@ -1892,6 +1899,28 @@ verify_ibs()
 			echo "All IBS Op must have the same unitmask."
 			exit 1
 		fi
+		
+		# Check IBS_OP_COUNT within range
+		case "$CPUTYPE" in
+			x86-64/family10)
+				if test "$IBS_OP_COUNT" -gt 1048575 ; then 
+					echo "ERROR: IBS Op count is too large."
+					echo "       The maximum IBS-fetch count is 1048575."
+					exit 1
+				fi
+				;;
+
+			x86-64/family12h|\
+			x86-64/family14h|\
+			x86-64/family15h)
+				if test "$IBS_OP_COUNT" -gt 134217727 ; then 
+					echo "ERROR: IBS Op count is too large."
+					echo "       The maximum IBS-Op count is 134217727."
+					exit 1
+				fi
+				;;
+			*)
+		esac
 	fi
 
 	return
@@ -1944,10 +1973,32 @@ do_param_setup_ibs()
 			# NOTE: We default to use dispatched_op if available. 
 			#       Some of the older family10 system does not have
 			#       dispatched_ops feature.
-			#	dispatched op is enabled by bit 1 of the unitmask
+			#       Dispatched op is enabled by bit 0 of the unitmask
+			IBS_OP_DISPATCHED_OP=$(( IBS_OP_UNITMASK & 0x1 ))
 			if test -f $MOUNT/ibs_op/dispatched_ops ; then
-				IBS_OP_DISPATCHED_OP=$(( IBS_OP_UNITMASK & 0x1 ))
 				set_param ibs_op/dispatched_ops $IBS_OP_DISPATCHED_OP
+			else
+				if test $IBS_OP_DISPATCHED_OP -eq 1 ; then
+					echo "ERROR: IBS Op dispatched ops is not supported."
+					exit 1
+				fi
+			fi
+		
+			# NOTE: BTA is enabled by bit 2 of the unitmask
+			IBS_OP_BTA=$(( IBS_OP_UNITMASK & 0x4 ))
+			if test -f $MOUNT/ibs_op/branch_target; then
+				if [ "$IBS_OP_BTA" = "4" ] ; then
+					set_param ibs_op/branch_target 1
+				else
+					set_param ibs_op/branch_target 0
+				fi
+
+				# TODO: Check if write successful
+			else
+				if test $IBS_OP_BTA -eq 1 ; then
+					echo "ERROR: IBS Op Branch Target Address is not supported."
+					exit 1
+				fi
 			fi
 		else
 			set_param ibs_op/enable 0

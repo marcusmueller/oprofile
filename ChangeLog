@@ -1,5 +1,22 @@
 2010-11-7  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
+	* oprofile/utils/opcontrol:
+	* oprofile/daemon/init.c:
+	* oprofile/daemon/opd_extended.h:
+	* oprofile/daemon/opd_extended.c:
+	* oprofile/daemon/opd_ibs.h:
+	* oprofile/daemon/opd_ibs.c:
+	* oprofile/daemon/opd_ibs_trans.h:
+	* oprofile/daemon/opd_ibs_trans.c:
+	* oprofile/events/x86-64/family10/unit_masks:
+	* oprofile/daemon/opd_ibs_macro.h: Additional IBS supports for 
+	  family12/14/15h including:
+		- IBS Op branch target address log
+		- IBS Op memory access log
+		- IBS Op extended count bits
+
+2010-11-7  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
 	* events/Makefile.am:
 	* libop/op_events.c:
 	* libop/op_cpu_type.h:
