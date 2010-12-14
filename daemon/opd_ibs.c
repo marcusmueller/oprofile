@@ -34,21 +34,6 @@
 #include <string.h>
 #include <limits.h>
 
-#if defined(__i386__) && defined(__PIC__)
-/* %ebx may be the PIC register.  */
-        #define __cpuid(level, a, b, c, d)                      \
-          __asm__ ("xchgl\t%%ebx, %1\n\t"                       \
-                   "cpuid\n\t"                                  \
-                   "xchgl\t%%ebx, %1\n\t"                       \
-                   : "=a" (a), "=r" (b), "=c" (c), "=d" (d)     \
-                   : "0" (level))
-#else
-        #define __cpuid(level, a, b, c, d)                      \
-          __asm__ ("cpuid\n\t"                                  \
-                   : "=a" (a), "=b" (b), "=c" (c), "=d" (d)     \
-                   : "0" (level))
-#endif
-
 extern op_cpu cpu_type;
 extern int no_event_ok;
 extern int sfile_equal(struct sfile const * sf, struct sfile const * sf2);
@@ -495,6 +480,7 @@ static int ibs_parse_and_set_um_op(char const * str, unsigned long int * ibs_op_
 
 static void check_cpuid_family_model_stepping()
 {
+#if defined(__i386__) || defined(__x86_64__) 
        union {
                 unsigned eax;
                 struct {
@@ -510,11 +496,16 @@ static void check_cpuid_family_model_stepping()
 	unsigned ebx, ecx, edx;
 
 	/* CPUID Fn0000_0001_EAX Family, Model, Stepping */
-	__cpuid(1, v.eax, ebx, ecx, edx);
+	asm ("cpuid" : "=a" (v.eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "0" (1));
 
 	ibs_family   = v.family + v.ext_family;
 	ibs_model    = v.model + v.ext_model;
 	ibs_stepping = v.stepping;
+#else
+	ibs_family   = 0;
+	ibs_model    = 0;
+	ibs_stepping = 0;
+#endif
 }
 
 

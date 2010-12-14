@@ -1,3 +1,8 @@
+2010-12-14  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+
+	* oprofile/daemon/opd_ibs_trans.c: Fix non-x86 build issue 
+	  due to cpuid instruction
+
 2010-11-7  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* oprofile/utils/opcontrol:
