@@ -94,6 +94,32 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
 
+int op_cpu_variations(op_cpu cpu_type)
+{
+	switch (cpu_type) {
+	case  CPU_ARCH_PERFMON:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+
+op_cpu op_cpu_base_type(op_cpu cpu_type)
+{
+	/* All the processors that support CPU_ARCH_PERFMON */
+	switch (cpu_type) {
+	case CPU_CORE_2:
+	case CPU_CORE_I7:
+	case CPU_ATOM:
+	case CPU_NEHALEM:
+		return CPU_ARCH_PERFMON;
+	default:
+		/* assume processor in a class by itself */
+		return cpu_type;
+	}
+}
+
 op_cpu op_get_cpu_type(void)
 {
 	int cpu_type = CPU_NO_GOOD;
@@ -117,6 +143,9 @@ op_cpu op_get_cpu_type(void)
 	}
 
 	cpu_type = op_get_cpu_number(str);
+
+	if (op_cpu_variations(cpu_type))
+		cpu_type = op_cpu_specific_type(cpu_type);
 
 	fclose(fp);
 

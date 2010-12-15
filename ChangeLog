@@ -1,3 +1,10 @@
+2010-12-15  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_hw_specific.h: User-space identification of processors
+	  that support Intel architectural events
+
 2010-12-14  Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
 
 	* oprofile/daemon/opd_ibs_trans.c: Fix non-x86 build issue 

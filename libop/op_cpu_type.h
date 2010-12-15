@@ -91,6 +91,20 @@ typedef enum {
 } op_cpu;
 
 /**
+ * the CPU lowest common denominator
+ *
+ * returns 1 if there are variations for the base cpu type;
+ */
+int op_cpu_variations(op_cpu cpu_type);
+
+/**
+ * get the CPU lowest common denominator
+ *
+ * returns cpu_type if cpu_type does not have a lowest common denominator.
+ */
+op_cpu op_cpu_base_type(op_cpu cpu_type);
+
+/**
  * get the CPU type from the kernel
  *
  * returns CPU_NO_GOOD if the CPU could not be identified.
