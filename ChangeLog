@@ -1,3 +1,15 @@
+2010-12-16  John Villalovos <john.l.villalovos@intel.com>
+
+	* events/Makefile.am:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_hw_specific.h:
+	* libop/op_events.c:
+	* utils/ophelp.c:
+	* events/i386/westmere/events (new):
+	* events/i386/westmere/unit_masks (new): Add support for Intel
+	  Westmere micro-architecture processors
+
 2010-12-15  Will Cohen  <wcohen@redhat.com>
 
 	* libop/op_cpu_type.c:

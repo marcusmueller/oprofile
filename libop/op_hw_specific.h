@@ -112,6 +112,8 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 			return CPU_CORE_I7;
 		case 0x1c:
 			return CPU_ATOM;
+		case 0x25:
+			return CPU_WESTMERE;
 		}
 	}
 	return cpu_type;
