@@ -1,3 +1,7 @@
+2011-01-17  Will Deacon  <will.deacon@arm.com>
+
+	* events/arm/armv7-ca9/events: Add missing TLB event
+
 2011-01-05  William Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Add argument checking for numerical arguments
