@@ -231,7 +231,8 @@ For information on how to use OProfile's JIT support, see <xref linkend="setup-j
 	<varlistentry>
 		<term>Download</term>
 		<listitem><para>
-			You can download a source tarball or get anonymous CVS at the sourceforge page,
+			You can download a source tarball or check out code from
+			the code repository at the sourceforge page,
 			<ulink url="http://sf.net/projects/oprofile/">http://sf.net/projects/oprofile/</ulink>.
 		</para></listitem>
 	</varlistentry>
