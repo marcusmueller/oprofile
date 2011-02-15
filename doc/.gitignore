@@ -1,0 +1,9 @@
+*.*~
+*.html
+.deps
+doc
+oprofile.html
+# The following is excluded because of doc/srcdoc/Makefile
+#Makefile
+Makefile.in
+*.1

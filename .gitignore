@@ -1,0 +1,35 @@
+# Be sure to that any changes to the .gitignore do not ignore checked in files.
+# Use the following command to check:
+#   git ls-files -i --exclude-standard
+missing
+autom4te-*
+mkinstalldirs
+INSTALL
+depcomp
+install-sh
+NEWS
+AUTHORS
+stamp-*
+# The following is excluded because of module/*/Makefile.in
+#Makefile.in
+.deps
+configure
+make.common
+cvs.log
+# The following is excluded because of doc/srcdoc/Makefile
+#Makefile
+a.diff
+aclocal.m4
+oprofile.s
+confdefs.h
+config.guess
+config.sub
+config.log
+config.cache
+config.status
+config.h.in
+config.h
+tags
+autom4te.cache
+pch-c++.h.gch
+libtool
