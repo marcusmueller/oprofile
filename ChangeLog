@@ -1,3 +1,9 @@
+2011-02-25  Maynard Johnson  <maynardj@us.ibm.com>
+
+	From this date forward, ChangeLog entries will not
+	be necessary, since 'git log' can now be used to show
+	changes in the repository.
+
 2011-02-09  William Cohen  <wcohen@redhat.com>
 
 	* libpp/format_output.h: Do not use mutable for reference variable.
