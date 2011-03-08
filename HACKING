@@ -146,7 +146,7 @@ The documentation referenced above explains how to do this.
 Making patches
 --------------
 
-Patches should be in diff -u format, and must apply cleanly using "patch -p1"
+Patches should be in diff -u format and must apply cleanly using "patch -p1"
 in the top-level source directory. Patches should not include changes to
 generated files.
 
@@ -156,8 +156,8 @@ format.
 You can create a patch-file from the most recent commit using:
 	git format-patch -n HEAD^..
 
-This will create local patch file, with a name derived from your commit
-message, like this:
+This will create local patch file with a name derived from your commit
+message similar to this:
 	0001-Update-HACKING-file.patch
 
 You can read this file into your email client and send it to the list. Or you
@@ -172,7 +172,7 @@ to specify an SMTP server using the options:
 
 Patches should be sent to: oprofile-list@lists.sf.net
 
-There are many useful options, see the Git documentation.
+There are many useful options. See the Git documentation.
 
 Applying patches
 ----------------
