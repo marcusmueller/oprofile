@@ -741,15 +741,15 @@ event:0X05A5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP90 : (Group 90 
 #Group 91 pm_dsource1, Data source information
 event:0X05B0 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP91 : (Group 91 pm_dsource1) The processor's Data Cache was reloaded from the local L2 due to a demand load.
 event:0X05B1 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_L3_GRP91 : (Group 91 pm_dsource1) The processor's Data Cache was reloaded from the local L3 due to a demand load.
-event:0X05B2 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP91 : (Group 91 pm_dsource1) The processor’s Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
-event:0X05B3 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP91 : (Group 91 pm_dsource1) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X05B2 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP91 : (Group 91 pm_dsource1) The processor's Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
+event:0X05B3 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP91 : (Group 91 pm_dsource1) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X05B4 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP91 : (Group 91 pm_dsource1) Number of run instructions completed.
 event:0X05B5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP91 : (Group 91 pm_dsource1) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
 #Group 92 pm_dsource2, Data source information
 event:0X05C0 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L3_GRP92 : (Group 92 pm_dsource2) The processor's Data Cache was reloaded from the local L3 due to a demand load.
 event:0X05C1 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_L31_SHR_GRP92 : (Group 92 pm_dsource2) Data loaded from another L3 on same chip shared
-event:0X05C2 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP92 : (Group 92 pm_dsource2) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X05C2 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP92 : (Group 92 pm_dsource2) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X05C3 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_L2MISS_GRP92 : (Group 92 pm_dsource2) The processor's Data Cache was reloaded but not from the local L2.
 event:0X05C4 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP92 : (Group 92 pm_dsource2) Number of run instructions completed.
 event:0X05C5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP92 : (Group 92 pm_dsource2) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
@@ -798,7 +798,7 @@ event:0X0615 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP97 : (Group 97 
 event:0X0620 counters:0 um:zero minimum:10000 name:PM_INST_CMPL_GRP98 : (Group 98 pm_dsource8) Number of PowerPC Instructions that completed.
 event:0X0621 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_L3_GRP98 : (Group 98 pm_dsource8) The processor's Data Cache was reloaded from the local L3 due to a demand load.
 event:0X0622 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_L3MISS_GRP98 : (Group 98 pm_dsource8) The processor's Data Cache was reloaded from beyond L3 due to a demand load
-event:0X0623 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP98 : (Group 98 pm_dsource8) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X0623 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP98 : (Group 98 pm_dsource8) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X0624 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP98 : (Group 98 pm_dsource8) Number of run instructions completed.
 event:0X0625 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP98 : (Group 98 pm_dsource8) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
@@ -829,8 +829,8 @@ event:0X0655 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP101 : (Group 10
 #Group 102 pm_dsource12, Data source information
 event:0X0660 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_RL2L3_MOD_GRP102 : (Group 102 pm_dsource12) The processor's Data Cache was reloaded with modified (M) data from an L2  or L3 on a remote module due to a demand load
 event:0X0661 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_DMEM_GRP102 : (Group 102 pm_dsource12) The processor's Data Cache was reloaded with data from memory attached to a distant module due to a demand load
-event:0X0662 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP102 : (Group 102 pm_dsource12) The processor’s Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
-event:0X0663 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP102 : (Group 102 pm_dsource12) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X0662 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP102 : (Group 102 pm_dsource12) The processor's Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
+event:0X0663 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP102 : (Group 102 pm_dsource12) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X0664 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP102 : (Group 102 pm_dsource12) Number of run instructions completed.
 event:0X0665 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP102 : (Group 102 pm_dsource12) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
@@ -845,8 +845,8 @@ event:0X0675 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP103 : (Group 10
 #Group 104 pm_dsource14, Data source information
 event:0X0680 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_DMEM_GRP104 : (Group 104 pm_dsource14) The processor's Data Cache was reloaded with data from memory attached to a distant module due to a demand load
 event:0X0681 counters:1 um:zero minimum:10000 name:PM_INST_CMPL_GRP104 : (Group 104 pm_dsource14) Number of PowerPC Instructions that completed.
-event:0X0682 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP104 : (Group 104 pm_dsource14) The processor’s Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
-event:0X0683 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP104 : (Group 104 pm_dsource14) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X0682 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP104 : (Group 104 pm_dsource14) The processor's Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
+event:0X0683 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP104 : (Group 104 pm_dsource14) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X0684 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP104 : (Group 104 pm_dsource14) Number of run instructions completed.
 event:0X0685 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP104 : (Group 104 pm_dsource14) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
@@ -854,7 +854,7 @@ event:0X0685 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP104 : (Group 10
 event:0X0690 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_DMEM_GRP105 : (Group 105 pm_dsource15) The processor's Data Cache was reloaded with data from memory attached to a distant module due to a demand load
 event:0X0691 counters:1 um:zero minimum:10000 name:PM_INST_CMPL_GRP105 : (Group 105 pm_dsource15) Number of PowerPC Instructions that completed.
 event:0X0692 counters:2 um:zero minimum:1000 name:PM_L1_DCACHE_RELOAD_VALID_GRP105 : (Group 105 pm_dsource15) The data source information is valid,the data cache has been reloaded.  Prior to POWER5+ this included data cache reloads due to prefetch activity.  With POWER5+ this now only includes reloads due to demand loads.
-event:0X0693 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP105 : (Group 105 pm_dsource15) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X0693 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP105 : (Group 105 pm_dsource15) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X0694 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP105 : (Group 105 pm_dsource15) Number of run instructions completed.
 event:0X0695 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP105 : (Group 105 pm_dsource15) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
@@ -1789,7 +1789,7 @@ event:0X0DD5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP221 : (Group 22
 #Group 222 pm_mrk_dsource2, Marked data sources
 event:0X0DE0 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_GRP222 : (Group 222 pm_mrk_dsource2) The processor's Data Cache was reloaded from the local L3 due to a marked load.
 event:0X0DE1 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM_CYC_GRP222 : (Group 222 pm_mrk_dsource2) Cycles a marked load waited for data from this level of the storage system.  Counting begins when a marked load misses the data cache and ends when the data is reloaded into the data cache.  To calculate average latency divide this count by the number of marked misses to the same level.
-event:0X0DE2 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM_GRP222 : (Group 222 pm_mrk_dsource2) The processor’s Data Cache was reloaded due to a marked load from memory attached to the same module this proccessor is located on.
+event:0X0DE2 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM_GRP222 : (Group 222 pm_mrk_dsource2) The processor's Data Cache was reloaded due to a marked load from memory attached to the same module this proccessor is located on.
 event:0X0DE3 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_CYC_GRP222 : (Group 222 pm_mrk_dsource2) Cycles a marked load waited for data from this level of the storage system.  Counting begins when a marked load misses the data cache and ends when the data is reloaded into the data cache.  To calculate average latency divide this count by the number of marked misses to the same level.
 event:0X0DE4 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP222 : (Group 222 pm_mrk_dsource2) Number of run instructions completed.
 event:0X0DE5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP222 : (Group 222 pm_mrk_dsource2) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
@@ -1805,8 +1805,8 @@ event:0X0DF5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP223 : (Group 22
 #Group 224 pm_mrk_dsource4, Marked data sources
 event:0X0E00 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_GRP224 : (Group 224 pm_mrk_dsource4) The processor's Data Cache was reloaded from the local L2 due to a marked load.
 event:0X0E01 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_CYC_GRP224 : (Group 224 pm_mrk_dsource4) Cycles a marked load waited for data from this level of the storage system.  Counting begins when a marked load misses the data cache and ends when the data is reloaded into the data cache.  To calculate average latency divide this count by the number of marked misses to the same level.
-event:0X0E02 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP224 : (Group 224 pm_mrk_dsource4) The processor’s Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
-event:0X0E03 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP224 : (Group 224 pm_mrk_dsource4) The processor’s Data Cache was reloaded from memory attached to the same module this proccessor is located on.
+event:0X0E02 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_RMEM_GRP224 : (Group 224 pm_mrk_dsource4) The processor's Data Cache was reloaded from memory attached to a different module than this proccessor is located on.
+event:0X0E03 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_LMEM_GRP224 : (Group 224 pm_mrk_dsource4) The processor's Data Cache was reloaded from memory attached to the same module this proccessor is located on.
 event:0X0E04 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP224 : (Group 224 pm_mrk_dsource4) Number of run instructions completed.
 event:0X0E05 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP224 : (Group 224 pm_mrk_dsource4) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
@@ -1821,7 +1821,7 @@ event:0X0E15 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP225 : (Group 22
 #Group 226 pm_mrk_dsource6, Marked data sources
 event:0X0E20 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL2L3_SHR_GRP226 : (Group 226 pm_mrk_dsource6) The processor's Data Cache was reloaded with shared (T or SL) data from an L2 or L3 on a remote module due to a marked load
 event:0X0E21 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL2L3_SHR_CYC_GRP226 : (Group 226 pm_mrk_dsource6) Marked load latency Data Source 1000 (Remote L2.5/L3.5 S)
-event:0X0E22 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RMEM_GRP226 : (Group 226 pm_mrk_dsource6) The processor’s Data Cache was reloaded due to a marked load from memory attached to a different module than this proccessor is located on.
+event:0X0E22 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RMEM_GRP226 : (Group 226 pm_mrk_dsource6) The processor's Data Cache was reloaded due to a marked load from memory attached to a different module than this proccessor is located on.
 event:0X0E23 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RMEM_CYC_GRP226 : (Group 226 pm_mrk_dsource6) Cycles a marked load waited for data from this level of the storage system.  Counting begins when a marked load misses the data cache and ends when the data is reloaded into the data cache.  To calculate average latency divide this count by the number of marked misses to the same level.
 event:0X0E24 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP226 : (Group 226 pm_mrk_dsource6) Number of run instructions completed.
 event:0X0E25 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP226 : (Group 226 pm_mrk_dsource6) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
