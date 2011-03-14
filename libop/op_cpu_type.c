@@ -91,6 +91,8 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "AMD64 family14h", "x86-64/family14h", CPU_FAMILY14H, 4 },
 	{ "AMD64 family15h", "x86-64/family15h", CPU_FAMILY15H, 6 },
 	{ "Intel Westmere microarchitecture", "i386/westmere", CPU_WESTMERE, 4 },
+	{ "ARMv7 Scorpion", "arm/armv7-scorpion", CPU_ARM_SCORPION, 5 },
+	{ "ARMv7 ScorpionMP", "arm/armv7-scorpionmp", CPU_ARM_SCORPIONMP, 5 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

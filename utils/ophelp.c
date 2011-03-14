@@ -552,6 +552,18 @@ int main(int argc, char const * argv[])
 			"Cortex A8 DDI (ARM DDI 0344B, revision r1p1)\n";
 		break;
 
+	case CPU_ARM_SCORPION:
+		event_doc =
+			"See ARM Architecture Reference Manual ARMv7-A and ARMv7-R Edition\n"
+			"Scorpion Processor Family Programmer's Reference Manual (PRM)\n";
+		break;
+
+	case CPU_ARM_SCORPIONMP:
+		event_doc =
+			"See ARM Architecture Reference Manual ARMv7-A and ARMv7-R Edition\n"
+			"Scorpion Processor Family Programmer's Reference Manual (PRM)\n";
+		break;
+
 	case CPU_ARM_V7_CA9:
 		event_doc =
 			"See Cortex-A9 Technical Reference Manual\n"

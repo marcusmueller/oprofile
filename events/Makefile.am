@@ -44,6 +44,8 @@ event_files = \
 	arm/armv6/events arm/armv6/unit_masks \
 	arm/armv7-common/events arm/armv7-common/unit_masks \
 	arm/armv7/events arm/armv7/unit_masks \
+	arm/armv7-scorpion/events arm/armv7-scorpion/unit_masks \
+	arm/armv7-scorpionmp/events arm/armv7-scorpionmp/unit_masks \
 	arm/armv7-ca9/events arm/armv7-ca9/unit_masks \
 	arm/mpcore/events arm/mpcore/unit_masks \
 	avr32/events avr32/unit_masks \
