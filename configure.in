@@ -139,7 +139,9 @@ AC_ARG_ENABLE(gui,[  --enable-gui  compile with gui component (qt3|qt4|yes|no),
 if test "x$enable_gui"  = "xqt3"  || test "x$enable_gui"  = "xyes"; then
 	QT_VERSION=3
 	QT_DO_IT_ALL
-	QT_LIBS="$QT_LIB $QT_LDFLAGS"
+	if test -n "$QT_LIB"; then
+		QT_LIBS="$QT_LIB $QT_LDFLAGS"
+	fi
 	QT_CFLAGS="$QT_INCLUDES"
 fi
 
