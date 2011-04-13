@@ -113,8 +113,9 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 			return CPU_CORE_I7;
 		case 0x1c:
 			return CPU_ATOM;
-		case 0x25:
-		case 0x2c:
+		case 0x25:  /* Westmere mobile/desktop/entry level server */
+		case 0x2c:  /* Westmere-EP (Intel Xeon 5600 series) */
+		case 0x2f:  /* Westmere-EX */
 			return CPU_WESTMERE;
 		}
 	}
