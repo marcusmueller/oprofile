@@ -877,7 +877,7 @@ of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphas
 <tbody>
 <row><entry><option>name</option></entry><entry>The symbolic event name, e.g. <constant>CPU_CLK_UNHALTED</constant></entry></row>
 <row><entry><option>count</option></entry><entry>The counter reset value, e.g. 100000</entry></row>
-<row><entry><option>unitmask</option></entry><entry>The unit mask, as given in the events list, e.g. 0x0f</entry></row>
+<row><entry><option>unitmask</option></entry><entry>The unit mask, as given in the events list, e.g. 0x0f or a symbolic name (first word of the description if unique)</entry></row>
 <row><entry><option>kernel</option></entry><entry>Whether to profile kernel code</entry></row>
 <row><entry><option>user</option></entry><entry>Whether to profile userspace code</entry></row>
 </tbody>

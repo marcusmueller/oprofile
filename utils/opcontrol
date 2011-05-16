@@ -638,12 +638,11 @@ normalise_events()
 			UNIT_MASK=`echo $GOTEVENT | awk -F: '{print $3}'`
 			KERNEL=`echo $GOTEVENT | awk -F: '{print $4}'`
 			USER=`echo $GOTEVENT | awk -F: '{print $5}'`
-			if test -z "$UNIT_MASK"; then
-				TMPEVENT="$EVENT:$COUNT"
-				UNIT_MASK=`$OPHELP --unit-mask $TMPEVENT`
-				if test "$?" != 0; then
-					exit 1
-				fi
+			TMPEVENT="$EVENT:$COUNT:$UNIT_MASK"
+			UNIT_MASK_NAMED="$UNIT_MASK"
+			UNIT_MASK=`$OPHELP --unit-mask $TMPEVENT`
+			if test "$?" != 0; then
+				exit 1
 			fi
 			if test -z "$KERNEL"; then
 				KERNEL=1
@@ -1442,7 +1441,7 @@ do_param_setup()
 				set_ctr_param $CTR user $USER
 				set_ctr_param $CTR unit_mask $UNIT_MASK
 
-				EXTRA=`$OPHELP --extra-mask $GOTEVENT`
+				EXTRA=`$OPHELP --extra-mask $EVENT:$COUNT:$UNIT_MASK_NAMED`
 				if test "$EXTRA" -ne 0 ; then
 					if ! test -d $MOUNT/$CTR/extra ; then
 						echo >&2 "Warning: $GOTEVENT has extra mask, but kernel does not support extra field"

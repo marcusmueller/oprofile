@@ -182,6 +182,8 @@ static void check_event(struct parsed_event * pev,
 		exit(EXIT_FAILURE);
 	}
 
+	op_resolve_unit_mask(pev, NULL);
+
 	ret = op_check_events(0, event->val, pev->unit_mask, cpu_type);
 
 	if (ret & OP_INVALID_UM) {
@@ -212,6 +214,7 @@ static void resolve_events(void)
 	count = parse_events(parsed_events, num_chosen_events, chosen_events);
 
 	for (i = 0; i < count; ++i) {
+	        op_resolve_unit_mask(&parsed_events[i], NULL);
 		for (j = i + 1; j < count; ++j) {
 			struct parsed_event * pev1 = &parsed_events[i];
 			struct parsed_event * pev2 = &parsed_events[j];
@@ -270,7 +273,6 @@ static void resolve_events(void)
 
 static void show_unit_mask(void)
 {
-	struct op_event * event;
 	size_t count;
 
 	count = parse_events(parsed_events, num_chosen_events, chosen_events);
@@ -279,22 +281,17 @@ static void show_unit_mask(void)
 		exit(EXIT_FAILURE);
 	}
 
-	event = find_event_by_name(parsed_events[0].name, 0, 0);
-
-	if (!event) {
-		fprintf(stderr, "No such event found.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("%d\n", event->unit->default_mask);
+	op_resolve_unit_mask(parsed_events, NULL);
+	if (parsed_events[0].unit_mask_name)
+		printf("%s\n", parsed_events[0].unit_mask_name);
+	else
+		printf("%d\n", parsed_events[0].unit_mask);
 }
 
 static void show_extra_mask(void)
 {
-	unsigned i;
-	struct op_event * event;
 	size_t count;
-	unsigned extra;
+	unsigned extra = 0;
 
 	count = parse_events(parsed_events, num_chosen_events, chosen_events);
 	if (count > 1) {
@@ -302,22 +299,7 @@ static void show_extra_mask(void)
 		exit(EXIT_FAILURE);
 	}
 
-	event = find_event_by_name(parsed_events[0].name,
-				   parsed_events[0].unit_mask,
-				   1);
-	if (!event) {
-		fprintf(stderr, "No such event found.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Not exact match is nothing */
-	extra = 0;
-	for (i = 0; i < event->unit->num; i++)
-		if (event->unit->um[i].value == (unsigned)parsed_events[0].unit_mask) {
-			extra = event->unit->um[i].extra;
-			break;
-		}
-
+	op_resolve_unit_mask(parsed_events, &extra);
 	printf ("%d\n", extra);
 }
 
@@ -761,8 +743,11 @@ int main(int argc, char const * argv[])
 	sprintf(title, "oprofile: available events for CPU type \"%s\"\n\n", pretty);
 	if (want_xml)
 		open_xml_events(title, event_doc, cpu_type);
-	else
+	else {
 		printf("%s%s", title, event_doc);
+		printf("For architectures using unit masks, you may be able to specify\n"
+		       "unit masks by name.  See 'opcontrol' man page for more details.\n\n");
+	}
 
 	list_for_each(pos, events) {
 		struct op_event * event = list_entry(pos, struct op_event, event_next);

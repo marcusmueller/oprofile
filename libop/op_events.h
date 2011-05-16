@@ -128,6 +128,17 @@ struct op_default_event_descr {
  */
 void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr);
 
+/**
+ * op_resolve_unit_mask - resolve a unit mask in a parsed event.
+ * @pe parsed event
+ * @extra pointer to extra mask or NULL.
+ *
+ * Fills in the extra mask for the unit mask.
+ */
+
+struct parsed_event;
+void op_resolve_unit_mask(struct parsed_event *pe, u32 *extra);
+
 #ifdef __cplusplus
 }
 #endif
