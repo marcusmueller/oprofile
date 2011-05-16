@@ -71,10 +71,12 @@ static void word_wrap(int indent, int *column, char *msg)
 			printf("\n%*s", indent, "");
 			*column = indent;
 		}
-		printf("%.*s ", wlen, msg);
+		printf("%.*s", wlen, msg);
 		*column += wlen + 1;
 		msg += wlen;
 		msg += strspn(msg, " ");
+		if (*msg)
+			putchar(' ');
 	}
 }
 
@@ -128,7 +130,7 @@ static void help_for_event(struct op_event * event)
 	printf(")\n\t");
 	column = 8;
 	word_wrap(8, &column, event->desc);
-	snprintf(buf, sizeof buf, "(min count: %d)", event->min_count);
+	snprintf(buf, sizeof buf, " (min count: %d)", event->min_count);
 	word_wrap(8, &column, buf);
 	putchar('\n');
 
@@ -146,13 +148,13 @@ static void help_for_event(struct op_event * event)
 			if (event->unit->um[j].extra) {
 				u32 extra = event->unit->um[j].extra;
 
-				word_wrap(14, &column, "(extra:");
+				word_wrap(14, &column, " (extra:");
 				if (extra & EXTRA_EDGE)
-					word_wrap(14, &column, "edge");
+					word_wrap(14, &column, " edge");
 				if (extra & EXTRA_INV)
-					word_wrap(14, &column, "inv");
+					word_wrap(14, &column, " inv");
 				if ((extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK) {
-					snprintf(buf, sizeof buf, "cmask=%x",
+					snprintf(buf, sizeof buf, " cmask=%x",
 						 (extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK);
 					word_wrap(14, &column, buf);
 				}
