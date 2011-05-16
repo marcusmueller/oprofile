@@ -1353,6 +1353,10 @@ do_param_setup()
 		set_ctr_param $f enabled 0
 		set_ctr_param $f event 0
 		set_ctr_param $f count 0
+
+		if test -d $MOUNT/$f/extra ; then
+		    set_ctr_param $f extra 0
+		fi
 	done
 
 	# Check if driver has IBS support
@@ -1437,6 +1441,16 @@ do_param_setup()
 				set_ctr_param $CTR kernel $KERNEL
 				set_ctr_param $CTR user $USER
 				set_ctr_param $CTR unit_mask $UNIT_MASK
+
+				EXTRA=`$OPHELP --extra-mask $GOTEVENT`
+				if test "$EXTRA" -ne 0 ; then
+					if ! test -d $MOUNT/$CTR/extra ; then
+						echo >&2 "Warning: $GOTEVENT has extra mask, but kernel does not support extra field"
+						echo >&2 "Please update your kernel or use a different event. Will miscount."
+					else
+						set_ctr_param $CTR extra $EXTRA
+					fi
+				fi
 			fi
 			OPROFILED_EVENTS=${OPROFILED_EVENTS}$EVENT:$EVENT_VAL:
 			OPROFILED_EVENTS=${OPROFILED_EVENTS}$CTR:$COUNT:$UNIT_MASK:

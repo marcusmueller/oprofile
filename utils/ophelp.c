@@ -143,6 +143,21 @@ static void help_for_event(struct op_event * event)
 			       event->unit->um[j].value);
 			column = 14;
 			word_wrap(14, &column, event->unit->um[j].desc);
+			if (event->unit->um[j].extra) {
+				u32 extra = event->unit->um[j].extra;
+
+				word_wrap(14, &column, "(extra:");
+				if (extra & EXTRA_EDGE)
+					word_wrap(14, &column, "edge");
+				if (extra & EXTRA_INV)
+					word_wrap(14, &column, "inv");
+				if ((extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK) {
+					snprintf(buf, sizeof buf, "cmask=%x",
+						 (extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK);
+					word_wrap(14, &column, buf);
+				}
+				word_wrap(14, &column, ")");
+			}
 			putchar('\n');
 		}
 	}
@@ -274,6 +289,37 @@ static void show_unit_mask(void)
 	printf("%d\n", event->unit->default_mask);
 }
 
+static void show_extra_mask(void)
+{
+	unsigned i;
+	struct op_event * event;
+	size_t count;
+	unsigned extra;
+
+	count = parse_events(parsed_events, num_chosen_events, chosen_events);
+	if (count > 1) {
+		fprintf(stderr, "More than one event specified.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	event = find_event_by_name(parsed_events[0].name,
+				   parsed_events[0].unit_mask,
+				   1);
+	if (!event) {
+		fprintf(stderr, "No such event found.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Not exact match is nothing */
+	extra = 0;
+	for (i = 0; i < event->unit->num; i++)
+		if (event->unit->um[i].value == (unsigned)parsed_events[0].unit_mask) {
+			extra = event->unit->um[i].extra;
+			break;
+		}
+
+	printf ("%d\n", extra);
+}
 
 static void show_default_event(void)
 {
@@ -293,6 +339,7 @@ static int get_cpu_type;
 static int check_events;
 static int unit_mask;
 static int get_default_event;
+static int extra_mask;
 
 static struct poptOption options[] = {
 	{ "cpu-type", 'c', POPT_ARG_STRING, &cpu_string, 0,
@@ -311,6 +358,8 @@ static struct poptOption options[] = {
 	   "show version", NULL, },
 	{ "xml", 'X', POPT_ARG_NONE, &want_xml, 0,
 	   "list events as XML", NULL, },
+	{ "extra-mask", 'E', POPT_ARG_NONE, &extra_mask, 0,
+	  "print extra mask for event", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -412,13 +461,18 @@ int main(int argc, char const * argv[])
 
 	events = op_events(cpu_type);
 
-	if (!chosen_events && (unit_mask || check_events)) {
+	if (!chosen_events && (unit_mask || check_events || extra_mask)) {
 		fprintf(stderr, "No events given.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (unit_mask) {
 		show_unit_mask();
+		exit(EXIT_SUCCESS);
+	}
+
+	if (extra_mask) {
+		show_extra_mask();
 		exit(EXIT_SUCCESS);
 	}
 

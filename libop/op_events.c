@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 static LIST_HEAD(events_list);
 static LIST_HEAD(um_list);
@@ -106,6 +107,34 @@ static void include_um(const char *start, const char *end)
 	free(s);
 }
 
+/* extra:cmask=12,inv,edge */
+unsigned parse_extra(const char *s)
+{
+	unsigned v, w;
+	int o;
+
+	v = 0;
+	while (*s) {
+		if (isspace(*s))
+			break;
+		if (strisprefix(s, "edge")) {
+			v |= EXTRA_EDGE;
+			s += 4;
+		} else if (strisprefix(s, "inv")) {
+			v |= EXTRA_INV;
+			s += 3;
+		} else if (sscanf(s, "cmask=%x%n", &w, &o) >= 1) {
+			v |= (w & EXTRA_CMASK_MASK) << EXTRA_CMASK_SHIFT;
+			s += o;
+		} else {
+			parse_error("Illegal extra field modifier");
+		}
+		if (*s == ',')
+			++s;
+	}
+	return v;
+}
+
 /* name:MESI type:bitmask default:0x0f */
 static void parse_um(struct op_unit_mask * um, char const * line)
 {
@@ -178,6 +207,7 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 
 
 /* \t0x08 (M)odified cache state */
+/* \t0x08 extra:inv,cmask=... (M)odified cache state */
 static void parse_um_entry(struct op_described_um * entry, char const * line)
 {
 	char const * c = line;
@@ -185,6 +215,14 @@ static void parse_um_entry(struct op_described_um * entry, char const * line)
 	c = skip_ws(c);
 	entry->value = parse_hex(c);
 	c = skip_nonws(c);
+
+	c = skip_ws(c);
+	if (strisprefix(c, "extra:")) {
+		c += 6;
+		entry->extra = parse_extra(c);
+		c = skip_nonws(c);
+	} else
+		entry->extra = 0;
 
 	if (!*c)
 		parse_error("invalid unit mask entry");
