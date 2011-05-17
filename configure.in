@@ -78,7 +78,15 @@ AC_ARG_WITH(module-dir,
 AC_SUBST(MODINSTALLDIR)
 
 AC_ARG_WITH(java,
-[  --with-java=java-home        Path to Java home directory], JAVA_HOMEDIR=$withval)
+[  --with-java=java-home        Path to Java home directory (default is "no"; "yes" will use /usr as Java home)],
+JAVA_HOMEDIR=$with_java, [with_java=no])
+
+if test "x$with_java" = "xyes"; then
+	JAVA_HOMEDIR="/usr"
+else if test "x$with_java" = "xno"; then
+	JAVA_HOMEDIR=
+	fi
+fi
 AC_SUBST(JAVA_HOMEDIR)
 
 if test -n "$JAVA_HOMEDIR"; then
