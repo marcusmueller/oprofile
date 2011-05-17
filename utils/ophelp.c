@@ -535,6 +535,7 @@ int main(int argc, char const * argv[])
 	case CPU_CORE_I7:
 	case CPU_NEHALEM:
 	case CPU_WESTMERE:
+	case CPU_SANDYBRIDGE:
 	case CPU_ATOM:
 		event_doc =
 			"See Intel Architecture Developer's Manual Volume 3B, Appendix A and\n"

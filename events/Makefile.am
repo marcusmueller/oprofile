@@ -18,6 +18,7 @@ event_files = \
 	i386/core_i7/events i386/core_i7/unit_masks \
 	i386/nehalem/events i386/nehalem/unit_masks \
 	i386/westmere/events i386/westmere/unit_masks \
+	i386/sandybridge/events i386/sandybridge/unit_masks \
 	ia64/ia64/events ia64/ia64/unit_masks \
 	ia64/itanium2/events ia64/itanium2/unit_masks \
 	ia64/itanium/events ia64/itanium/unit_masks \

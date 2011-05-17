@@ -117,6 +117,9 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x2c:  /* Westmere-EP (Intel Xeon 5600 series) */
 		case 0x2f:  /* Westmere-EX */
 			return CPU_WESTMERE;
+		case 0x2a:
+		case 0x2d:
+			return CPU_SANDYBRIDGE;
 		}
 	}
 	return cpu_type;
