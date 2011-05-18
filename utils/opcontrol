@@ -118,7 +118,7 @@ vecho()
 
 is_tool_available()
 {
-	if which $1 &>/dev/null; then
+	if which $1 > /dev/null 2>&1; then
 		if test -x `which $1`; then
 			return 1
 		fi
