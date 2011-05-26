@@ -89,7 +89,7 @@ error_if_not_number()
 error_if_not_basename()
 {
 	bname=`basename "$2"`
-	if [[ "x$2" !=  "x$bname" ]] ; then
+	if test "$2" !=  "$bname"; then
 		echo "Argument for $1, $2, is not a base filename." >&2
 		exit 1
 	fi
