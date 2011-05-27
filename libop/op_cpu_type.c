@@ -145,7 +145,8 @@ op_cpu op_get_cpu_type(void)
 
 	if (!fgets(str, 99, fp)) {
 		fprintf(stderr, "Could not read cpu type.\n");
-		return CPU_NO_GOOD;
+		fclose(fp);
+		return cpu_type;
 	}
 
 	cpu_type = op_get_cpu_number(str);
