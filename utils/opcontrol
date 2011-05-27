@@ -64,15 +64,15 @@ error_if_empty()
 # isn't a octal, hexidecimal, or decimal number.
 guess_number_base()
 {
-	if [[ "$1" =~ ^0[0-7]*$ ]] ; then 
-		return 8;
-	elif [[ "$1" =~ ^0x[0-9a-fA-F]+$ ]] ; then
-		return 16;
-	elif [[ "$1" =~ ^[1-9][0-9]*$ ]] ; then
-		return 10;
-	else
-		return 0;
-	fi
+	case "$1" in
+		0[Xx]*[!0-9a-fA-F]*)	return 0  ;; # Bad hex string
+		0[Xx][0-9a-fA-F]*)	return 16 ;; # Hex
+		*[!0-9]*)		return 0  ;; # Some non-digit char
+		[1-9]*)			return 10 ;; # Base 10
+		0*[89]*)		return 0  ;; # Bad octal string
+		0*)			return 8  ;; # Octal
+	esac
+	return 0
 }
 
 # check value is a valid number
