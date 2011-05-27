@@ -142,10 +142,10 @@ opd_header const read_header(string const & sample_filename)
 	}
 
 	if (memcmp(header.magic, OPD_MAGIC, sizeof(header.magic))) {
+		close(fd);
 		throw op_fatal_error("Invalid sample file, "
 				     "bad magic number: " +
 				     sample_filename);
-		close(fd);
 	}
 
 	close(fd);
