@@ -77,6 +77,7 @@ static int check_redundant_key(odb_data_t const * data, odb_key_t max)
 		if (bitmap[data->node_base[pos].key]) {
 			printf("redundant key found %lld\n",
 			       (unsigned long long)data->node_base[pos].key);
+			free(bitmap);
 			return 1;
 		}
 		bitmap[data->node_base[pos].key] = 1;
