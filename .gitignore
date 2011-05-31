@@ -33,3 +33,7 @@ tags
 autom4te.cache
 pch-c++.h.gch
 libtool
+*.o
+*.a
+*.i
+*.s
