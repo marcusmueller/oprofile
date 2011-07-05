@@ -11,6 +11,26 @@
 
 #define num_to_mask(x) ((1U << (x)) - 1)
 
+typedef struct {
+	unsigned eax, ebx, ecx, edx;
+} cpuid_data;
+
+#if defined(__i386__)
+static inline void cpuid(int func, cpuid_data * p)
+{
+	asm("push %%ebx; cpuid; mov %%ebx, %%esi; pop %%ebx"
+	    : "=a" (p->eax), "=S" (p->ebx), "=c" (p->ecx), "=d" (p->edx)
+	    : "0" (func));
+}
+#else
+static inline void cpuid(int func, cpuid_data * p)
+{
+	asm("cpuid"
+	    : "=a" (p->eax), "=b" (p->ebx), "=c" (p->ecx), "=d" (p->edx)
+	    : "0" (func));
+}
+#endif
+
 static inline int cpuid_vendor(char *vnd)
 {
 	union {
@@ -19,16 +39,17 @@ static inline int cpuid_vendor(char *vnd)
 		};
 		char v[12];
 	} v;
-	unsigned eax;
-	asm("cpuid" : "=a" (eax), "=b" (v.b), "=c" (v.c), "=d" (v.d) : "0" (0));
+	cpuid_data data;
+	cpuid(0, &data);
+	v.b = data.ebx; v.c = data.ecx; v.d = data.edx;
 	return !strncmp(v.v, vnd, 12);
 }
 
 static inline unsigned int cpuid_signature()
 {
-	unsigned eax;
-	asm("cpuid" : "=a" (eax) : "0" (1) : "ecx","ebx","edx");
-	return eax;
+	cpuid_data data;
+	cpuid(1, &data);
+	return data.eax;
 }
 
 static inline unsigned int cpu_model(unsigned int eax)
@@ -70,10 +91,10 @@ static inline void workaround_nehalem_aaj79(unsigned *ebx)
 static inline unsigned arch_get_filter(op_cpu cpu_type)
 {
 	if (op_cpu_base_type(cpu_type) == CPU_ARCH_PERFMON) { 
-		unsigned ebx, eax;
-		asm("cpuid" : "=a" (eax), "=b" (ebx) : "0" (0xa) : "ecx","edx");
-		workaround_nehalem_aaj79(&ebx);
-		return ebx & num_to_mask(eax >> 24);
+		cpuid_data data;
+		cpuid(0xa, &data);
+		workaround_nehalem_aaj79(&data.ebx);
+		return data.ebx & num_to_mask(data.eax >> 24);
 	}
 	return -1U;
 }
@@ -81,18 +102,18 @@ static inline unsigned arch_get_filter(op_cpu cpu_type)
 static inline int arch_num_counters(op_cpu cpu_type) 
 {
 	if (op_cpu_base_type(cpu_type) == CPU_ARCH_PERFMON) {
-		unsigned v;
-		asm("cpuid" : "=a" (v) : "0" (0xa) : "ebx","ecx","edx");
-		return (v >> 8) & 0xff;
-	} 
+		cpuid_data data;
+		cpuid(0xa, &data);
+		return (data.eax >> 8) & 0xff;
+	}
 	return -1;
 }
 
 static inline unsigned arch_get_counter_mask(void)
 {
-	unsigned v;
-	asm("cpuid" : "=a" (v) : "0" (0xa) : "ebx","ecx","edx");
-	return num_to_mask((v >> 8) & 0xff);	
+	cpuid_data data;
+	cpuid(0xa, &data);
+	return num_to_mask((data.eax >> 8) & 0xff);
 }
 
 static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)

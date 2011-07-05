@@ -14,6 +14,7 @@
 #include "op_hw_config.h"
 #include "op_events.h"
 #include "op_string.h"
+#include "op_hw_specific.h"
 #include "op_libiberty.h"
 #include "opd_printf.h"
 #include "opd_trans.h"
@@ -481,26 +482,11 @@ static int ibs_parse_and_set_um_op(char const * str, unsigned long int * ibs_op_
 static void check_cpuid_family_model_stepping()
 {
 #if defined(__i386__) || defined(__x86_64__) 
-       union {
-                unsigned eax;
-                struct {
-                        unsigned stepping : 4;
-                        unsigned model : 4;
-                        unsigned family : 4;
-                        unsigned res : 4;
-                        unsigned ext_model : 4;
-                        unsigned ext_family : 8;
-                        unsigned res2 : 4;
-                };
-        } v;
-	unsigned ebx, ecx, edx;
+	unsigned eax = cpuid_signature();
 
-	/* CPUID Fn0000_0001_EAX Family, Model, Stepping */
-	asm ("cpuid" : "=a" (v.eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "0" (1));
-
-	ibs_family   = v.family + v.ext_family;
-	ibs_model    = v.model + v.ext_model;
-	ibs_stepping = v.stepping;
+	ibs_family   = cpu_family(eax);
+	ibs_model    = cpu_model(eax);
+	ibs_stepping = cpu_stepping(eax);
 #else
 	ibs_family   = 0;
 	ibs_model    = 0;
