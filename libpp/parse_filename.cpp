@@ -237,7 +237,7 @@ bool parsed_filename::profile_spec_equal(parsed_filename const & parsed)
 		unitmask == parsed.unitmask &&
 		tgid == parsed.tgid &&
 		tid == parsed.tid &&
-		cpu == parsed.tid;
+		cpu == parsed.cpu;
 }
 
 ostream & operator<<(ostream & out, parsed_filename const & data)
