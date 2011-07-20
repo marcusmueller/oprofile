@@ -1433,7 +1433,7 @@ do_param_setup()
 		set_ctr_param $f event 0
 		set_ctr_param $f count 0
 
-		if test -d $MOUNT/$f/extra ; then
+		if test -f $MOUNT/$f/extra ; then
 		    set_ctr_param $f extra 0
 		fi
 	done
@@ -1523,7 +1523,7 @@ do_param_setup()
 
 				EXTRA=`$OPHELP --extra-mask $EVENT:$COUNT:$UNIT_MASK_NAMED`
 				if test "$EXTRA" -ne 0 ; then
-					if ! test -d $MOUNT/$CTR/extra ; then
+					if ! test -f $MOUNT/$CTR/extra ; then
 						echo >&2 "Warning: $GOTEVENT has extra mask, but kernel does not support extra field"
 						echo >&2 "Please update your kernel or use a different event. Will miscount."
 					else
