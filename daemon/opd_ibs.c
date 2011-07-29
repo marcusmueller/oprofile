@@ -617,11 +617,16 @@ static int ibs_init(char const * argv)
 	/* Create IBS memory access log */
 	memaccess_log = NULL;
 	if (ibs_op_um & 0x2) {
-		char filename[1024];
-		strncpy(filename, session_dir, 1023);
-		strncat(filename, "/samples/ibs_memaccess.log", 1024);
-		if ((memaccess_log = fopen(filename, "w")) == NULL) {
-			verbprintf(vext, "Warning: Cannot create file %s\n", filename);
+		char filename[PATH_MAX];
+		char * log_file = "/samples/ibs_memaccess.log";
+		size_t path_len = strlen(session_dir) + strlen(log_file);
+		if (path_len < PATH_MAX) {
+			strcpy(filename, session_dir);
+			strcat(filename, log_file);
+			memaccess_log = fopen(filename, "w");
+		}
+		if ( memaccess_log == NULL) {
+			verbprintf(vext, "Warning: Cannot create ibs_memaccess.log\n");
 			
 		} else {
 			fprintf (memaccess_log, "# IBS Memory Access Log\n\n");
@@ -633,11 +638,16 @@ static int ibs_init(char const * argv)
 	// Create IBS Branch Target Address (BTA) log	
 	bta_log = NULL;
 	if (ibs_bta_enabled) {
-		char filename[1024];
-		strncpy(filename, session_dir, 1023);
-		strncat(filename, "/samples/ibs_bta.log", 1024);
-		if ((bta_log = fopen(filename, "w")) == NULL) {
-			verbprintf(vext, "Warning: Cannot create file %s\n", filename);
+		char filename[PATH_MAX];
+		char * log_file = "/samples/ibs_bta.log";
+		size_t path_len = strlen(session_dir) + strlen(log_file);
+		if (path_len < PATH_MAX) {
+			strcpy(filename, session_dir);
+			strcat(filename, log_file);
+			bta_log = fopen(filename, "w");
+		}
+		if ( bta_log == NULL) {
+			verbprintf(vext, "Warning: Cannot create ibs_bta.log\n");
 		} else {
 			fprintf (bta_log, "# IBS Memory Access Log\n\n");
 			fprintf (bta_log, "# Format: app_cookie,cookie,cpu,tgid,tid,pc,branch-target-address\n\n");
