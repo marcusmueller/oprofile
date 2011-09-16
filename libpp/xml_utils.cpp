@@ -649,7 +649,6 @@ add_module_symbol(string const & module, string const & app,
 			// close out current module
 			module_info & mod = my_modules[m-1];
 			mod.set_end(it);
-			add_to_summary(mod.get_summary());
 		}
 
 		// mark end of enclosing binary symbols if there have been any
