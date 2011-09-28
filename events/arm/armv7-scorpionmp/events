@@ -40,7 +40,7 @@ event:0x6b counters:1,2,3,4 um:zero minimum:500 name:DTLB_IMPL_INV_SCTLR_DACR : 
 event:0x6c counters:1,2,3,4 um:zero minimum:500 name:DTLB_EXPL_INV : DTLB explicit invalidates
 event:0x6d counters:1,2,3,4 um:zero minimum:500 name:DTLB_MISS : DTLB misses
 event:0x6e counters:1,2,3,4 um:zero minimum:500 name:DTLB_ACCESS : DTLB accesses
-event:0x6f counters:1,2,3,4 um:zero minimum:500 name:ITLB_MISS : ITLB misses
+event:0x6f counters:1,2,3,4 um:zero minimum:500 name:SCORPION_ITLB_MISS : ITLB misses
 event:0x70 counters:1,2,3,4 um:zero minimum:500 name:ITLB_IMPL_INV : ITLB implicit ITLB invalidates
 event:0x71 counters:1,2,3,4 um:zero minimum:500 name:ITLB_EXPL_INV : ITLB explicit ITLB invalidates
 event:0x72 counters:1,2,3,4 um:zero minimum:500 name:UTLB_D_MISS : UTLB d-side misses
