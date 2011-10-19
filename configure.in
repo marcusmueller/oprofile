@@ -24,10 +24,6 @@ dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
 AC_SUBST(DATE)
 
-dnl needed for module build
-OPROFILE_DIR=`pwd`
-AC_SUBST(OPROFILE_DIR)
- 
 # this needs to come before --with-gcc so we link with binutil's version
 # of libiberty ... sigh
 AC_ARG_WITH(binutils,
@@ -66,16 +62,6 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
-
-AX_FIND_KERNEL
-
-if test "$OPROFILE_26" = "no"; then
-	AX_CONFIG_MODULE
-fi
-
-AC_ARG_WITH(module-dir,
-[  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
-AC_SUBST(MODINSTALLDIR)
 
 AC_ARG_WITH(java,
 [  --with-java=java-home        Path to Java home directory (default is "no"; "yes" will use /usr as Java home)],
@@ -329,9 +315,6 @@ AC_OUTPUT(Makefile \
 	pp/Makefile \
 	gui/Makefile \
 	gui/ui/Makefile \
-	module/Makefile \
-	module/x86/Makefile \
-	module/ia64/Makefile \
 	agents/Makefile \
 	agents/jvmti/Makefile \
 	agents/jvmpi/Makefile)
