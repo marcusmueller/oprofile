@@ -42,8 +42,7 @@ Show configuration information.
 .br
 .TP
 .BI "--start-daemon"
-Start the oprofile daemon without starting profiling. Not available
-in 2.2/2.4 kernels.
+Start the oprofile daemon without starting profiling.
 .br
 .TP
 .BI "--start"
@@ -56,7 +55,7 @@ Force a flush of the collected profiling data to the daemon.
 .br
 .TP
 .BI "--stop"
-Stop data collection. Not available in 2.2/2.4 kernels.
+Stop data collection.
 .br
 .TP
 .BI "--shutdown"
@@ -80,7 +79,7 @@ Use sample database out of directory dir_path instead of the default location (/
 .br
 .TP
 .BI "--buffer-size="num
-Set kernel buffer to num samples. When using a 2.6 kernel, buffer watershed needs
+Set kernel buffer to num samples. The buffer watershed needs
 to be tweaked when changing this value.
 Rules:  A non-zero value goes into effect after a '--shutdown/start' sequence.
 A value of zero sets this parameter back to default value, but does not go into
@@ -88,14 +87,14 @@ effect until after '--deinit/init' sequence.
 .br
 .TP
 .BI "--buffer-watershed="num
-Set kernel buffer watershed to num samples (2.6 only). When
+Set kernel buffer watershed to num samples. When
 buffer-size - buffer-watershed free entries remain in the kernel buffer, data will be
 flushed to the daemon.  Most useful values are in the range [0.25 - 0.5] * buffer-size.
 Same rules as defined for buffer-size.
 .br
 .TP
 .BI "--cpu-buffer-size="num
-Set kernel per cpu buffer to num samples (2.6 only). If you profile at high
+Set kernel per-cpu buffer to num samples. If you profile at high
 rate it can help to increase this if the log file show excessive count of
 sample lost cpu buffer overflow. Same rules as defined for buffer-size.
 .br
