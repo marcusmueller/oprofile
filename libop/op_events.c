@@ -1126,6 +1126,12 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "CPU_CLK";
 			break;
 
+		case CPU_TILE_TILE64:
+		case CPU_TILE_TILEPRO:
+		case CPU_TILE_TILEGX:
+			descr->name = "ONE";
+			break;
+
 		// don't use default, if someone add a cpu he wants a compiler
 		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:

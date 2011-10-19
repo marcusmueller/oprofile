@@ -91,6 +91,9 @@ typedef enum {
 	CPU_ARM_SCORPION, /**< ARM SCORPION */
 	CPU_ARM_SCORPIONMP, /**< ARM SCORPIONMP */
 	CPU_SANDYBRIDGE, /* Intel Sandy-Bridge microarchitecture */
+	CPU_TILE_TILE64, /**< Tilera TILE64 family */
+	CPU_TILE_TILEPRO, /**< Tilera TILEPro family (Pro64 or Pro36) */
+	CPU_TILE_TILEGX, /**< Tilera TILE-GX family */
 	MAX_CPU_TYPE
 } op_cpu;
 

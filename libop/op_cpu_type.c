@@ -94,6 +94,9 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARMv7 Scorpion", "arm/armv7-scorpion", CPU_ARM_SCORPION, 5 },
 	{ "ARMv7 ScorpionMP", "arm/armv7-scorpionmp", CPU_ARM_SCORPIONMP, 5 },
 	{ "Intel Sandy Bridge microarchitecture", "i386/sandybridge", CPU_SANDYBRIDGE, 8 },
+	{ "TILE64", "tile/tile64", CPU_TILE_TILE64, 2 },
+	{ "TILEPro", "tile/tilepro", CPU_TILE_TILEPRO, 4 },
+	{ "TILE-GX", "tile/tilegx", CPU_TILE_TILEGX, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

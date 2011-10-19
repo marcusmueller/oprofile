@@ -731,6 +731,18 @@ int main(int argc, char const * argv[])
 			"Chapter 6: Performance Counters\n"
 			"http://www.atmel.com/dyn/resources/prod_documents/doc32000.pdf\n";
 
+		break;
+
+	case CPU_TILE_TILE64:
+	case CPU_TILE_TILEPRO:
+	case CPU_TILE_TILEGX:
+		event_doc =
+			"See Tilera development doc: Multicore Development "
+			"Environment Optimization Guide.\n"
+			"Contact Tilera Corporation or visit "
+			"http://www.tilera.com for more information.\n";
+		break;
+
 		case CPU_RTC:
 			break;
 
