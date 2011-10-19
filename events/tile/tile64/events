@@ -1,0 +1,36 @@
+# TILE64 Events
+
+event:0x00 counters:0,1 um:zero minimum:500 name:ZERO : Always zero - no event ever happens
+event:0x01 counters:0,1 um:zero minimum:20000 name:ONE : Always one - an event occurs every cycle
+event:0x02 counters:0,1 um:zero minimum:500 name:PASS_WRITTEN : The event indicates that the PASS SPR was written
+event:0x03 counters:0,1 um:zero minimum:500 name:FAIL_WRITTEN : The event indicates that the FAIL SPR was written
+event:0x04 counters:0,1 um:zero minimum:500 name:DONE_WRITTEN : The event indicates that the DONE SPR was written
+event:0x06 counters:0,1 um:zero minimum:500 name:MP_BUNDLE_RETIRED : The event occurs when instruction bundle is retired.
+event:0x0a counters:0,1 um:zero minimum:500 name:MP_UDN_READ_STALL : An event occurs every cycle that an instruction bundle is stalled on a UDN read. Multiple stall events may occur and be counted during the same cycle. This behavior is errata for TILE64 because the event is actually triggered only once per instruction stall rather than once per cycle of an instruction stall.
+event:0x0b counters:0,1 um:zero minimum:500 name:MP_IDN_READ_STALL : An event occurs every cycle that an instruction bundle is stalled on a IDN read. Multiple stall events may occur and be counted during the same cycle. This behavior is errata for TILE64 because the event is actually triggered only once per instruction stall rather than once per cycle of an instruction stall.
+event:0x0c counters:0,1 um:zero minimum:500 name:MP_SN_READ_STALL : An event occurs every cycle that an instruction bundle is stalled on a STN read. Multiple stall events may occur and be counted during the same cycle. This behavior is errata for TILE64 because the event is actually triggered only once per instruction stall rather than once per cycle of an instruction stall.
+event:0x0d counters:0,1 um:zero minimum:500 name:MP_UDN_WRITE_STALL : An event occurs every cycle that an instruction bundle is stalled on a UDN write. Multiple stall events may occur and be counted during the same cycle.
+event:0x0e counters:0,1 um:zero minimum:500 name:MP_IDN_WRITE_STALL : An event occurs every cycle that an instruction bundle is stalled on a IDN write. Multiple stall events may occur and be counted during the same cycle.
+event:0x0f counters:0,1 um:zero minimum:500 name:MP_SN_WRITE_STALL : An event occurs every cycle that an instruction bundle is stalled on a STN write. Multiple stall events may occur and be counted during the same cycle.
+event:0x10 counters:0,1 um:zero minimum:500 name:MP_DATA_CACHE_STALL : An event occurs every cycle that an instruction bundle is stalled on a data memory operation except for the cycles when a replay trap is being performed. Instructions that depend on the result of a load and are fired speculatively cause a reply trap if the request misses the L1 data cache and thus are not counted. The wait is 4 if the consumer of the load immediately follows the load or 3 if there is a cycle between the load issue and the consumer issue. Multiple stall events may occur and be counted during the same cycle.
+event:0x11 counters:0,1 um:zero minimum:500 name:MP_INSTRUCTION_CACHE_STALL : An event occurs every cycle that an instruction bundle is stalled on a instruction memory operation. Multiple stall events may occur and be counted during the same cycle.
+event:0x18 counters:0,1 um:zero minimum:500 name:TLB_HIT : The event occurs when the address of a data stream memory operation hits in the Data TLB. It includes speculative requests down branch paths.
+event:0x19 counters:0,1 um:zero minimum:500 name:TLB_EXC : The event occurs when the address of a data stream memory operation causes a Data TLB Exception including TLB Misses and protection violations.
+event:0x1a counters:0,1 um:zero minimum:500 name:HIT : This event occurs when a load instruction hits in the L1 Data cache.
+event:0x1b counters:0,1 um:zero minimum:500 name:MEM_REQ_RD : The event occurs when a read or TNS request to main  memory leaves the Tile.
+event:0x1c counters:0,1 um:zero minimum:500 name:MEM_REQ_WR : The event occurs when a write request to main memory, including explicit flushes and non-cacheable stores, leaves the Tile.
+event:0x1d counters:0,1 um:zero minimum:500 name:MEM_REQ_VIC : The event occurs when a cache writeback to main memory, including victim writes or explicit flushes, leaves the Tile.
+event:0x1e counters:0,1 um:zero minimum:500 name:MISS_I : The event occurs when an instruction stream read misses the L2 cache due to an L1 instruction cache miss.
+event:0x1f counters:0,1 um:zero minimum:500 name:MISS_D_WR : The event occurs when a store request misses the L2 cache with the page cached locally or remotely.
+event:0x20 counters:0,1 um:zero minimum:500 name:MISS_D_RD : The event occurs when a load request or instruction prefetch misses the L2 cache due to an L1 miss with the page cached locally or remotely.
+event:0x21 counters:0,1 um:zero minimum:500 name:MISS_TDN : This event occurs when a snoop incoming on the TDN misses the L2 cache.
+event:0x22 counters:0,1 um:zero minimum:500 name:OLOC_REQ_RD : This event occurs when a remote read request is sent to another Tile, including load miss, data stream prefetch miss, and instruction stream prefetch miss.
+event:0x23 counters:0,1 um:zero minimum:500 name:OLOC_REQ_WR : This event occurs when a remote write request is sent to another Tile, including all stores whether they hit local or don't hit and write through the L2 cache.
+event:0x26 counters:0,1 um:zero minimum:500 name:L2_HIT : This event occurs when any cache access hits the L2 and includes MDN fills and Memory Fence operations locally or remotely issued.
+event:0x27 counters:0,1 um:zero minimum:500 name:L2_INV : The event occurs when an inval, flush, or finv hits a clean L2 cache block.
+event:0x28 counters:0,1 um:zero minimum:500 name:TDN_STARVED : The event occurs when a snoop is received and the controller enters the TDN starved condition.
+event:0x29 counters:0,1 um:zero minimum:500 name:DMA_STARVED : The event occurs when a DMA is received and the controller enters the starved condition.
+event:0x2a counters:0,1 um:zero minimum:500 name:MDN_STARVED : The event occurs when the controller enters the MDN starved condition.
+event:0x2b counters:0,1 um:zero minimum:500 name:RTF_STARVED : The event occurs when the controller enters the re-try FIFO starved condition.
+event:0x2c counters:0,1 um:zero minimum:500 name:IREQ_STARVED : The event occurs when the controller enters the instruction stream starved condition.
+event:0x2d counters:0,1 um:zero minimum:500 name:RRTF_STARVED : The event occurs when the controller enters the remote re-try FIFO starved condition.

@@ -1,0 +1,81 @@
+# TILE-Gx Events
+
+event:0x180 counters:0,1,2,3 um:zero minimum:500 name:ZERO : Always zero - no event ever happens
+event:0x181 counters:0,1,2,3 um:zero minimum:20000 name:ONE : Always one - an event occurs every cycle
+event:0x182 counters:0,1,2,3 um:zero minimum:500 name:PASS_WRITTEN : The event indicates that the PASS SPR was written
+event:0x183 counters:0,1,2,3 um:zero minimum:500 name:FAIL_WRITTEN : The event indicates that the FAIL SPR was written
+event:0x184 counters:0,1,2,3 um:zero minimum:500 name:DONE_WRITTEN : The event indicates that the DONE SPR was written
+event:0xc4 counters:0,1,2,3 um:zero minimum:500 name:L1D_FILL_STALL : The event occurs when a memory operation stalls due to L1 DCache being busy doing a fill.
+event:0xc6 counters:0,1,2,3 um:zero minimum:500 name:LOAD_HIT_STALL : The event occurs when an instruction 2 cycles after a load stalls due to a source operand being the destination.  The L1 DCache hit latency is two cycles, so the instruction would stall on a miss but not on a hit.
+event:0xc7 counters:0,1,2,3 um:zero minimum:500 name:LOAD_STALL : The event occurs when an instruction stalls due to a source operand being the destination of a load instruction.  This event happens on all cycles that stall except for the one 2 cycles after the load, which is counted by LOAD_HIT_STALL event.
+event:0xc8 counters:0,1,2,3 um:zero minimum:500 name:ALU_SRC_STALL : The event occurs when an instruction stalls due to a source operand being the destination of an ALU instruction.
+event:0xc9 counters:0,1,2,3 um:zero minimum:500 name:IDN_SRC_STALL : The event occurs when an instruction stalls due to IDN source register not available.
+event:0xca counters:0,1,2,3 um:zero minimum:500 name:UDN_SRC_STALL : The event occurs when an instruction stalls due to UDN source register not available.
+event:0xcb counters:0,1,2,3 um:zero minimum:500 name:MF_STALL : The event during stalls for Memory Fence instruction.
+event:0xcc counters:0,1,2,3 um:zero minimum:500 name:SLOW_SPR_STALL : The event occurs during stalls to slow SPR access.
+event:0xcd counters:0,1,2,3 um:zero minimum:500 name:NETWORK_DEST_STALL : The event occurs when a valid instruction in pipeline Decode stage stalls due to network destination full.
+event:0xce counters:0,1,2,3 um:zero minimum:500 name:INSTRUCTION_STALL : The event occurs when a valid instruction in pipeline Decode stage stalls for any reason.
+event:0xd4 counters:0,1,2,3 um:zero minimum:500 name:ITLB_MISS_INTERRUPT : The event occurs when an ITLB_MISS interrupt is taken.
+event:0xd5 counters:0,1,2,3 um:zero minimum:500 name:INTERRUPT : The event occurs when any interrupt is taken.
+event:0xdb counters:0,1,2,3 um:zero minimum:500 name:INSTRUCTION_BUNDLE : The event occurs when there is a valid instruction in pipeline WB stage (e.g. when an instruction is commited).
+event:0x40 counters:0,1,2,3 um:zero minimum:500 name:TLB : The event occurs when a data memory operation is issued and the data translation lookaside buffer (DTLB) is used to translate the virtual address into the physical address.
+event:0x41 counters:0,1,2,3 um:zero minimum:500 name:READ : The event occurs when a load is issued.
+event:0x42 counters:0,1,2,3 um:zero minimum:500 name:WRITE : The event occurs when a store is issed.
+event:0x43 counters:0,1,2,3 um:zero minimum:500 name:TLB_EXCEPTION : The event occurs when the address of a data stream memory operation causes a Data TLB Exception including TLB Misses and protection violations.
+event:0x44 counters:0,1,2,3 um:zero minimum:500 name:READ_MISS : The event occurs when a load is issued and data is not returned from the level 1 data cache.
+event:0x45 counters:0,1,2,3 um:zero minimum:500 name:WRITE_MISS : The event occurs when a store is issued and the 16-byte aligned block (level 1 data cache line size) containing the address is not present at the level 1 data cache.
+event:0x80 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_INCREMENT_READ : The event occurs when a read request is received from another Tile off the SDN and the Level 3 cache will track the share state.
+event:0x81 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_NON_INCREMENT_READ : The event occurs when a read request is received from another Tile off the SDN and the Level 3 cache will not track the share state.
+event:0x82 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_WRITE : The event occurs when a write request is received from another Tile off the SDN.
+event:0x83 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_IO_READ : The event occurs when a read request is received from an IO device off the SDN.
+event:0x84 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_IO_WRITE : The event occurs when a write request is received from an IO device off the SDN.
+event:0x85 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_DATA_READ : The event occurs when a data read request is received from the main processor and the Level 3 cache resides in the Tile.
+event:0x86 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_WRITE : The event occurs when a write request is received from the main processor and the Level 3 cache resides in the Tile.
+event:0x87 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_INSTRUCTION_READ : The event occurs when an instruction read request is received from the main processor and the Level 3 cache resides in the Tile.
+event:0x88 counters:0,1,2,3 um:zero minimum:500 name:REMOTE_DATA_READ : The event occurs when a data read request is received from the main processor and the Level 3 cache resides in another Tile.
+event:0x89 counters:0,1,2,3 um:zero minimum:500 name:REMOTE_WRITE : The event occurs when a write request is received from the main processor and the Level 3 cache resides in another Tile.
+event:0x8a counters:0,1,2,3 um:zero minimum:500 name:REMOTE_INSTRUCTION_READ : The event occurs when an instruction read request is received from the main processor and the Level 3 cache resides in another Tile.
+event:0x8b counters:0,1,2,3 um:zero minimum:500 name:COHERENCE_INVALIDATION : The event occurs when a coherence invalidation is received from another Tile off the QDN.
+event:0x8c counters:0,1,2,3 um:zero minimum:500 name:SNOOP_INCREMENT_READ_MISS : The event occurs when a read request is received from another Tile off the SDN and misses the Level 3 cache. The level 3 cache will track the share state.
+event:0x8d counters:0,1,2,3 um:zero minimum:500 name:SNOOP_NON_INCREMENT_READ_MISS : The event occurs when a read request is received from another Tile off the SDN and misses the Level 3 cache. The Level 3 cache will not track the share state.
+event:0x8e counters:0,1,2,3 um:zero minimum:500 name:SNOOP_WRITE_MISS : The event occurs when a write request is received from another Tile off the SDN and misses the Level 3 cache.
+event:0x8f counters:0,1,2,3 um:zero minimum:500 name:SNOOP_IO_READ_MISS : The event occurs when a read request is received from an IO device off the SDN and misses the Level 3 cache.
+event:0x90 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_IO_WRITE_MISS : The event occurs when a write request is received from an IO device off the SDN and misses the Level 3 cache.
+event:0x91 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_DATA_READ_MISS : The event occurs when a data read request is received from the main processor and misses the Level 3 cache resided in the Tile.
+event:0x92 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_WRITE_MISS : The event occurs when a write request is received from the main processor and misses the Level 3 cache resided in the Tile.
+event:0x93 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_INSTRUCTION_READ_MISS : The event occurs when an instruction read request is received from the main processor and misses the Level 3 cache resided in the Tile.
+event:0x94 counters:0,1,2,3 um:zero minimum:500 name:REMOTE_DATA_READ_MISS : The event occurs when a data read request is received from the main processor and misses the Level 2 cache. The Level 3 cache resides in another Tile.
+event:0x95 counters:0,1,2,3 um:zero minimum:500 name:REMOTE_WRITE_MISS : The event occurs when a write request is received from the main processor and misses the Level 2 cache. The Level 3 cache resides in another Tile.
+event:0x96 counters:0,1,2,3 um:zero minimum:500 name:REMOTE_INSTRUCTION_READ_MISS : The event occurs when an instruction read request is received from the main processor and misses the Level 2 cache. The Level 3 cache resides in another Tile.
+event:0x97 counters:0,1,2,3 um:zero minimum:500 name:COHERENCE_INVALIDATION_HIT : The event occurs when a coherence invalidation is received from another Tile off the QDN and hits the level 2 cache.
+event:0x98 counters:0,1,2,3 um:zero minimum:500 name:CACHE_WRITEBACK : The event occurs when a cache writeback to main memory, including victim writes or explicit flushes, leaves the Tile.
+event:0x99 counters:0,1,2,3 um:zero minimum:500 name:SDN_STARVED : The event occurs when a snoop is received and the controller enters the SDN starved condition.
+event:0x9a counters:0,1,2,3 um:zero minimum:500 name:RDN_STARVED : The event occurs when the controller enters the RDN starved condition.
+event:0x9b counters:0,1,2,3 um:zero minimum:500 name:QDN_STARVED : The event occurs when the controller enters the QDN starved condition.
+event:0x9c counters:0,1,2,3 um:zero minimum:500 name:SKF_STARVED : The event occurs when the controller enters the skid FIFO starved condition.
+event:0x9d counters:0,1,2,3 um:zero minimum:500 name:RTF_STARVED : The event occurs when the controller enters the re-try FIFO starved condition.
+event:0x9e counters:0,1,2,3 um:zero minimum:500 name:IREQ_STARVED : The event occurs when the controller enters the instruction stream starved condition.
+event:0xa1 counters:0,1,2,3 um:zero minimum:500 name:LOCAL_WRITE_BUFFER_ALLOC : The event occurs when a write request is received from the main processor and allocates a write buffer in the Level 3 cache resided in the Tile.
+event:0xa2 counters:0,1,2,3 um:zero minimum:500 name:REMOTE_WRITE_BUFFER_ALLOC : The event occurs when a write request is received from the main processor and allocates a write buffer in the Level 2 cache resided in the Tile. The Level 3 cache resides in another Tile
+event:0x00 counters:0,1,2,3 um:zero minimum:500 name:UDN_PACKET_SENT : Main processor finished sending a packet to the UDN.
+event:0x01 counters:0,1,2,3 um:zero minimum:500 name:UDN_WORD_SENT : UDN word sent to an output port.  Participating ports are selected with the UDN_EVT_PORT_SEL field.
+event:0x02 counters:0,1,2,3 um:zero minimum:500 name:UDN_BUBBLE : Bubble detected on an output port.  A bubble is defined as a cycle in which no data is being sent, but the first word of a packet has already traversed the switch.  Participating ports are selected with the UDN_EVT_PORT_SEL field.
+event:0x03 counters:0,1,2,3 um:zero minimum:500 name:UDN_CONGESTION : Out of credit on an output port.  Participating ports are selected with the UDN_EVT_PORT_SEL field.
+event:0x04 counters:0,1,2,3 um:zero minimum:500 name:IDN_PACKET_SENT : Main processor finished sending a packet to the IDN.
+event:0x05 counters:0,1,2,3 um:zero minimum:500 name:IDN_WORD_SENT : IDN word sent to an output port.  Participating ports are selected with the IDN_EVT_PORT_SEL field.
+event:0x06 counters:0,1,2,3 um:zero minimum:500 name:IDN_BUBBLE : Bubble detected on an output port.  A bubble is defined as a cycle in which no data is being sent, but the first word of a packet has already traversed the switch.  Participating ports are selected with the IDN_EVT_PORT_SEL field.
+event:0x07 counters:0,1,2,3 um:zero minimum:500 name:IDN_CONGESTION : Out of credit on an output port.  Participating ports are selected with the IDN_EVT_PORT_SEL field.
+event:0x08 counters:0,1,2,3 um:zero minimum:500 name:RDN_PACKET_SENT : Main processor finished sending a packet to the RDN.
+event:0x09 counters:0,1,2,3 um:zero minimum:500 name:RDN_WORD_SENT : RDN word sent to an output port.  Participating ports are selected with the RDN_EVT_PORT_SEL field.
+event:0x0a counters:0,1,2,3 um:zero minimum:500 name:RDN_BUBBLE : Bubble detected on an output port.  A bubble is defined as a cycle in which no data is being sent, but the first word of a packet has already traversed the switch.  Participating ports are selected with the RDN_EVT_PORT_SEL field.
+event:0x0b counters:0,1,2,3 um:zero minimum:500 name:RDN_CONGESTION : Out of credit on an output port.  Participating ports are selected with the RDN_EVT_PORT_SEL field.
+event:0x0c counters:0,1,2,3 um:zero minimum:500 name:SDN_PACKET_SENT : Main processor finished sending a packet to the SDN.
+event:0x0d counters:0,1,2,3 um:zero minimum:500 name:SDN_WORD_SENT : SDN word sent to an output port.  Participating ports are selected with the SDN_EVT_PORT_SEL field.
+event:0x0e counters:0,1,2,3 um:zero minimum:500 name:SDN_BUBBLE : Bubble detected on an output port.  A bubble is defined as a cycle in which no data is being sent, but the first word of a packet has already traversed the switch.  Participating ports are selected with the SDN_EVT_PORT_SEL field.
+event:0x0f counters:0,1,2,3 um:zero minimum:500 name:SDN_CONGESTION : Out of credit on an output port.  Participating ports are selected with the SDN_EVT_PORT_SEL field.
+event:0x10 counters:0,1,2,3 um:zero minimum:500 name:QDN_PACKET_SENT : Main processor finished sending a packet to the QDN.
+event:0x11 counters:0,1,2,3 um:zero minimum:500 name:QDN_WORD_SENT : QDN word sent to an output port.  Participating ports are selected with the QDN_EVT_PORT_SEL field.
+event:0x12 counters:0,1,2,3 um:zero minimum:500 name:QDN_BUBBLE : Bubble detected on an output port.  A bubble is defined as a cycle in which no data is being sent, but the first word of a packet has already traversed the switch.  Participating ports are selected with the QDN_EVT_PORT_SEL field.
+event:0x13 counters:0,1,2,3 um:zero minimum:500 name:QDN_CONGESTION : Out of credit on an output port.  Participating ports are selected with the QDN_EVT_PORT_SEL field.
+event:0x14 counters:0,1,2,3 um:zero minimum:500 name:UDN_DEMUX_STALL : UDN Demux stalled due to buffer full
+event:0x15 counters:0,1,2,3 um:zero minimum:500 name:IDN_DEMUX_STALL : IDN Demux stalled due to buffer full
