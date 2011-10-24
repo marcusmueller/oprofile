@@ -32,7 +32,6 @@ using namespace std;
 
 bool copy_file(string const & source, string const & destination)
 {
-	int retval;
 	struct stat buf;
 	if (stat(source.c_str(), &buf))
 		return false;
@@ -56,7 +55,6 @@ bool copy_file(string const & source, string const & destination)
 
 	// ignore error here: a simple user can copy a root.root 744 file
 	// but can't chown the copied file to root.
-	retval = chown(destination.c_str(), buf.st_uid, buf.st_gid);
 
 	// a scope to ensure out is closed before changing is mtime/atime
 	{

@@ -165,13 +165,11 @@ bool child_reader::getline(string & result)
 	result.erase(result.begin(), result.end());
 
 	bool ok = true;
-	bool ret = true;
 	bool can_stop = false;
 	do {
 		int temp = end2;
 		if (pos1 >= end1) {
 			pos1 = 0;
-			ret = block_read();
 		}
 
 		// for efficiency try to copy as much as we can of data

@@ -59,7 +59,6 @@ static void xml_do_arch_specific_event_help(struct op_event const *event,
 void xml_help_for_event(struct op_event const * event)
 {
 	uint i;
-	int nr_counters;
 	int has_nested = strcmp(event->unit->name, "zero");
 
 	buffer[0] = '\0';
@@ -68,7 +67,6 @@ void xml_help_for_event(struct op_event const * event)
 	xml_do_arch_specific_event_help(event, buffer, MAX_BUFFER);
 	init_xml_str_attr(HELP_EVENT_DESC, event->desc, buffer, MAX_BUFFER);
 
-	nr_counters = op_get_nr_counters(cpu_type);
 	init_xml_int_attr(HELP_COUNTER_MASK, event->counter_mask, buffer,
 			  MAX_BUFFER);
 	if (event->ext)

@@ -565,9 +565,6 @@ void trans_ibs_op_bta(struct transient * trans)
 {
 	static cookie_t old_cookie     = NO_COOKIE;
 	static cookie_t old_app_cookie = NO_COOKIE;
-	static char const * mod        = NULL;
-	static char const * app        = NULL;
-	const char vmlinux[10]         = "vmlinux";
 	struct ibs_op_sample * trans_op = ((struct ibs_sample*)(trans->ext))->op;
 
 	if (!bta_log)
@@ -579,18 +576,15 @@ void trans_ibs_op_bta(struct transient * trans)
 	if( old_app_cookie == INVALID_COOKIE 
 	||  old_app_cookie == NO_COOKIE 
 	||  old_app_cookie != trans->app_cookie) {
-		app = find_cookie(trans->app_cookie);
 		old_app_cookie = trans->cookie;
 	}
 
 	if (trans->in_kernel == 1) {
-		mod = vmlinux;
 		old_cookie = NO_COOKIE;
 	} else {
 		if( old_cookie == INVALID_COOKIE 
 		||  old_cookie == NO_COOKIE 
 		||  old_cookie != trans->cookie) {
-			mod = find_cookie(trans->cookie);
 			old_cookie = trans->cookie;
 		}
 	}
@@ -605,9 +599,6 @@ void trans_ibs_op_ls_memaccess(struct transient * trans)
 {
 	static cookie_t old_cookie     = NO_COOKIE;
 	static cookie_t old_app_cookie = NO_COOKIE;
-	static char const * mod        = NULL;
-	static char const * app        = NULL;
-	const char vmlinux[10]         = "vmlinux";
 	struct ibs_op_sample * trans_op = ((struct ibs_sample*)(trans->ext))->op;
 
 	if (!memaccess_log)
@@ -616,18 +607,15 @@ void trans_ibs_op_ls_memaccess(struct transient * trans)
 	if( old_app_cookie == INVALID_COOKIE 
 	||  old_app_cookie == NO_COOKIE 
 	||  old_app_cookie != trans->app_cookie) {
-		app = find_cookie(trans->app_cookie);
 		old_app_cookie = trans->cookie;
 	}
 
 	if (trans->in_kernel == 1) {
-		mod = vmlinux;
 		old_cookie = NO_COOKIE;
 	} else {
 		if( old_cookie == INVALID_COOKIE 
 		||  old_cookie == NO_COOKIE 
 		||  old_cookie != trans->cookie) {
-			mod = find_cookie(trans->cookie);
 			old_cookie = trans->cookie;
 		}
 	}

@@ -1193,17 +1193,10 @@ static void do_resolve_unit_mask(struct op_event *e, struct parsed_event *pe,
 
 	for (;;) {
 		if (pe->unit_mask_name == NULL) {
-			int fi = 0;
-			unsigned um = pe->unit_mask;
 			int had_unit_mask = pe->unit_mask_valid;
 
 			found = 0;
 			for (i = 0; i < e->unit->num; i++) {
-			        if (pe->unit_mask_valid &&
-				    e->unit->um[i].value == um) {
-					if (found++ == 0)
-						fi = i;
-				}
 				if (!pe->unit_mask_valid &&
 				e->unit->um[i].value == e->unit->default_mask) {
 					pe->unit_mask_valid = 1;
