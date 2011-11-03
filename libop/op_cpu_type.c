@@ -97,6 +97,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "TILE64", "tile/tile64", CPU_TILE_TILE64, 2 },
 	{ "TILEPro", "tile/tilepro", CPU_TILE_TILEPRO, 4 },
 	{ "TILE-GX", "tile/tilegx", CPU_TILE_TILEGX, 4 },
+	{ "IBM System z with basic mode hardware sampling support", "s390x/basic_mode_sampling_v1", CPU_S390_HWSAMPV1, 1 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

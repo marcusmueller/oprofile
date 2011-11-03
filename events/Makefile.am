@@ -71,8 +71,8 @@ event_files = \
 	ppc/e300/events ppc/e300/unit_masks \
 	tile/tile64/events tile/tile64/unit_masks \
 	tile/tilepro/events tile/tilepro/unit_masks \
-	tile/tilegx/events tile/tilegx/unit_masks
-
+	tile/tilegx/events tile/tilegx/unit_masks \
+	s390x/basic_mode_sampling_v1/events s390x/basic_mode_sampling_v1/unit_masks
 
 install-data-local:
 	for i in ${event_files} ; do \

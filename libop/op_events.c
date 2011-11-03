@@ -1125,6 +1125,9 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC_E300:
 			descr->name = "CPU_CLK";
 			break;
+	        case CPU_S390_HWSAMPV1:
+			descr->name = "HWSAMPLING";
+			break;
 
 		case CPU_TILE_TILE64:
 		case CPU_TILE_TILEPRO:

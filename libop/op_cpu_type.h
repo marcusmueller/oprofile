@@ -94,6 +94,7 @@ typedef enum {
 	CPU_TILE_TILE64, /**< Tilera TILE64 family */
 	CPU_TILE_TILEPRO, /**< Tilera TILEPro family (Pro64 or Pro36) */
 	CPU_TILE_TILEGX, /**< Tilera TILE-GX family */
+	CPU_S390_HWSAMPV1, /* IBM System z with Basic Mode Sampling support */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -239,6 +239,10 @@ opcontrol: usage:
    --xen                         Xen image (for Xen only)
    --active-domains=<list>       List of domains in profiling session (for Xen)
                                  (list contains domain ids separated by commas)
+
+  System z specific options
+
+  --s390hwsampbufsize=num        Number of 2MB areas used per CPU for storing sample data.
 EOF
 }
 
@@ -381,6 +385,10 @@ do_init()
 	IBS_OP_COUNT=0
 	IBS_OP_UNITMASK=0
 
+	# System z specific values
+	S390_HW_SAMPLER=0
+	S390_HW_SAMPLER_BUFSIZE=0
+
 	OPROFILED="$OPDIR/oprofiled"
 
 	# location for daemon setup information
@@ -405,6 +413,9 @@ do_init()
 		IS_TIMER=1
 	else
 		case "$CPUTYPE" in
+			s390x/basic_mode_sampling_v1)
+				S390_HW_SAMPLER=1
+				;;
 			ia64/*)
 				IS_PERFMON=$KERNEL_SUPPORT
 				;;
@@ -495,6 +506,9 @@ do_save_setup()
 	echo "XENIMAGE=$XENIMAGE" >> $SETUP_FILE
 	if test "$XEN_RANGE"; then
 		echo "XEN_RANGE=$XEN_RANGE" >> $SETUP_FILE
+	fi
+	if test "$S390_HW_SAMPLER" = "1" -a "$S390_HWSAMPLER_BUFSIZE" != "0"; then
+		echo "S390_HW_SAMPLER_BUFSIZE=$S390_HW_SAMPLER_BUFSIZE" >> $SETUP_FILE
 	fi
 	SETUP_FILE="$SAVE_SETUP_FILE"
 }
@@ -971,6 +985,13 @@ do_options()
 				exec $OPHELP
 				;;
 
+			--s390hwsampbufsize)
+				error_if_not_number "$arg" "$val"
+				S390_HW_SAMPLER_BUFSIZE=$val
+				DO_SETUP=yes
+				;;
+
+
 			*)
 				echo "Unknown option \"$arg\". See opcontrol --help" >&2
 				exit 1
@@ -1241,10 +1262,10 @@ is_non_cell_ppc64_variant()
 }
 
 
-# The check_event_mapping_data procedure gives the
+# The arch_event_validate procedure gives the
 # opportunity to validate events and enforce any
 # arch-specific restritions, etc.
-check_event_mapping_data()
+arch_event_validate()
 {
 
 	is_non_cell_ppc64_variant $CPUTYPE
@@ -1354,6 +1375,32 @@ check_event_mapping_data()
 			fi
 		fi
 	fi
+	if test "$S390_HW_SAMPLER" = "1" -a "$EVENT" = "HWSAMPLING"; then
+		if test "$CALLGRAPH" != "0"; then
+			echo "Callgraph sample collection is not supported with " >&2
+			echo "System z hardware sampling.  Please use --callgraph=0 " >&2
+			echo "or enable timer based sampling." >&2
+			exit 1
+		fi
+		if test -r $MOUNT/hwsampling/hw_min_interval; then
+			min_interval=`cat $MOUNT/hwsampling/hw_min_interval`
+		else
+			echo "$MOUNT/hwsampling/hw_min_interval could not be found"
+			exit 1
+		fi
+		if test -r $MOUNT/hwsampling/hw_max_interval; then
+			max_interval=`cat $MOUNT/hwsampling/hw_max_interval`
+		else
+			echo "$MOUNT/hwsampling/hw_max_interval could not be found"
+			exit 1
+ 		fi
+		if test "$COUNT" -lt "$min_interval" -o "$COUNT" -gt "$max_interval"; then
+			echo "Invalid value $COUNT for hardware sampling rate." >&2
+			echo "Value must be between $min_interval and $max_interval." >&2
+			exit 1
+		fi
+	fi
+
 	len=`echo -n $event_num | wc -c`
 	num_chars_in_grpid=`expr $len - 2`
 	GRP_NUM_VAL=`echo | awk '{print substr("'"${event_num}"'",1,"'"${num_chars_in_grpid}"'")}'`
@@ -1418,6 +1465,10 @@ do_param_setup()
 		return
 	fi
 
+	if test "$S390_HW_SAMPLER" = "1" -a "$S390_HW_SAMPLER_BUFSIZE" != "0"; then
+		echo $S390_HW_SAMPLER_BUFSIZE >$MOUNT/hwsampling/hw_sdbt_blocks
+	fi
+
 	# use the default setup if none set
 	if test "$NR_CHOSEN" = 0; then
 		set_event 0 $DEFAULT_EVENT
@@ -1463,7 +1514,7 @@ do_param_setup()
 			KERNEL=`echo $GOTEVENT | awk -F: '{print $4}'`
 			USER=`echo $GOTEVENT | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
-			check_event_mapping_data
+			arch_event_validate
 
 			if test "$EVENT" = "SPU_CYCLES"; then
 				if test "$SEPARATE_KERNEL" = "1"; then
@@ -1540,7 +1591,7 @@ do_param_setup()
 	# For PPC64 architectures we need to set the enable_kernel and
 	# enable_user flags for enabling/disabling user/kernel domain
 	# profiling. All per-counter user/kernel flags must match.
-	# This condition is checked previously by check_event_mapping_data.
+	# This condition is checked previously by arch_event_validate.
 	# This statement uses the last event's user/kernel flags to set
 	# /dev/oprofile/enable_kernel and /dev/oprofile/enable_user.
 	is_non_cell_ppc64_variant $CPUTYPE
@@ -1699,6 +1750,14 @@ do_status()
 		fi
 		if test "$CPU_BUF_SIZE" != "0"; then
 			echo "CPU buffer size: $CPU_BUF_SIZE"
+		fi
+	fi
+	if test "$S390_HW_SAMPLER" = "1"; then
+		echo -n "System z hardware sampling buffer size (in 2MB areas): "
+		if test "$S390_HW_SAMPLER_BUFSIZE" = "0"; then
+			cat $MOUNT/hwsampling/hw_sdbt_blocks
+		else
+			echo "$S390_HW_SAMPLER_BUFSIZE"
 		fi
 	fi
 

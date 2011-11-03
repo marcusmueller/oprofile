@@ -254,11 +254,13 @@ string const describe_cpu(opd_header const & header)
 		str = xml_utils::get_profile_header(cpu_name, header.cpu_speed);
 	} else {
 		str += string("CPU: ") + op_get_cpu_type_str(cpu);
-		str += ", speed ";
+		if (header.cpu_speed > 0) {
+			ostringstream ss;
 
-		ostringstream ss;
-		ss << header.cpu_speed;
-		str += ss.str() + " MHz (estimated)";
+			str += ", speed ";
+			ss << header.cpu_speed;
+			str += ss.str() + " MHz (estimated)";
+		}
 	}
 	return str;
 }

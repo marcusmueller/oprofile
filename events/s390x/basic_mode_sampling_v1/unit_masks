@@ -1,0 +1,8 @@
+# Copyright OProfile authors#
+# Copyright (c) International Business Machines, 2011.
+# Contributed by Andreas Krebbel <krebbel@linux.vnet.ibm.com>.
+#
+# S/390 Basic Mode Hardware Sampling unit masks
+#
+name:zero type:mandatory default:0x0
+	0x0 No unit mask

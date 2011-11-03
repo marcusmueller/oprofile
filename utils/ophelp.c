@@ -743,6 +743,12 @@ int main(int argc, char const * argv[])
 			"http://www.tilera.com for more information.\n";
 		break;
 
+	case CPU_S390_HWSAMPV1:
+		event_doc = "IBM System z Basic Mode Sampling\n"
+			"http://www-01.ibm.com/support/docview.wss"
+			"?uid=isg26fcd1cc32246f4c8852574ce0044734a\n";
+		break;
+
 		case CPU_RTC:
 			break;
 

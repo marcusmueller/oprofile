@@ -1223,6 +1223,65 @@ Note: * All IBS fetch event must have the same event count and unitmask,
 
 </sect2>
 
+<sect2 id="systemz">
+<title>IBM System z hardware sampling support</title>
+<para>
+IBM System z provides a facility which does instruction sampling as
+part of the CPU.  This has great advantages over the timer based
+sampling approach like better sampling resolution with less overhead
+and the possibility to get samples within code sections where
+interrupts are disabled (useful especially for Linux kernel code).
+</para>
+<para>
+A public description of the System z CPU-Measurement Facilities can be
+found here:
+<ulink url="http://www-01.ibm.com/support/docview.wss?uid=isg26fcd1cc32246f4c8852574ce0044734a">The Load-Program-Parameter and CPU-Measurement Facilities</ulink>
+</para>
+<para>
+System z hardware sampling can be used for Linux instances in LPAR
+mode. The hardware sampling support used by OProfile was introduced
+for System z10 in October 2008.
+</para>
+<para>
+To enable hardware sampling for an LPAR you must activate the LPAR
+with authorization for basic sampling control. See the "Support
+Element Operations Guide" for your mainframe system for more
+information.
+</para>
+<para>
+The hardware sampling facility can be enabled and disabled using the
+event interface.  A `virtual' counter 0 has been defined that supports
+two events, TIMER and HWSAMPLING. By default the HWSAMPLING event is
+used on machines providing the facility.  For both events only the
+`count', `kernel' and `user' options are evaluated by the kernel
+module.
+</para>
+<para>
+The `count' value is the sampling rate as it is passed to the CPU
+measurement facility.  A sample will be taken by the hardware every
+`count' cycles. Using low values here will quickly fill up the
+sampling buffers and will generate CPU load on the OProfile daemon and
+the kernel module being busy flushing the hardware buffers.  This
+might considerably impact the workload to be profiled.
+</para>
+<para>
+The unit mask `um' is required to be zero.
+</para>
+<para>
+The opcontrol tool provides a new option specific to System z
+hardware sampling:
+</para>
+
+<itemizedlist>
+<listitem>--s390hwsampbufsize="num": Number of 2MB areas
+used per CPU for storing sample data.  The best
+size for the sample memory depends on the particular system and the
+workload to be measured.  Providing the sampler with too little memory
+results in lost samples. Reserving too much system memory for the
+sampler impacts the overall performance and, hence, also the workload
+to be measured.</listitem>
+</itemizedlist>
+</sect2>
 
 <sect2 id="misuse">
 <title>Dangerous counter settings</title>

@@ -164,6 +164,16 @@ that can coordinate a multi-domain profiling session. Including domain 0 in
 the list of active domains is optional. (e.g. --active-domains=2,5,6 and 
 --active-domains=0,2,5,6 are equivalent)
 .br
+.SH OPTIONS (specific to System z)
+.TP
+.BI "--s390hwsampbufsize="num
+Number of 2MB areas used per CPU for storing sample data.  The best
+size for the sample memory depends on the particular system and the
+workload to be measured.  Providing the sampler with too little memory
+results in lost samples. Reserving too much system memory for the
+sampler impacts the overall performance and, hence, also the workload
+to be measured.
+.br
 
 .SH ENVIRONMENT
 No special environment variables are recognised by opcontrol.
