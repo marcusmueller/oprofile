@@ -507,7 +507,7 @@ do_save_setup()
 	if test "$XEN_RANGE"; then
 		echo "XEN_RANGE=$XEN_RANGE" >> $SETUP_FILE
 	fi
-	if test "$S390_HW_SAMPLER" = "1" -a "$S390_HWSAMPLER_BUFSIZE" != "0"; then
+	if test "$S390_HW_SAMPLER" = "1" -a "$S390_HW_SAMPLER_BUFSIZE" != "0"; then
 		echo "S390_HW_SAMPLER_BUFSIZE=$S390_HW_SAMPLER_BUFSIZE" >> $SETUP_FILE
 	fi
 	SETUP_FILE="$SAVE_SETUP_FILE"
