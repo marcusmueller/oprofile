@@ -25,6 +25,17 @@ extern "C" {
 #define EXTRA_CMASK_SHIFT 24
 #define EXTRA_CMASK_MASK 0xff
 
+/*
+ * For timer based sampling some targets (e.g. s390) use a virtual
+ * counter whose file system resides in /dev/oprofile/timer.  These
+ * macros set the values used to define a specific timer event solely
+ * used by the timer counter.
+ */
+#define TIMER_EVENT_NAME           "TIMER"
+#define TIMER_EVENT_UNIT_MASK_NAME "timer_unit_mask"
+#define TIMER_EVENT_DESC           "Timer based sampling"
+#define TIMER_EVENT_VALUE          (u32)-1
+
 /** Describe an unit mask type. Events can optionally use a filter called
  * the unit mask. the mask type can be a bitmask or a discrete value */
 enum unit_mask_type {

@@ -97,7 +97,8 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "TILE64", "tile/tile64", CPU_TILE_TILE64, 2 },
 	{ "TILEPro", "tile/tilepro", CPU_TILE_TILEPRO, 4 },
 	{ "TILE-GX", "tile/tilegx", CPU_TILE_TILEGX, 4 },
-	{ "IBM System z with basic mode hardware sampling support", "s390x/basic_mode_sampling_v1", CPU_S390_HWSAMPV1, 1 },
+	{ "IBM System z10", "s390/z10", CPU_S390_Z10, 1 },
+	{ "IBM zEnterprise z196", "s390/z196", CPU_S390_Z196, 1 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -216,5 +217,23 @@ int op_get_nr_counters(op_cpu cpu_type)
 	if (cnt >= 0)
 		return cnt;
 
-	return cpu_descrs[cpu_type].nr_counters;
+	return op_cpu_has_timer_fs()
+		? cpu_descrs[cpu_type].nr_counters + 1
+		: cpu_descrs[cpu_type].nr_counters;
+}
+
+int op_cpu_has_timer_fs(void)
+{
+	static int cached_has_timer_fs_p = -1;
+	FILE * fp;
+
+	if (cached_has_timer_fs_p != -1)
+		return cached_has_timer_fs_p;
+
+	fp = fopen("/dev/oprofile/timer", "r");
+	cached_has_timer_fs_p = !!fp;
+	if (fp)
+		fclose(fp);
+
+	return cached_has_timer_fs_p;
 }

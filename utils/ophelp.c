@@ -266,7 +266,10 @@ static void resolve_events(void)
 			else
 				printf("N/A ");
 		else
-			printf("%d ", (unsigned int) counter_map[i]);
+			if (strcmp(selected_events[i]->name, TIMER_EVENT_NAME) == 0)
+				printf("timer ");
+			else
+				printf("%d ", (unsigned int) counter_map[i]);
 	printf("\n");
 
 	free(counter_map);
@@ -743,8 +746,9 @@ int main(int argc, char const * argv[])
 			"http://www.tilera.com for more information.\n";
 		break;
 
-	case CPU_S390_HWSAMPV1:
-		event_doc = "IBM System z Basic Mode Sampling\n"
+	case CPU_S390_Z10:
+	case CPU_S390_Z196:
+		event_doc = "IBM System z CPU Measurement Facility\n"
 			"http://www-01.ibm.com/support/docview.wss"
 			"?uid=isg26fcd1cc32246f4c8852574ce0044734a\n";
 		break;

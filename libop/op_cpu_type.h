@@ -94,7 +94,8 @@ typedef enum {
 	CPU_TILE_TILE64, /**< Tilera TILE64 family */
 	CPU_TILE_TILEPRO, /**< Tilera TILEPro family (Pro64 or Pro36) */
 	CPU_TILE_TILEGX, /**< Tilera TILE-GX family */
-	CPU_S390_HWSAMPV1, /* IBM System z with Basic Mode Sampling support */
+	CPU_S390_Z10, /* IBM System z10 */
+	CPU_S390_Z196, /* IBM zEnterprise z196 */
 	MAX_CPU_TYPE
 } op_cpu;
 
@@ -168,6 +169,14 @@ typedef enum {
  * the module is not loaded.
  */
 op_interface op_get_interface(void);
+
+/**
+ * determine if the /dev/oprofile/timer is available
+ *
+ * return true if the kernel modules provides the /dev/oprofile
+ * interface for timer mode sampling.
+ */
+int op_cpu_has_timer_fs(void);
 
 #ifdef __cplusplus
 }

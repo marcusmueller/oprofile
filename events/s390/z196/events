@@ -1,0 +1,7 @@
+# Copyright OProfile authors
+# Copyright (c) International Business Machines, 2011.
+# Contributed by Andreas Krebbel <krebbel@linux.vnet.ibm.com>.
+#
+# zEnterprise z196 Basic Mode Sampling events
+#
+include:s390/z10

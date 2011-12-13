@@ -1250,9 +1250,9 @@ information.
 </para>
 <para>
 The hardware sampling facility can be enabled and disabled using the
-event interface.  A `virtual' counter 0 has been defined that supports
-two events, TIMER and HWSAMPLING. By default the HWSAMPLING event is
-used on machines providing the facility.  For both events only the
+event interface.  A `virtual' counter 0 has been defined that only supports
+a single event, HWSAMPLING. By default the HWSAMPLING event is
+enabled on machines providing the facility.  For both events only the
 `count', `kernel' and `user' options are evaluated by the kernel
 module.
 </para>
@@ -1281,6 +1281,26 @@ results in lost samples. Reserving too much system memory for the
 sampler impacts the overall performance and, hence, also the workload
 to be measured.</listitem>
 </itemizedlist>
+
+<para>
+A special counter <filename>/dev/oprofile/timer</filename> is provided
+by the kernel module allowing to switch back to timer mode sampling
+dynamically.  The TIMER event is limited to be used only with this
+counter.  The TIMER event can be specified using the
+<option>--event=</option> as with every other event.
+</para>
+<screen>opcontrol --event=TIMER:1</screen>
+<para>
+On z10 or later machines the default event is set to TIMER in case the
+hardware sampling facility is not available.
+</para>
+<para>
+Although required, the 'count' parameter of the TIMER event is
+ignored.  The value may eventually be used for timer based sampling
+with a configurable sampling frequency, but this is currently not
+supported.
+</para>
+
 </sect2>
 
 <sect2 id="misuse">

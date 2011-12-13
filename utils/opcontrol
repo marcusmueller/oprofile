@@ -400,6 +400,7 @@ do_init()
 	decide_oprofile_device_mount
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
+	OP_COUNTERS="$OP_COUNTERS `ls $MOUNT/ | grep "^timer\+\$"`"
 	NR_CHOSEN=0
 
 	do_init_daemon_vars
@@ -413,13 +414,18 @@ do_init()
 		IS_TIMER=1
 	else
 		case "$CPUTYPE" in
-			s390x/basic_mode_sampling_v1)
+			s390/*)
 				S390_HW_SAMPLER=1
 				;;
 			ia64/*)
 				IS_PERFMON=$KERNEL_SUPPORT
 				;;
 		esac
+	fi
+
+	# Ignore configured events when running in timer mode.
+	if test "$IS_TIMER" = 1; then
+		NR_CHOSEN=0
 	fi
 }
 
@@ -1228,8 +1234,17 @@ set_ctr_param()
 	fi
 
 	if test "$KERNEL_SUPPORT" = "yes"; then
+		if test "$1" = "timer" -a "$2" != "enabled"; then
+			# For now everything other than 'enabled' is
+			# unsupported for the `timer' counter.
+			return
+		fi
 		if test -e $MOUNT/$1; then
-			echo $3 >$MOUNT/$1/$2
+			echo $3 >$MOUNT/$1/$2 2>/dev/null
+			if test $? -ne 0; then
+				echo "Value $3 is not accepted by $MOUNT/$1/$2"
+				exit 1
+			fi
 		else
 			echo -n "Error: counter $1 not available"
 			if test -e /proc/sys/kernel/nmi_watchdog; then
@@ -1382,22 +1397,17 @@ arch_event_validate()
 			echo "or enable timer based sampling." >&2
 			exit 1
 		fi
-		if test -r $MOUNT/hwsampling/hw_min_interval; then
-			min_interval=`cat $MOUNT/hwsampling/hw_min_interval`
-		else
-			echo "$MOUNT/hwsampling/hw_min_interval could not be found"
-			exit 1
+		echo "$COUNT" > $MOUNT/0/count
+		NEW_COUNT=`cat $MOUNT/0/count`
+		if test "$NEW_COUNT" -lt "$COUNT"; then
+			echo "Warning: Hardware sampling intervals higher than $NEW_COUNT are not supported." >&2
+			echo "Value is set to $NEW_COUNT." >&2
+			COUNT=$NEW_COUNT
 		fi
-		if test -r $MOUNT/hwsampling/hw_max_interval; then
-			max_interval=`cat $MOUNT/hwsampling/hw_max_interval`
-		else
-			echo "$MOUNT/hwsampling/hw_max_interval could not be found"
-			exit 1
- 		fi
-		if test "$COUNT" -lt "$min_interval" -o "$COUNT" -gt "$max_interval"; then
-			echo "Invalid value $COUNT for hardware sampling rate." >&2
-			echo "Value must be between $min_interval and $max_interval." >&2
-			exit 1
+		if test "$NEW_COUNT" -gt "$COUNT"; then
+			echo "Warning: Hardware sampling intervals lower than $NEW_COUNT are not supported." >&2
+			echo "Value is set to $NEW_COUNT." >&2
+			COUNT=$NEW_COUNT
 		fi
 	fi
 
@@ -1466,7 +1476,7 @@ do_param_setup()
 	fi
 
 	if test "$S390_HW_SAMPLER" = "1" -a "$S390_HW_SAMPLER_BUFSIZE" != "0"; then
-		echo $S390_HW_SAMPLER_BUFSIZE >$MOUNT/hwsampling/hw_sdbt_blocks
+		echo $S390_HW_SAMPLER_BUFSIZE >$MOUNT/0/hw_sdbt_blocks
 	fi
 
 	# use the default setup if none set
@@ -1755,7 +1765,7 @@ do_status()
 	if test "$S390_HW_SAMPLER" = "1"; then
 		echo -n "System z hardware sampling buffer size (in 2MB areas): "
 		if test "$S390_HW_SAMPLER_BUFSIZE" = "0"; then
-			cat $MOUNT/hwsampling/hw_sdbt_blocks
+			cat $MOUNT/0/hw_sdbt_blocks
 		else
 			echo "$S390_HW_SAMPLER_BUFSIZE"
 		fi

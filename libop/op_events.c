@@ -645,6 +645,8 @@ static void load_events(op_cpu cpu_type)
 {
 	const char * cpu_name = op_get_cpu_name(cpu_type);
 	struct list_head * pos;
+	struct op_event *event;
+	struct op_unit_mask *unit_mask;
 	int err = 0;
 
 	if (!list_empty(&events_list))
@@ -661,6 +663,57 @@ static void load_events(op_cpu cpu_type)
 	}
 	if (err)
 		exit(err);
+
+	if (!op_cpu_has_timer_fs())
+		return;
+
+	/* sanity check: Don't use event `TIMER' since it is predefined.  */
+	list_for_each(pos, &events_list) {
+		struct op_event * event = list_entry(pos, struct op_event,
+						     event_next);
+
+		if (strcmp(event->name, TIMER_EVENT_NAME) == 0) {
+			fprintf(stderr, "Error: " TIMER_EVENT_NAME
+				" event cannot be redefined.\n");
+			exit(EXIT_FAILURE);
+		}
+		if (event->val == TIMER_EVENT_VALUE) {
+			fprintf(stderr, "Error: Event %s uses " TIMER_EVENT_NAME
+				" which is reserverd for timer based sampling.\n",
+				event->name);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	list_for_each(pos, &um_list) {
+		struct op_unit_mask * um = list_entry(pos, struct op_unit_mask,
+						      um_next);
+		if (strcmp(um->name, TIMER_EVENT_UNIT_MASK_NAME) == 0) {
+			fprintf(stderr, "Error: " TIMER_EVENT_UNIT_MASK_NAME
+				" unit mask cannot be redefined.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	unit_mask = new_unit_mask();
+	unit_mask->name = xstrdup(TIMER_EVENT_UNIT_MASK_NAME);
+	unit_mask->num = 1;
+	unit_mask->unit_type_mask = utm_mandatory;
+	unit_mask->um[0].extra = 0;
+	unit_mask->um[0].value = 0;
+	unit_mask->um[0].desc = xstrdup("No unit mask");
+	unit_mask->used = 1;
+
+	event = new_event();
+	event->name = xstrdup(TIMER_EVENT_NAME);
+	event->desc = xstrdup(TIMER_EVENT_DESC);
+	event->val = TIMER_EVENT_VALUE;
+	event->unit = unit_mask;
+	event->min_count = 0;
+	event->filter = 0;
+	event->counter_mask = 1 << (op_get_nr_counters(cpu_type) - 1);
+	event->ext = NULL;
+	event->filter = -1;
 }
 
 struct list_head * op_events(op_cpu cpu_type)
@@ -1125,9 +1178,16 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC_E300:
 			descr->name = "CPU_CLK";
 			break;
-	        case CPU_S390_HWSAMPV1:
-			descr->name = "HWSAMPLING";
-			break;
+  	        case CPU_S390_Z10:
+  	        case CPU_S390_Z196:
+ 			if (op_get_nr_counters(cpu_type) > 1) {
+ 				descr->name = "HWSAMPLING";
+ 				descr->count = 4127518;
+ 			} else {
+ 				descr->name = TIMER_EVENT_NAME;
+ 				descr->count = 10000;
+ 			}
+  			break;
 
 		case CPU_TILE_TILE64:
 		case CPU_TILE_TILEPRO:

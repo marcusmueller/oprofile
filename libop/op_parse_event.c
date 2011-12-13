@@ -17,6 +17,7 @@
 
 #include "op_parse_event.h"
 #include "op_string.h"
+#include "op_events.h"
 
 static char * next_part(char const ** str)
 {
@@ -61,6 +62,7 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
                   char const * const * events)
 {
 	size_t i = 0;
+	int timer_event_found_p = 0;
 
 	while (events[i]) {
 		char const * cp = events[i];
@@ -77,6 +79,9 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 			fprintf(stderr, "Invalid event %s\n", cp);
 			exit(EXIT_FAILURE);
 		}
+
+		if (strcmp(part, TIMER_EVENT_NAME) == 0)
+			timer_event_found_p = 1;
 
 		parsed_events[i].name = part;
 
@@ -120,6 +125,12 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 		}
 	
 		++i;
+	}
+
+	if (i > 1 && timer_event_found_p) {
+		fprintf(stderr, "TIMER event cannot be used in combination with"
+			" hardware counters.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	return i;

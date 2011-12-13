@@ -189,6 +189,11 @@ static int op_get_counter_mask(u32 * mask)
 		available |= 1 << atoi(counterlist[i]->d_name);
 		free(counterlist[i]);
 	}
+	/* Append the timer counter to the mask of hardware counters.  */
+	if (op_cpu_has_timer_fs()) {
+		available |= 1 << (op_get_nr_counters(op_get_cpu_type()) - 1);
+		count++;
+	}
 	*mask=~available;
 	free(counterlist);
 	return count;

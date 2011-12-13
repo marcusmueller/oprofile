@@ -23,6 +23,7 @@
 #include "op_libiberty.h"
 #include "op_hw_config.h"
 #include "op_sample_file.h"
+#include "op_events.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -134,6 +135,22 @@ struct opd_event * find_counter_event(unsigned long counter)
 	if (counter >= OP_MAX_COUNTERS) {
 		if((ret = opd_ext_find_counter_event(counter)) != NULL)
 			return ret;
+	}
+
+	/*
+	 *  The kernel modules will put a 0 as counter number into the
+	 *  samples when timer based sampling is used.  So this
+	 *  theoretically might get confused here with the first
+	 *  hardware counter also having number zero.  However, TIMER
+	 *  is never allowed to be used together with other events.
+	 *  So it is safe to map this to the timer event without
+	 *  actually doing the lookup.
+	 */
+	if (op_cpu_has_timer_fs()
+	    && strcmp(opd_events[0].name, TIMER_EVENT_NAME) == 0
+	    && !opd_events[1].name) {
+		return &opd_events[0];
+
 	}
 
 	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {

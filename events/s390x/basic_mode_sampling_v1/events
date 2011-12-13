@@ -1,8 +1,0 @@
-# Copyright OProfile authors
-# Copyright (c) International Business Machines, 2011.
-# Contributed by Andreas Krebbel <krebbel@linux.vnet.ibm.com>.
-#
-# S/390 Basic Mode Sampling events
-#
-event:0x00 counters:0 um:zero minimum:100 name:TIMER : Sampling using timer interrupt
-event:0x01 counters:0 um:zero minimum:2202 name:HWSAMPLING : Sampling using Basic Mode Hardware Sampling
