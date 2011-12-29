@@ -170,6 +170,7 @@ bool child_reader::getline(string & result)
 		int temp = end2;
 		if (pos1 >= end1) {
 			pos1 = 0;
+			block_read();
 		}
 
 		// for efficiency try to copy as much as we can of data
