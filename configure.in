@@ -12,7 +12,7 @@
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
-AM_INIT_AUTOMAKE(oprofile, 0.9.8git)
+AM_INIT_AUTOMAKE(oprofile, 0.9.8_perf_events)
 AM_CONFIG_HEADER(config.h)
 
 AC_CHECK_DECLS([basename], [], [], [[#include <libgen.h>]])
@@ -62,6 +62,53 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
+
+dnl Check kernel version for perf_events supported
+AC_MSG_CHECKING([kernel version supports perf_events])
+AX_KERNEL_VERSION(2, 6, 31, <=, kernel_has_perf_events_support="yes",
+kernel_has_perf_events_support="no")
+
+if test "$kernel_has_perf_events_support" = "no"; then
+	AC_MSG_RESULT([This kernel does not have perf_events support; falling back to legacy oprofile])
+else
+	AC_MSG_RESULT([This kernel has perf_events support])
+fi
+
+AC_CHECK_FILE("/usr/include/linux/perf_event.h",PERF_EVENT_H_EXISTS="yes")
+AM_CONDITIONAL(BUILD_FOR_PERF_EVENT, test -n "$PERF_EVENT_H_EXISTS")
+if test "$PERF_EVENT_H_EXISTS" = "yes"; then
+	HAVE_PERF_EVENTS='1'
+else
+	HAVE_PERF_EVENTS='0'
+fi
+AC_DEFINE_UNQUOTED(HAVE_PERF_EVENTS, $HAVE_PERF_EVENTS, [Kernel support for perf_events exists])
+
+if test "$HAVE_PERF_EVENTS" = "1"; then
+	AC_CHECK_HEADER(libelf.h,,[
+  	if test -f /usr/include/elfutils/libelf.h; then
+    	CXXFLAGS="$CXXFLAGS -I /usr/include/elfutils"
+    	CFLAGS="$FLAGS -I /usr/include/elfutils"
+  	elif test -f /usr/include/libelf/libelf.h; then
+    	CXXFLAGS="$CXXFLAGS -I /usr/include/libelf"
+    	CFLAGS="$CFLAGS -I /usr/include/libelf"
+  	else
+    	AC_MSG_ERROR(libelf.h not found)
+  	fi])
+  	
+  	AC_CHECK_LIB(elf,elf_begin,,  AC_MSG_ERROR([elf library not found]))
+  	ELF_LIB="-lelf"
+  	AC_SUBST(ELF_LIB)
+  	
+  	PFM_LIB=
+  	arch="`uname -m`"
+  	if test "$arch" = "ppc64"; then
+  		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
+  		AC_CHECK_LIB(pfm,pfm_find_event,, [AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])
+  		PFM_LIB="-lpfm"
+  	fi
+  	AC_SUBST(PFM_LIB)
+  	
+fi
 
 AC_ARG_WITH(java,
 [  --with-java=java-home        Path to Java home directory (default is "no"; "yes" will use /usr as Java home)],
@@ -278,6 +325,7 @@ OP_DOCDIR=`eval echo "${my_op_prefix}/share/doc/$PACKAGE/"`
 AC_SUBST(OP_DOCDIR)
 
 AC_OUTPUT(Makefile \
+	pe_profiling/Makefile \
 	m4/Makefile \
 	libutil/Makefile \
 	libutil/tests/Makefile \
@@ -350,5 +398,10 @@ elif test "`getent passwd oprofile 2>/dev/null`" == "" || \
 		echo "             group name: 'oprofile'"
 		echo "         The 'oprofile' group must be the default group for the 'oprofile' user."
 	fi
+fi
+
+if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_has_perf_events_support" = "yes"; then
+	echo "Warning: perf_event.h not found.  Please install the kernel headers package if you"
+	echo "         want non-root support built into OProfile."
 fi
 

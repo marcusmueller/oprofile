@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/utsname.h>
+#include <ctype.h>
 
 #include "op_cpu_type.h"
 #include "op_hw_specific.h"
@@ -103,6 +105,69 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
 
+static op_cpu _get_ppc64_cpu_type(void)
+{
+	char line[100];
+	op_cpu cpu_type = CPU_NO_GOOD;
+	FILE * fp;
+	fp = fopen("/proc/cpuinfo", "r");
+	if (!fp) {
+		perror("Unable to open /proc/cpuinfo\n");
+		return cpu_type;
+	}
+	memset(line, 0, 100);
+	while (cpu_type == CPU_NO_GOOD) {
+		if (fgets(line, sizeof(line), fp) == NULL) {
+			fprintf(stderr, "Did not find processor type in /proc/cpuinfo.\n");
+			goto out;
+		}
+		if (!strncmp(line, "cpu", 3)) {
+			char cpu_name[64];
+			char *cpu = line + 3;
+			while (*cpu && isspace(*cpu))
+				++cpu;
+			if (sscanf(cpu, ":%s ", cpu_name) == 1) {
+				int i;
+				char cpu_type_str[64], cpu_name_lowercase[64];
+				size_t len = strlen(cpu_name);
+				for (i = 0; i < (int)len ; i++)
+					cpu_name_lowercase[i] = tolower(cpu_name[i]);
+
+				cpu_type_str[0] = '\0';
+				strcat(cpu_type_str, "ppc64/");
+				strncat(cpu_type_str, cpu_name_lowercase, len);
+				cpu_type = op_get_cpu_number(cpu_type_str);
+			}
+		}
+	}
+	out:
+	fclose(fp);
+	return cpu_type;
+}
+
+static op_cpu _get_x86_64_cpu_type(void)
+{
+	// TODO: Horrible HACK!!!
+	fprintf(stderr, "!!! WARNING !!! operf currently supports only arch_perfmon CPUs.\n");
+	return op_cpu_specific_type(CPU_ARCH_PERFMON);
+}
+
+static op_cpu __get_cpu_type_alt_method(void)
+{
+	struct utsname uname_info;
+	if (uname(&uname_info) < 0) {
+		perror("uname failed");
+		return CPU_NO_GOOD;
+	}
+	if (strncmp(uname_info.machine, "x86_64", 6) ==0) {
+		return _get_x86_64_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "ppc64", 5) == 0) {
+		return _get_ppc64_cpu_type();
+	}
+	return CPU_NO_GOOD;
+}
+
 int op_cpu_variations(op_cpu cpu_type)
 {
 	switch (cpu_type) {
@@ -142,8 +207,10 @@ op_cpu op_get_cpu_type(void)
 		/* Try 2.6's oprofilefs one instead. */
 		fp = fopen("/dev/oprofile/cpu_type", "r");
 		if (!fp) {
-			fprintf(stderr, "Unable to open cpu_type file for reading\n");
-			fprintf(stderr, "Make sure you have done opcontrol --init\n");
+			if ((cpu_type = __get_cpu_type_alt_method()) == CPU_NO_GOOD) {
+				fprintf(stderr, "Unable to open cpu_type file for reading\n");
+				fprintf(stderr, "Make sure you have done opcontrol --init\n");
+			}
 			return cpu_type;
 		}
 	}
