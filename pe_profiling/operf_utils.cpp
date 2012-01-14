@@ -143,7 +143,7 @@ static void __write_comm_event(event_t * event)
 #endif
 	cverb << vperf << "PERF_RECORD_COMM for " << event->comm.comm << endl;
 	map<pid_t, operf_process_info *>::iterator it;
-	it = process_map.find(event->mmap.pid);
+	it = process_map.find(event->comm.pid);
 	if (it == process_map.end()) {
 		operf_process_info * proc = new operf_process_info(event->comm.pid,
 		                                                   app_name ? app_name : event->comm.comm,
@@ -238,6 +238,19 @@ static void __write_sample_event(event_t * event)
 		array++;
 	}
 
+	/* Early versions of the Linux Performance Events Subsystem were a bit
+	 * buggy and would record samples for processes other than the requested
+	 * process ID.  The code below basically ignores these superfluous samples
+	 * except for the case of PID 0.  If this case occurs right away when
+	 * the static variable trans.tgid is still holding its initial value of 0,
+	 * then we would incorrectly find trans.tgid and data.pid matching, and
+	 * and make wrong assumptions from that match -- ending seg fault.  So we
+	 * will bail out early if we see a sample for PID 0 coming in.
+	 */
+	if (data.pid == 0) {
+		return;
+	}
+
 	// TODO: handle callchain
 	cverb << vperf << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
 	      << data.tid << ": " << hex << (unsigned long long)data.ip
@@ -278,7 +291,10 @@ static void __write_sample_event(event_t * event)
 			proc = it->second;
 			trans.cur_procinfo = proc;
 		} else {
-			// TODO: log lost sample due to no process info found
+			// TODO
+			// This can happen if the kernel incorrectly records a sample for a
+			// process other than the one we requested.  Should we log lost sample
+			// due to no process info found or just ignore it?
 			return;
 		}
 	}

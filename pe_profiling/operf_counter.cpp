@@ -61,7 +61,6 @@ operf_counter::operf_counter(operf_event_t evt) {
 	attr.exclude_idle = 1;
 	attr.exclude_kernel = evt.no_kernel;
 	attr.exclude_hv = evt.no_hv;
-	attr.sample_id_all = 0;
 	attr.read_format = PERF_FORMAT_ID;
 	event_name = evt.name;
 }
@@ -80,7 +79,6 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 	if (event == 0) {
 		attr.mmap = 1;
 		attr.comm = 1;
-		attr.mmap_data = 1;
 	}
 
 	fd = op_perf_event_open(&attr, ppid, cpu, -1, 0);

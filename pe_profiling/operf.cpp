@@ -811,14 +811,16 @@ int main(int argc, char const *argv[])
 	// TODO:  For now, set no_vmlinux to true.  Need to implement vmlinux handling (with /proc/kallsyms?).
 	no_vmlinux = true;
 	if ((rc = _check_perf_events_cap())) {
-		if (rc == ENOSYS)
+		if (rc == ENOSYS) {
 			cerr << "Your kernel does not implement a required syscall"
 			     << "  for the operf program." << endl;
-		else if (rc == ENOENT)
+		} else if (rc == ENOENT) {
 			cerr << "Your kernel's Performance Events Subsystem does not support"
 			     << " your processor type." << endl;
-		else
+		} else if (rc == EACCES) {
+			handle_sys_values();
 			cerr << "Unexpected error running operf: " << strerror(rc) << endl;
+		}
 		cerr << "Please use the opcontrol command instead of operf." << endl;
 		exit(1);
 	}
