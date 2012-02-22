@@ -367,9 +367,6 @@ bool interesting_symbol(asymbol * sym)
         if (sym->flags & BSF_SECTION_SYM)
                 return false;
 
-	if (!(sym->section->flags & SEC_LOAD))
-		return false;
-
 	return true;
 }
 
@@ -432,7 +429,14 @@ void bfd_info::close()
 		bfd_close(abfd);
 }
 
+#if SYNTHESIZE_SYMBOLS
 /**
+ * This function is intended solely for processing ppc64 debuginfo files.
+ * On ppc64 platforms where there is no symbol information in the image bfd,
+ * the debuginfo syms need to be mapped back to the sections of the image bfd
+ * when calling bfd_get_synthetic_symtab() to gather complete symbol information.
+ * That is the purpose of the translate_debuginfo_syms() function.
+ *
  * This function is only called when processing symbols retrieved from a
  * debuginfo file that is separate from the actual runtime binary image.
  * Separate debuginfo files may be needed in two different cases:
@@ -440,14 +444,6 @@ void bfd_info::close()
 	information at all
  *   2) the real image has debuginfo stripped, and the user is requesting "-g"
  *   (src file/line num info)
- * After all symbols are gathered up, there will be some filtering/removal of
- * unnecessary symbols.  In particular, the bfd_info::interesting_symbol()
- * function filters out symbols whose section's flag value does not include
- * SEC_LOAD.  This filtering is required, so it must be retained.  However,
- * we run into a problem with symbols from debuginfo files, since the
- * section flag does NOT include SEC_LOAD.  To solve this problem, the
- * translate_debuginfo_syms function maps the debuginfo symbol's sections to
- * that of their corresponding real image.
 */
 void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 {
@@ -500,7 +496,6 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 	}
 }
 
-#if SYNTHESIZE_SYMBOLS
 bool bfd_info::get_synth_symbols()
 {
 	extern const bfd_target bfd_elf64_powerpc_vec;
@@ -596,10 +591,6 @@ void bfd_info::get_symbols()
 	syms.reset(new asymbol *[nr_syms]);
 
 	nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
-
-	if (image_bfd_info)
-		translate_debuginfo_syms(syms.get(), nr_syms);
-
 	cverb << vbfd << "bfd_canonicalize_symtab: " << dec
 	      << nr_syms << hex << endl;
 }
