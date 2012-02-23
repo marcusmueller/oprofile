@@ -364,6 +364,11 @@ bool interesting_symbol(asymbol * sym)
 	if (!strcmp("gcc2_compiled.", sym->name))
 		return false;
 
+	/* Commit ab45a0cc5d1cf522c1aef8f22ed512a9aae0dc1c removed a check for
+	 * the SEC_LOAD bit.  See the commit message for details why this
+	 * was removed.
+	 */
+
         if (sym->flags & BSF_SECTION_SYM)
                 return false;
 
