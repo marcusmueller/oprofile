@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <map>
 
 class op_bfd_symbol;
 
@@ -80,6 +81,13 @@ private:
 	 * debuginfo files.
 	 */
 	void translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms);
+
+	/**
+	 * This map is used to cache section VMAs during translate_debuginfo_syms
+	 * so they can be restored later.
+	 */
+	std::map<bfd_vma, bfd_vma> section_vma_maps;
+
 #endif
 
 };

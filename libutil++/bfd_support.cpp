@@ -453,6 +453,7 @@ void bfd_info::close()
 void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 {
 	unsigned int img_sect_cnt = 0;
+	bfd_vma vma_adj;
 	bfd * image_bfd = image_bfd_info->abfd;
 	multimap<string, bfd_section *> image_sections;
 
@@ -469,6 +470,7 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 	asymbol * sym = dbg_syms[0];
 	string prev_sect_name = "";
 	bfd_section * matched_section = NULL;
+	vma_adj = image_bfd->start_address - abfd->start_address;
 	for (int i = 0; i < nr_dbg_syms; sym = dbg_syms[++i]) {
 		bool section_switch;
 
@@ -487,8 +489,10 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 
 				range = image_sections.equal_range(sym->section->name);
 				for (it = range.first; it != range.second; it++) {
-					if ((*it).second->vma == sym->section->vma) {
+					if ((*it).second->vma == sym->section->vma + vma_adj) {
 						matched_section = (*it).second;
+						if (vma_adj)
+							section_vma_maps[(*it).second->vma] = sym->section->vma;
 						break;
 					}
 				}
@@ -541,6 +545,26 @@ bool bfd_info::get_synth_symbols()
 		free(mini_syms);
 		return false;
 	}
+
+	/* If we called translate_debuginfo_syms() above, then we had to map
+	 * the debuginfo symbols' sections to the sections of the runtime binary.
+	 * We had to twist ourselves in this knot due to the peculiar requirements
+	 * of bfd_get_synthetic_symtab().  While doing this mapping, we cached
+	 * the original section VMAs because we need those original values in
+	 * order to properly match up sample offsets with debug data.  So now that
+	 * we're done with bfd_get_synthetic_symtab, we can restore these section
+	 * VMAs.
+	 */
+	if (section_vma_maps.size()) {
+		unsigned int sect_count = 0;
+		for (bfd_section * sect = synth_bfd->sections;
+		     sect && sect_count < synth_bfd->section_count;
+		     sect = sect->next) {
+			sect->vma = section_vma_maps[sect->vma];
+			sect_count++;
+		}
+	}
+
 
 	cverb << vbfd << "mini_syms: " << dec << nr_mini_syms << hex << endl;
 	cverb << vbfd << "synth_syms: " << dec << nr_synth_syms << hex << endl;
