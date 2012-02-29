@@ -614,14 +614,17 @@ void bfd_info::get_symbols()
 
 	nr_syms /= sizeof(asymbol *);
 
-	if (nr_syms < 1)
-		return;
-
-	syms.reset(new asymbol *[nr_syms]);
-
-	nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
-	cverb << vbfd << "bfd_canonicalize_symtab: " << dec
-	      << nr_syms << hex << endl;
+	if (nr_syms < 1) {
+		if (!image_bfd_info)
+			return;
+		syms.reset();
+		cverb << vbfd << "Debuginfo has debug data only" << endl;
+	} else {
+		syms.reset(new asymbol *[nr_syms]);
+		nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
+		cverb << vbfd << "bfd_canonicalize_symtab: " << dec
+		      << nr_syms << hex << endl;
+	}
 }
 
 
@@ -635,7 +638,8 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 	linenr_info info;
 	bfd * abfd;
 	asymbol ** syms;
-	asection * section;
+	asection * section = NULL;
+	asymbol * empty_syms[1];
 	bfd_vma pc;
 	bool ret;
 
@@ -648,9 +652,35 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 
 	abfd = b.abfd;
 	syms = b.syms.get();
-	if (!syms)
-		goto fail;
-	section = sym.symbol()->section;
+	if (!syms) {
+		// If this bfd_info object has no syms, that implies that we're
+		// using a debuginfo bfd_info object that has only debug data.
+		// This also implies that the passed sym is from the runtime binary,
+		// and thus it's section is also from the runtime binary.  And
+		// since section VMA can be different for a runtime binary (prelinked)
+		// and its associated debuginfo, we need to obtain the debuginfo
+		// section to pass to the libbfd functions.
+		asection * sect_candidate;
+		bfd_vma vma_adj = b.get_image_bfd_info()->abfd->start_address - abfd->start_address;
+		if (vma_adj == 0)
+			section = sym.symbol()->section;
+		for (sect_candidate = abfd->sections;
+		     (sect_candidate != NULL) && (section == NULL);
+		     sect_candidate = sect_candidate->next) {
+			if (sect_candidate->vma + vma_adj == sym.symbol()->section->vma) {
+				section = sect_candidate;
+			}
+		}
+		if (section == NULL) {
+			cerr << "ERROR: Unable to find section for symbol " << sym.symbol()->name << endl;
+			goto fail;
+		}
+		syms = empty_syms;
+		syms[0] = NULL;
+
+	} else {
+		section = sym.symbol()->section;
+	}
 	if (anon_obj)
 		pc = offset - sym.symbol()->section->vma;
 	else

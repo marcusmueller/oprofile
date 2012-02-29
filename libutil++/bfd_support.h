@@ -50,6 +50,7 @@ struct bfd_info {
 	size_t nr_syms;
 
 	void set_image_bfd_info(bfd_info * ibfd) { image_bfd_info = ibfd; }
+	bfd_info * get_image_bfd_info(void) const { return image_bfd_info; }
 
 private:
 	/**
