@@ -25,12 +25,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define HASH_SIZE 2048
 #define HASH_BITS (HASH_SIZE - 1)
 
 /** All sfiles are hashed into these lists */
 static struct list_head hashes[HASH_SIZE];
+
+/* This data structure is used to help us determine when we should
+ * discard user context kernel samples for which we no longer have
+ * an app name to which we can attribute them.  This can happen (especially
+ * on a busy system) in the following scenario:
+ *  - A user context switch occurs.
+ *  - User context kernel samples are recorded for this process.
+ *  - The user process ends.
+ *  - The above-mentioned sample information is first recorded into the per-CPU
+ *  buffer and later transferred to the main event buffer.  Since the process
+ *  for which this context switch was recorded ended before the transfer
+ *  occurs, the app cookie that is recorded into the event buffer along with the
+ *  CTX_SWITCH_CODE will be set to NO_COOKIE. When the oprofile userspace daemon
+ *  processes the CTX_SWITCH_CODE, it sets trans->app_cookie to NO_COOKIE and then
+ *  continues to process the kernel samples. But having no appname in order to
+ *  locate the appropriate sample file, it creates a new sample file of the form:
+ *  <session_dir>/current/{kern}/<some_kernel_image>/{dep}/{kern}/<some_kernel_image>/<event_spec>.<tgid>.<tid>.<cpu>
+ *
+ *  This is not really an invalid form for sample files, since it is certainly valid for
+ *  oprofile to collect samples for kernel threads that are not running in any process context.
+ *  Such samples would be stored in sample files like this, and opreport would show those
+ *  samples as having an appname of "<some_kernel_image>".  But if the tgid/tid info for
+ *  the sample is from a defunct user process, we should discard these samples.  Not doing so
+ *  can lead to strange results when generating reports by tgid/tid (i.e., appname of
+ *  "<some_kernel_image>" instead of the real app name associated with the given tgid/tid.
+ *  The following paragraph describes the technique for identifying and discarding such samples.
+ *
+ * When processing a kernel sample for which trans->app_cookie==NO_COOKIE, we inspect the
+ * /proc/<pid>/cmdline file.  Housekeeping types of kernel threads (e.g., kswapd, watchdog)
+ * won't have a command line since they exist and operate outside of a process context.
+ * However, other kernel "tasks" do operate within a process context (e.g., some kernel
+ * driver functions, kernel functions invoked via a syscall, etc.).  When we get samples
+ * for the latter type of task but no longer have app name info for the process for which
+ * the kernel task is performing work, we cannot correctly attribute those kernel samples
+ * to a user application, so they should be discarded.  We classify the two different types
+ * of kernel "tasks" based on whether or not the /proc/<pid>/cmdline is empty.  We cache
+ * the results in kernel_cmdlines for fast lookup when processing samples.
+ */
+static struct list_head kernel_cmdlines[HASH_SIZE];
+struct kern_cmdline {
+	pid_t kern_pid;
+	struct list_head hash;
+	unsigned int has_cmdline;
+};
 
 /** All sfiles are on this list. */
 static LIST_HEAD(lru_list);
@@ -247,6 +294,62 @@ struct sfile * sfile_find(struct transient const * trans)
 			opd_stats[OPD_LOST_KERNEL]++;
 			return NULL;
 		}
+		// We *know* that PID 1 and 2 are pure kernel context tasks, so
+		// we always want to keep these samples.
+		if ((trans->tgid == 1) || (trans->tgid == 2))
+			goto find_sfile;
+
+		// Decide whether or not this kernel sample should be discarded.
+		// See detailed description above where the kernel_cmdlines hash
+		// table is defined.
+		if (trans->app_cookie == NO_COOKIE) {
+			int found = 0;
+			struct kern_cmdline * kcmd;
+			hash = (trans->tgid << 2) & HASH_BITS;
+			list_for_each(pos, &kernel_cmdlines[hash]) {
+				kcmd = list_entry(pos, struct kern_cmdline, hash);
+				if (kcmd->kern_pid == trans->tgid) {
+					found = 1;
+					if (kcmd->has_cmdline) {
+						verbprintf(vsamples,
+						           "Dropping user context kernel samples due to no app cookie available.\n");
+						opd_stats[OPD_NO_APP_KERNEL_SAMPLE]++;
+						return NULL;
+					}
+					break;
+				}
+			}
+			if (!found) {
+				char name[32], dst[8];
+				int fd, dropped = 0;
+				kcmd = (struct kern_cmdline *)xmalloc(sizeof(*kcmd));
+				kcmd->kern_pid = trans->tgid;
+				snprintf(name, sizeof name, "/proc/%u/cmdline", trans->tgid);
+				fd = open(name, O_RDONLY);
+				if(fd==-1) {
+					// Most likely due to process ending, so we'll assume it used to have a cmdline
+					kcmd->has_cmdline = 1;
+					opd_stats[OPD_NO_APP_KERNEL_SAMPLE]++;
+					dropped = 1;
+				} else {
+					if((read(fd, dst, 8) < 1)) {
+						verbprintf(vsamples, "No cmdline for PID %u\n", trans->tgid);
+						kcmd->has_cmdline = 0;
+					} else {
+						// This *really* shouldn't happen.  If it does, then why don't
+						// we have an app_cookie?
+						dst[7] = '\0';
+						verbprintf(vsamples, "Start of cmdline for PID %u is %s\n", trans->tgid, dst);
+						kcmd->has_cmdline = 1;
+						opd_stats[OPD_NO_APP_KERNEL_SAMPLE]++;
+						dropped = 1;
+					}
+				}
+				list_add(&kcmd->hash, &kernel_cmdlines[hash]);
+				if (dropped)
+					return NULL;
+			}
+		}
 	} else if (trans->cookie == NO_COOKIE && !trans->anon) {
 		if (vsamples) {
 			char const * app = verbose_cookie(trans->app_cookie);
@@ -257,6 +360,7 @@ struct sfile * sfile_find(struct transient const * trans)
 		return NULL;
 	}
 
+find_sfile:
 	hash = sfile_hash(trans, ki);
 	list_for_each(pos, &hashes[hash]) {
 		sf = list_entry(pos, struct sfile, hash);
@@ -638,6 +742,8 @@ void sfile_init(void)
 {
 	size_t i = 0;
 
-	for (; i < HASH_SIZE; ++i)
+	for (; i < HASH_SIZE; ++i) {
 		list_init(&hashes[i]);
+		list_init(&kernel_cmdlines[i]);
+	}
 }
