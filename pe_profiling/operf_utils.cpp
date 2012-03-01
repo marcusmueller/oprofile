@@ -19,14 +19,15 @@
 #include <cverb.h>
 #include <iostream>
 #include "operf_counter.h"
-#include "operf_kernel.h"
-#include "operf_sfile.h"
-#include "operf_process_info.h"
 #include "operf.h"
 #ifdef HAVE_LIBPFM
 #include <perfmon/pfmlib.h>
 #endif
 #include "op_types.h"
+#include "operf_process_info.h"
+#include "operf_kernel.h"
+#include "operf_sfile.h"
+
 
 
 extern volatile bool quit;
@@ -34,6 +35,7 @@ extern operf_read operfRead;
 extern int sample_reads;
 extern unsigned int pagesize;
 extern char * app_name;
+extern verbose vperf;
 
 map<pid_t, operf_process_info *> process_map;
 
@@ -42,11 +44,18 @@ namespace OP_perf_utils {
 static struct operf_transient trans;
 static bool sfile_init_done;
 
+/* The handling of mmap's for a process was a bit tricky to get right, in particular,
+ * the handling of what I refer to as "deferred mmap's" -- i.e., when we receive an
+ * mmap event for which we've not yet received a comm event (so we don't know app name
+ * for the process).  I have left in some debugging code here (compiled out via #ifdef)
+ * so we can easily test and validate any changes we ever may need to make to this code.
+ */
 //#define _TEST_DEFERRED_MAPPING
 #ifdef _TEST_DEFERRED_MAPPING
 static bool do_comm_event;
 static event_t comm_event;
 #endif
+
 
 /* Some architectures (e.g., ppc64) do not use the same event value (code) for oprofile
  * and for perf_events.  The operf-record process requires event values that perf_events
@@ -132,9 +141,8 @@ static inline void update_trans_last(struct operf_transient * trans)
 }
 
 
-static void __write_comm_event(event_t * event)
+static void __handle_comm_event(event_t * event)
 {
-
 #ifdef _TEST_DEFERRED_MAPPING
 	if (!do_comm_event) {
 		comm_event = event;
@@ -162,7 +170,7 @@ static void __write_comm_event(event_t * event)
 	}
 }
 
-static void __write_mmap_event(event_t * event)
+static void __handle_mmap_event(event_t * event)
 {
 	struct operf_mmap mapping;
 	mapping.start_addr = event->mmap.start;
@@ -189,7 +197,7 @@ static void __write_mmap_event(event_t * event)
 #ifdef _TEST_DEFERRED_MAPPING
 		if (!do_comm_event) {
 			do_comm_event = true;
-			__write_comm_event(comm_event, out);
+			__handle_comm_event(comm_event, out);
 		}
 #endif
 	} else if (!it->second->is_valid()) {
@@ -201,7 +209,7 @@ static void __write_mmap_event(event_t * event)
 	}
 }
 
-static void __write_sample_event(event_t * event)
+static void __handle_sample_event(event_t * event)
 {
 	struct sample_data data;
 	operf_process_info * proc;
@@ -255,6 +263,7 @@ static void __write_sample_event(event_t * event)
 	cverb << vperf << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
 	      << data.tid << ": " << hex << (unsigned long long)data.ip
 	      << endl << "\tdata ID: " << data.id << "; data stream ID: " << data.stream_id << endl;
+
 
 	// Verify the sample.
 	trans.event = operfRead.get_eventnum_by_perf_event_id(data.id);
@@ -333,6 +342,7 @@ static void __write_sample_event(event_t * event)
 	}
 }
 
+
 /* This function is used by operf_read::convertPerfData() to convert perf-formatted
  * data to oprofile sample data files.  After the header information in the perf data file,
  * the next piece of data is the PERF_RECORD_COMM record which tells us the name of the
@@ -356,17 +366,17 @@ int op_write_event(event_t * event)
 
 	switch (event->header.type) {
 	case PERF_RECORD_SAMPLE:
-		__write_sample_event(event);
+		__handle_sample_event(event);
 		return 0;
 	case PERF_RECORD_MMAP:
-		__write_mmap_event(event);
+		__handle_mmap_event(event);
 		return 0;
 	case PERF_RECORD_COMM:
 		if (!sfile_init_done) {
 			operf_sfile_init();
 			sfile_init_done = true;
 		}
-		__write_comm_event(event);
+		__handle_comm_event(event);
 		return 0;
 	case PERF_RECORD_EXIT:
 		cverb << vperf << "PERF_RECORD_EXIT found in trace" << endl;
@@ -377,6 +387,7 @@ int op_write_event(event_t * event)
 		return 0;
 	}
 }
+
 
 void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 		siginfo_t * siginfo __attribute__((unused)),
@@ -416,6 +427,7 @@ int op_write_output(int output, void *buf, size_t size)
 	}
 	return sum;
 }
+
 
 static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, operf_record * pr)
 {
@@ -509,7 +521,7 @@ void op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
 			size = strlen(name) - 1;
 			// The "Name" field in /proc/pid/status currently only allows for 16 characters,
 			// but I'm not going to count on that being stable.  We'll ensure we copy no more
-			// than 16 chars  since the comm..comm char array only holds 16.
+			// than 16 chars  since the comm.comm char array only holds 16.
 			size = size > 16 ? 16 : size;
 			memcpy(comm.comm, name, size++);
 		} else if (memcmp(buff, "Tgid:", 5) == 0) {
@@ -566,7 +578,6 @@ void op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
 }
 
 
-
 void op_get_kernel_event_data(struct mmap_data *md, operf_record * pr)
 {
 	struct perf_event_mmap_page *pc = (struct perf_event_mmap_page *)md->base;
@@ -607,6 +618,7 @@ void op_get_kernel_event_data(struct mmap_data *md, operf_record * pr)
 	md->prev = old;
 	pc->data_tail = old;
 }
+
 
 static size_t mmap_size;
 static size_t pg_sz;
@@ -695,6 +707,7 @@ try_again:
 
 	return event;
 }
+
 
 int op_get_next_online_cpu(DIR * dir, struct dirent *entry)
 {

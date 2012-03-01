@@ -43,7 +43,7 @@ static unsigned long
 sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 {
 	unsigned long val = 0;
-	
+
 	val ^= trans->tid << 2;
 	val ^= trans->tgid << 2;
 

@@ -26,8 +26,8 @@
 #include "op_events.h"
 #include "operf_counter.h"
 #include "cverb.h"
-#include "operf_process_info.h"
 #include "operf.h"
+#include "operf_process_info.h"
 
 using namespace std;
 using namespace OP_perf_utils;
@@ -314,7 +314,6 @@ void operf_record::setup()
 	if (!all_cpus_avail)
 		closedir(dir);
 	write_op_header_info();
-
 	op_record_process_info(pid, this, outputFile);
 	// Set bit to indicate we're set to go.
 	valid = true;

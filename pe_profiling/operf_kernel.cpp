@@ -39,7 +39,7 @@ void operf_create_vmlinux(char const * name, char const * arg)
 
 	/* for no vmlinux */
 	if (no_vmlinux) {
-		vmlinux_image.name = "no-vmlinux";
+		vmlinux_image.name = xstrdup("no-vmlinux");
 		return;
 	}
 

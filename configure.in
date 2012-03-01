@@ -85,29 +85,29 @@ AC_DEFINE_UNQUOTED(HAVE_PERF_EVENTS, $HAVE_PERF_EVENTS, [Kernel support for perf
 
 if test "$HAVE_PERF_EVENTS" = "1"; then
 	AC_CHECK_HEADER(libelf.h,,[
-  	if test -f /usr/include/elfutils/libelf.h; then
-    	CXXFLAGS="$CXXFLAGS -I /usr/include/elfutils"
-    	CFLAGS="$FLAGS -I /usr/include/elfutils"
-  	elif test -f /usr/include/libelf/libelf.h; then
-    	CXXFLAGS="$CXXFLAGS -I /usr/include/libelf"
-    	CFLAGS="$CFLAGS -I /usr/include/libelf"
-  	else
-    	AC_MSG_ERROR(libelf.h not found)
-  	fi])
-  	
-  	AC_CHECK_LIB(elf,elf_begin,,  AC_MSG_ERROR([elf library not found]))
-  	ELF_LIB="-lelf"
-  	AC_SUBST(ELF_LIB)
-  	
-  	PFM_LIB=
-  	arch="`uname -m`"
-  	if test "$arch" = "ppc64"; then
-  		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
-  		AC_CHECK_LIB(pfm,pfm_find_event,, [AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])
-  		PFM_LIB="-lpfm"
-  	fi
-  	AC_SUBST(PFM_LIB)
-  	
+	if test -f /usr/include/elfutils/libelf.h; then
+		CXXFLAGS="$CXXFLAGS -I /usr/include/elfutils"
+		CFLAGS="$FLAGS -I /usr/include/elfutils"
+	elif test -f /usr/include/libelf/libelf.h; then
+		CXXFLAGS="$CXXFLAGS -I /usr/include/libelf"
+		CFLAGS="$CFLAGS -I /usr/include/libelf"
+	else
+		AC_MSG_ERROR(libelf.h not found)
+	fi])
+
+	AC_CHECK_LIB(elf,elf_begin,,  AC_MSG_ERROR([elf library not found]))
+	ELF_LIB="-lelf"
+	AC_SUBST(ELF_LIB)
+
+	PFM_LIB=
+	arch="`uname -m`"
+	if test "$arch" = "ppc64"; then
+		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
+		AC_CHECK_LIB(pfm,pfm_find_event,, [AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])
+		PFM_LIB="-lpfm"
+	fi
+	AC_SUBST(PFM_LIB)
+
 fi
 
 AC_ARG_WITH(java,

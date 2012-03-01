@@ -85,6 +85,13 @@ typedef union event_union {
 	struct sample_event	sample;
 } event_t;
 
+struct mmap_data {
+	int counter;
+	void *base;
+	u64 mask;
+	u64 prev;
+};
+
 struct sample_data {
 	u64 ip;
 	u32 pid, tid;
@@ -102,14 +109,6 @@ struct mmap_info {
 	u64 offset, file_data_size, file_data_offset, head, shift;
 	char * buf;
 	int traceFD;
-};
-
-
-struct mmap_data {
-	int counter;
-	void *base;
-	u64 mask;
-	u64 prev;
 };
 
 

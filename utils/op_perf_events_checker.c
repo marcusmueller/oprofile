@@ -1,8 +1,16 @@
 /*
- * op-perf-events-checker.c
+ * @file op-perf-events-checker.c
  *
- *  Created on: Oct 31, 2011
- *      Author: mpj
+ * Utility program for determining the existence and functionality
+ * of the Linux kernel's Performance Events Subsystem.
+ *
+ * @remark Copyright 2011 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * Created on: Dec 7, 2011
+ * @author Maynard Johnson
+ * (C) Copyright IBM Corp. 2011
+ *
  */
 
 #include <sys/types.h>
@@ -14,6 +22,8 @@
 #include "config.h"
 #if HAVE_PERF_EVENTS
 #include <linux/perf_event.h>
+	struct perf_event_attr attr;
+	pid_t pid ;
 #endif
 
 static void usage(void)
@@ -44,8 +54,6 @@ int main(int argc, char **argv)
 	 * program is running is not supported by perf_events, the syscall returns
 	 * ENOENT (2).
 	 */
-	struct perf_event_attr attr;
-	pid_t pid ;
         memset(&attr, 0, sizeof(attr));
         attr.size = sizeof(attr);
         attr.sample_type = PERF_SAMPLE_IP;

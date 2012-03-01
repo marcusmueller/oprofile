@@ -84,23 +84,25 @@ vector<string> verbose_string;
 
 popt::option options_array[] = {
 	popt::option(verbose_string, "verbose", 'V',
-			"verbose output", "debug,perf_events,misc,all"),
+	             "verbose output", "debug,perf_events,misc,all"),
 	popt::option(operf_options::session_dir, "session-dir", '\0',
-			"specify session path to hold sample data", "path"),
+	             "specify session path to hold sample data", "path"),
 	popt::option(operf_options::callgraph_depth, "callgraph", 'g',
-			"callgraph depth", "depth"),
+	             "callgraph depth", "depth"),
 	popt::option(operf_options::system_wide, "system-wide", 's',
-			"profile entire system"),
+	             "profile entire system"),
 	popt::option(operf_options::reset, "reset", 'r',
-			"remove old profile data"),
+	             "clear out old profile data"),
 	popt::option(operf_options::pid, "pid", 'p',
-			"process ID to profile", "PID"),
+	             "process ID to profile", "PID"),
 	popt::option(operf_options::mmap_pages_mult, "kernel-buffersize-multiplier", 'k',
-			"factor by which kernel buffer size should be increased", "buffersize"),
+	             "factor by which kernel buffer size should be increased", "buffersize"),
 	popt::option(operf_options::evts, "events", 'e',
-			"profile on these comma separated events", "events"),
+	             "comma-separated list of event specifications for profiling. Event spec form is:\n"
+	             "name:count[:unitmask[:kernel[:user]]]",
+	             "events"),
 	popt::option(operf_options::separate_cpu, "separate-cpu", 'c',
-			"Categorize samples by cpu"),
+	             "Categorize samples by cpu"),
 };
 }
 
@@ -239,7 +241,7 @@ int start_profiling_app(void)
 		                _exit(EXIT_FAILURE);
 		        }
 
-			// setup PerfRecord
+			// setup operf recording
 			operf_record operfRecord(outputfile, app_PID, events);
 			if (operfRecord.get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
@@ -627,6 +629,11 @@ static void _process_events_list(void)
 	}
 #if (defined(__powerpc__) || defined(__powerpc64__))
 	{
+		/* This section of code is for architectures such as ppc[64] for which
+		 * the oprofile event code needs to be converted to the appropriate event
+		 * code to pass to the perf_event_open syscall.
+		 */
+
 		using namespace OP_perf_utils;
 		if (!op_convert_event_vals(&events)) {
 			cerr << "Unable to convert all oprofile event values to perf_event values" << endl;
@@ -658,6 +665,11 @@ static void get_default_event(void)
 
 #if (defined(__powerpc__) || defined(__powerpc64__))
 	{
+		/* This section of code is for architectures such as ppc[64] for which
+		 * the oprofile event code needs to be converted to the appropriate event
+		 * code to pass to the perf_event_open syscall.
+		 */
+
 		using namespace OP_perf_utils;
 		if (!op_convert_event_vals(&events)) {
 			cerr << "Unable to convert all oprofile event values to perf_event values" << endl;

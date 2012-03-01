@@ -23,7 +23,6 @@
 #include "operf_event.h"
 #include "operf_counter.h"
 
-
 using namespace std;
 namespace operf_options {
 extern bool system_wide;
@@ -39,19 +38,11 @@ extern bool no_vmlinux;
 
 #define OP_APPNAME_LEN 1024
 
-#define OP_EXEC_ARGS_LIST  exec_args[0], \
-						exec_args[1], \
-						exec_args[2], \
-						exec_args[3], \
-						exec_args[4], \
-						exec_args[5]
-
 #if BITS_PER_LONG == 64
 #define MMAP_WINDOW_SZ ULLONG_MAX
 #else
 #define MMAP_WINDOW_SZ (32 * 1024 * 1024ULL)
 #endif
-
 
 extern unsigned int op_nr_counters;
 
@@ -69,10 +60,9 @@ void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 		siginfo_t * siginfo __attribute__((unused)),
 		void *u_context __attribute__((unused)));
 void op_record_process_info(pid_t pid, operf_record * pr, int output_fd);
-int op_read_input(int input, void * buf, size_t size);
-int op_read_from_stream(ifstream & is, char * buf, streamsize sz);
 int op_write_output(int output, void *buf, size_t size);
 int op_write_event(event_t * event);
+int op_read_from_stream(ifstream & is, char * buf, streamsize sz);
 int op_mmap_trace_file(struct mmap_info & info);
 event_t * op_get_perf_event(struct mmap_info & info);
 int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
@@ -159,6 +149,5 @@ bool op_convert_event_vals(vector<operf_event_t> * evt_vec);
 				: "memory")
 #define cpu_relax()	asm volatile("" ::: "memory")
 #endif
-
 
 #endif // OPERF_H_

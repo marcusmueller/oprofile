@@ -164,6 +164,7 @@ string const op_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 		str += "Profiling through timer interrupt";
 		return str;
 	}
+
 	struct op_event * event = op_find_event(cpu_type, type, um);
 
 	if (!event) {

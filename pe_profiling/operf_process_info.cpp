@@ -11,20 +11,18 @@
  * (C) Copyright IBM Corp. 2011
  */
 
+#include <stdio.h>
+#include <fcntl.h>
+#include <libelf.h>
+#include <gelf.h>
 #include <iostream>
 #include <map>
 #include "operf_process_info.h"
-#include "operf_sfile.h"
 #include "file_manip.h"
 
 using namespace std;
 
 namespace {
-
-#include <stdio.h>
-#include <fcntl.h>
-#include <libelf.h>
-#include <gelf.h>
 
 // Length of build id is BUILD_ID_SIZE
 static bool get_build_id(char * buildid)
