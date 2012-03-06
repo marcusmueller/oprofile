@@ -631,16 +631,20 @@ static int __mmap_trace_file(struct mmap_info & info)
 	info.buf = (char *) mmap(NULL, mmap_size, mmap_prot,
 			mmap_flags, info.traceFD, info.offset);
 	if (info.buf == MAP_FAILED) {
-		cverb << vperf << "Error: mmap failed with errno:\n\t" << strerror(errno) << endl;
+		cerr << "Error: mmap failed with errno:\n\t" << strerror(errno) << endl;
 		return -1;
 	}
 	else {
+		cverb << vperf << hex << "mmap with the following parameters" << endl
+		      << "\tinfo.head: " << info.head << endl
+		      << "\tinfo.offset: " << info.offset << endl;
 		return 0;
 	}
 }
 
 int op_mmap_trace_file(struct mmap_info & info)
 {
+	u64 shift;
 	if (!pg_sz)
 		pg_sz = sysconf(_SC_PAGESIZE);
 	if (!mmap_size) {
@@ -652,9 +656,9 @@ int op_mmap_trace_file(struct mmap_info & info)
 	}
 	info.offset = 0;
 	info.head = info.file_data_offset;
-	info.shift = pg_sz * (info.head / pg_sz);
-	info.offset += info.shift;
-	info.head -= info.shift;
+	shift = pg_sz * (info.head / pg_sz);
+	info.offset += shift;
+	info.head -= shift;
 	return __mmap_trace_file(info);
 }
 
@@ -672,9 +676,11 @@ event_t * op_get_perf_event(struct mmap_info & info)
 try_again:
 	event = (event_t *)(info.buf + info.head);
 
-	if (info.head + event->header.size >= mmap_size) {
+	if ((mmap_size != info.file_data_size) &&
+			(((info.head + sizeof(event->header)) > mmap_size) ||
+					(info.head + event->header.size > mmap_size))) {
 		int ret;
-		info.shift = pg_sz * (info.head / pg_sz);
+		u64 shift = pg_sz * (info.head / pg_sz);
 		cverb << vperf << "Remapping perf data file" << endl;
 		ret = munmap(info.buf, mmap_size);
 		if (ret) {
@@ -683,8 +689,8 @@ try_again:
 			throw runtime_error(errmsg);
 		}
 
-		info.offset += info.shift;
-		info.head -= info.shift;
+		info.offset += shift;
+		info.head -= shift;
 		ret = __mmap_trace_file(info);
 		if (ret) {
 			string errmsg = "Internal error:  mmap of perf data file failed with errno: ";

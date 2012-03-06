@@ -106,7 +106,7 @@ struct sample_data {
 };
 
 struct mmap_info {
-	u64 offset, file_data_size, file_data_offset, head, shift;
+	u64 offset, file_data_size, file_data_offset, head;
 	char * buf;
 	int traceFD;
 };

@@ -463,6 +463,8 @@ int operf_read::convertPerfData(void)
 	}
 
 	cverb << vdebug << "Converting operf.data to oprofile sample data format" << endl;
+	cverb << vdebug << "data size is " << hex << info.file_data_size << "; data offset is " << info.file_data_offset << endl;
+	cverb << vdebug << "head is " << hex << info.head << endl;
 	while (1) {
 		streamsize rec_size = 0;
 		event_t * event = op_get_perf_event(info);
