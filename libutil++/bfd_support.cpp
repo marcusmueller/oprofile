@@ -364,11 +364,13 @@ bool interesting_symbol(asymbol * sym)
 	if (!strcmp("gcc2_compiled.", sym->name))
 		return false;
 
+	/* Commit ab45a0cc5d1cf522c1aef8f22ed512a9aae0dc1c removed a check for
+	 * the SEC_LOAD bit.  See the commit message for details why this
+	 * was removed.
+	 */
+
         if (sym->flags & BSF_SECTION_SYM)
                 return false;
-
-	if (!(sym->section->flags & SEC_LOAD))
-		return false;
 
 	return true;
 }
@@ -432,7 +434,14 @@ void bfd_info::close()
 		bfd_close(abfd);
 }
 
+#if SYNTHESIZE_SYMBOLS
 /**
+ * This function is intended solely for processing ppc64 debuginfo files.
+ * On ppc64 platforms where there is no symbol information in the image bfd,
+ * the debuginfo syms need to be mapped back to the sections of the image bfd
+ * when calling bfd_get_synthetic_symtab() to gather complete symbol information.
+ * That is the purpose of the translate_debuginfo_syms() function.
+ *
  * This function is only called when processing symbols retrieved from a
  * debuginfo file that is separate from the actual runtime binary image.
  * Separate debuginfo files may be needed in two different cases:
@@ -440,18 +449,11 @@ void bfd_info::close()
 	information at all
  *   2) the real image has debuginfo stripped, and the user is requesting "-g"
  *   (src file/line num info)
- * After all symbols are gathered up, there will be some filtering/removal of
- * unnecessary symbols.  In particular, the bfd_info::interesting_symbol()
- * function filters out symbols whose section's flag value does not include
- * SEC_LOAD.  This filtering is required, so it must be retained.  However,
- * we run into a problem with symbols from debuginfo files, since the
- * section flag does NOT include SEC_LOAD.  To solve this problem, the
- * translate_debuginfo_syms function maps the debuginfo symbol's sections to
- * that of their corresponding real image.
 */
 void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 {
 	unsigned int img_sect_cnt = 0;
+	bfd_vma vma_adj;
 	bfd * image_bfd = image_bfd_info->abfd;
 	multimap<string, bfd_section *> image_sections;
 
@@ -468,6 +470,7 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 	asymbol * sym = dbg_syms[0];
 	string prev_sect_name = "";
 	bfd_section * matched_section = NULL;
+	vma_adj = image_bfd->start_address - abfd->start_address;
 	for (int i = 0; i < nr_dbg_syms; sym = dbg_syms[++i]) {
 		bool section_switch;
 
@@ -486,8 +489,10 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 
 				range = image_sections.equal_range(sym->section->name);
 				for (it = range.first; it != range.second; it++) {
-					if ((*it).second->vma == sym->section->vma) {
+					if ((*it).second->vma == sym->section->vma + vma_adj) {
 						matched_section = (*it).second;
+						if (vma_adj)
+							section_vma_maps[(*it).second->vma] = sym->section->vma;
 						break;
 					}
 				}
@@ -500,7 +505,6 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 	}
 }
 
-#if SYNTHESIZE_SYMBOLS
 bool bfd_info::get_synth_symbols()
 {
 	extern const bfd_target bfd_elf64_powerpc_vec;
@@ -541,6 +545,26 @@ bool bfd_info::get_synth_symbols()
 		free(mini_syms);
 		return false;
 	}
+
+	/* If we called translate_debuginfo_syms() above, then we had to map
+	 * the debuginfo symbols' sections to the sections of the runtime binary.
+	 * We had to twist ourselves in this knot due to the peculiar requirements
+	 * of bfd_get_synthetic_symtab().  While doing this mapping, we cached
+	 * the original section VMAs because we need those original values in
+	 * order to properly match up sample offsets with debug data.  So now that
+	 * we're done with bfd_get_synthetic_symtab, we can restore these section
+	 * VMAs.
+	 */
+	if (section_vma_maps.size()) {
+		unsigned int sect_count = 0;
+		for (bfd_section * sect = synth_bfd->sections;
+		     sect && sect_count < synth_bfd->section_count;
+		     sect = sect->next) {
+			sect->vma = section_vma_maps[sect->vma];
+			sect_count++;
+		}
+	}
+
 
 	cverb << vbfd << "mini_syms: " << dec << nr_mini_syms << hex << endl;
 	cverb << vbfd << "synth_syms: " << dec << nr_synth_syms << hex << endl;
@@ -590,18 +614,17 @@ void bfd_info::get_symbols()
 
 	nr_syms /= sizeof(asymbol *);
 
-	if (nr_syms < 1)
-		return;
-
-	syms.reset(new asymbol *[nr_syms]);
-
-	nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
-
-	if (image_bfd_info)
-		translate_debuginfo_syms(syms.get(), nr_syms);
-
-	cverb << vbfd << "bfd_canonicalize_symtab: " << dec
-	      << nr_syms << hex << endl;
+	if (nr_syms < 1) {
+		if (!image_bfd_info)
+			return;
+		syms.reset();
+		cverb << vbfd << "Debuginfo has debug data only" << endl;
+	} else {
+		syms.reset(new asymbol *[nr_syms]);
+		nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
+		cverb << vbfd << "bfd_canonicalize_symtab: " << dec
+		      << nr_syms << hex << endl;
+	}
 }
 
 
@@ -615,7 +638,8 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 	linenr_info info;
 	bfd * abfd;
 	asymbol ** syms;
-	asection * section;
+	asection * section = NULL;
+	asymbol * empty_syms[1];
 	bfd_vma pc;
 	bool ret;
 
@@ -628,9 +652,35 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 
 	abfd = b.abfd;
 	syms = b.syms.get();
-	if (!syms)
-		goto fail;
-	section = sym.symbol()->section;
+	if (!syms) {
+		// If this bfd_info object has no syms, that implies that we're
+		// using a debuginfo bfd_info object that has only debug data.
+		// This also implies that the passed sym is from the runtime binary,
+		// and thus it's section is also from the runtime binary.  And
+		// since section VMA can be different for a runtime binary (prelinked)
+		// and its associated debuginfo, we need to obtain the debuginfo
+		// section to pass to the libbfd functions.
+		asection * sect_candidate;
+		bfd_vma vma_adj = b.get_image_bfd_info()->abfd->start_address - abfd->start_address;
+		if (vma_adj == 0)
+			section = sym.symbol()->section;
+		for (sect_candidate = abfd->sections;
+		     (sect_candidate != NULL) && (section == NULL);
+		     sect_candidate = sect_candidate->next) {
+			if (sect_candidate->vma + vma_adj == sym.symbol()->section->vma) {
+				section = sect_candidate;
+			}
+		}
+		if (section == NULL) {
+			cerr << "ERROR: Unable to find section for symbol " << sym.symbol()->name << endl;
+			goto fail;
+		}
+		syms = empty_syms;
+		syms[0] = NULL;
+
+	} else {
+		section = sym.symbol()->section;
+	}
 	if (anon_obj)
 		pc = offset - sym.symbol()->section->vma;
 	else

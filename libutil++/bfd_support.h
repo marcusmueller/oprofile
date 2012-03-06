@@ -14,11 +14,13 @@
 #include "utility.h"
 #include "op_types.h"
 #include "locate_images.h"
+#include "config.h"
 
 #include <bfd.h>
 #include <stdint.h>
 
 #include <string>
+#include <map>
 
 class op_bfd_symbol;
 
@@ -48,6 +50,7 @@ struct bfd_info {
 	size_t nr_syms;
 
 	void set_image_bfd_info(bfd_info * ibfd) { image_bfd_info = ibfd; }
+	bfd_info * get_image_bfd_info(void) const { return image_bfd_info; }
 
 private:
 	/**
@@ -72,16 +75,21 @@ private:
 	 */ 
 	bfd_info * image_bfd_info;
 
-	/* To address a different issue, we discard symbols whose section
-	 * flag does not contain SEC_LOAD.  But since this is true for symbols
-	 * found in debuginfo files, we must run those debuginfo symbols
-	 * through the function below to prevent them from being inadvertently
-	 * discarded.  This function maps the sections from the symbols in
-	 * the debuginfo bfd to those of the real image bfd.  Then, when
-	 * we later do symbol filtering, we see the sections from the real
-	 * bfd, which do contain SEC_LOAD in the section flag.
+#if SYNTHESIZE_SYMBOLS
+	/**
+	 * This function is used only for ppc64 binaries. It uses the runtime
+	 * image BFD (accessed through image_bfd_info) as needed when processing
+	 * debuginfo files.
 	 */
 	void translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms);
+
+	/**
+	 * This map is used to cache section VMAs during translate_debuginfo_syms
+	 * so they can be restored later.
+	 */
+	std::map<bfd_vma, bfd_vma> section_vma_maps;
+
+#endif
 
 };
 

@@ -23,6 +23,7 @@ enum {	OPD_SAMPLES, /**< nr. samples */
 	OPD_LOST_NO_MAPPING, /**< nr samples lost due to no mapping */
 	OPD_DUMP_COUNT, /**< nr. of times buffer is read */
 	OPD_DANGLING_CODE, /**< nr. partial code notifications (buffer overflow */
+	OPD_NO_APP_KERNEL_SAMPLE, /**<nr. user ctx kernel samples dropped due to no app cookie available */
 	OPD_MAX_STATS /**< end of stats */
 };
 

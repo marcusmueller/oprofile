@@ -394,7 +394,7 @@ size_t op_bfd::symbol_size(op_bfd_symbol const & sym,
 	if (next && (sym.section() != next->section()))
 		end = sym.symbol_endpos();
 	else
-		end = next ? next->filepos() : file_size;
+		end = next ? next->filepos() : sym.section()->filepos + file_size;
 
 	if (start > end)
 		return 0;
