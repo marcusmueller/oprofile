@@ -80,7 +80,6 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 		attr.mmap = 1;
 		attr.comm = 1;
 	}
-
 	fd = op_perf_event_open(&attr, ppid, cpu, -1, 0);
 	if (fd < 0) {
 		int ret = -1;
@@ -94,6 +93,8 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 			cerr << "!!!! No samples collected !!!" << endl;
 			cerr << "The target program/command ended before profiling was started." << endl;
 			ret = OP_PERF_HANDLED_ERROR;
+		} else {
+			cerr << "perf_event_open failed with " << strerror(errno) << endl;
 		}
 		return ret;
 	}
@@ -103,7 +104,7 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 	}
 	rec->register_perf_event_id(event, read_data.id, attr);
 
-	cverb << vperf << "perf_event_open returned fd " << fd << endl;
+	cverb << vperf << "perf_event_open returning fd " << fd << endl;
 	return fd;
 }
 

@@ -242,30 +242,36 @@ int start_profiling_app(void)
 		        }
 
 			// setup operf recording
-			operf_record operfRecord(outputfile, app_PID, events);
-			if (operfRecord.get_valid() == false) {
-				/* If valid is false, it means that one of the "known" errors has
-				 * occurred:
-				 *   - profiled process has already ended
-				 *   - device or resource busy
-				 * Since an informative message has already been displayed to
-				 * the user, we don't want to blow chunks here; instead, we'll
-				 * exit gracefully.  Clear out the operf.data file as an indication
-				 * ti the parent process that the profile data isn't valid.
-				 */
-				ofstream of;
-				of.open(outputfile.c_str(), ios_base::trunc);
-				of.close();
-				_exit(EXIT_SUCCESS);
-			}
-			// start recording
-			operfRecord.recordPerfData();
-			cerr << "Total bytes recorded from perf events: "
-					<< operfRecord.get_total_bytes_recorded() << endl;
+			try {
+				operf_record operfRecord(outputfile, app_PID, events);
+				if (operfRecord.get_valid() == false) {
+					/* If valid is false, it means that one of the "known" errors has
+					 * occurred:
+					 *   - profiled process has already ended
+					 *   - device or resource busy
+					 * Since an informative message has already been displayed to
+					 * the user, we don't want to blow chunks here; instead, we'll
+					 * exit gracefully.  Clear out the operf.data file as an indication
+					 * to the parent process that the profile data isn't valid.
+					 */
+					ofstream of;
+					of.open(outputfile.c_str(), ios_base::trunc);
+					of.close();
+					_exit(EXIT_SUCCESS);
+				}
+				// start recording
+				operfRecord.recordPerfData();
+				cerr << "Total bytes recorded from perf events: "
+						<< operfRecord.get_total_bytes_recorded() << endl;
 
-			operfRecord.~operf_record();
-			// done
-			_exit(EXIT_SUCCESS);
+				operfRecord.~operf_record();
+				// done
+				_exit(EXIT_SUCCESS);
+			} catch (runtime_error re) {
+				cerr << "Caught runtime_error: " << re.what() << endl;
+				kill(app_PID, SIGKILL);
+				_exit(EXIT_FAILURE);
+			}
 		} else {  // parent
 			int startup;
 			if (read(app_ready_pipe[0], &startup, sizeof(startup)) == -1) {
@@ -449,35 +455,6 @@ static int _get_sys_value(const char * filename)
 	return _val;
 }
 
-static void handle_sys_values(void)
-{
-	int value;
-	// TODO: Iniital iterations of the perf tool required perf_event_paranoid to be -1
-	// in order for it to work with non-root users; however, this is not the case with
-	// recent distros (e.g., RHEL 6.2).  Need to figure out how perf can work with a
-	// paranoid setting of '1' so that we don't have this restriction with operf.
-	value = _get_sys_value("/proc/sys/kernel/perf_event_paranoid");
-	if (value != -1) {
-		if (value == -999) {
-			cerr << "--------------------------------------------------------------------------" << endl;
-			cerr << "WARNING: operf requires the /proc/sys/kernel/perf_event_paranoid system value" << endl
-			     << "         to be set to '-1', but we were unable to verify the setting." << endl;
-			if (errno)
-				cerr << "The following error message was received when trying to access this system value:" << endl
-				<< strerror(errno) << endl;
-			cerr << endl
-			     << "If you receive the following message:" << endl << endl
-			     << "\t\"failed to mmap: Operation not permitted\"" << endl << endl
-			     << "please ask your system administrator to change this value to '-1'." << endl;
-			cerr << "--------------------------------------------------------------------------" << endl;
-		} else {
-			cerr  << "ERROR: operf requires the /proc/sys/kernel/perf_event_paranoid system value" << endl
-			      << "       to be set to '-1', but the detected value is '" << value << "'." << endl
-			      << "       Please ask your system administrator to change this value to '-1'." << endl;
-			exit(EXIT_FAILURE);
-		}
-	}
-}
 
 static int find_app_file_in_dir(const struct dirent * d)
 {
@@ -829,8 +806,7 @@ int main(int argc, char const *argv[])
 		} else if (rc == ENOENT) {
 			cerr << "Your kernel's Performance Events Subsystem does not support"
 			     << " your processor type." << endl;
-		} else if (rc == EACCES) {
-			handle_sys_values();
+		} else {
 			cerr << "Unexpected error running operf: " << strerror(rc) << endl;
 		}
 		cerr << "Please use the opcontrol command instead of operf." << endl;
@@ -846,19 +822,20 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
 	op_nr_counters = op_get_nr_counters(cpu_type);
-
-	uid_t uid = geteuid();
-	if (uid != 0)
-		handle_sys_values();
-
 	end_code_t run_result;
 	if ((run_result = _run())) {
 		if (app_started && (run_result != APP_ABNORMAL_END)) {
 			int rc;
 			cverb << vdebug << "Killing profiled app . . ." << endl;
 			rc = kill(app_PID, SIGKILL);
-			if (rc)
-				perror("Attempt to kill profiled app failed.");
+			if (rc) {
+				if (errno == ESRCH)
+					cverb << vdebug
+					      << "Unable to kill profiled app because it has already ended"
+					      << endl;
+				else
+					perror("Attempt to kill profiled app failed.");
+			}
 		}
 		if (run_result == PERF_RECORD_ERROR) {
 			cerr <<  "Error running profiler" << endl;

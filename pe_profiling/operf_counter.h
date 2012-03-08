@@ -45,7 +45,7 @@ op_perf_event_open(struct perf_event_attr * attr,
 			       group_fd, flags);
 }
 
-#define NUM_MMAP_PAGES 128
+#define NUM_MMAP_PAGES 8
 #define OP_PERF_HANDLED_ERROR -101
 
 
