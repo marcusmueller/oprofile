@@ -442,19 +442,6 @@ static void complete(void)
 	cleanup();
 }
 
-static int _get_sys_value(const char * filename)
-{
-	char str[10];
-	int _val = -999;
-	FILE * fp = fopen(filename, "r");
-	if (fp == NULL)
-		return _val;
-	if (!fgets(str, 9, fp))
-		return _val;
-	sscanf(str, "%d", &_val);
-	return _val;
-}
-
 
 static int find_app_file_in_dir(const struct dirent * d)
 {
