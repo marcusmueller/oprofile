@@ -217,6 +217,10 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 
 	dbfd.set_image_bfd_info(&ibfd);
 	dbfd.get_symbols();
+	if (dbfd.valid() && !ibfd.nr_syms)
+		vma_adj = ibfd.abfd->start_address - dbfd.abfd->start_address;
+	else
+	vma_adj= 0;
 
 	size_t i;
 	for (i = 0; i < ibfd.nr_syms; ++i) {

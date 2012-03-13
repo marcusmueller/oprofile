@@ -89,6 +89,17 @@ public:
 	column_flags output_hint(column_flags fl) const;
 	uint64_t spu_offset;
 	image_name_id embedding_filename;
+
+	/**
+	 * The vma_adj is set according to the corresponding op_bfd::vma_adj.
+	 * See the documentation for vma_adj in op_bfd.h for why we need this.
+	 * This piece of information is needed in the bowels of opannotate
+	 * with the --assembly option.  At that point, there is no means of
+	 * obtaining the op_bfd for the given image being processed, but we
+	 * do have access to symbol_entry's.  Yes, it's way overkill to add
+	 * this to every symbol_entry, but there isn't a better option.
+	 */
+	bfd_vma vma_adj;
 };
 
 

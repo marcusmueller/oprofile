@@ -74,14 +74,14 @@ string get_annotation_fill()
 
 
 symbol_entry const * find_symbol(string const & image_name,
-				 string const & str_vma)
+				 string const & str_vma, bfd_vma vma_adj)
 {
 	// do not use the bfd equivalent:
 	//  - it does not skip space at begin
 	//  - we does not need cross architecture compile so the native
 	// strtoull must work, assuming unsigned long long can contain a vma
 	// and on 32/64 bits box bfd_vma is 64 bits
-	bfd_vma vma = strtoull(str_vma.c_str(), NULL, 16);
+	bfd_vma vma = strtoull(str_vma.c_str(), NULL, 16) - vma_adj;
 
 	return samples->find_symbol(image_name, vma);
 }
@@ -164,7 +164,7 @@ int asm_list_annotation(symbol_entry const * last_symbol,
 			bfd_vma last_symbol_vma,
 			list<string>::iterator sit,
 			sample_container::samples_iterator & samp_it,
-			list<string> & asm_lines)
+			list<string> & asm_lines, bfd_vma vma_adj)
 {
 	int ret = 0;
 
@@ -179,7 +179,7 @@ int asm_list_annotation(symbol_entry const * last_symbol,
 	// strtoull must work, assuming unsigned long long can contain a vma
 	// and on 32/64 bits box bfd_vma is 64 bits
 	// gcc 2.91.66 workaround
-	bfd_vma vma = strtoull((*sit).c_str(), NULL, 16);
+	bfd_vma vma = strtoull((*sit).c_str(), NULL, 16) - vma_adj;
 
 	if (sample 
 	    && ((sample->vma < last_symbol_vma) || (sample->vma > vma))) {
@@ -293,10 +293,13 @@ void annotate_objdump_str_list(string const & app_name,
 {
 	symbol_entry const * last_symbol = 0;
 	bfd_vma last_symbol_vma = 0;
+	bfd_vma vma_adj;
 	int ret = 0;
 
 	// to filter output of symbols (filter based on command line options)
 	bool do_output = true;
+
+	vma_adj = symbols[0]->vma_adj;
 
 	// We simultaneously walk the two structures (list and sample_container)
 	// which are sorted by address. and do address comparision.
@@ -337,8 +340,8 @@ void annotate_objdump_str_list(string const & app_name,
 
 		if (is_symbol_line(str, pos)) {
 
-			last_symbol = find_symbol(app_name, str);
-			last_symbol_vma = strtoull(str.c_str(), NULL, 16);
+			last_symbol = find_symbol(app_name, str, vma_adj);
+			last_symbol_vma = strtoull(str.c_str(), NULL, 16) - vma_adj;
 
 			// ! complexity: linear in number of symbol must use sorted
 			// by address vector and lower_bound ?
@@ -363,7 +366,7 @@ void annotate_objdump_str_list(string const & app_name,
 				ret = asm_list_annotation(last_symbol,
 							  last_symbol_vma,
 							  sit, samp_it,
-							  asm_lines);
+							  asm_lines, vma_adj);
 		}
 
 		if (!do_output)

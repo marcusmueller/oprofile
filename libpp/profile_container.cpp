@@ -99,6 +99,7 @@ void profile_container::add(profile_t const & profile,
 
 		symb_entry.name = symbol_names.create(abfd.syms[i].name());
 		symb_entry.sym_index = i;
+		symb_entry.vma_adj = abfd.get_vma_adj();
 
 		symb_entry.sample.file_loc.linenr = 0;
 		if (debug_info) {

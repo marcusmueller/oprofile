@@ -212,6 +212,8 @@ public:
 
 	bool valid() const { return ibfd.valid(); }
 
+	bfd_vma get_vma_adj(void) const { return vma_adj; }
+
 private:
 	/// temporary container type for getting symbols
 	typedef std::list<op_bfd_symbol> symbols_found_t;
@@ -299,6 +301,28 @@ private:
 	std::string embedding_filename;
 
 	bool anon_obj;
+
+	/**
+	 * If a runtime binary is prelinked, then its p_vaddr field in the
+	 * first PT_LOAD segment will give the address where the binary will
+	 * be loaded into memory.  However, the corresponding debuginfo file
+	 * may have a different p_vaddr value.  In profile_container::add_samples,
+	 * this difference is handled by adding the "base_vma" to the sample
+	 * vma.  However, if the runtime binary has no symbol information at all,
+	 * then the "base_vma" is obtained from the debuginfo symbol information.
+	 * For opreport, this works OK, since under such conditions, ALL symbol
+	 * and debug data is then obtained from the debuginfo files, and the sample
+	 * vma's should match up fine with the symbol vma's in the debuginfo file.
+	 * But when doing 'opannoate --assembly', the real (runtime) image is used for
+	 * annotation, and, thus, we may have a mis-match between real image p_vaddr
+	 * and the impliled p_vaddr stored with the samples.  To handle this case,
+	 * we do the following:  When a bfd_info is created for a debuginfo
+	 * file, we set vma_adj to the difference between runtime load address
+	 * and the p_vaddr of the first PT_LOAD segment of the debuginfo file, if and
+	 * only if the real image has no symbol info; otherwise vma_adj is set to 0.
+	 */
+        bfd_vma vma_adj;
+
 };
 
 
