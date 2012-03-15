@@ -48,7 +48,7 @@ static const char *__op_magic = "OPFILE";
 
 }  // end anonymous namespace
 
-operf_counter::operf_counter(operf_event_t evt) {
+operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec) {
 	memset(&attr, 0, sizeof(attr));
 	attr.size = sizeof(attr);
 	attr.sample_type = OP_BASIC_SAMPLE_FORMAT;
@@ -56,7 +56,7 @@ operf_counter::operf_counter(operf_event_t evt) {
 	attr.config = evt.evt_code;
 	attr.sample_period = evt.count;
 	attr.inherit = 1;
-	attr.enable_on_exec = 1;
+	attr.enable_on_exec = enable_on_exec ? 1 : 0;
 	attr.disabled  = 1;
 	attr.exclude_idle = 1;
 	attr.exclude_kernel = evt.no_kernel;
@@ -121,13 +121,15 @@ operf_record::~operf_record()
 	perfCounters.clear();
 }
 
-operf_record::operf_record(string outfile, pid_t the_pid, vector<operf_event_t> & events)
+operf_record::operf_record(string outfile, pid_t the_pid, bool pid_running,
+                           vector<operf_event_t> & events)
 {
 	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
 	sigset_t ss;
 
 	pid = the_pid;
+	pid_started = pid_running;
 	total_bytes_recorded = 0;
 	poll_count = 0;
 	evts = events;
@@ -246,7 +248,25 @@ void operf_record::setup()
 	string err_msg;
 	char cpus_online[129];
 
-	cverb << vperf << "operf_record::setup()" << endl;
+	cverb << vperf << "operf_record::setup() with pid_started = " << pid_started << endl;
+
+	if (pid_started) {
+		/* We need to verify the existence of the passed PID before trying
+		 * perf_event_open or all hell will break loose.
+		 */
+		char fname[PATH_MAX];
+		FILE *fp;
+		snprintf(fname, sizeof(fname), "/proc/%d/status", pid);
+		fp = fopen(fname, "r");
+		if (fp == NULL) {
+			// Process must have finished or invalid PID passed into us.
+			// We'll bail out now.
+			cerr << "Unable to find process information for PID " << pid << "." << endl;
+			cverb << vperf << "couldn't open " << fname << endl;
+			return;
+		}
+
+	}
 	pagesize = sysconf(_SC_PAGE_SIZE);
 	num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
 	if (!num_cpus)
@@ -301,7 +321,7 @@ void operf_record::setup()
 		perfCounters.push_back(tmp_pcvec);
 		for (unsigned event = 0; event < evts.size(); event++) {
 			evts[event].counter = event;
-			perfCounters[cpu].push_back(operf_counter(evts[event]));
+			perfCounters[cpu].push_back(operf_counter(evts[event], !pid_started));
 			if ((rc = perfCounters[cpu][event].perf_event_open(pid, real_cpu, event, this)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
 				goto error;
@@ -315,7 +335,16 @@ void operf_record::setup()
 	if (!all_cpus_avail)
 		closedir(dir);
 	write_op_header_info();
-	op_record_process_info(pid, this, outputFile);
+	if (pid_started) {
+		if (op_record_process_info(pid, this, outputFile) < 0) {
+			for (int i = 0; i < num_cpus; i++) {
+				for (unsigned int evt = 0; evt < evts.size(); evt++)
+					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
+			}
+			goto error;
+		}
+	}
+
 	// Set bit to indicate we're set to go.
 	valid = true;
 	return;
@@ -329,6 +358,7 @@ error:
 
 void operf_record::recordPerfData(void)
 {
+	bool disabled = false;
 	while (1) {
 		int prev = sample_reads;
 
@@ -338,7 +368,7 @@ void operf_record::recordPerfData(void)
 					op_get_kernel_event_data(&samples_array[cpu][evt], this);
 			}
 		}
-		if (quit)
+		if (quit && disabled)
 			break;
 
 		if (prev == sample_reads) {
@@ -350,6 +380,8 @@ void operf_record::recordPerfData(void)
 				for (unsigned int evt = 0; evt < evts.size(); evt++)
 					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
 			}
+			disabled = true;
+			cverb << vperf << "operf_record::recordPerfData received signal to quit." << endl;
 		}
 	}
 	cverb << vdebug << "operf recording finished." << endl;

@@ -58,11 +58,12 @@ char op_samples_current_dir[PATH_MAX];
 static char full_pathname[PATH_MAX];
 static char * app_name_SAVE = NULL;
 static char * app_args = NULL;
-static pid_t app_PID;
+static pid_t app_PID = -1;
 static bool app_started;
 static pid_t operf_pid;
 static string samples_dir;
 static string outputfile;
+static bool startApp;
 uint op_nr_counters;
 vector<operf_event_t> events;
 
@@ -113,7 +114,8 @@ static void op_sig_stop(int val __attribute__((unused)))
 	// app being profiled.
 	if (cverb << vdebug)
 		write(1, "in op_sig_stop ", 15);
-	kill(app_PID, SIGKILL);
+	if (startApp)
+		kill(app_PID, SIGKILL);
 }
 
 void set_signals(void)
@@ -135,7 +137,7 @@ void set_signals(void)
 	}
 }
 
-static int app_ready_pipe[2], start_app_pipe[2], app_started_pipe[2], valid_profile_pipe[2];
+static int app_ready_pipe[2], start_app_pipe[2], operf_record_ready_pipe[2];
 
 void run_app(void)
 {
@@ -181,7 +183,7 @@ void run_app(void)
 	// signal to the parent that we're ready to exec
 	int startup = 1;
 	if (write(app_ready_pipe[1], &startup, sizeof(startup)) < 0) {
-		perror("Internal error on start_app_pipe");
+		perror("Internal error on app_ready_pipe");
 		_exit(EXIT_FAILURE);
 	}
 
@@ -208,71 +210,79 @@ int start_profiling_app(void)
 {
 	// The only process that should return from this function is the process
 	// which invoked it.  Any forked process must do _exit() rather than return().
+	startApp = app_PID != operf_options::pid;
 
-	if (pipe(app_ready_pipe) < 0 || pipe(start_app_pipe) < 0) {
-		perror("Internal error: operf-record could not create pipe");
-		_exit(EXIT_FAILURE);
+	if (startApp) {
+		if (pipe(app_ready_pipe) < 0 || pipe(start_app_pipe) < 0) {
+			perror("Internal error: operf-record could not create pipe");
+			_exit(EXIT_FAILURE);
+		}
+		app_PID = fork();
+		if (app_PID < 0) {
+			perror("Internal error: fork failed");
+			_exit(EXIT_FAILURE);
+		} else if (app_PID == 0) { // child process for exec'ing app
+			run_app();
+		}
+		// parent
+		if (pipe(operf_record_ready_pipe) < 0) {
+			perror("Internal error: could not create pipe");
+			return -1;
+		}
 	}
-	app_PID = fork();
-	if (app_PID < 0) {
-		perror("Internal error: fork failed");
-		_exit(EXIT_FAILURE);
-	} else if (app_PID == 0) { // child process for exec'ing app
-		run_app();
-	} else {  //parent
-		if (pipe(app_started_pipe) < 0) {
-			perror("Internal error: could not create pipe");
-			return -1;
-		}
-		if (pipe(valid_profile_pipe) < 0) {
-			perror("Internal error: could not create pipe");
-			return -1;
-		}
-		operf_pid = fork();
-		if (operf_pid < 0) {
-			return -1;
-		} else if (operf_pid == 0) { // operf-record process
-			pid_t appID = 0;
-			if (read(app_started_pipe[0], &appID, sizeof(appID)) == -1) {
-				perror("Internal error in _run: app_started_pipe");
-				return -1;
-			} else if (app_PID == 0) {
-		                cerr << "Failed to start app. Exiting." << endl;
-		                _exit(EXIT_FAILURE);
-		        }
 
-			// setup operf recording
-			try {
-				operf_record operfRecord(outputfile, app_PID, events);
-				if (operfRecord.get_valid() == false) {
-					/* If valid is false, it means that one of the "known" errors has
-					 * occurred:
-					 *   - profiled process has already ended
-					 *   - device or resource busy
-					 * Since an informative message has already been displayed to
-					 * the user, we don't want to blow chunks here; instead, we'll
-					 * exit gracefully.  Clear out the operf.data file as an indication
-					 * to the parent process that the profile data isn't valid.
-					 */
-					ofstream of;
-					of.open(outputfile.c_str(), ios_base::trunc);
-					of.close();
-					_exit(EXIT_SUCCESS);
-				}
-				// start recording
-				operfRecord.recordPerfData();
-				cerr << "Total bytes recorded from perf events: "
-						<< operfRecord.get_total_bytes_recorded() << endl;
-
-				operfRecord.~operf_record();
-				// done
+	//parent
+	operf_pid = fork();
+	if (operf_pid < 0) {
+		return -1;
+	} else if (operf_pid == 0) { // operf-record process
+		// setup operf recording
+		try {
+			operf_record operfRecord(outputfile, app_PID,
+			                         (operf_options::pid == app_PID), events);
+			if (operfRecord.get_valid() == false) {
+				/* If valid is false, it means that one of the "known" errors has
+				 * occurred:
+				 *   - profiled process has already ended
+				 *   - passed PID was invalid
+				 *   - device or resource busy
+				 * Since an informative message has already been displayed to
+				 * the user, we don't want to blow chunks here; instead, we'll
+				 * exit gracefully.  Clear out the operf.data file as an indication
+				 * to the parent process that the profile data isn't valid.
+				 */
+				ofstream of;
+				of.open(outputfile.c_str(), ios_base::trunc);
+				of.close();
+				cerr << "usage: operf [options] --pid=<PID> | appname [args]" << endl;
+				// Exit with SUCCESS to avoid the unnecessary "operf-record process ended
+				// abnormally" message
 				_exit(EXIT_SUCCESS);
-			} catch (runtime_error re) {
-				cerr << "Caught runtime_error: " << re.what() << endl;
-				kill(app_PID, SIGKILL);
-				_exit(EXIT_FAILURE);
 			}
-		} else {  // parent
+			if (startApp) {
+				int ready = 1;
+				if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
+					perror("Internal error on operf_record_ready_pipe");
+					_exit(EXIT_FAILURE);
+				}
+			}
+
+			// start recording
+			operfRecord.recordPerfData();
+			cerr << "Total bytes recorded from perf events: "
+					<< operfRecord.get_total_bytes_recorded() << endl;
+
+			operfRecord.~operf_record();
+			// done
+			_exit(EXIT_SUCCESS);
+		} catch (runtime_error re) {
+			cerr << "Caught runtime_error: " << re.what() << endl;
+			if (startApp)
+				kill(app_PID, SIGKILL);
+			_exit(EXIT_FAILURE);
+		}
+	} else {  // parent
+		if (startApp) {
 			int startup;
 			if (read(app_ready_pipe[0], &startup, sizeof(startup)) == -1) {
 				perror("Internal error on app_ready_pipe");
@@ -281,24 +291,54 @@ int start_profiling_app(void)
 				cerr << "app is not ready to start; exiting" << endl;
 				return -1;
 			}
-			app_started = true;
+
+			int recorder_ready;
+			if (read(operf_record_ready_pipe[0], &recorder_ready, sizeof(recorder_ready)) == -1) {
+				perror("Internal error on operf_record_ready_pipe");
+				return -1;
+			} else if (recorder_ready != 1) {
+				cerr << "operf record process failure; exiting" << endl;
+				return -1;
+			}
+
 			// Tell app_PID to start the app
-			cverb << vdebug << "operf-record telling child to start app" << endl;
+			cverb << vdebug << "telling child to start app" << endl;
 			if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
 				perror("Internal error on start_app_pipe");
 				return -1;
 			}
+		}
+	}
+	app_started = true;
 
-			// Let operf-record process know the app PID
-			cverb << vdebug << "writing " << app_PID << " app pid to pipe" << endl;
-			if (write(app_started_pipe[1], &app_PID, sizeof(app_PID)) < 0) {
-				perror("Internal error on app_started_pipe");
-				return -1;
+	// parent returns
+	return 0;
+}
+
+static end_code_t _kill_operf_pid(void)
+{
+	int waitpid_status = 0;
+	end_code_t rc = ALL_OK;
+
+	// stop operf-record process
+	if (kill(operf_pid, SIGUSR1) < 0) {
+		perror("Attempt to stop operf-record process failed");
+		rc = PERF_RECORD_ERROR;
+	} else {
+		if (waitpid(operf_pid, &waitpid_status, 0) < 0) {
+			perror("waitpid for operf-record process failed");
+			rc = PERF_RECORD_ERROR;
+		} else {
+			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
+				cverb << vdebug << "waitpid for operf-record process returned OK" << endl;
+			} else {
+				cerr <<  "operf-record process ended abnormally: "
+						<< WEXITSTATUS(waitpid_status) << endl;
+				rc = PERF_RECORD_ERROR;
 			}
 		}
 	}
-	// parent returns
-	return 0;
+	return rc;
 }
 
 static end_code_t _run(void)
@@ -316,42 +356,48 @@ static end_code_t _run(void)
 		return PERF_RECORD_ERROR;
 	}
 	// parent continues here
-	cverb << vdebug << "app " << app_PID << " is started" << endl;
+	cverb << vdebug << "app " << app_PID << " is running" << endl;
 	set_signals();
-	cverb << vdebug << "going into waitpid on profiled app " << app_PID << endl;
-	if (waitpid(app_PID, &waitpid_status, 0) < 0) {
-		if (errno == EINTR) {
-			cverb << vdebug << "Caught ctrl-C.  Killed profiled app." << endl;
+	if (startApp) {
+		// User passed in command or program name to start
+		cverb << vdebug << "going into waitpid on profiled app " << app_PID << endl;
+		if (waitpid(app_PID, &waitpid_status, 0) < 0) {
+			if (errno == EINTR) {
+				cverb << vdebug << "Caught ctrl-C.  Killed profiled app." << endl;
+			} else {
+				cerr << "waitpid errno is " << errno << endl;
+				perror("waitpid for profiled app failed");
+				rc = APP_ABNORMAL_END;
+			}
 		} else {
-			cerr << "waitpid errno is " << errno << endl;
-			perror("waitpid for profiled app failed");
-			rc = APP_ABNORMAL_END;
+			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
+				cverb << vdebug << "waitpid for profiled app returned OK" << endl;
+			} else if (WIFEXITED(waitpid_status)) {
+				cerr <<  "profiled app ended abnormally: "
+						<< WEXITSTATUS(waitpid_status) << endl;
+				rc = APP_ABNORMAL_END;
+			}
 		}
+		rc = _kill_operf_pid();
 	} else {
-		if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
-			cverb << vdebug << "waitpid for profiled app returned OK" << endl;
-		} else if (WIFEXITED(waitpid_status)) {
-			cerr <<  "profiled app ended abnormally: "
-			     << WEXITSTATUS(waitpid_status) << endl;
-			rc = APP_ABNORMAL_END;
-		}
-	}
-
-	// stop operf-record process
-	if (kill(operf_pid, SIGUSR1) < 0) {
-		perror("Attempt to stop operf-record process failed");
-		rc = PERF_RECORD_ERROR;
-	} else {
+		// User passed in --pid
+		cverb << vdebug << "going into waitpid on operf record process " << app_PID << endl;
 		if (waitpid(operf_pid, &waitpid_status, 0) < 0) {
-			perror("waitpid for operf-record process failed");
-			rc = PERF_RECORD_ERROR;
+			if (errno == EINTR) {
+				cverb << vdebug << "Caught ctrl-C. Killing operf-record process . . ." << endl;
+				_kill_operf_pid();
+			} else {
+				cerr << "waitpid errno is " << errno << endl;
+				perror("waitpid for operf-record process failed");
+				rc = APP_ABNORMAL_END;
+			}
 		} else {
 			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
 				cverb << vdebug << "waitpid for operf-record process returned OK" << endl;
-			} else {
+			} else if (WIFEXITED(waitpid_status)) {
 				cerr <<  "operf-record process ended abnormally: "
-				     << WEXITSTATUS(waitpid_status) << endl;
-				rc = PERF_RECORD_ERROR;
+						<< WEXITSTATUS(waitpid_status) << endl;
+				rc = APP_ABNORMAL_END;
 			}
 		}
 	}
@@ -726,8 +772,7 @@ static void process_args(int argc, char const ** argv)
 	} else if (operf_options::pid) {
 		if (operf_options::system_wide)
 			__print_usage_and_exit(NULL);
-		cerr << "The --pid option is not yet supported." << endl;
-		exit(EXIT_FAILURE);
+		app_PID = operf_options::pid;
 	} else if (operf_options::system_wide) {
 		cerr << "The --system-wide option is not yet supported." << endl;
 		exit(EXIT_FAILURE);
@@ -735,7 +780,7 @@ static void process_args(int argc, char const ** argv)
 	else {
 		__print_usage_and_exit(NULL);
 	}
-	/*  At this point, we know what kind of profile the user requested:
+	/*  At this point, we know which of the three kinds of profiles the user requested:
 	 *    - profile app by name
 	 *    - profile app by PID
 	 *    - profile whole system

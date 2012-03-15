@@ -51,7 +51,7 @@ op_perf_event_open(struct perf_event_attr * attr,
 
 class operf_counter {
 public:
-	operf_counter(operf_event_t evt);
+	operf_counter(operf_event_t evt, bool enable_on_exec);
 	~operf_counter();
 	int perf_event_open(pid_t ppid, int cpu, unsigned counter, operf_record * pr);
 	const struct perf_event_attr * the_attr(void) const { return &attr; }
@@ -69,7 +69,7 @@ private:
 
 class operf_record {
 public:
-	operf_record(string outfile, pid_t the_pid, vector<operf_event_t> & evts);
+	operf_record(string outfile, pid_t the_pid, bool pid_running, vector<operf_event_t> & evts);
 	~operf_record();
 	void recordPerfData(void);
 	int out_fd(void) const { return outputFile; }
@@ -87,6 +87,7 @@ private:
 	vector< vector<struct mmap_data> > samples_array;
 	int num_cpus;
 	pid_t pid;
+	bool pid_started;
 	vector< vector<operf_counter> > perfCounters;
 	int total_bytes_recorded;
 	int poll_count;

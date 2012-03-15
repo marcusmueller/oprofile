@@ -438,7 +438,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 
 	fp = fopen(fname, "r");
 	if (fp == NULL) {
-		// Process must have exited already.
+		// Process must have exited already or invalid pid.
 		cverb << vperf << "couldn't open " << fname << endl;
 		return;
 	}
@@ -478,6 +478,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 			mmap.header.size = (sizeof(mmap) -
 					(sizeof(mmap.filename) - size));
 			int num = op_write_output(output_fd, &mmap, mmap.header.size);
+			cverb << vperf << "Created MMAP event for " << imagename << endl;
 			pr->add_to_total(num);
 		}
 	}
@@ -486,31 +487,39 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 	return;
 }
 
-
-void op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
+/* Obtain process information for an active process (where the user has
+ * passed in a process ID via the --pid option), and generate the
+ * necessary PERF_RECORD_COMM and PERF_RECORD_MMAP entries into the
+ * profile data stream.
+ */
+int op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
 {
 	struct comm_event comm;
 	char fname[PATH_MAX];
 	char buff[BUFSIZ];
 	FILE *fp;
-	bool problem = false;
 	pid_t tgid = 0;
 	size_t size = 0;
 	DIR *tids;
 	struct dirent dirent, *next;
+	int ret = 0;
+
+	cverb << vperf << "op_record_process_info" << endl;
 
 	snprintf(fname, sizeof(fname), "/proc/%d/status", pid);
 	fp = fopen(fname, "r");
 	if (fp == NULL) {
-		// Process must have finished.
+		// Process must have finished or invalid PID passed into us.
+		// We'll bail out now.
+		cerr << "Unable to find process information for PID " << pid << "." << endl;
 		cverb << vperf << "couldn't open " << fname << endl;
-		return;
+		return -1;
 	}
 
 	memset(&comm, 0, sizeof(comm));
 	while (!comm.comm[0] || !comm.pid) {
 		if (fgets(buff, sizeof(buff), fp) == NULL) {
-			problem = true;
+			ret = -1;
 			cverb << vperf << "Did not find Name or PID field in status file." << endl;
 			goto out;
 		}
@@ -546,8 +555,8 @@ void op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
 	snprintf(fname, sizeof(fname), "/proc/%d/task", pid);
 	tids = opendir(fname);
 	if (tids == NULL) {
-		// Again, process must have exited
-		problem = true;
+		// process must have exited
+		ret = -1;
 		cverb << vperf << "opendir returned NULL" << endl;
 		goto out;
 	}
@@ -565,16 +574,16 @@ void op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
 	}
 	closedir(tids);
 
-	out:
+out:
 	op_record_process_exec_mmaps(pid, tgid, output_fd, pr);
 
 	fclose(fp);
-	if (problem)
+	if (ret)
 		cverb << vperf << "couldn't get app name and tgid for pid "
 		      << dec << pid << " from /proc fs." << endl;
 	else
 		cverb << vperf << "Created COMM event for " << comm.comm << endl;
-	return;
+	return ret;
 }
 
 
