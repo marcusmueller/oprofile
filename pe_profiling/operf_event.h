@@ -20,8 +20,6 @@
 #include "op_types.h"
 
 
-using namespace std;
-
 #define OP_MAX_EVT_NAME_LEN 64
 #define OP_MAX_NUM_EVENTS 512
 
@@ -139,7 +137,7 @@ struct op_file_attr {
 
 struct op_header_evt_info {
 	struct perf_event_attr attr;
-	vector<u64> ids;
+	std::vector<u64> ids;
 	off_t id_offset;
 };
 

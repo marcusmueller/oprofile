@@ -19,9 +19,8 @@
 #include "op_types.h"
 #include "cverb.h"
 
-extern verbose vperf;
+extern verbose vmisc;
 
-using namespace std;
 #define BUILD_ID_SIZE 20
 
 struct operf_mmap {
@@ -59,10 +58,22 @@ public:
 	operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid);
 	bool is_valid(void) { return valid; }
 	void process_new_mapping(struct operf_mmap mapping);
-	void process_deferred_mappings(string app_shortname);
-	string get_app_name(void) { return app_name; }
+	void process_deferred_mappings(std::string app_shortname);
+	std::string get_app_name(void) { return app_name; }
 	void add_deferred_mapping(struct operf_mmap mapping)
 	{ deferred_mmappings[mapping.start_addr] = mapping; }
+	bool appname_valid(void)
+	{
+		bool result;
+		if (appname_is_fullname == YES_FULLNAME)
+			result = true;
+		else if ((appname_is_fullname == MAYBE_FULLNAME) &&
+				(num_app_chars_matched > 0))
+			result = true;
+		else
+			result = false;
+		return result;
+	}
 
 	const struct operf_mmap * find_mapping_for_sample(u64 sample_addr);
 private:
@@ -72,19 +83,19 @@ private:
 		YES_FULLNAME
 	} op_fullname_t;
 	pid_t pid;
-	string app_name;
+	std::string app_name;
 
 	// The valid bit is set when a COMM event has been received for the process
 	// represented by this object.
 	bool valid;
 	op_fullname_t appname_is_fullname;
-	string app_basename;
+	std::string app_basename;
 	int  num_app_chars_matched;
-	map<u64, struct operf_mmap> mmappings;
-	map<u64, struct operf_mmap> deferred_mmappings;
-	int get_num_matching_chars(string mapped_filename, string & basename);
+	std::map<u64, struct operf_mmap> mmappings;
+	std::map<u64, struct operf_mmap> deferred_mmappings;
+	int get_num_matching_chars(std::string mapped_filename, std::string & basename);
 };
 
-extern map<pid_t, operf_process_info *> process_map;
+extern std::map<pid_t, operf_process_info *> process_map;
 
 #endif /* OPERF_PROCESS_INFO_H_ */

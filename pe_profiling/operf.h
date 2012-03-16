@@ -16,21 +16,21 @@
 #define OPERF_H_
 
 #include <linux/perf_event.h>
+#include <dirent.h>
 #include <vector>
 #include "config.h"
 #include "op_config.h"
 #include "op_types.h"
 #include "operf_event.h"
-#include "operf_counter.h"
+#include <signal.h>
 
-using namespace std;
 namespace operf_options {
 extern bool system_wide;
 extern bool reset;
 extern int pid;
 extern int callgraph_depth;
 extern int mmap_pages_mult;
-extern string session_dir;
+extern std::string session_dir;
 extern bool separate_cpu;
 }
 
@@ -52,9 +52,14 @@ static inline size_t align_64bit(u64 x)
 	return (x + mask) & ~mask;
 }
 
-
-// extern declarations
+class operf_record;
 namespace OP_perf_utils {
+typedef struct vmlinux_info {
+	std::string image_name;
+	u64 start, end;
+} vmlinux_info_t;
+void op_record_kernel_info(std::string vmlinux_file, u64 start_addr, u64 end_addr,
+                           int output_fd, operf_record * pr);
 void op_get_kernel_event_data(struct mmap_data *md, operf_record * pr);
 void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 		siginfo_t * siginfo __attribute__((unused)),
@@ -62,11 +67,13 @@ void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 int op_record_process_info(pid_t pid, operf_record * pr, int output_fd);
 int op_write_output(int output, void *buf, size_t size);
 int op_write_event(event_t * event);
-int op_read_from_stream(ifstream & is, char * buf, streamsize sz);
+int op_read_from_stream(std::ifstream & is, char * buf, std::streamsize sz);
 int op_mmap_trace_file(struct mmap_info & info);
 event_t * op_get_perf_event(struct mmap_info & info);
 int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
-bool op_convert_event_vals(vector<operf_event_t> * evt_vec);
+bool op_convert_event_vals(std::vector<operf_event_t> * evt_vec);
+bool get_build_id(char * buildid);
+u64 get_checksum_for_file(std::string filename);
 }
 
 // The rmb() macros were borrowed from perf.h in the kernel tree

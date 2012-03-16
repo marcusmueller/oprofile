@@ -47,20 +47,12 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 	val ^= trans->tid << 2;
 	val ^= trans->tgid << 2;
 
-	// TODO: handle kernel
-	/*
-	if (separate_kernel || ((trans->anon || separate_lib) && !ki))
-	//TODO cookie replacement
-        //	val ^= trans->app_cookie >> (DCOOKIE_SHIFT + 3);
-	 */
 	if (operf_options::separate_cpu)
 		val ^= trans->cpu;
 
-	/* cookie meaningless for kernel, shouldn't hash */
 	if (trans->in_kernel) {
 		val ^= ki->start >> 14;
 		val ^= ki->end >> 7;
-		return val & HASH_BITS;
 	}
 
 	// TODO: add hashing on build-id if present, otherwise checksump
@@ -171,13 +163,8 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 
 	sf->hashval = hash;
 
-	/* The logic here: if we're in the kernel, the buildid and checksum are meaningless
-	 */
-	/*TODO handle kernel
-	sf->cookie = trans->in_kernel ? INVALID_COOKIE : trans->cookie;
-	*/
-	sf->tid = (pid_t)-1;
-	sf->tgid = (pid_t)-1;
+	sf->tid = trans->tid;
+	sf->tgid = trans->tgid;
 	sf->cpu = 0;
 	sf->kernel = ki;
 	sf->buildid_valid = trans->buildid_valid;
@@ -202,15 +189,11 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 	for (i = 0; i < CG_HASH_SIZE; ++i)
 		list_init(&sf->cg_hash[i]);
 
-	sf->tid = trans->tid;
-	sf->tgid = trans->tgid;
-
 	if (operf_options::separate_cpu)
 		sf->cpu = trans->cpu;
 
 	return sf;
 }
-
 
 struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 {
@@ -220,16 +203,14 @@ struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 	unsigned long hash;
 
 
-	/* we might need a kernel image start/end to hash on */
 	if (trans->in_kernel) {
 		ki = operf_find_kernel_image(trans->pc);
-		/* TODO: handle lost kernel samples
+		/* TODO: handle lost kernel samples */
 		if (!ki) {
-			verbprintf(vsamples, "Lost kernel sample %llx\n", trans->pc);
-			opd_stats[OPD_LOST_KERNEL]++;
+			cverb << vsfile << "Lost kernel sample " << std::hex << trans->pc << std::endl;;
+			//opd_stats[OPD_LOST_KERNEL]++;
 			return NULL;
 		}
-		*/
 	}
 
 	//TODO anon replacement
@@ -244,8 +225,6 @@ struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 		return NULL;
 	}
 	*/
-
-	// TODO: handle kernel
 	hash = sfile_hash(trans, ki);
 	list_for_each(pos, &hashes[hash]) {
 		sf = list_entry(pos, struct operf_sfile, hash);

@@ -26,6 +26,7 @@ struct operf_transient;
 struct operf_kernel_image;
 
 #define CG_HASH_SIZE 16
+#define INVALID_IMAGE "INVALID IMAGE"
 
 // TODO: VMA_SHIFT should be defined in new operf_anon.h ?
 #define VMA_SHIFT 13

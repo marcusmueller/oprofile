@@ -10,6 +10,9 @@
  * @author Maynard Johnson
  * (C) Copyright IBM Corp. 2011
  *
+ * Modified by Maynard Johnson <maynardj@us.ibm.com>
+ * (C) Copyright IBM Corporation 2012
+ *
  */
 
 #ifndef OPERF_COUNTER_H_
@@ -24,12 +27,11 @@
 #include <map>
 #include <stdexcept>
 #include <limits.h>
-#include <signal.h>
 #include <istream>
 #include <fstream>
-#include <dirent.h>
 #include "operf_event.h"
 #include "op_cpu_type.h"
+#include "operf.h"
 
 class operf_record;
 
@@ -57,19 +59,20 @@ public:
 	const struct perf_event_attr * the_attr(void) const { return &attr; }
 	int get_fd(void) const { return fd; }
 	int get_id(void) const { return id; }
-	const string get_event_name(void) const { return event_name; }
+	const std::string get_event_name(void) const { return event_name; }
 
 private:
 	struct perf_event_attr attr;
 	int fd;
 	int id;
-	string event_name;
+	std::string event_name;
 };
 
 
 class operf_record {
 public:
-	operf_record(string outfile, pid_t the_pid, bool pid_running, vector<operf_event_t> & evts);
+	operf_record(std::string outfile, pid_t the_pid, bool pid_running,
+	             std::vector<operf_event_t> & evts, OP_perf_utils::vmlinux_info_t vi);
 	~operf_record();
 	void recordPerfData(void);
 	int out_fd(void) const { return outputFile; }
@@ -84,22 +87,25 @@ private:
 	void write_op_header_info(void);
 	int outputFile;
 	struct pollfd * poll_data;
-	vector< vector<struct mmap_data> > samples_array;
+	std::vector< std::vector<struct mmap_data> > samples_array;
 	int num_cpus;
 	pid_t pid;
 	bool pid_started;
-	vector< vector<operf_counter> > perfCounters;
+	std::vector< std::vector<operf_counter> > perfCounters;
 	int total_bytes_recorded;
 	int poll_count;
 	struct OP_header opHeader;
-	vector<operf_event_t> evts;
+	std::vector<operf_event_t> evts;
 	bool valid;
+	std::string vmlinux_file;
+	u64 kernel_start, kernel_end;
 };
 
 class operf_read {
 public:
 	operf_read(void) { valid = false; }
-	void init(string infile, string samples_dir, op_cpu cputype, vector<operf_event_t> & evts);
+	void init(std::string infile, std::string samples_dir, op_cpu cputype,
+	          std::vector<operf_event_t> & evts);
 	~operf_read();
 	int readPerfHeader(void);
 	int convertPerfData(void);
@@ -108,11 +114,11 @@ public:
 	inline const operf_event * get_event_by_counter(u32 counter) { return &evts[counter]; }
 
 private:
-	string inputFname;
-	string sampledir;
-	ifstream istrm;
+	std::string inputFname;
+	std::string sampledir;
+	std::ifstream istrm;
 	struct OP_header opHeader;
-	vector<operf_event_t> evts;
+	std::vector<operf_event_t> evts;
 	bool valid;
 	op_cpu cpu_type;
 	void read_op_header_info_with_ifstream(void);

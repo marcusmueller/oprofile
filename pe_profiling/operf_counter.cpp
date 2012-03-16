@@ -10,7 +10,10 @@
  * @author Maynard Johnson
  * (C) Copyright IBM Corp. 2011
  *
- */
+ * Modified by Maynard Johnson <maynardj@us.ibm.com>
+ * (C) Copyright IBM Corporation 2012
+ *
+*/
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -26,7 +29,6 @@
 #include "op_events.h"
 #include "operf_counter.h"
 #include "cverb.h"
-#include "operf.h"
 #include "operf_process_info.h"
 
 using namespace std;
@@ -95,6 +97,7 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 			ret = OP_PERF_HANDLED_ERROR;
 		} else {
 			cerr << "perf_event_open failed with " << strerror(errno) << endl;
+			cerr << "cpu is " << cpu << endl;
 		}
 		return ret;
 	}
@@ -122,12 +125,15 @@ operf_record::~operf_record()
 }
 
 operf_record::operf_record(string outfile, pid_t the_pid, bool pid_running,
-                           vector<operf_event_t> & events)
+                           vector<operf_event_t> & events, vmlinux_info_t vi)
 {
 	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
 	sigset_t ss;
 
+	vmlinux_file = vi.image_name;
+	kernel_start = vi.start;
+	kernel_end = vi.end;
 	pid = the_pid;
 	pid_started = pid_running;
 	total_bytes_recorded = 0;
@@ -344,6 +350,7 @@ void operf_record::setup()
 			goto error;
 		}
 	}
+	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, outputFile, this);
 
 	// Set bit to indicate we're set to go.
 	valid = true;

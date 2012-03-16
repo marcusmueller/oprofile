@@ -12,46 +12,14 @@
  */
 
 #include <stdio.h>
-#include <fcntl.h>
-#include <libelf.h>
-#include <gelf.h>
 #include <iostream>
 #include <map>
 #include "operf_process_info.h"
 #include "file_manip.h"
+#include "operf.h"
 
 using namespace std;
-
-namespace {
-
-// Length of build id is BUILD_ID_SIZE
-static bool get_build_id(char * buildid)
-{
-	bool ret = false;
-	buildid = NULL;
-	// TODO:  flesh out this function
-	return ret;
-}
-
-static u64 get_checksum_for_file(string filename)
-{
-	Elf *elf;
-	u64 checksum;
-	int fd;
-
-        elf_version(EV_CURRENT);
-	fd = open(filename.c_str(), O_RDONLY);
-	if (fd < 0)
-		return 0;
-	elf = elf_begin(fd, ELF_C_READ, NULL);
-	checksum = gelf_checksum(elf);
-	elf_end(elf);
-	close(fd);
-
-	return checksum;
-}
-
-}  // end anonymous namespace
+using namespace OP_perf_utils;
 
 operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid)
 : pid(tgid), app_name(appname), valid(is_valid)
@@ -84,12 +52,18 @@ void operf_process_info::process_new_mapping(struct operf_mmap mapping)
 			app_name = mapping.filename;
 			app_basename = basename;
 			num_app_chars_matched = num_matched_chars;
-			cverb << vperf << "Best appname match is " << app_name << endl;
+			cverb << vmisc << "Best appname match is " << app_name << endl;
 		}
 	}
 	mapping.buildid_valid = get_build_id(mapping.buildid);
-	if (!mapping.buildid_valid)
+	if (!mapping.buildid_valid) {
 		mapping.checksum = get_checksum_for_file(mapping.filename);
+		cverb << vmisc << "checksum for file " << mapping.filename << ": "
+		      << hex << mapping.checksum << endl;
+	} else {
+		cverb << vmisc << "buildid for file " << mapping.filename << ": "
+		      << mapping.buildid << endl;
+	}
 	mmappings[mapping.start_addr] = mapping;
 }
 
@@ -110,7 +84,7 @@ void operf_process_info::process_deferred_mappings(string app_shortname)
 	while ((it != deferred_mmappings.end()) &&
 			(num_app_chars_matched < (int)app_basename.length())) {
 		process_new_mapping(it->second);
-		cverb << vperf << "Processed deferred mapping for " << it->second.filename << endl;
+		cverb << vmisc << "Processed deferred mapping for " << it->second.filename << endl;
 		it++;
 	}
 	deferred_mmappings.clear();

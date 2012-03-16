@@ -10,6 +10,9 @@
  * @author Maynard Johnson
  * (C) Copyright IBM Corp. 2011
  *
+ * Modified by Maynard Johnson <maynardj@us.ibm.com>
+ * (C) Copyright IBM Corporation 2012
+ *
  */
 
 #include <stdio.h>
@@ -38,6 +41,8 @@
 #include "op_abi.h"
 #include "op_events.h"
 #include "op_string.h"
+#include "operf_kernel.h"
+#include "child_reader.h"
 
 using namespace std;
 
@@ -46,8 +51,10 @@ typedef enum END_CODE {
 	APP_ABNORMAL_END = -2,
 	PERF_RECORD_ERROR = -3
 } end_code_t;
+
 // Globals
 char * app_name = NULL;
+uint64_t kernel_start, kernel_end;
 operf_read operfRead;
 op_cpu cpu_type;
 double cpu_speed;
@@ -76,6 +83,7 @@ int pid;
 int callgraph_depth;
 int mmap_pages_mult;
 string session_dir;
+string vmlinux;
 bool separate_cpu;
 vector<string> evts;
 }
@@ -86,8 +94,10 @@ vector<string> verbose_string;
 popt::option options_array[] = {
 	popt::option(verbose_string, "verbose", 'V',
 	             "verbose output", "debug,perf_events,misc,all"),
-	popt::option(operf_options::session_dir, "session-dir", '\0',
-	             "specify session path to hold sample data", "path"),
+	popt::option(operf_options::session_dir, "session-dir", 'd',
+	             "session path to hold sample data", "path"),
+	popt::option(operf_options::vmlinux, "vmlinux", 'k',
+	             "pathname for vmlinux file to use for symbol resolution and debuginfo", "path"),
 	popt::option(operf_options::callgraph_depth, "callgraph", 'g',
 	             "callgraph depth", "depth"),
 	popt::option(operf_options::system_wide, "system-wide", 's',
@@ -96,7 +106,7 @@ popt::option options_array[] = {
 	             "clear out old profile data"),
 	popt::option(operf_options::pid, "pid", 'p',
 	             "process ID to profile", "PID"),
-	popt::option(operf_options::mmap_pages_mult, "kernel-buffersize-multiplier", 'k',
+	popt::option(operf_options::mmap_pages_mult, "kernel-buffersize-multiplier", 'b',
 	             "factor by which kernel buffer size should be increased", "buffersize"),
 	popt::option(operf_options::evts, "events", 'e',
 	             "comma-separated list of event specifications for profiling. Event spec form is:\n"
@@ -238,8 +248,12 @@ int start_profiling_app(void)
 	} else if (operf_pid == 0) { // operf-record process
 		// setup operf recording
 		try {
+			OP_perf_utils::vmlinux_info_t vi;
+			vi.image_name = operf_options::vmlinux;
+			vi.start = kernel_start;
+			vi.end = kernel_end;
 			operf_record operfRecord(outputfile, app_PID,
-			                         (operf_options::pid == app_PID), events);
+			                         (operf_options::pid == app_PID), events, vi);
 			if (operfRecord.get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
 				 * occurred:
@@ -440,9 +454,11 @@ static void complete(void)
 	if (operf_options::reset) {
 		int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
 
-		if (nftw(current_sampledir.c_str(), __delete_sample_data, 32, flags) < 0 &&
+		if (nftw(current_sampledir.c_str(), __delete_sample_data, 32, flags) !=0 &&
 				errno != ENOENT) {
-			perror("nftw");
+			cerr << "Problem encountered clearing old sample data."
+			     << " Possible permissions problem." << endl;
+			cerr << "Try a manual removal of " << current_sampledir << endl;
 			cleanup();
 			exit(1);
 		}
@@ -545,8 +561,12 @@ int validate_app_name(void)
 		goto out;
 	}
 
-	if (index(app_name, '/')) {
+	if (index(app_name, '/') == app_name) {
 		strncpy(full_pathname, app_name, len);
+	} else if ((app_name[0] == '.') && (app_name[1] == '/')) {
+		getcwd(full_pathname, PATH_MAX);
+		strcat(full_pathname, "/");
+		strcat(full_pathname, (app_name + 2));
 	} else {
 		rc = get_PATH_based_pathname(full_pathname, PATH_MAX);
 	}
@@ -743,6 +763,112 @@ static void _process_session_dir(void)
 	cverb << vdebug << "Using samples dir " << samples_dir << endl;
 }
 
+bool _get_vmlinux_address_info(vector<string> args, string cmp_val, string &str)
+{
+	bool found = false;
+	child_reader reader("objdump", args);
+	if (reader.error()) {
+		cerr << "An error occurred while trying to get vmlinux address info:\n\n";
+		cerr << reader.error_str() << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	while (reader.getline(str)) {
+		if (str.find(cmp_val.c_str()) != string::npos) {
+			found = true;
+			break;
+		}
+	}
+	// objdump always returns SUCCESS so we must rely on the stderr state
+	// of objdump. If objdump error message is cryptic our own error
+	// message will be probably also cryptic
+	ostringstream std_err;
+	ostringstream std_out;
+	reader.get_data(std_out, std_err);
+	if (std_err.str().length()) {
+		cerr << "An error occurred while getting vmlinux address info:\n\n";
+		cerr << std_err.str() << endl;
+		// If we found the string we were looking for in objdump output,
+		// treat this as non-fatal error.
+		if (!found)
+			exit(EXIT_FAILURE);
+	}
+
+	// force error code to be acquired
+	reader.terminate_process();
+
+	// required because if objdump stop by signal all above things suceeed
+	// (signal error message are not output through stdout/stderr)
+	if (reader.error()) {
+		cerr << "An error occur during the execution of objdump to get vmlinux address info:\n\n";
+		cerr << reader.error_str() << endl;
+		if (!found)
+			exit(EXIT_FAILURE);
+	}
+	return found;
+}
+
+string _process_vmlinux(string vmlinux_file)
+{
+	vector<string> args;
+	char start[17], end[17];
+	string str, start_end;
+	bool found;
+	int ret;
+
+	no_vmlinux = false;
+	args.push_back("-h");
+	args.push_back(vmlinux_file);
+	if ((found = _get_vmlinux_address_info(args, " .text", str))) {
+		cverb << vmisc << str << endl;
+		ret = sscanf(str.c_str(), " %*s %*s %*s %s", start);
+	}
+	if (!found || ret != 1){
+		cerr << "Unable to obtain vmlinux start address." << endl;
+		cerr << "The specified vmlinux file (" << vmlinux_file << ") "
+		     << "does not seem to be valid." << endl;
+		cerr << "Make sure you are using a non-compressed image file "
+		     << "(e.g. vmlinux not vmlinuz)" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	args.clear();
+	args.push_back("-t");
+	args.push_back(vmlinux_file);
+	if ((found = _get_vmlinux_address_info(args, " _etext", str))) {
+		cverb << vmisc << str << endl;
+		ret = sscanf(str.c_str(), "%s", end);
+	}
+	if (!found || ret != 1){
+		cerr << "Unable to obtain vmlinux end address." << endl;
+		cerr << "The specified vmlinux file (" << vmlinux_file << ") "
+		     << "does not seem to be valid." << endl;
+		cerr << "Make sure you are using a non-compressed image file "
+		     << "(e.g. vmlinux not vmlinuz)" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	errno = 0;
+	kernel_start = strtoull(start, NULL, 16);
+	if (errno) {
+		cerr << "Unable to convert vmlinux start address " << start
+		     << " to a valid hex value. errno is " << strerror(errno) << endl;
+		exit(EXIT_FAILURE);
+	}
+	errno = 0;
+	kernel_end =  strtoull(end, NULL, 16);
+	if (errno) {
+		cerr << "Unable to convert vmlinux end address " << start
+		     << " to a valid hex value. errno is " << strerror(errno) << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	start_end = start;
+	start_end.append(",");
+	start_end.append(end);
+	return start_end;
+}
+
 static void process_args(int argc, char const ** argv)
 {
 	vector<string> non_options;
@@ -803,6 +929,14 @@ static void process_args(int argc, char const ** argv)
 		_process_events_list();
 	}
 
+	if (operf_options::vmlinux.empty()) {
+		no_vmlinux = true;
+		operf_create_vmlinux(NULL, NULL);
+	} else {
+		string startEnd = _process_vmlinux(operf_options::vmlinux);
+		operf_create_vmlinux(operf_options::vmlinux.c_str(), startEnd.c_str());
+	}
+
 	return;
 }
 
@@ -829,8 +963,6 @@ bool no_vmlinux;
 int main(int argc, char const *argv[])
 {
 	int rc;
-	// TODO:  For now, set no_vmlinux to true.  Need to implement vmlinux handling (with /proc/kallsyms?).
-	no_vmlinux = true;
 	if ((rc = _check_perf_events_cap())) {
 		if (rc == ENOSYS) {
 			cerr << "Your kernel does not implement a required syscall"
