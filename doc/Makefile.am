@@ -16,7 +16,8 @@ man_MANS = \
 	opgprof.1 \
 	ophelp.1 \
 	oparchive.1 \
-	opimport.1
+	opimport.1 \
+	operf.1
 
 htmldir = $(prefix)/share/doc/oprofile
 dist_html_DATA = oprofile.html internals.html opreport.xsd op-jit-devel.html
