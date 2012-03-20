@@ -1,5 +1,5 @@
 /**
- * @file operf.h
+ * @file operf_utils.h
  * Header file containing definitions for handling a user request to profile
  * using the new Linux Performance Events Subsystem.
  *

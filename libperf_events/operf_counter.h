@@ -31,7 +31,7 @@
 #include <fstream>
 #include "operf_event.h"
 #include "op_cpu_type.h"
-#include "operf.h"
+#include "operf_utils.h"
 
 class operf_record;
 

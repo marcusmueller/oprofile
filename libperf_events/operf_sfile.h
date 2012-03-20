@@ -13,7 +13,7 @@
 #ifndef OPD_SFILE_H
 #define OPD_SFILE_H
 
-#include "operf.h"
+#include "operf_utils.h"
 #include "odb.h"
 #include "op_hw_config.h"
 #include "op_types.h"

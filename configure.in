@@ -326,6 +326,7 @@ AC_SUBST(OP_DOCDIR)
 
 AC_OUTPUT(Makefile \
 	pe_profiling/Makefile \
+	libperf_events/Makefile \
 	m4/Makefile \
 	libutil/Makefile \
 	libutil/tests/Makefile \

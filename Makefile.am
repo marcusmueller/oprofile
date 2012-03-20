@@ -19,6 +19,7 @@ SUBDIRS = \
 	events \
 	doc \
 	gui \
+	libperf_events \
 	pe_profiling \
 	agents
 #### ATTENTION ####

@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #include <iostream>
 
-#include "operf.h"
+#include "operf_utils.h"
 #include "operf_mangling.h"
 #include "operf_kernel.h"
 #include "operf_sfile.h"
@@ -113,28 +113,28 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 }
 
 static void fill_header(struct opd_header * header, unsigned long counter,
-       		 vma_t anon_start, vma_t cg_to_anon_start,
-       		 int is_kernel, int cg_to_is_kernel,
-       		 int spu_samples, uint64_t embed_offset, time_t mtime)
-       {
+                        vma_t anon_start, vma_t cg_to_anon_start,
+                        int is_kernel, int cg_to_is_kernel,
+                        int spu_samples, uint64_t embed_offset, time_t mtime)
+{
 	const struct operf_event * event = operfRead.get_event_by_counter(counter);
 
-       	memset(header, '\0', sizeof(struct opd_header));
-       	header->version = OPD_VERSION;
-       	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
-       	header->cpu_type = cpu_type;
-       	header->ctr_event = event->op_evt_code;
-       	header->ctr_count = event->count;
-       	header->ctr_um = event->evt_um;
-       	header->is_kernel = is_kernel;
-       	header->cg_to_is_kernel = cg_to_is_kernel;
-       	header->cpu_speed = cpu_speed;
-       	header->mtime = mtime;
-       	header->anon_start = anon_start;
-       	header->spu_profile = spu_samples;
-       	header->embedded_offset = embed_offset;
-       	header->cg_to_anon_start = cg_to_anon_start;
-       }
+	memset(header, '\0', sizeof(struct opd_header));
+	header->version = OPD_VERSION;
+	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
+	header->cpu_type = cpu_type;
+	header->ctr_event = event->op_evt_code;
+	header->ctr_count = event->count;
+	header->ctr_um = event->evt_um;
+	header->is_kernel = is_kernel;
+	header->cg_to_is_kernel = cg_to_is_kernel;
+	header->cpu_speed = cpu_speed;
+	header->mtime = mtime;
+	header->anon_start = anon_start;
+	header->spu_profile = spu_samples;
+	header->embedded_offset = embed_offset;
+	header->cg_to_anon_start = cg_to_anon_start;
+}
 
 int operf_open_sample_file(odb_t *file, struct operf_sfile *last,
                          struct operf_sfile * sf, int counter, int cg)

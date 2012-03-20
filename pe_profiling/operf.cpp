@@ -30,7 +30,7 @@
 #include <sys/wait.h>
 #include <ftw.h>
 #include <iostream>
-#include "operf.h"
+#include "operf_utils.h"
 #include "popt_options.h"
 #include "op_libiberty.h"
 #include "string_manip.h"
@@ -38,7 +38,6 @@
 #include "operf_counter.h"
 #include "op_cpu_type.h"
 #include "op_cpufreq.h"
-#include "op_abi.h"
 #include "op_events.h"
 #include "op_string.h"
 #include "operf_kernel.h"
@@ -486,16 +485,10 @@ static void complete(void)
 	if (operfRead.is_valid()) {
 		try {
 			operfRead.convertPerfData();
-			char * cbuf;
-			cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);
-			strcpy(cbuf, operf_options::session_dir.c_str());
-			strcat(cbuf, "/abi");
-			op_write_abi_to_file(cbuf);
 			cerr << endl << "Use '--session-dir=" << operf_options::session_dir << "'" << endl
 			     << "with opreport and other post processing tools to view your profile data."
 			     << endl;
 			cerr << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << endl;
-			free(cbuf);
 		} catch (runtime_error e) {
 			cerr << "Caught exception from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;

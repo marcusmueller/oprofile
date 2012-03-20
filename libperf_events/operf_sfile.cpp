@@ -17,7 +17,7 @@
 
 #include "operf_sfile.h"
 #include "operf_kernel.h"
-#include "operf.h"
+#include "operf_utils.h"
 #include "cverb.h"
 #include "op_string.h"
 #include "operf_mangling.h"

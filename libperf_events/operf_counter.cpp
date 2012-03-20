@@ -28,8 +28,11 @@
 #include <stdlib.h>
 #include "op_events.h"
 #include "operf_counter.h"
+#include "op_abi.h"
 #include "cverb.h"
 #include "operf_process_info.h"
+#include "op_libiberty.h"
+
 
 using namespace std;
 using namespace OP_perf_utils;
@@ -523,5 +526,11 @@ int operf_read::convertPerfData(void)
 
 	process_map.clear();
 	close(info.traceFD);
+	char * cbuf;
+	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);
+	strcpy(cbuf, operf_options::session_dir.c_str());
+	strcat(cbuf, "/abi");
+	op_write_abi_to_file(cbuf);
+	free(cbuf);
 	return num_bytes;
 }

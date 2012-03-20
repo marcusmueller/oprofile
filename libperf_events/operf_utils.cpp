@@ -25,7 +25,7 @@
 #include <cverb.h>
 #include <iostream>
 #include "operf_counter.h"
-#include "operf.h"
+#include "operf_utils.h"
 #ifdef HAVE_LIBPFM
 #include <perfmon/pfmlib.h>
 #endif
@@ -886,4 +886,3 @@ u64 OP_perf_utils::get_checksum_for_file(string filename)
 
 	return checksum;
 }
-

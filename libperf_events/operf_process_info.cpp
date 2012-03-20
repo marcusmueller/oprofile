@@ -16,7 +16,7 @@
 #include <map>
 #include "operf_process_info.h"
 #include "file_manip.h"
-#include "operf.h"
+#include "operf_utils.h"
 
 using namespace std;
 using namespace OP_perf_utils;
@@ -130,4 +130,3 @@ const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample
 	}
 	return NULL;
 }
-
