@@ -1,0 +1,106 @@
+.\" Manpage for operf
+.\" Author: Breno Leitao <brenohl@br.ibm.com>
+.TH OPERF 1 "@DATE@" "oprofile @VERSION@"
+.SH NAME
+operf \- Performance profiler tool for Linux
+
+.SH SYNOPSIS
+.B operf
+[
+.I options
+]
+[ --pid <pid> | [ command [ args ] ] ]
+
+.SH DESCRIPTION
+Operf is a Linux tool that can be used in place of opcontrol for profiling. Operf
+uses Linux Performance Events Subsystem, and hence, does not need the opcontrol daemon to be running
+when running operf. More than that, opcontrol shouldn't be running when running
+operf.
+.br
+The profile data is saved in the file system directory (usually at
+.I oprofile_data
+in the current directory).
+The usual post-profiling analysis tools such as
+.BI opreport(1)
+and
+.BI opannotate(1)
+can be used to generate profile reports.
+.br
+
+.SH OPTIONS
+.TP
+.BI command
+The command or application to be profiled.
+.I args
+are the input arguments that the command or application requires.  Either
+.I command
+or
+.I --pid
+is required, but
+.B cannot
+be used simultaneously.
+.br
+.TP
+.BI "--pid / -p [PID]"
+This option enables operf to profile a running application. <PID>
+should be the process ID of the process you wish to profile.
+.br
+.TP
+.BI "--verbose / -V [level]"
+This increases the verbosity of the output. Level could be:  debug,
+perf_events, misc, all.
+.br
+.TP
+.BI "--callgraph / -g [depth]"
+This option enables the callgraph to be saved during profiling.
+.br
+.TP
+.BI "--reset / -r"
+This option clears out old profile data. You should almost always do this.
+.br
+.TP
+.BI "--kernel-buffersize-multiplier / -k [buffersize]"
+This option enables operf to increase the kernel buffer size by a
+factor of <buffersize>.
+.br
+.TP
+.BI "--events / -e [event1[,event2[,...]]]"
+This option is for passing a comma-separated list of event specifications
+for profiling. Each event spec is of the form:
+.br
+name:count[:unitmask[:kernel[:user]]]
+.TP
+.BI "--separate-cpu / -c"
+This option categorizes samples by cpu.
+.br
+.TP
+.BI "--session-dir [path]"
+This option specifies the session path to hold the sample data. If not specified,
+the data is saved in the
+.I oprofile_data
+directory on the current path.
+.br
+.TP
+.BI "--version / -v"
+Show operf version.
+.br
+.TP
+.BI "--help / -h"
+Show a help message.
+.br
+.TP
+.BI "--usage"
+Display brief usage message.
+.br
+
+.SH EXAMPLE
+$ operf make
+
+.SH VERSION
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+opreport(1), opannotate(1).
+
+.SH BUGS
+Some parameters are still under development.
