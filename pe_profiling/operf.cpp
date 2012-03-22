@@ -570,12 +570,20 @@ int validate_app_name(void)
 	}
 
 	if (index(app_name, '/') == app_name) {
+		// Full pathname of app was specified, starting with "/".
 		strncpy(full_pathname, app_name, len);
 	} else if ((app_name[0] == '.') && (app_name[1] == '/')) {
+		// Passed app is in current directory; e.g., "./myApp"
 		getcwd(full_pathname, PATH_MAX);
 		strcat(full_pathname, "/");
 		strcat(full_pathname, (app_name + 2));
+	} else if (index(app_name, '/')) {
+		// Passed app is in a subdirectory of cur dir; e.g., "test-stuff/myApp"
+		getcwd(full_pathname, PATH_MAX);
+		strcat(full_pathname, "/");
+		strcat(full_pathname, app_name);
 	} else {
+		// Pass app name, at this point, MUST be found in PATH
 		rc = get_PATH_based_pathname(full_pathname, PATH_MAX);
 	}
 
