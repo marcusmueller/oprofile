@@ -9,17 +9,19 @@ operf \- Performance profiler tool for Linux
 [
 .I options
 ]
-[ --pid <pid> | [ command [ args ] ] ]
+[ --system-wide | --pid <pid> | [ command [ args ] ] ]
 
 .SH DESCRIPTION
 Operf is a Linux tool that can be used in place of opcontrol for profiling. Operf
 uses Linux Performance Events Subsystem, and hence, does not need the opcontrol daemon to be running
 when running operf. More than that, opcontrol shouldn't be running when running
 operf.
-.br
-The profile data is saved in the file system directory (usually at
-.I oprofile_data
-in the current directory).
+.P
+By default, operf stores profiling data in <current_dir>/oprofile_data.  You can change
+this by way of the
+.I --session-dir
+option.
+.P
 The usual post-profiling analysis tools such as
 .BI opreport(1)
 and
@@ -34,8 +36,10 @@ The command or application to be profiled.
 .I args
 are the input arguments that the command or application requires.  Either
 .I command
-or
+,
 .I --pid
+or
+.I --system-wide
 is required, but
 .B cannot
 be used simultaneously.
@@ -44,6 +48,14 @@ be used simultaneously.
 .BI "--pid / -p [PID]"
 This option enables operf to profile a running application. <PID>
 should be the process ID of the process you wish to profile.
+.br
+.TP
+.BI "--system-wide / -s"
+This option is for performing a system-wide profile.  You must
+have root authority to run operf in this mode.  It is recommended
+that when running operf with this option, the user's current working
+directory should be /root or a subdirectory of /root to avoid
+storing sample data files in locations accessible by regular users.
 .br
 .TP
 .BI "--verbose / -V [level]"

@@ -568,12 +568,8 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 	return;
 }
 
-/* Obtain process information for an active process (where the user has
- * passed in a process ID via the --pid option), and generate the
- * necessary PERF_RECORD_COMM and PERF_RECORD_MMAP entries into the
- * profile data stream.
- */
-int OP_perf_utils::op_record_process_info(pid_t pid, operf_record * pr, int output_fd)
+static int _record_one_process_info(pid_t pid, operf_record * pr,
+                                    int output_fd)
 {
 	struct comm_event comm;
 	char fname[PATH_MAX];
@@ -584,8 +580,6 @@ int OP_perf_utils::op_record_process_info(pid_t pid, operf_record * pr, int outp
 	DIR *tids;
 	struct dirent dirent, *next;
 	int ret = 0;
-
-	cverb << vperf << "op_record_process_info" << endl;
 
 	snprintf(fname, sizeof(fname), "/proc/%d/status", pid);
 	fp = fopen(fname, "r");
@@ -628,7 +622,7 @@ int OP_perf_utils::op_record_process_info(pid_t pid, operf_record * pr, int outp
 	if (tgid != pid) {
 		// passed pid must have been a secondary thread
 		comm.tid = pid;
-		int num = op_write_output(output_fd, &comm, comm.header.size);
+		int num = OP_perf_utils::op_write_output(output_fd, &comm, comm.header.size);
 		pr->add_to_total(num);
 		goto out;
 	}
@@ -650,7 +644,7 @@ int OP_perf_utils::op_record_process_info(pid_t pid, operf_record * pr, int outp
 
 		comm.tid = pid;
 
-		int num = op_write_output(output_fd, &comm, comm.header.size);
+		int num = OP_perf_utils::op_write_output(output_fd, &comm, comm.header.size);
 		pr->add_to_total(num);
 	}
 	closedir(tids);
@@ -664,6 +658,48 @@ out:
 		      << dec << pid << " from /proc fs." << endl;
 	else
 		cverb << vperf << "Created COMM event for " << comm.comm << endl;
+	return ret;
+
+}
+
+/* Obtain process information for an active process (where the user has
+ * passed in a process ID via the --pid option) or all active processes
+ * (where system_wide==true).  Then generate the necessary PERF_RECORD_COMM
+ * and PERF_RECORD_MMAP entries into the profile data stream.
+ */
+int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_record * pr,
+                                          int output_fd)
+{
+	int ret;
+	cverb << vperf << "op_record_process_info" << endl;
+	if (!system_wide) {
+		ret = _record_one_process_info(pid, pr, output_fd);
+	} else {
+		char buff[BUFSIZ];
+		pid_t tgid = 0;
+		size_t size = 0;
+		DIR *pids;
+		struct dirent dirent, *next;
+
+		pids = opendir("/proc");
+		if (pids == NULL) {
+			cerr << "Unable to open /proc." << endl;
+			return -1;
+		}
+
+		while (!readdir_r(pids, &dirent, &next) && next) {
+			char *end;
+			pid = strtol(dirent.d_name, &end, 10);
+			if (((errno == ERANGE && (pid == LONG_MAX || pid == LONG_MIN))
+					|| (errno != 0 && pid == 0)) || (end == dirent.d_name)) {
+				cverb << vmisc << "/proc entry " << dirent.d_name << " is not a PID" << endl;
+				continue;
+			}
+			if ((ret = _record_one_process_info(pid, pr, output_fd)) < 0)
+				break;
+		}
+		closedir(pids);
+	}
 	return ret;
 }
 

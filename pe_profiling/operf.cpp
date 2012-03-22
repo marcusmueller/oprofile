@@ -70,6 +70,7 @@ static pid_t operf_pid;
 static string samples_dir;
 static string outputfile;
 static bool startApp;
+static bool reset_done = false;
 uint op_nr_counters;
 vector<operf_event_t> events;
 
@@ -219,7 +220,7 @@ int start_profiling_app(void)
 {
 	// The only process that should return from this function is the process
 	// which invoked it.  Any forked process must do _exit() rather than return().
-	startApp = app_PID != operf_options::pid;
+	startApp = ((app_PID != operf_options::pid) && (operf_options::system_wide == false));
 
 	if (startApp) {
 		if (pipe(app_ready_pipe) < 0 || pipe(start_app_pipe) < 0) {
@@ -251,7 +252,7 @@ int start_profiling_app(void)
 			vi.image_name = operf_options::vmlinux;
 			vi.start = kernel_start;
 			vi.end = kernel_end;
-			operf_record operfRecord(outputfile, app_PID,
+			operf_record operfRecord(outputfile, operf_options::system_wide, app_PID,
 			                         (operf_options::pid == app_PID), events, vi);
 			if (operfRecord.get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
@@ -267,6 +268,7 @@ int start_profiling_app(void)
 				ofstream of;
 				of.open(outputfile.c_str(), ios_base::trunc);
 				of.close();
+				cerr << "operf record init failed" << endl;
 				cerr << "usage: operf [options] --pid=<PID> | appname [args]" << endl;
 				// Exit with SUCCESS to avoid the unnecessary "operf-record process ended
 				// abnormally" message
@@ -322,7 +324,8 @@ int start_profiling_app(void)
 			}
 		}
 	}
-	app_started = true;
+	if (!operf_options::system_wide)
+		app_started = true;
 
 	// parent returns
 	return 0;
@@ -369,7 +372,8 @@ static end_code_t _run(void)
 		return PERF_RECORD_ERROR;
 	}
 	// parent continues here
-	cverb << vdebug << "app " << app_PID << " is running" << endl;
+	if (startApp)
+		cverb << vdebug << "app " << app_PID << " is running" << endl;
 	set_signals();
 	if (startApp) {
 		// User passed in command or program name to start
@@ -393,16 +397,16 @@ static end_code_t _run(void)
 		}
 		rc = _kill_operf_pid();
 	} else {
-		// User passed in --pid
-		cverb << vdebug << "going into waitpid on operf record process " << app_PID << endl;
+		// User passed in --pid or --system-wide
+		cverb << vdebug << "going into waitpid on operf record process " << operf_pid << endl;
 		if (waitpid(operf_pid, &waitpid_status, 0) < 0) {
 			if (errno == EINTR) {
 				cverb << vdebug << "Caught ctrl-C. Killing operf-record process . . ." << endl;
-				_kill_operf_pid();
+				rc = _kill_operf_pid();
 			} else {
 				cerr << "waitpid errno is " << errno << endl;
 				perror("waitpid for operf-record process failed");
-				rc = APP_ABNORMAL_END;
+				rc = PERF_RECORD_ERROR;
 			}
 		} else {
 			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
@@ -410,7 +414,11 @@ static end_code_t _run(void)
 			} else if (WIFEXITED(waitpid_status)) {
 				cerr <<  "operf-record process ended abnormally: "
 						<< WEXITSTATUS(waitpid_status) << endl;
-				rc = APP_ABNORMAL_END;
+				rc = PERF_RECORD_ERROR;
+			} else if (WIFSIGNALED(waitpid_status)) {
+				cerr << "operf-record process killed by signal "
+				     << WTERMSIG(waitpid_status) << endl;
+				rc = PERF_RECORD_ERROR;
 			}
 		}
 	}
@@ -446,7 +454,7 @@ static void complete(void)
 	string current_sampledir = samples_dir + "/current/";
 	current_sampledir.copy(op_samples_current_dir, current_sampledir.length(), 0);
 
-	if (!app_started) {
+	if (!app_started && !operf_options::system_wide) {
 		cleanup();
 		return;
 	}
@@ -461,8 +469,9 @@ static void complete(void)
 			cleanup();
 			exit(1);
 		}
+		reset_done = true;
 	}
-	rc = mkdir(current_sampledir.c_str(), S_IRWXU);
+	rc = mkdir(current_sampledir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (rc && (errno != EEXIST)) {
 		cerr << "Error trying to create " << current_sampledir << " dir." << endl;
 		perror("mkdir failed with");
@@ -486,8 +495,14 @@ static void complete(void)
 		try {
 			operfRead.convertPerfData();
 			cerr << endl << "Use '--session-dir=" << operf_options::session_dir << "'" << endl
-			     << "with opreport and other post processing tools to view your profile data."
+			     << "with opreport and other post-processing tools to view your profile data."
 			     << endl;
+			if (operf_options::system_wide)
+				cerr << "\nNOTE: The system-wide profile you requested was collected "
+				"on a per-process basis." << endl
+				<< "Adding '--merge=tgid' when using post-processing tools will make the output"
+				<< endl << "more readable." << endl;
+
 			cerr << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << endl;
 		} catch (runtime_error e) {
 			cerr << "Caught exception from operf_read::convertPerfData" << endl;
@@ -714,13 +729,13 @@ static void _process_session_dir(void)
 		operf_options::session_dir +="/oprofile_data";
 		samples_dir = operf_options::session_dir + "/samples";
 		free(cwd);
-		rc = mkdir(operf_options::session_dir.c_str(), S_IRWXU);
+		rc = mkdir(operf_options::session_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 		if (rc && (errno != EEXIST)) {
 			cerr << "Error trying to create " << operf_options::session_dir << " dir." << endl;
 			perror("mkdir failed with");
 			exit(EXIT_FAILURE);
 		}
-		rc = mkdir(samples_dir.c_str(), S_IRWXU);
+		rc = mkdir(samples_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 		if (rc && (errno != EEXIST)) {
 			cerr << "Error trying to create " << samples_dir << " dir." << endl;
 			perror("mkdir failed with");
@@ -893,10 +908,8 @@ static void process_args(int argc, char const ** argv)
 			__print_usage_and_exit(NULL);
 		app_PID = operf_options::pid;
 	} else if (operf_options::system_wide) {
-		cerr << "The --system-wide option is not yet supported." << endl;
-		exit(EXIT_FAILURE);
-	}
-	else {
+		app_PID = -1;
+	} else {
 		__print_usage_and_exit(NULL);
 	}
 	/*  At this point, we know which of the three kinds of profiles the user requested:
@@ -973,6 +986,11 @@ int main(int argc, char const *argv[])
 	cpu_type = op_get_cpu_type();
 	cpu_speed = op_cpu_frequency();
 	process_args(argc, argv);
+	uid_t uid = geteuid();
+	if (operf_options::system_wide && uid != 0) {
+		cerr << "You must be root to do system-wide profiling." << endl;
+		exit(1);
+	}
 
 	if (cpu_type == CPU_NO_GOOD) {
 		cerr << "Unable to ascertain cpu type.  Exiting." << endl;
@@ -1002,5 +1020,7 @@ int main(int argc, char const *argv[])
 		}
 	}
 	complete();
+	if (operf_options::reset && reset_done == false)
+		cerr << "Requested reset was not performed due to problem running operf command." << endl;
 	return 0;
 }

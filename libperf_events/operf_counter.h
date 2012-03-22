@@ -71,7 +71,11 @@ private:
 
 class operf_record {
 public:
-	operf_record(std::string outfile, pid_t the_pid, bool pid_running,
+	/* For system-wide profiling, set sys_wide=true, the_pid=-1, and pid_running=false.
+	 * For single app profiling, set sys_wide=false, the_pid=<processID-to-profile>,
+	 * and pid_running=true if profiling an already active process; otherwise false.
+	 */
+	operf_record(std::string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
 	             std::vector<operf_event_t> & evts, OP_perf_utils::vmlinux_info_t vi);
 	~operf_record();
 	void recordPerfData(void);
@@ -82,6 +86,7 @@ public:
 	bool get_valid(void) { return valid; }
 
 private:
+	void create(std::string outfile, std::vector<operf_event_t> & evts);
 	void setup(void);
 	int prepareToRecord(int counter, int cpu, int fd);
 	void write_op_header_info(void);
@@ -91,6 +96,7 @@ private:
 	int num_cpus;
 	pid_t pid;
 	bool pid_started;
+	bool system_wide;
 	std::vector< std::vector<operf_counter> > perfCounters;
 	int total_bytes_recorded;
 	int poll_count;

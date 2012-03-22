@@ -100,7 +100,6 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 			ret = OP_PERF_HANDLED_ERROR;
 		} else {
 			cerr << "perf_event_open failed with " << strerror(errno) << endl;
-			cerr << "cpu is " << cpu << endl;
 		}
 		return ret;
 	}
@@ -127,22 +126,25 @@ operf_record::~operf_record()
 	perfCounters.clear();
 }
 
-operf_record::operf_record(string outfile, pid_t the_pid, bool pid_running,
+operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
                            vector<operf_event_t> & events, vmlinux_info_t vi)
 {
 	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
 	sigset_t ss;
-
 	vmlinux_file = vi.image_name;
 	kernel_start = vi.start;
 	kernel_end = vi.end;
 	pid = the_pid;
 	pid_started = pid_running;
+	system_wide = sys_wide;
 	total_bytes_recorded = 0;
 	poll_count = 0;
 	evts = events;
 	valid = false;
+
+	if (system_wide && (pid != -1 || pid_started))
+		return;  // object is not valid
 
 	opHeader.data_size = 0;
 	outputFile = open(outfile.c_str(), flags, S_IRUSR|S_IWUSR);
@@ -257,9 +259,12 @@ void operf_record::setup()
 	string err_msg;
 	char cpus_online[129];
 
-	cverb << vperf << "operf_record::setup() with pid_started = " << pid_started << endl;
+	if (system_wide)
+		cverb << vperf << "operf_record::setup() for system-wide profiling" << endl;
+	else
+		cverb << vperf << "operf_record::setup() with pid_started = " << pid_started << endl;
 
-	if (pid_started) {
+	if (!system_wide && pid_started) {
 		/* We need to verify the existence of the passed PID before trying
 		 * perf_event_open or all hell will break loose.
 		 */
@@ -330,7 +335,7 @@ void operf_record::setup()
 		perfCounters.push_back(tmp_pcvec);
 		for (unsigned event = 0; event < evts.size(); event++) {
 			evts[event].counter = event;
-			perfCounters[cpu].push_back(operf_counter(evts[event], !pid_started));
+			perfCounters[cpu].push_back(operf_counter(evts[event], (!pid_started && !system_wide)));
 			if ((rc = perfCounters[cpu][event].perf_event_open(pid, real_cpu, event, this)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
 				goto error;
@@ -344,8 +349,8 @@ void operf_record::setup()
 	if (!all_cpus_avail)
 		closedir(dir);
 	write_op_header_info();
-	if (pid_started) {
-		if (op_record_process_info(pid, this, outputFile) < 0) {
+	if (pid_started || system_wide) {
+		if (op_record_process_info(system_wide, pid, this, outputFile) < 0) {
 			for (int i = 0; i < num_cpus; i++) {
 				for (unsigned int evt = 0; evt < evts.size(); evt++)
 					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
