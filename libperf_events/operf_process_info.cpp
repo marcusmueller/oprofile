@@ -39,32 +39,23 @@ operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool ap
 
 }
 
-void operf_process_info::process_new_mapping(struct operf_mmap mapping)
+void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
 {
 	// If we do not know the full pathname of our app yet,
 	// let's try to determine if the passed filename is a good
 	// candidate appname.
 	if ((appname_is_fullname < YES_FULLNAME) && (num_app_chars_matched < (int)app_basename.length())) {
 		string basename;
-		int num_matched_chars = get_num_matching_chars(mapping.filename, basename);
+		int num_matched_chars = get_num_matching_chars(mapping->filename, basename);
 		if (num_matched_chars > num_app_chars_matched) {
 			appname_is_fullname = MAYBE_FULLNAME;
-			app_name = mapping.filename;
+			app_name = mapping->filename;
 			app_basename = basename;
 			num_app_chars_matched = num_matched_chars;
 			cverb << vmisc << "Best appname match is " << app_name << endl;
 		}
 	}
-	mapping.buildid_valid = get_build_id(mapping.buildid);
-	if (!mapping.buildid_valid) {
-		mapping.checksum = get_checksum_for_file(mapping.filename);
-		cverb << vmisc << "checksum for file " << mapping.filename << ": "
-		      << hex << mapping.checksum << endl;
-	} else {
-		cverb << vmisc << "buildid for file " << mapping.filename << ": "
-		      << mapping.buildid << endl;
-	}
-	mmappings[mapping.start_addr] = mapping;
+	mmappings[mapping->start_addr] = mapping;
 }
 
 /* This method should only be invoked when a "delayed" COMM event is processed.
@@ -80,11 +71,11 @@ void operf_process_info::process_deferred_mappings(string app_shortname)
 	app_name = app_shortname;
 	app_basename = app_shortname;
 	valid = true;
-	map<u64, struct operf_mmap>::iterator it = deferred_mmappings.begin();
+	map<u64, struct operf_mmap *>::iterator it = deferred_mmappings.begin();
 	while ((it != deferred_mmappings.end()) &&
 			(num_app_chars_matched < (int)app_basename.length())) {
 		process_new_mapping(it->second);
-		cverb << vmisc << "Processed deferred mapping for " << it->second.filename << endl;
+		cverb << vmisc << "Processed deferred mapping for " << it->second->filename << endl;
 		it++;
 	}
 	deferred_mmappings.clear();
@@ -122,10 +113,10 @@ int operf_process_info::get_num_matching_chars(string mapped_filename, string & 
 
 const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample_addr)
 {
-	map<u64, struct operf_mmap>::iterator it = mmappings.begin();
+	map<u64, struct operf_mmap *>::iterator it = mmappings.begin();
 	while (it != mmappings.end()) {
-		if (sample_addr >= it->second.start_addr && sample_addr <= it->second.end_addr)
-			return &(it->second);
+		if (sample_addr >= it->second->start_addr && sample_addr <= it->second->end_addr)
+			return it->second;
 		it++;
 	}
 	return NULL;

@@ -47,12 +47,26 @@ be used simultaneously.
 .TP
 .BI "--pid / -p [PID]"
 This option enables operf to profile a running application. <PID>
-should be the process ID of the process you wish to profile.
+should be the process ID of the process you wish to profile.  When
+finished profiling (e.g., when the profiled process ends), press
+Ctrl-c to stop operf.
 .br
 .TP
 .BI "--system-wide / -s"
 This option is for performing a system-wide profile.  You must
-have root authority to run operf in this mode.  It is recommended
+have root authority to run operf in this mode.  When finished profiling,
+Ctrl-c to stop operf. If you run
+.BI operf
+.BI --system-wide
+as a background job (i.e., with the &), you
+.B must
+stop it in a controlled manner in order for it to process the profile
+data it has collected.  Use
+.BI kill
+.BI -SIGINT
+.BI <operf-PID>
+for this purpose.
+It is recommended
 that when running operf with this option, the user's current working
 directory should be /root or a subdirectory of /root to avoid
 storing sample data files in locations accessible by regular users.

@@ -21,16 +21,11 @@
 
 extern verbose vmisc;
 
-#define BUILD_ID_SIZE 20
-
 struct operf_mmap {
 	u32 pid;
 	u64 start_addr;
 	u64 end_addr;
 	u64 pgoff;
-	char * buildid;
-	bool buildid_valid;
-	u64 checksum;
 	char filename[PATH_MAX];
 };
 
@@ -57,11 +52,11 @@ class operf_process_info {
 public:
 	operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid);
 	bool is_valid(void) { return valid; }
-	void process_new_mapping(struct operf_mmap mapping);
+	void process_new_mapping(struct operf_mmap * mapping);
 	void process_deferred_mappings(std::string app_shortname);
 	std::string get_app_name(void) { return app_name; }
-	void add_deferred_mapping(struct operf_mmap mapping)
-	{ deferred_mmappings[mapping.start_addr] = mapping; }
+	void add_deferred_mapping(struct operf_mmap * mapping)
+	{ deferred_mmappings[mapping->start_addr] = mapping; }
 	bool appname_valid(void)
 	{
 		bool result;
@@ -91,11 +86,13 @@ private:
 	op_fullname_t appname_is_fullname;
 	std::string app_basename;
 	int  num_app_chars_matched;
-	std::map<u64, struct operf_mmap> mmappings;
-	std::map<u64, struct operf_mmap> deferred_mmappings;
+	std::map<u64, struct operf_mmap *> mmappings;
+	std::map<u64, struct operf_mmap *> deferred_mmappings;
 	int get_num_matching_chars(std::string mapped_filename, std::string & basename);
 };
 
 extern std::map<pid_t, operf_process_info *> process_map;
+extern std::multimap<std::string, struct operf_mmap *> all_images_map;
+
 
 #endif /* OPERF_PROCESS_INFO_H_ */

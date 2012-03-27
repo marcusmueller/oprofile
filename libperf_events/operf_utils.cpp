@@ -20,8 +20,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <fcntl.h>
-#include <libelf.h>
-#include <gelf.h>
 #include <cverb.h>
 #include <iostream>
 #include "operf_counter.h"
@@ -31,6 +29,7 @@
 #endif
 #include "op_types.h"
 #include "operf_process_info.h"
+#include "file_manip.h"
 #include "operf_kernel.h"
 #include "operf_sfile.h"
 
@@ -47,7 +46,8 @@ extern verbose vperf;
 using namespace std;
 
 map<pid_t, operf_process_info *> process_map;
-struct operf_mmap kernel_mmap;
+multimap<string, struct operf_mmap *> all_images_map;
+struct operf_mmap * kernel_mmap;
 
 
 static struct operf_transient trans;
@@ -164,7 +164,7 @@ static void __handle_comm_event(event_t * event)
 	if (it == process_map.end()) {
 		operf_process_info * proc = new operf_process_info(event->comm.pid,
 		                                                   app_name ? app_name : event->comm.comm,
-		                                                   app_name == NULL, true);
+		                                                   app_name != NULL, true);
 		cverb << vperf << "Adding new proc info to collection for PID " << event->comm.pid << endl;
 		process_map[event->comm.pid] = proc;
 	} else {
@@ -181,29 +181,36 @@ static void __handle_comm_event(event_t * event)
 
 static void __handle_mmap_event(event_t * event)
 {
-	struct operf_mmap mapping;
-	mapping.start_addr = event->mmap.start;
-        strcpy(mapping.filename, event->mmap.filename);
+	string image_basename = op_basename(event->mmap.filename);
+	struct operf_mmap * mapping = NULL;
+	multimap<string, struct operf_mmap *>::iterator it;
+	pair<multimap<string, struct operf_mmap *>::iterator,
+	     multimap<string, struct operf_mmap *>::iterator> range;
 
-	mapping.end_addr = (event->mmap.len == 0ULL)? 0ULL : mapping.start_addr + event->mmap.len - 1;
-	mapping.pgoff = event->mmap.pgoff;
-	mapping.pid = event->mmap.pid;
+	range = all_images_map.equal_range(image_basename);
+	for (it = range.first; it != range.second; it++) {
+		if ((strcmp((*it).second->filename, image_basename.c_str())) == 0) {
+			mapping = (*it).second;
+			break;
+		}
+	}
+	if (!mapping) {
+		mapping = new struct operf_mmap;
+		mapping->start_addr = event->mmap.start;
+	        strcpy(mapping->filename, event->mmap.filename);
 
-	cverb << vperf << "PERF_RECORD_MMAP for " << event->mmap.filename << endl;
-	cverb << vperf << "\tstart_addr: " << hex << mapping.start_addr;
-	cverb << vperf << "; pg offset: " << mapping.pgoff << endl;
+		mapping->end_addr = (event->mmap.len == 0ULL)? 0ULL : mapping->start_addr + event->mmap.len - 1;
+		mapping->pgoff = event->mmap.pgoff;
+		mapping->pid = event->mmap.pid;
+
+		cverb << vperf << "PERF_RECORD_MMAP for " << event->mmap.filename << endl;
+		cverb << vperf << "\tstart_addr: " << hex << mapping->start_addr;
+		cverb << vperf << "; pg offset: " << mapping->pgoff << endl;
+
+		all_images_map.insert(pair<string, struct operf_mmap *>(image_basename, mapping));
+	}
 
 	if (event->header.misc & PERF_RECORD_MISC_KERNEL) {
-		mapping.buildid_valid = OP_perf_utils::get_build_id(mapping.buildid);
-		if (!mapping.buildid_valid) {
-			mapping.checksum = OP_perf_utils::get_checksum_for_file(mapping.filename);
-			cverb << vmisc << "checksum for file " << mapping.filename << ": "
-			      << hex << mapping.checksum << endl;
-		} else {
-			cverb << vmisc << "buildid for file " << mapping.filename << ": "
-			      << mapping.buildid << endl;
-		}
-		//mapping.checksum = 0xdadd0000abcd1234;
 		kernel_mmap = mapping;
 	} else {
 		map<pid_t, operf_process_info *>::iterator it;
@@ -377,20 +384,12 @@ static void __handle_sample_event(event_t * event)
 	// Use that mmapping to set fields in trans.
 	const struct operf_mmap * map;
 	if (trans.in_kernel) {
-		map = &kernel_mmap;
+		map = kernel_mmap;
 	} else {
 		map = proc->find_mapping_for_sample(data.ip);
 	}
 	if (map) {
 		cverb << vperf << "Found mmap for sample" << endl;
-		if (map->buildid_valid) {
-			trans.buildid = map->buildid;
-			trans.buildid_valid = true;
-		} else {
-			trans.checksum = map->checksum;
-			trans.buildid_valid = false;
-			// checksums are guaranteed unique, so we need the filename to be certain
-		}
 		trans.image_name = map->filename;
 		trans.app_filename = proc->get_app_name().c_str();
 		trans.start_addr = map->start_addr;
@@ -568,7 +567,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 	return;
 }
 
-static int _record_one_process_info(pid_t pid, operf_record * pr,
+static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
                                     int output_fd)
 {
 	struct comm_event comm;
@@ -584,11 +583,16 @@ static int _record_one_process_info(pid_t pid, operf_record * pr,
 	snprintf(fname, sizeof(fname), "/proc/%d/status", pid);
 	fp = fopen(fname, "r");
 	if (fp == NULL) {
-		// Process must have finished or invalid PID passed into us.
-		// We'll bail out now.
-		cerr << "Unable to find process information for PID " << pid << "." << endl;
-		cverb << vperf << "couldn't open " << fname << endl;
-		return -1;
+		/* Process must have finished or invalid PID passed into us.
+		 * If we're doing system-wide profiling, this case can naturally
+		 * occur, and it's not an error.  But if profiling on a single
+		 * application, we can't continue after this, so we'll bail out now.
+		 */
+		if (!sys_wide) {
+			cerr << "Unable to find process information for process " << pid << "." << endl;
+			cverb << vperf << "couldn't open " << fname << endl;
+			return -1;
+		}
 	}
 
 	memset(&comm, 0, sizeof(comm));
@@ -673,7 +677,7 @@ int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_rec
 	int ret;
 	cverb << vperf << "op_record_process_info" << endl;
 	if (!system_wide) {
-		ret = _record_one_process_info(pid, pr, output_fd);
+		ret = _record_one_process_info(pid, system_wide, pr, output_fd);
 	} else {
 		char buff[BUFSIZ];
 		pid_t tgid = 0;
@@ -695,7 +699,7 @@ int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_rec
 				cverb << vmisc << "/proc entry " << dirent.d_name << " is not a PID" << endl;
 				continue;
 			}
-			if ((ret = _record_one_process_info(pid, pr, output_fd)) < 0)
+			if ((ret = _record_one_process_info(pid, system_wide, pr, output_fd)) < 0)
 				break;
 		}
 		closedir(pids);
@@ -892,33 +896,4 @@ int OP_perf_utils::op_get_next_online_cpu(DIR * dir, struct dirent *entry)
 		goto again;
 	else
 		return cpu_num;
-}
-
-/* Stub for future enhancement. Returns false.
- * Length of build id is BUILD_ID_SIZE
- */
-bool OP_perf_utils::get_build_id(char * buildid)
-{
-	bool ret = false;
-	buildid = NULL;
-	// TODO:  flesh out this function
-	return ret;
-}
-
-u64 OP_perf_utils::get_checksum_for_file(string filename)
-{
-	Elf *elf;
-	u64 checksum;
-	int fd;
-
-        elf_version(EV_CURRENT);
-	fd = open(filename.c_str(), O_RDONLY);
-	if (fd < 0)
-		return 0;
-	elf = elf_begin(fd, ELF_C_READ, NULL);
-	checksum = gelf_checksum(elf);
-	elf_end(elf);
-	close(fd);
-
-	return checksum;
 }

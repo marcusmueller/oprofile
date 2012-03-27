@@ -528,8 +528,13 @@ int operf_read::convertPerfData(void)
 	map<pid_t, operf_process_info *>::iterator it = process_map.begin();
 	while (it != process_map.end())
 		delete it++->second;
-
 	process_map.clear();
+
+	multimap<string, struct operf_mmap *>::iterator images_it = all_images_map.begin();
+	while (images_it != all_images_map.end())
+		delete images_it++->second;
+	all_images_map.clear();
+
 	close(info.traceFD);
 	char * cbuf;
 	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);

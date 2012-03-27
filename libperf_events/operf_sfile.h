@@ -40,9 +40,6 @@ struct operf_kernel_image;
 struct operf_sfile {
 	/** hash value for this sfile */
 	unsigned long hashval;
-	const char*  buildid;
-	bool buildid_valid;
-	u64 checksum;
 	const char * image_name;
 	const char * app_filename;
 	/** thread ID, -1 if not set */
@@ -91,9 +88,6 @@ struct operf_transient {
 	struct anon_mapping * anon;
 	struct anon_mapping * last_anon;
 	operf_process_info * cur_procinfo;
-	const char * buildid;
-	bool buildid_valid;
-	u64 checksum;
 	vma_t pc;
 	const char * image_name;
 	const char * app_filename;

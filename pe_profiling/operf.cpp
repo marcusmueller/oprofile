@@ -896,7 +896,7 @@ static void process_args(int argc, char const ** argv)
 	}
 
 	if (!non_options.empty()) {
-		if (operf_options::pid)
+		if (operf_options::pid || operf_options::system_wide)
 			__print_usage_and_exit(NULL);
 
 		vector<string>::iterator it = non_options.begin();

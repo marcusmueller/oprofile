@@ -37,12 +37,19 @@ static struct list_head hashes[HASH_SIZE];
 static LIST_HEAD(lru_list);
 
 
-/* FIXME: can undoubtedly improve this hashing */
-/** Hash the transient parameters for lookup. */
 static unsigned long
 sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 {
 	unsigned long val = 0;
+	size_t fname_len = strlen(trans->image_name);
+
+	/* fname_ptr will point at the first character in the image name
+	 * which we'll use for hashing.  We don't need to hash on the whole
+	 * image name to get a decent hash.  Arbitrarily, we'll hash on the
+	 * first 16 chars or fname_len (if fname_len < 16).
+	 */
+	unsigned int fname_hash_len = (fname_len < 16) ? fname_len : 16;
+	const char * fname_ptr = trans->image_name + fname_len - fname_hash_len;
 
 	val ^= trans->tid << 2;
 	val ^= trans->tgid << 2;
@@ -54,14 +61,9 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 		val ^= ki->start >> 14;
 		val ^= ki->end >> 7;
 	}
+	for (unsigned int i = 0; i < fname_hash_len; i++)
+		val = ((val << 5) + val) ^ fname_ptr[i];
 
-	// TODO: add hashing on build-id if present, otherwise checksump
-	if (trans->buildid_valid) {
-		for (int i = 0; i < BUILD_ID_SIZE; i++)
-			val ^= trans->buildid[i];
-	} else {
-		val ^= trans->checksum;
-	}
 	val ^= trans->tgid << 2;
 
 	// TODO: replace anon
@@ -76,10 +78,8 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 }
 
 
-//TODO cookie and anon replacement
 static int
 do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
-         bool is_buildid_valid, const char * buildid, u64 checksum,
          //trans->anon,
          const char * image_name, const char * appname, pid_t tgid, pid_t tid, unsigned int cpu)
 {
@@ -114,17 +114,8 @@ do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
 		return 0;
 	 */
 
-	if ((is_buildid_valid && sf->buildid_valid) &&
-			(!strncmp(buildid, sf->buildid, BUILD_ID_SIZE)))
-		return 1;
-	if (checksum == sf->checksum) {
-		len1 = strlen(sf->image_name);
-		len2 = strlen(image_name);
-		if (len1 != len2)
-			return 0;
-		return (!strncmp(sf->image_name, image_name, len1));
-	}
-	return 0;
+	return (!strncmp(sf->image_name, image_name, len1));
+
 }
 
 static int
@@ -132,7 +123,7 @@ trans_match(struct operf_transient const * trans, struct operf_sfile const * sfi
             struct operf_kernel_image const * ki)
 {
 	//TODO  anon replacement
-	return do_match(sfile, ki, trans->buildid_valid, trans->buildid, trans->checksum,
+	return do_match(sfile, ki,
 	                //trans->anon,
 	                trans->image_name, trans->app_filename,
 	                trans->tgid, trans->tid, trans->cpu);
@@ -144,7 +135,7 @@ int
 operf_sfile_equal(struct operf_sfile const * sf, struct operf_sfile const * sf2)
 {
 	//TODO anon replacement
-	return do_match(sf, sf2->kernel, sf2->buildid_valid, sf2->buildid, sf2->checksum,
+	return do_match(sf, sf2->kernel,
 	                //sf2->anon,
 	                sf2->image_name, sf2->app_filename,
 	                sf2->tgid, sf2->tid, sf2->cpu);
@@ -167,9 +158,6 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 	sf->tgid = trans->tgid;
 	sf->cpu = 0;
 	sf->kernel = ki;
-	sf->buildid_valid = trans->buildid_valid;
-	sf->buildid = trans->buildid;
-	sf->checksum = trans->checksum;
 	sf->image_name = trans->image_name;
 	sf->app_filename = trans->app_filename;
 	// TODO: handle anon
