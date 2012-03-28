@@ -54,7 +54,7 @@ public:
 	bool is_valid(void) { return valid; }
 	void process_new_mapping(struct operf_mmap * mapping);
 	void process_deferred_mappings(std::string app_shortname);
-	std::string get_app_name(void) { return app_name; }
+	std::string get_app_name(void) { return _appname; }
 	void add_deferred_mapping(struct operf_mmap * mapping)
 	{ deferred_mmappings[mapping->start_addr] = mapping; }
 	bool appname_valid(void)
@@ -78,7 +78,7 @@ private:
 		YES_FULLNAME
 	} op_fullname_t;
 	pid_t pid;
-	std::string app_name;
+	std::string _appname;
 
 	// The valid bit is set when a COMM event has been received for the process
 	// represented by this object.

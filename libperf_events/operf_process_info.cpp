@@ -22,7 +22,7 @@ using namespace std;
 using namespace OP_perf_utils;
 
 operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid)
-: pid(tgid), app_name(appname), valid(is_valid)
+: pid(tgid), _appname(appname ? appname : ""), valid(is_valid)
 {
 	if (app_arg_is_fullname) {
 		appname_is_fullname = YES_FULLNAME;
@@ -49,10 +49,10 @@ void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
 		int num_matched_chars = get_num_matching_chars(mapping->filename, basename);
 		if (num_matched_chars > num_app_chars_matched) {
 			appname_is_fullname = MAYBE_FULLNAME;
-			app_name = mapping->filename;
+			_appname = mapping->filename;
 			app_basename = basename;
 			num_app_chars_matched = num_matched_chars;
-			cverb << vmisc << "Best appname match is " << app_name << endl;
+			cverb << vmisc << "Best appname match is " << _appname << endl;
 		}
 	}
 	mmappings[mapping->start_addr] = mapping;
@@ -61,19 +61,18 @@ void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
 /* This method should only be invoked when a "delayed" COMM event is processed.
  * By "delayed", I mean that we have already received MMAP events for the associated
  * process, for which we've had to create a partial operf_process_info object -- one
- * that has no app_name yet and is marked invalid.
+ * that has no _appname yet and is marked invalid.
  *
  * Given the above statement, the passed app_shortname "must" come from a comm.comm
  * field, which is 16 chars in length (thus the name of the arg).
  */
 void operf_process_info::process_deferred_mappings(string app_shortname)
 {
-	app_name = app_shortname;
+	_appname = app_shortname;
 	app_basename = app_shortname;
 	valid = true;
 	map<u64, struct operf_mmap *>::iterator it = deferred_mmappings.begin();
-	while ((it != deferred_mmappings.end()) &&
-			(num_app_chars_matched < (int)app_basename.length())) {
+	while (it != deferred_mmappings.end()) {
 		process_new_mapping(it->second);
 		cverb << vmisc << "Processed deferred mapping for " << it->second->filename << endl;
 		it++;
@@ -88,11 +87,11 @@ int operf_process_info::get_num_matching_chars(string mapped_filename, string & 
 	const char * app_cstr, * basename_cstr;
 	basename = op_basename(mapped_filename);
 	if (appname_is_fullname == NOT_FULLNAME) {
-		// This implies app_name is storing a short name from a COMM event
-		app_length = app_name.length();
-		app_cstr = app_name.c_str();
+		// This implies _appname is storing a short name from a COMM event
+		app_length = _appname.length();
+		app_cstr = _appname.c_str();
 	} else {
-		string app_basename = op_basename(app_name);
+		string app_basename = op_basename(_appname);
 		app_length = app_basename.length();
 		app_cstr = app_basename.c_str();
 	}
@@ -108,7 +107,7 @@ int operf_process_info::get_num_matching_chars(string mapped_filename, string & 
 		else
 			break;
 	}
-	return num_matched_chars;
+	return num_matched_chars ? num_matched_chars : -1;
 }
 
 const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample_addr)

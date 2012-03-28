@@ -218,8 +218,8 @@ static void __handle_mmap_event(event_t * event)
 		if (it == process_map.end()) {
 			// Create a new proc info object, but mark it invalid since we have
 			// not yet received a COMM event for this PID.
-			operf_process_info * proc = new operf_process_info(event->mmap.pid, app_name ? app_name : "",
-			                                                                             app_name == NULL, false);
+			operf_process_info * proc = new operf_process_info(event->mmap.pid, app_name ? app_name : NULL,
+			                                                                             app_name != NULL, false);
 			proc->add_deferred_mapping(mapping);
 			cverb << vperf << "Added deferred mapping " << event->mmap.filename
 					<< " for new process_info object" << endl;
