@@ -21,9 +21,6 @@
 /** create the kernel image */
 void operf_create_vmlinux(char const * name, char const * arg);
 
-/** opd_reread_module_info - parse /proc/modules for kernel modules */
-void operf_reread_module_info(void);
-
 /** Describes a kernel module or vmlinux itself */
 struct operf_kernel_image {
 	char * name;
@@ -35,6 +32,15 @@ struct operf_kernel_image {
 /** Find a kernel_image based upon the given pc address. */
 struct operf_kernel_image *
 operf_find_kernel_image(vma_t pc);
+
+/** Return the name field of the stored vmlinux_image. */
+const char * operf_get_vmlinux_name(void);
+
+/** Create a kernel image for a kernel module and place it on the
+ * module_list.
+ */
+void operf_create_module(char const * name, vma_t start, vma_t end);
+
 
 
 #endif /* OPERF_KERNEL_H_ */

@@ -32,7 +32,7 @@
 #include "file_manip.h"
 #include "operf_kernel.h"
 #include "operf_sfile.h"
-
+#include "op_fileio.h"
 
 
 extern verbose vmisc;
@@ -47,6 +47,7 @@ using namespace std;
 
 map<pid_t, operf_process_info *> process_map;
 multimap<string, struct operf_mmap *> all_images_map;
+map<u64, struct operf_mmap *> kernel_modules;
 struct operf_mmap * kernel_mmap;
 
 
@@ -207,11 +208,25 @@ static void __handle_mmap_event(event_t * event)
 		cverb << vperf << "\tstart_addr: " << hex << mapping->start_addr;
 		cverb << vperf << "; pg offset: " << mapping->pgoff << endl;
 
-		all_images_map.insert(pair<string, struct operf_mmap *>(image_basename, mapping));
+		if (event->header.misc & PERF_RECORD_MISC_USER)
+			all_images_map.insert(pair<string, struct operf_mmap *>(image_basename, mapping));
 	}
 
 	if (event->header.misc & PERF_RECORD_MISC_KERNEL) {
-		kernel_mmap = mapping;
+		if (!strncmp(mapping->filename, operf_get_vmlinux_name(),
+		            strlen(mapping->filename))) {
+			/* The kernel_mmap is just a convenience variable
+			 * for use when mapping samples to kernel space, since
+			 * most of the kernel samples will be attributable to
+			 * the vmlinux file versus kernel modules.
+			 */
+			kernel_mmap = mapping;
+		} else {
+			operf_create_module(mapping->filename,
+			                    mapping->start_addr,
+			                    mapping->end_addr);
+			kernel_modules[mapping->start_addr] = mapping;
+		}
 	} else {
 		map<pid_t, operf_process_info *>::iterator it;
 		it = process_map.find(event->mmap.pid);
@@ -245,6 +260,7 @@ static void __handle_sample_event(event_t * event)
 	bool early_match = false;
 	operf_process_info * proc;
 	const u64 type = OP_BASIC_SAMPLE_FORMAT;
+	const struct operf_mmap * op_mmap = NULL;
 
 	u64 *array = event->sample.array;
 
@@ -316,7 +332,7 @@ static void __handle_sample_event(event_t * event)
 		goto out;
 	}
 	// Do the common case first.  For the "no_vmlinux" case, start_addr and end_addr will be
-	// zero, so need to make sure we detect that and fall through.
+	// zero, so need to make sure we detect that.
 	if (trans.in_kernel) {
 		if (trans.image_name && trans.tgid == data.pid) {
 			// For the no_vmlinux case . . .
@@ -324,13 +340,13 @@ static void __handle_sample_event(event_t * event)
 				trans.pc = data.ip;
 				early_match = true;
 			// For the case where a vmlinux file is passed in . . .
-			} else if (data.ip >= trans.start_addr && data.ip <= trans.end_addr) {
+			} else if (data.ip >= trans.start_addr && data.ip < trans.end_addr) {
 				trans.pc = data.ip;
 				early_match = true;
 			}
 		}
 	} else {
-		if (trans.tgid == data.pid && data.ip >= trans.start_addr && data.ip <= trans.end_addr) {
+		if (trans.tgid == data.pid && data.ip >= trans.start_addr && data.ip < trans.end_addr) {
 			trans.tid = data.tid;
 			trans.pc = data.ip - trans.start_addr;
 			early_match = true;
@@ -354,7 +370,7 @@ static void __handle_sample_event(event_t * event)
 		proc = trans.cur_procinfo;
 	} else {
 		// Find operf_process info for data.tgid.
-		map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data.pid);
+		std::map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data.pid);
 		if (it != process_map.end() && (it->second->appname_valid())) {
 			proc = it->second;
 			trans.cur_procinfo = proc;
@@ -375,25 +391,39 @@ static void __handle_sample_event(event_t * event)
 			 * cause a lot of thrashing about.  But at the very least,
 			 * we need to log the lost sample.
 			*/
-			cverb << vmisc << "Discarding sample for a process other than the one requested" << endl;
+			cverb << vmisc << "Discarding sample -- process info unavailable" << endl;
 			goto out;
 		}
 	}
 
 	// Now find mmapping that contains the data.ip address.
 	// Use that mmapping to set fields in trans.
-	const struct operf_mmap * map;
 	if (trans.in_kernel) {
-		map = kernel_mmap;
+		if (data.ip >= kernel_mmap->start_addr &&
+				data.ip < kernel_mmap->end_addr) {
+			op_mmap = kernel_mmap;
+		} else {
+			map<u64, struct operf_mmap *>::iterator it;
+			it = kernel_modules.begin();
+			while (it != kernel_modules.end()) {
+				if (data.ip >= it->second->start_addr && data.ip < it->second->end_addr) {
+					op_mmap = it->second;
+					break;
+				}
+				it++;
+			}
+		}
+		if (!op_mmap)
+			cverb << vperf << "no mapping found for kernel sample addr " << hex << data.ip << endl;
 	} else {
-		map = proc->find_mapping_for_sample(data.ip);
+		op_mmap = proc->find_mapping_for_sample(data.ip);
 	}
-	if (map) {
+	if (op_mmap) {
 		cverb << vperf << "Found mmap for sample" << endl;
-		trans.image_name = map->filename;
+		trans.image_name = op_mmap->filename;
 		trans.app_filename = proc->get_app_name().c_str();
-		trans.start_addr = map->start_addr;
-		trans.end_addr = map->end_addr;
+		trans.start_addr = op_mmap->start_addr;
+		trans.end_addr = op_mmap->end_addr;
 		trans.tgid = data.pid;
 		trans.tid = data.tid;
 		if (trans.in_kernel)
@@ -414,6 +444,9 @@ static void __handle_sample_event(event_t * event)
 		update_trans_last(&trans);
 	} else {
 		// TODO: log lost sample due to no mapping
+		/* Ditto the comment above -- i.e., we need to look into caching these
+		 * discarded samples and trying to process them later.
+		 */
 		cverb << vmisc << "Discarding sample where no mapping was found" << endl;
 		return;
 	}
@@ -707,6 +740,78 @@ int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_rec
 	return ret;
 }
 
+
+/*
+ * each line is in the format:
+ *
+ * module_name 16480 1 dependencies Live 0xe091e000
+ *
+ * without any blank space in each field
+ */
+static void _record_module_info(int output_fd, operf_record * pr)
+{
+	char * fname = "/proc/modules";
+	FILE *fp;
+	char * line;
+	struct operf_kernel_image * image;
+	int module_size;
+	char ref_count[32+1];
+	int ret;
+	char module_name[256+1];
+	char live_info[32+1];
+	char dependencies[4096+1];
+	unsigned long long start_address;
+
+	fp = fopen(fname, "r");
+	if (fp == NULL) {
+		cerr << "Error opening /proc/modules. Unable to process module samples" << endl;
+		cerr << strerror(errno) << endl;
+		return;
+	}
+
+	while (1) {
+		struct mmap_event mmap;
+		size_t size;
+		line = op_get_line(fp);
+
+		if (!line)
+			break;
+
+		if (line[0] == '\0') {
+			free(line);
+			continue;
+		}
+
+		ret = sscanf(line, "%256s %u %32s %4096s %32s %llx",
+			     module_name, &module_size, ref_count,
+			     dependencies, live_info, &start_address);
+		if (ret != 6) {
+			cerr << "op_record_kernel_info: Bad /proc/modules entry: \n\t" << line << endl;
+			free(line);
+			continue;
+		}
+
+		mmap.header.type = PERF_RECORD_MMAP;
+		mmap.header.misc = PERF_RECORD_MISC_KERNEL;
+		size = strlen(module_name) + 1;
+		strncpy(mmap.filename, module_name, size);
+		size = align_64bit(size);
+		mmap.start = start_address;
+		mmap.len = module_size;
+		mmap.pid = 0;
+		mmap.tid = 0;
+		mmap.header.size = (sizeof(mmap) -
+				(sizeof(mmap.filename) - size));
+		int num = OP_perf_utils::op_write_output(output_fd, &mmap, mmap.header.size);
+		cverb << vperf << "Created MMAP event for " << module_name << ". Size: "
+		      << module_size << "; start addr: " << start_address << endl;
+		pr->add_to_total(num);
+		free(line);
+	}
+	fclose(fp);
+	return;
+}
+
 void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u64 end_addr,
                                           int output_fd, operf_record * pr)
 {
@@ -732,6 +837,7 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 			(sizeof(mmap.filename) - size));
 	int num = op_write_output(output_fd, &mmap, mmap.header.size);
 	pr->add_to_total(num);
+	_record_module_info(output_fd, pr);
 }
 
 void OP_perf_utils::op_get_kernel_event_data(struct mmap_data *md, operf_record * pr)
