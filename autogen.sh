@@ -21,7 +21,7 @@ AUTOHEADER=${AUTOHEADER:-autoheader}
 AUTOMAKE=${AUTOMAKE:-automake}
 AUTOCONF=${AUTOCONF:-autoconf}
 
-if $AUTOMAKE --version | grep -q 1.4
+if $AUTOMAKE --version | grep -q " 1.4$"
 	then
 	echo ""
 	echo "Automake 1.4 not supported. please set \$AUTOMAKE"
