@@ -399,7 +399,7 @@ static void __handle_sample_event(event_t * event)
 	// Now find mmapping that contains the data.ip address.
 	// Use that mmapping to set fields in trans.
 	if (trans.in_kernel) {
-		if (kernel_mmap && data.ip >= kernel_mmap->start_addr &&
+		if (data.ip >= kernel_mmap->start_addr &&
 				data.ip < kernel_mmap->end_addr) {
 			op_mmap = kernel_mmap;
 		} else {
