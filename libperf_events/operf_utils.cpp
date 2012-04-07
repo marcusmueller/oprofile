@@ -206,7 +206,7 @@ static void __handle_mmap_event(event_t * event)
 
 		cverb << vperf << "PERF_RECORD_MMAP for " << event->mmap.filename << endl;
 		cverb << vperf << "\tstart_addr: " << hex << mapping->start_addr;
-		cverb << vperf << "; pg offset: " << mapping->pgoff << endl;
+		cverb << vperf << "; end addr: " << mapping->end_addr << endl;
 
 		if (event->header.misc & PERF_RECORD_MISC_USER)
 			all_images_map.insert(pair<string, struct operf_mmap *>(image_basename, mapping));
@@ -254,6 +254,7 @@ static void __handle_mmap_event(event_t * event)
 		}
 	}
 }
+
 static void __handle_sample_event(event_t * event)
 {
 	struct sample_data data;
@@ -406,15 +407,21 @@ static void __handle_sample_event(event_t * event)
 			map<u64, struct operf_mmap *>::iterator it;
 			it = kernel_modules.begin();
 			while (it != kernel_modules.end()) {
-				if (data.ip >= it->second->start_addr && data.ip < it->second->end_addr) {
+				if (data.ip >= it->second->start_addr &&
+						data.ip < it->second->end_addr) {
 					op_mmap = it->second;
 					break;
 				}
 				it++;
 			}
+		} if (!op_mmap) {
+			if ((kernel_mmap->start_addr == 0ULL) &&
+					(kernel_mmap->end_addr == 0ULL))
+				op_mmap = kernel_mmap;
 		}
 		if (!op_mmap)
-			cverb << vperf << "no mapping found for kernel sample addr " << hex << data.ip << endl;
+			cverb << vperf << "Discarding sample: no mapping found for kernel sample addr "
+			      << hex << data.ip << endl;
 	} else {
 		op_mmap = proc->find_mapping_for_sample(data.ip);
 	}
@@ -564,6 +571,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 		memset(pathname, '\0', sizeof(pathname));
 		struct mmap_event mmap;
 		size_t size;
+		mmap.pgoff = 0;
 		mmap.header.type = PERF_RECORD_MMAP;
 		mmap.header.misc = PERF_RECORD_MISC_USER;
 
@@ -750,7 +758,7 @@ int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_rec
  */
 static void _record_module_info(int output_fd, operf_record * pr)
 {
-	char * fname = "/proc/modules";
+	const char * fname = "/proc/modules";
 	FILE *fp;
 	char * line;
 	struct operf_kernel_image * image;
@@ -772,6 +780,7 @@ static void _record_module_info(int output_fd, operf_record * pr)
 	while (1) {
 		struct mmap_event mmap;
 		size_t size;
+		mmap.pgoff = 0;
 		line = op_get_line(fp);
 
 		if (!line)
@@ -817,11 +826,12 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 {
 	struct mmap_event mmap;
 	size_t size;
+	mmap.pgoff = 0;
 	mmap.header.type = PERF_RECORD_MMAP;
 	mmap.header.misc = PERF_RECORD_MISC_KERNEL;
 	if (vmlinux_file.empty()) {
 		size = strlen( "no_vmlinux") + 1;
-		strncpy(mmap.filename, "no_vmlinux", size);
+		strncpy(mmap.filename, "no-vmlinux", size);
 		mmap.start = 0ULL;
 		mmap.len = 0ULL;
 	} else {
@@ -836,6 +846,8 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 	mmap.header.size = (sizeof(mmap) -
 			(sizeof(mmap.filename) - size));
 	int num = op_write_output(output_fd, &mmap, mmap.header.size);
+	cverb << vperf << "Created MMAP event for " <<mmap.filename << ". Size: "
+	      << mmap.len << "; start addr: " << mmap.start << endl;
 	pr->add_to_total(num);
 	_record_module_info(output_fd, pr);
 }
