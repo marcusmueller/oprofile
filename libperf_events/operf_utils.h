@@ -72,6 +72,7 @@ int op_mmap_trace_file(struct mmap_info & info);
 event_t * op_get_perf_event(struct mmap_info & info);
 int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
 bool op_convert_event_vals(std::vector<operf_event_t> * evt_vec);
+void op_reprocess_unresolved_events(void);
 }
 
 // The rmb() macros were borrowed from perf.h in the kernel tree

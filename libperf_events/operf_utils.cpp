@@ -33,6 +33,7 @@
 #include "operf_kernel.h"
 #include "operf_sfile.h"
 #include "op_fileio.h"
+#include "op_libiberty.h"
 
 
 extern verbose vmisc;
@@ -49,8 +50,9 @@ map<pid_t, operf_process_info *> process_map;
 multimap<string, struct operf_mmap *> all_images_map;
 map<u64, struct operf_mmap *> kernel_modules;
 struct operf_mmap * kernel_mmap;
+bool first_time_processing;
 
-
+static list<event_t *> unresolved_events;
 static struct operf_transient trans;
 static bool sfile_init_done;
 
@@ -286,7 +288,8 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 			 * cause a lot of thrashing about.  But at the very least,
 			 * we need to log the lost sample.
 			*/
-			cverb << vmisc << "Discarding sample -- process info unavailable" << endl;
+			if ((cverb << vmisc) && !first_time_processing)
+				cerr << "Dropping sample -- process info unavailable" << endl;
 			goto out;
 		}
 	}
@@ -313,9 +316,12 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 					(kernel_mmap->end_addr == 0ULL))
 				op_mmap = kernel_mmap;
 		}
-		if (!op_mmap)
-			cverb << vperf << "Discarding sample: no mapping found for kernel sample addr "
-			      << hex << data->ip << endl;
+		if (!op_mmap) {
+			/* This can happen if a kernel module is loaded after profiling
+			 * starts, and then we get samples for that kernel module.
+			 * TODO:  Fix this.
+			 */
+		}
 	} else {
 		op_mmap = proc->find_mapping_for_sample(data->ip);
 	}
@@ -339,7 +345,12 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 		/* Ditto the comment above -- i.e., we need to look into caching these
 		 * discarded samples and trying to process them later.
 		 */
-		cverb << vmisc << "Discarding sample where no mapping was found" << endl;
+		if ((cverb << vmisc) && !first_time_processing) {
+			string domain = trans.in_kernel ? "kernel" : "userspace";
+			cerr << "Discarding " << domain
+			     << " sample where no mapping was found. (pc=0x"
+			     << hex << data->ip <<")" << endl;
+		}
 		retval = NULL;
 	}
 out:
@@ -419,9 +430,9 @@ static void __handle_sample_event(event_t * event)
 		data.cpu = *p;
 		array++;
 	}
-	if (event->header.misc & PERF_RECORD_MISC_KERNEL) {
+	if (event->header.misc == PERF_RECORD_MISC_KERNEL) {
 		trans.in_kernel = 1;
-	} else if (event->header.misc & PERF_RECORD_MISC_USER) {
+	} else if (event->header.misc == PERF_RECORD_MISC_USER) {
 		trans.in_kernel = 0;
 	} else {
 		// TODO: For now, we'll discard hypervisor and guest kernel/
@@ -493,7 +504,13 @@ static void __handle_sample_event(event_t * event)
 			update_trans_last(&trans);
 			if (operf_options::callgraph)
 				__handle_callchain(array, &data);
+			goto out;
 		}
+	}
+	if (first_time_processing) {
+		event_t * ev = (event_t *)xmalloc(event->header.size);
+		memcpy(ev, event, event->header.size);
+		unresolved_events.push_back(ev);
 	}
 
 out:
@@ -543,6 +560,20 @@ int OP_perf_utils::op_write_event(event_t * event)
 		// OK, ignore all other header types.
 		cverb << vperf << "No matching event type for " << hex << event->header.type << endl;
 		return 0;
+	}
+}
+
+void OP_perf_utils::op_reprocess_unresolved_events(void)
+{
+	list<event_t *>::const_iterator it = unresolved_events.begin();
+	for (; it != unresolved_events.end(); it++) {
+		event_t * evt = (*it);
+		// This is just a sanity check, since all events in this list
+		// are unresolved sample events.
+		if (evt->header.type == PERF_RECORD_SAMPLE) {
+			__handle_sample_event(evt);
+			free(evt);
+		}
 	}
 }
 

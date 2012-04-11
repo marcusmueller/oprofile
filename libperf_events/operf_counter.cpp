@@ -43,6 +43,8 @@ int sample_reads;
 unsigned int pagesize;
 verbose vperf("perf_events");
 
+extern bool first_time_processing;
+
 namespace {
 
 vector<string> event_names;
@@ -519,6 +521,7 @@ int operf_read::convertPerfData(void)
 	cverb << vdebug << "Converting operf.data to oprofile sample data format" << endl;
 	cverb << vdebug << "data size is " << hex << info.file_data_size << "; data offset is " << info.file_data_offset << endl;
 	cverb << vdebug << "head is " << hex << info.head << endl;
+	first_time_processing = true;
 	while (1) {
 		streamsize rec_size = 0;
 		event_t * event = op_get_perf_event(info);
@@ -529,7 +532,8 @@ int operf_read::convertPerfData(void)
 		op_write_event(event);
 		num_bytes += rec_size;
 	}
-
+	first_time_processing = false;
+	op_reprocess_unresolved_events();
 
 	map<pid_t, operf_process_info *>::iterator it = process_map.begin();
 	while (it != process_map.end())
