@@ -90,6 +90,10 @@ struct mmap_data {
 	u64 prev;
 };
 
+struct ip_callchain {
+	u64 nr;
+	u64 ips[0];
+};
 struct sample_data {
 	u64 ip;
 	u32 pid, tid;
@@ -101,6 +105,7 @@ struct sample_data {
 	u64 period;
 	u32 raw_size;
 	void *raw_data;
+	struct ip_callchain * callchain;
 };
 
 struct mmap_info {

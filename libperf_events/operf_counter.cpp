@@ -53,10 +53,13 @@ static const char *__op_magic = "OPFILE";
 
 }  // end anonymous namespace
 
-operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec) {
+operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec, bool do_cg)
+{
 	memset(&attr, 0, sizeof(attr));
 	attr.size = sizeof(attr);
 	attr.sample_type = OP_BASIC_SAMPLE_FORMAT;
+	if (do_cg)
+		attr.sample_type |= PERF_SAMPLE_CALLCHAIN;
 	attr.type = PERF_TYPE_RAW;
 	attr.config = evt.evt_code;
 	attr.sample_period = evt.count;
@@ -127,7 +130,7 @@ operf_record::~operf_record()
 }
 
 operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
-                           vector<operf_event_t> & events, vmlinux_info_t vi)
+                           vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg)
 {
 	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
@@ -138,6 +141,7 @@ operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pi
 	pid = the_pid;
 	pid_started = pid_running;
 	system_wide = sys_wide;
+	callgraph = do_cg;
 	total_bytes_recorded = 0;
 	poll_count = 0;
 	evts = events;
@@ -335,7 +339,9 @@ void operf_record::setup()
 		perfCounters.push_back(tmp_pcvec);
 		for (unsigned event = 0; event < evts.size(); event++) {
 			evts[event].counter = event;
-			perfCounters[cpu].push_back(operf_counter(evts[event], (!pid_started && !system_wide)));
+			perfCounters[cpu].push_back(operf_counter(evts[event],
+			                                          (!pid_started && !system_wide),
+			                                          callgraph));
 			if ((rc = perfCounters[cpu][event].perf_event_open(pid, real_cpu, event, this)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
 				goto error;

@@ -250,7 +250,6 @@ void operf_sfile_dup(struct operf_sfile * to, struct operf_sfile * from)
 	list_init(&to->lru);
 }
 
-
 static odb_t * get_file(struct operf_transient const * trans, int is_cg)
 {
 	struct operf_sfile * sf = trans->current;
@@ -341,6 +340,61 @@ static void verbose_sample(struct operf_transient const * trans, vma_t pc)
 	printf("\n");
 }
 
+static void
+verbose_arc(struct operf_transient const * trans, vma_t from, vma_t to)
+{
+	printf("Arc ");
+	verbose_print_sample(trans->current, from, trans->event);
+	printf(" -> 0x%llx", to);
+	printf("\n");
+}
+
+void  operf_sfile_log_arc(struct operf_transient const * trans)
+{
+	int err;
+	vma_t from = trans->pc;
+	vma_t to = trans->last_pc;
+	uint64_t key;
+	odb_t * file;
+
+	file = get_file(trans, 1);
+
+	/* absolute value -> offset */
+	if (trans->current->kernel)
+		from -= trans->current->kernel->start;
+
+	if (trans->last->kernel)
+		to -= trans->last->kernel->start;
+
+	/* TODO handle anon
+	if (trans->current->anon)
+		from -= trans->current->anon->start;
+
+	if (trans->last->anon)
+		to -= trans->last->anon->start;
+	 */
+
+	if (cverb << varcs)
+		verbose_arc(trans, from, to);
+
+	/* TODO: handle sstats
+	if (!file) {
+		opd_stats[OPD_LOST_SAMPLEFILE]++;
+		return;
+	}
+	*/
+
+	/* Possible narrowings to 32-bit value only. */
+	key = to & (0xffffffff);
+	key |= ((uint64_t)from) << 32;
+
+	err = odb_update_node(file, key);
+	if (err) {
+		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
+		abort();
+	}
+
+}
 
 void operf_sfile_log_sample(struct operf_transient const * trans)
 {

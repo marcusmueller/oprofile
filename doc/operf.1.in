@@ -73,12 +73,13 @@ storing sample data files in locations accessible by regular users.
 .br
 .TP
 .BI "--verbose / -V [level]"
-This increases the verbosity of the output. Level could be:  debug,
-perf_events, misc, all.
+A comma-separated list of debugging control values, used to increase the verbosity of the output.
+Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.
 .br
 .TP
-.BI "--callgraph / -g [depth]"
-This option enables the callgraph to be saved during profiling.
+.BI "--callgraph / -g"
+This option enables the callgraph to be saved during profiling. NOTE: The
+full callchain is recorded, so there is no depth limit.
 .br
 .TP
 .BI "--reset / -r"

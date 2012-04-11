@@ -28,7 +28,7 @@ namespace operf_options {
 extern bool system_wide;
 extern bool reset;
 extern int pid;
-extern int callgraph_depth;
+extern bool callgraph;
 extern int mmap_pages_mult;
 extern std::string session_dir;
 extern bool separate_cpu;

@@ -95,7 +95,7 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 		}
 		*/
 		else {
-			values.cg_image_name = sf->image_name;
+			values.cg_image_name = last->image_name;
 		}
 	}
 
@@ -117,7 +117,7 @@ static void fill_header(struct opd_header * header, unsigned long counter,
                         int is_kernel, int cg_to_is_kernel,
                         int spu_samples, uint64_t embed_offset, time_t mtime)
 {
-	const struct operf_event * event = operfRead.get_event_by_counter(counter);
+	const operf_event_t * event = operfRead.get_event_by_counter(counter);
 
 	memset(header, '\0', sizeof(struct opd_header));
 	header->version = OPD_VERSION;

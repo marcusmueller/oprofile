@@ -100,6 +100,7 @@ struct operf_transient {
 	u32 tgid;
 	vma_t start_addr;
 	vma_t end_addr;
+	bool cg;
 	// TODO: handle extended
 	//void * ext;
 };
@@ -141,6 +142,9 @@ void operf_sfile_log_sample(struct operf_transient const * trans);
 /** Log the event/cycle count in a previously located sfile */
 void operf_sfile_log_sample_count(struct operf_transient const * trans,
                             unsigned long int count);
+
+/** Log a callgraph arc. */
+void operf_sfile_log_arc(struct operf_transient const * trans);
 
 /** initialise hashes */
 void operf_sfile_init(void);

@@ -76,8 +76,10 @@ private:
 extern verbose vlevel1; /**< named "level1" */
 extern verbose vdebug;  /**< named "debug"  */
 extern verbose vstats;  /**< named "stats"  */
+extern verbose vxml;  /**< named "xml" */
 // all sample filename manipulation.
 extern verbose vsfile;  /**< named "sfile" */
-extern verbose vxml;  /**< named "xml" */
+extern verbose varcs;  /**< named "arcs" */
+
 
 #endif /* !CVERB_H */

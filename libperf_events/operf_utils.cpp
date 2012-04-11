@@ -255,11 +255,137 @@ static void __handle_mmap_event(event_t * event)
 	}
 }
 
+static struct operf_transient * __get_operf_trans(struct sample_data * data)
+{
+	operf_process_info * proc;
+	const struct operf_mmap * op_mmap = NULL;
+	struct operf_transient * retval = NULL;
+
+	if (trans.tgid == data->pid) {
+		proc = trans.cur_procinfo;
+	} else {
+		// Find operf_process info for data.tgid.
+		std::map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data->pid);
+		if (it != process_map.end() && (it->second->appname_valid())) {
+			proc = it->second;
+			trans.cur_procinfo = proc;
+		} else {
+			// TODO
+			/* This can happen for the following reasons:
+			 *   - We get a sample before getting a COMM or MMAP
+			 *     event for the process being profiled
+			 *   - The COMM event has been processed, but since that
+			 *     only gives 16 chars of the app name, we don't
+			 *     have a valid app name yet
+			 *   - The kernel incorrectly records a sample for a
+			 *     process other than the one we requested (not
+			 *     likely -- this would be a kernel bug if it did)
+			 *
+			 * Need to look into caching these discarded samples and trying to
+			 * process them after we have a valid app name recorded.  This could
+			 * cause a lot of thrashing about.  But at the very least,
+			 * we need to log the lost sample.
+			*/
+			cverb << vmisc << "Discarding sample -- process info unavailable" << endl;
+			goto out;
+		}
+	}
+
+	// Now find mmapping that contains the data.ip address.
+	// Use that mmapping to set fields in trans.
+	if (trans.in_kernel) {
+		if (data->ip >= kernel_mmap->start_addr &&
+				data->ip < kernel_mmap->end_addr) {
+			op_mmap = kernel_mmap;
+		} else {
+			map<u64, struct operf_mmap *>::iterator it;
+			it = kernel_modules.begin();
+			while (it != kernel_modules.end()) {
+				if (data->ip >= it->second->start_addr &&
+						data->ip < it->second->end_addr) {
+					op_mmap = it->second;
+					break;
+				}
+				it++;
+			}
+		} if (!op_mmap) {
+			if ((kernel_mmap->start_addr == 0ULL) &&
+					(kernel_mmap->end_addr == 0ULL))
+				op_mmap = kernel_mmap;
+		}
+		if (!op_mmap)
+			cverb << vperf << "Discarding sample: no mapping found for kernel sample addr "
+			      << hex << data->ip << endl;
+	} else {
+		op_mmap = proc->find_mapping_for_sample(data->ip);
+	}
+	if (op_mmap) {
+		cverb << vperf << "Found mmap for sample" << endl;
+		trans.image_name = op_mmap->filename;
+		trans.app_filename = proc->get_app_name().c_str();
+		trans.start_addr = op_mmap->start_addr;
+		trans.end_addr = op_mmap->end_addr;
+		trans.tgid = data->pid;
+		trans.tid = data->tid;
+		if (trans.in_kernel)
+			trans.pc = data->ip;
+		else
+			trans.pc = data->ip - trans.start_addr;
+
+		trans.sample_id = data->id;
+		retval = &trans;
+	} else {
+		// TODO: log lost sample due to no mapping
+		/* Ditto the comment above -- i.e., we need to look into caching these
+		 * discarded samples and trying to process them later.
+		 */
+		cverb << vmisc << "Discarding sample where no mapping was found" << endl;
+		retval = NULL;
+	}
+out:
+	return retval;
+}
+
+static void __handle_callchain(u64 * array, struct sample_data * data)
+{
+	data->callchain = (struct ip_callchain *) array;
+	if (data->callchain->nr) {
+		cverb << vperf << "Processing callchain" << endl;
+		for (int i = 0; i < data->callchain->nr; i++) {
+			data->ip = data->callchain->ips[i];
+			if (data->ip >= PERF_CONTEXT_MAX) {
+				switch (data->ip) {
+					case PERF_CONTEXT_HV:
+						// hypervisor samples currently unsupported
+						// TODO: log lost callgraph arc
+						break;
+					case PERF_CONTEXT_KERNEL:
+						trans.in_kernel = 1;
+						break;
+					case PERF_CONTEXT_USER:
+						trans.in_kernel = 0;
+						break;
+					default:
+						break;
+				}
+				continue;
+			}
+			if (data->ip && __get_operf_trans(data)) {
+				if ((trans.current = operf_sfile_find(&trans))) {
+					operf_sfile_log_arc(&trans);
+					update_trans_last(&trans);
+				}
+			} else {
+				// TODO: log lost callgraph arc, but only for non-zero data->ip
+			}
+		}
+	}
+}
+
 static void __handle_sample_event(event_t * event)
 {
 	struct sample_data data;
 	bool early_match = false;
-	operf_process_info * proc;
 	const u64 type = OP_BASIC_SAMPLE_FORMAT;
 	const struct operf_mmap * op_mmap = NULL;
 
@@ -320,7 +446,6 @@ static void __handle_sample_event(event_t * event)
 		goto out;
 	}
 
-	// TODO: handle callchain
 	cverb << vperf << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
 	      << data.tid << ": " << hex << (unsigned long long)data.ip
 	      << endl << "\tdata ID: " << data.id << "; data stream ID: " << data.stream_id << endl;
@@ -332,11 +457,13 @@ static void __handle_sample_event(event_t * event)
 		     << " is invalid. Skipping sample." << endl;
 		goto out;
 	}
-	// Do the common case first.  For the "no_vmlinux" case, start_addr and end_addr will be
-	// zero, so need to make sure we detect that.
+	/* Check for the common case first -- i.e., where the current sample is from
+	 * the same context as the previous sample.  For the "no-vmlinux" case, start_addr
+	 * and end_addr will be zero, so need to make sure we detect that.
+	 */
 	if (trans.in_kernel) {
 		if (trans.image_name && trans.tgid == data.pid) {
-			// For the no_vmlinux case . . .
+			// For the no-vmlinux case . . .
 			if ((trans.start_addr == 0ULL) && (trans.end_addr == 0ULL)) {
 				trans.pc = data.ip;
 				early_match = true;
@@ -353,110 +480,22 @@ static void __handle_sample_event(event_t * event)
 			early_match = true;
 		}
 	}
-	if (early_match) {
-		operf_sfile_find(&trans);
-		/*
-		 * trans.current may be NULL if a kernel sample falls through
-		 * the cracks, or if it's a sample from an anon region we couldn't find
-		 */
-		if (trans.current)
-			/* log the sample or arc */
-			operf_sfile_log_sample(&trans);
-
-		update_trans_last(&trans);
-		goto out;
-	}
-
-	if (trans.tgid == data.pid) {
-		proc = trans.cur_procinfo;
-	} else {
-		// Find operf_process info for data.tgid.
-		std::map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data.pid);
-		if (it != process_map.end() && (it->second->appname_valid())) {
-			proc = it->second;
-			trans.cur_procinfo = proc;
-		} else {
-			// TODO
-			/* This can happen for the following reasons:
-			 *   - We get a sample before getting a COMM or MMAP
-			 *     event for the process being profiled
-			 *   - The COMM event has been processed, but since that
-			 *     only gives 16 chars of the app name, we don't
-			 *     have a valid app name yet
-			 *   - The kernel incorrectly records a sample for a
-			 *     process other than the one we requested (not
-			 *     likely -- this would be a kernel bug if it did)
-			 *
-			 * Need to look into caching these discarded samples and trying to
-			 * process them after we have a valid app name recorded.  This could
-			 * cause a lot of thrashing about.  But at the very least,
-			 * we need to log the lost sample.
-			*/
-			cverb << vmisc << "Discarding sample -- process info unavailable" << endl;
-			goto out;
-		}
-	}
-
-	// Now find mmapping that contains the data.ip address.
-	// Use that mmapping to set fields in trans.
-	if (trans.in_kernel) {
-		if (data.ip >= kernel_mmap->start_addr &&
-				data.ip < kernel_mmap->end_addr) {
-			op_mmap = kernel_mmap;
-		} else {
-			map<u64, struct operf_mmap *>::iterator it;
-			it = kernel_modules.begin();
-			while (it != kernel_modules.end()) {
-				if (data.ip >= it->second->start_addr &&
-						data.ip < it->second->end_addr) {
-					op_mmap = it->second;
-					break;
-				}
-				it++;
-			}
-		} if (!op_mmap) {
-			if ((kernel_mmap->start_addr == 0ULL) &&
-					(kernel_mmap->end_addr == 0ULL))
-				op_mmap = kernel_mmap;
-		}
-		if (!op_mmap)
-			cverb << vperf << "Discarding sample: no mapping found for kernel sample addr "
-			      << hex << data.ip << endl;
-	} else {
-		op_mmap = proc->find_mapping_for_sample(data.ip);
-	}
-	if (op_mmap) {
-		cverb << vperf << "Found mmap for sample" << endl;
-		trans.image_name = op_mmap->filename;
-		trans.app_filename = proc->get_app_name().c_str();
-		trans.start_addr = op_mmap->start_addr;
-		trans.end_addr = op_mmap->end_addr;
-		trans.tgid = data.pid;
-		trans.tid = data.tid;
-		if (trans.in_kernel)
-			trans.pc = data.ip;
-		else
-			trans.pc = data.ip - trans.start_addr;
-
-		trans.sample_id = data.id;
+	if (early_match || __get_operf_trans(&data)) {
 		trans.current = operf_sfile_find(&trans);
 		/*
 		 * trans.current may be NULL if a kernel sample falls through
 		 * the cracks, or if it's a sample from an anon region we couldn't find
 		 */
-		if (trans.current)
+		if (trans.current) {
 			/* log the sample or arc */
 			operf_sfile_log_sample(&trans);
 
-		update_trans_last(&trans);
-	} else {
-		// TODO: log lost sample due to no mapping
-		/* Ditto the comment above -- i.e., we need to look into caching these
-		 * discarded samples and trying to process them later.
-		 */
-		cverb << vmisc << "Discarding sample where no mapping was found" << endl;
-		return;
+			update_trans_last(&trans);
+			if (operf_options::callgraph)
+				__handle_callchain(array, &data);
+		}
 	}
+
 out:
 	return;
 }

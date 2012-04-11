@@ -61,6 +61,8 @@ char op_samples_current_dir[PATH_MAX];
 
 
 #define DEFAULT_OPERF_OUTFILE "operf.data"
+#define CALLGRAPH_MIN_COUNT_SCALE 15
+
 static char full_pathname[PATH_MAX];
 static char * app_name_SAVE = NULL;
 static char * app_args = NULL;
@@ -80,7 +82,7 @@ namespace operf_options {
 bool system_wide;
 bool reset;
 int pid;
-int callgraph_depth;
+bool callgraph;
 int mmap_pages_mult;
 string session_dir;
 string vmlinux;
@@ -93,13 +95,13 @@ vector<string> verbose_string;
 
 popt::option options_array[] = {
 	popt::option(verbose_string, "verbose", 'V',
-	             "verbose output", "debug,perf_events,misc,all"),
+	             "verbose output", "debug,perf_events,misc,sfile,arcs,all"),
 	popt::option(operf_options::session_dir, "session-dir", 'd',
 	             "session path to hold sample data", "path"),
 	popt::option(operf_options::vmlinux, "vmlinux", 'k',
 	             "pathname for vmlinux file to use for symbol resolution and debuginfo", "path"),
-	popt::option(operf_options::callgraph_depth, "callgraph", 'g',
-	             "callgraph depth", "depth"),
+	popt::option(operf_options::callgraph, "callgraph", 'g',
+	             "enable callgraph recording"),
 	popt::option(operf_options::system_wide, "system-wide", 's',
 	             "profile entire system"),
 	popt::option(operf_options::reset, "reset", 'r',
@@ -253,7 +255,8 @@ int start_profiling_app(void)
 			vi.start = kernel_start;
 			vi.end = kernel_end;
 			operf_record operfRecord(outputfile, operf_options::system_wide, app_PID,
-			                         (operf_options::pid == app_PID), events, vi);
+			                         (operf_options::pid == app_PID), events, vi,
+			                         operf_options::callgraph);
 			if (operfRecord.get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
 				 * occurred:
@@ -645,6 +648,9 @@ static void _process_events_list(void)
 		string full_cmd = cmd;
 		string event_spec = operf_options::evts[i];
 		full_cmd += event_spec;
+		if (operf_options::callgraph) {
+			full_cmd += " --callgraph=1";
+		}
 		fp = popen(full_cmd.c_str(), "r");
 		if (fp == NULL) {
 			cerr << "Unable to execute ophelp to get info for event "
@@ -652,8 +658,11 @@ static void _process_events_list(void)
 			exit(EXIT_FAILURE);
 		}
 		if (fgetc(fp) == EOF) {
-			cerr << "Unable to find info for event "
+			cerr << "Error retrieving info for event "
 			     << event_spec << endl;
+			if (operf_options::callgraph)
+				cerr << "Note: When doing callgraph profiling, the sample count must be"
+				     << endl << "15 times the minimum count value for the event."  << endl;
 			exit(EXIT_FAILURE);
 		}
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
@@ -695,6 +704,7 @@ static void get_default_event(void)
 	struct op_default_event_descr descr;
 	vector<operf_event_t> tmp_events;
 
+
 	op_default_event(cpu_type, &descr);
 	if (descr.name[0] == '\0') {
 		cerr << "Unable to find default event" << endl;
@@ -702,7 +712,18 @@ static void get_default_event(void)
 	}
 
 	memset(&dft_evt, 0, sizeof(dft_evt));
-	dft_evt.count = descr.count;
+	if (operf_options::callgraph) {
+		struct op_event * _event;
+		op_events(cpu_type);
+		if ((_event = find_event_by_name(descr.name, 0, 0))) {
+			dft_evt.count = _event->min_count * CALLGRAPH_MIN_COUNT_SCALE;
+		} else {
+			cerr << "Error getting event info for " << descr.name << endl;
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		dft_evt.count = descr.count;
+	}
 	dft_evt.evt_um = descr.um;
 	strncpy(dft_evt.name, descr.name, OP_MAX_EVT_NAME_LEN - 1);
 	dft_evt.op_evt_code = _get_event_code(dft_evt.name);
@@ -889,11 +910,6 @@ static void process_args(int argc, char const ** argv)
 {
 	vector<string> non_options;
 	popt::parse_options(argc, argv, non_options, true/*non-options IS an app*/);
-
-	if (operf_options::callgraph_depth) {
-		cerr << "The --callgraph option is not yet supported." << endl;
-		exit(EXIT_FAILURE);
-	}
 
 	if (!non_options.empty()) {
 		if (operf_options::pid || operf_options::system_wide)

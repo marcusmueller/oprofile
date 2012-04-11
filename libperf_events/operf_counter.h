@@ -53,7 +53,7 @@ op_perf_event_open(struct perf_event_attr * attr,
 
 class operf_counter {
 public:
-	operf_counter(operf_event_t evt, bool enable_on_exec);
+	operf_counter(operf_event_t evt, bool enable_on_exec, bool callgraph);
 	~operf_counter();
 	int perf_event_open(pid_t ppid, int cpu, unsigned counter, operf_record * pr);
 	const struct perf_event_attr * the_attr(void) const { return &attr; }
@@ -76,7 +76,8 @@ public:
 	 * and pid_running=true if profiling an already active process; otherwise false.
 	 */
 	operf_record(std::string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
-	             std::vector<operf_event_t> & evts, OP_perf_utils::vmlinux_info_t vi);
+	             std::vector<operf_event_t> & evts, OP_perf_utils::vmlinux_info_t vi,
+	             bool callgraph);
 	~operf_record();
 	void recordPerfData(void);
 	int out_fd(void) const { return outputFile; }
@@ -97,6 +98,7 @@ private:
 	pid_t pid;
 	bool pid_started;
 	bool system_wide;
+	bool callgraph;
 	std::vector< std::vector<operf_counter> > perfCounters;
 	int total_bytes_recorded;
 	int poll_count;
@@ -117,7 +119,7 @@ public:
 	int convertPerfData(void);
 	bool is_valid(void) {return valid; }
 	int get_eventnum_by_perf_event_id(u64 id) const;
-	inline const operf_event * get_event_by_counter(u32 counter) { return &evts[counter]; }
+	inline const operf_event_t * get_event_by_counter(u32 counter) { return &evts[counter]; }
 
 private:
 	std::string inputFname;

@@ -26,6 +26,7 @@ verbose vlevel1("level1");
 verbose vdebug("debug");
 verbose vstats("stats");
 verbose vsfile("sfile");
+verbose varcs("arcs");
 verbose vxml("xml");
 
 namespace {
