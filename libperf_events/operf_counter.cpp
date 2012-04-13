@@ -22,9 +22,6 @@
 #include <errno.h>
 #include <string.h>
 #include <iostream>
-#ifdef HAVE_LIBPFM
-#include <perfmon/pfmlib.h>
-#endif
 #include <stdlib.h>
 #include "op_events.h"
 #include "operf_counter.h"
@@ -55,13 +52,16 @@ static const char *__op_magic = "OPFILE";
 
 }  // end anonymous namespace
 
-operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec, bool do_cg)
+operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec, bool do_cg,
+                             bool separate_cpu)
 {
 	memset(&attr, 0, sizeof(attr));
 	attr.size = sizeof(attr);
 	attr.sample_type = OP_BASIC_SAMPLE_FORMAT;
 	if (do_cg)
 		attr.sample_type |= PERF_SAMPLE_CALLCHAIN;
+	if (separate_cpu)
+		attr.sample_type |= PERF_SAMPLE_CPU;
 	attr.type = PERF_TYPE_RAW;
 	attr.config = evt.evt_code;
 	attr.sample_period = evt.count;
@@ -132,7 +132,8 @@ operf_record::~operf_record()
 }
 
 operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
-                           vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg)
+                           vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg,
+                           bool separate_by_cpu)
 {
 	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
@@ -144,6 +145,7 @@ operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pi
 	pid_started = pid_running;
 	system_wide = sys_wide;
 	callgraph = do_cg;
+	separate_cpu = separate_by_cpu;
 	total_bytes_recorded = 0;
 	poll_count = 0;
 	evts = events;
@@ -343,7 +345,7 @@ void operf_record::setup()
 			evts[event].counter = event;
 			perfCounters[cpu].push_back(operf_counter(evts[event],
 			                                          (!pid_started && !system_wide),
-			                                          callgraph));
+			                                          callgraph, separate_cpu));
 			if ((rc = perfCounters[cpu][event].perf_event_open(pid, real_cpu, event, this)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
 				goto error;
@@ -521,6 +523,7 @@ int operf_read::convertPerfData(void)
 	cverb << vdebug << "Converting operf.data to oprofile sample data format" << endl;
 	cverb << vdebug << "data size is " << hex << info.file_data_size << "; data offset is " << info.file_data_offset << endl;
 	cverb << vdebug << "head is " << hex << info.head << endl;
+	cverb << vdebug << "sample type is " << hex <<  opHeader.h_attrs[0].attr.sample_type << endl;
 	first_time_processing = true;
 	while (1) {
 		streamsize rec_size = 0;
@@ -529,11 +532,11 @@ int operf_read::convertPerfData(void)
 			break;
 		}
 		rec_size = event->header.size;
-		op_write_event(event);
+		op_write_event(event, opHeader.h_attrs[0].attr.sample_type);
 		num_bytes += rec_size;
 	}
 	first_time_processing = false;
-	op_reprocess_unresolved_events();
+	op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
 
 	map<pid_t, operf_process_info *>::iterator it = process_map.begin();
 	while (it != process_map.end())

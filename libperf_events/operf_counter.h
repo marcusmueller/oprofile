@@ -36,7 +36,7 @@
 class operf_record;
 
 #define OP_BASIC_SAMPLE_FORMAT (PERF_SAMPLE_ID | PERF_SAMPLE_IP \
-    | PERF_SAMPLE_TID | PERF_SAMPLE_CPU | PERF_SAMPLE_STREAM_ID)
+    | PERF_SAMPLE_TID)
 
 static inline int
 op_perf_event_open(struct perf_event_attr * attr,
@@ -53,7 +53,8 @@ op_perf_event_open(struct perf_event_attr * attr,
 
 class operf_counter {
 public:
-	operf_counter(operf_event_t evt, bool enable_on_exec, bool callgraph);
+	operf_counter(operf_event_t evt, bool enable_on_exec, bool callgraph,
+	              bool separate_by_cpu);
 	~operf_counter();
 	int perf_event_open(pid_t ppid, int cpu, unsigned counter, operf_record * pr);
 	const struct perf_event_attr * the_attr(void) const { return &attr; }
@@ -77,7 +78,7 @@ public:
 	 */
 	operf_record(std::string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
 	             std::vector<operf_event_t> & evts, OP_perf_utils::vmlinux_info_t vi,
-	             bool callgraph);
+	             bool callgraph, bool separate_by_cpu);
 	~operf_record();
 	void recordPerfData(void);
 	int out_fd(void) const { return outputFile; }
@@ -99,6 +100,7 @@ private:
 	bool pid_started;
 	bool system_wide;
 	bool callgraph;
+	bool separate_cpu;
 	std::vector< std::vector<operf_counter> > perfCounters;
 	int total_bytes_recorded;
 	int poll_count;

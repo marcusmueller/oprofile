@@ -333,6 +333,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 		trans.end_addr = op_mmap->end_addr;
 		trans.tgid = data->pid;
 		trans.tid = data->tid;
+		trans.cpu = data->cpu;
 		if (trans.in_kernel)
 			trans.pc = data->ip;
 		else
@@ -393,21 +394,20 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 	}
 }
 
-static void __handle_sample_event(event_t * event)
+static void __handle_sample_event(event_t * event, u64 sample_type)
 {
 	struct sample_data data;
 	bool early_match = false;
-	const u64 type = OP_BASIC_SAMPLE_FORMAT;
 	const struct operf_mmap * op_mmap = NULL;
 
 	u64 *array = event->sample.array;
 
-	if (type & PERF_SAMPLE_IP) {
+	if (sample_type & PERF_SAMPLE_IP) {
 		data.ip = event->ip.ip;
 		array++;
 	}
 
-	if (type & PERF_SAMPLE_TID) {
+	if (sample_type & PERF_SAMPLE_TID) {
 		u_int32_t *p = (u_int32_t *)array;
 		data.pid = p[0];
 		data.tid = p[1];
@@ -415,17 +415,12 @@ static void __handle_sample_event(event_t * event)
 	}
 
 	data.id = ~0ULL;
-	if (type & PERF_SAMPLE_ID) {
+	if (sample_type & PERF_SAMPLE_ID) {
 		data.id = *array;
 		array++;
 	}
 
-	if (type & PERF_SAMPLE_STREAM_ID) {
-		data.stream_id = *array;
-		array++;
-	}
-
-	if (type & PERF_SAMPLE_CPU) {
+	if (sample_type & PERF_SAMPLE_CPU) {
 		u_int32_t *p = (u_int32_t *)array;
 		data.cpu = *p;
 		array++;
@@ -502,7 +497,7 @@ static void __handle_sample_event(event_t * event)
 			operf_sfile_log_sample(&trans);
 
 			update_trans_last(&trans);
-			if (operf_options::callgraph)
+			if (sample_type & PERF_SAMPLE_CALLCHAIN)
 				__handle_callchain(array, &data);
 			goto out;
 		}
@@ -531,7 +526,7 @@ out:
  * those samples are discarded and we increment the appropriate "lost sample" stat.
  * TODO:   What's the name of the stat we increment?
  */
-int OP_perf_utils::op_write_event(event_t * event)
+int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 {
 #if 0
 	if (event->header.type < PERF_RECORD_MAX) {
@@ -541,7 +536,7 @@ int OP_perf_utils::op_write_event(event_t * event)
 
 	switch (event->header.type) {
 	case PERF_RECORD_SAMPLE:
-		__handle_sample_event(event);
+		__handle_sample_event(event, sample_type);
 		return 0;
 	case PERF_RECORD_MMAP:
 		__handle_mmap_event(event);
@@ -563,7 +558,7 @@ int OP_perf_utils::op_write_event(event_t * event)
 	}
 }
 
-void OP_perf_utils::op_reprocess_unresolved_events(void)
+void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type)
 {
 	list<event_t *>::const_iterator it = unresolved_events.begin();
 	for (; it != unresolved_events.end(); it++) {
@@ -571,7 +566,7 @@ void OP_perf_utils::op_reprocess_unresolved_events(void)
 		// This is just a sanity check, since all events in this list
 		// are unresolved sample events.
 		if (evt->header.type == PERF_RECORD_SAMPLE) {
-			__handle_sample_event(evt);
+			__handle_sample_event(evt, sample_type);
 			free(evt);
 		}
 	}

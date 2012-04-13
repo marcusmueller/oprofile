@@ -119,6 +119,14 @@ popt::option options_array[] = {
 };
 }
 
+static void __print_usage_and_exit(const char * extra_msg)
+{
+	if (extra_msg)
+		cerr << extra_msg << endl;
+	cerr << "usage: operf [ options ] [ --system-wide | --pid <pid> | [ command [ args ] ] ]" << endl;
+	exit(EXIT_FAILURE);
+}
+
 
 static void op_sig_stop(int val __attribute__((unused)))
 {
@@ -155,9 +163,9 @@ void run_app(void)
 {
 	char * app_fname = rindex(app_name, '/') + 1;
 	if (!app_fname) {
-		cerr << "Error trying to parse app name " <<  app_name << endl;
-		cerr << "usage: operf [options] --pid=<PID> | appname [args]" << endl;
-		exit(EXIT_FAILURE);
+		string msg = "Error trying to parse app name ";
+		msg += app_name;
+		__print_usage_and_exit(msg.c_str());
 	}
 
 	vector<string> exec_args_str;
@@ -256,7 +264,8 @@ int start_profiling_app(void)
 			vi.end = kernel_end;
 			operf_record operfRecord(outputfile, operf_options::system_wide, app_PID,
 			                         (operf_options::pid == app_PID), events, vi,
-			                         operf_options::callgraph);
+			                         operf_options::callgraph,
+			                         operf_options::separate_cpu);
 			if (operfRecord.get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
 				 * occurred:
@@ -272,7 +281,7 @@ int start_profiling_app(void)
 				of.open(outputfile.c_str(), ios_base::trunc);
 				of.close();
 				cerr << "operf record init failed" << endl;
-				cerr << "usage: operf [options] --pid=<PID> | appname [args]" << endl;
+				cerr << "usage: operf [ options ] [ --system-wide | --pid <pid> | [ command [ args ] ] ]" << endl;
 				// Exit with SUCCESS to avoid the unnecessary "operf-record process ended
 				// abnormally" message
 				_exit(EXIT_SUCCESS);
@@ -608,15 +617,6 @@ int validate_app_name(void)
 	out: return rc;
 }
 
-static void __print_usage_and_exit(char * extra_msg)
-{
-	if (extra_msg)
-		cerr << extra_msg << endl;
-	cerr << "usage: operf [options] --pid=<PID> | appname [args]" << endl;
-	exit(EXIT_FAILURE);
-
-}
-
 static u32 _get_event_code(char name[])
 {
 	FILE * fp;
@@ -925,7 +925,7 @@ static void process_args(int argc, char const ** argv)
 			}
 		}
 		if (validate_app_name() < 0) {
-			exit(1);
+			__print_usage_and_exit(NULL);
 		}
 	} else if (operf_options::pid) {
 		if (operf_options::system_wide)
