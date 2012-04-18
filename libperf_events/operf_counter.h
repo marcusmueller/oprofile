@@ -19,7 +19,8 @@
 #define OPERF_COUNTER_H_
 
 #include <sys/mman.h>
-#include <asm/unistd.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 #include <stdint.h>
 #include <poll.h>
 #include <string>
