@@ -58,6 +58,8 @@ operf_read operfRead;
 op_cpu cpu_type;
 double cpu_speed;
 char op_samples_current_dir[PATH_MAX];
+uint op_nr_counters;
+verbose vmisc("misc");
 
 
 #define DEFAULT_OPERF_OUTFILE "operf.data"
@@ -67,16 +69,18 @@ static char full_pathname[PATH_MAX];
 static char * app_name_SAVE = NULL;
 static char * app_args = NULL;
 static pid_t app_PID = -1;
+static 	pid_t jitconv_pid = -1;
 static bool app_started;
 static pid_t operf_pid;
 static string samples_dir;
 static string outputfile;
 static bool startApp;
 static bool reset_done = false;
-uint op_nr_counters;
-vector<operf_event_t> events;
+static char start_time_str[32];
+static vector<operf_event_t> events;
+static bool jit_conversion_running;
+static uid_t my_uid;
 
-verbose vmisc("misc");
 
 namespace operf_options {
 bool system_wide;
@@ -217,10 +221,10 @@ void run_app(void)
 		goto fail;
 
 	cverb << vdebug << "parent says start app " << app_name << endl;
-	//sleep(1);
+	app_started = true;
 	execvp(app_name, ((char * const *)&exec_args[0]));
 	cerr <<  "Failed to exec " << exec_args[0] << ": " << strerror(errno) << endl;
-	fail:
+fail:
 	/* We don't want any cleanup in the child */
 	_exit(EXIT_FAILURE);
 
@@ -230,6 +234,12 @@ int start_profiling_app(void)
 {
 	// The only process that should return from this function is the process
 	// which invoked it.  Any forked process must do _exit() rather than return().
+	struct timeval tv;
+	unsigned long long start_time = 0ULL;
+	gettimeofday(&tv, NULL);
+	start_time = 0ULL;
+	start_time = tv.tv_sec;
+	sprintf(start_time_str, "%llu", start_time);
 	startApp = ((app_PID != operf_options::pid) && (operf_options::system_wide == false));
 
 	if (startApp) {
@@ -256,7 +266,13 @@ int start_profiling_app(void)
 	if (operf_pid < 0) {
 		return -1;
 	} else if (operf_pid == 0) { // operf-record process
-		// setup operf recording
+		int ready = 0;
+		/*
+		 * Since an informative message will be displayed to the user if
+		 * an error occurs, we don't want to blow chunks here; instead, we'll
+		 * exit gracefully.  Clear out the operf.data file as an indication
+		 * to the parent process that the profile data isn't valid.
+		 */
 		try {
 			OP_perf_utils::vmlinux_info_t vi;
 			vi.image_name = operf_options::vmlinux;
@@ -272,25 +288,18 @@ int start_profiling_app(void)
 				 *   - profiled process has already ended
 				 *   - passed PID was invalid
 				 *   - device or resource busy
-				 * Since an informative message has already been displayed to
-				 * the user, we don't want to blow chunks here; instead, we'll
-				 * exit gracefully.  Clear out the operf.data file as an indication
-				 * to the parent process that the profile data isn't valid.
 				 */
-				ofstream of;
-				of.open(outputfile.c_str(), ios_base::trunc);
-				of.close();
 				cerr << "operf record init failed" << endl;
 				cerr << "usage: operf [ options ] [ --system-wide | --pid <pid> | [ command [ args ] ] ]" << endl;
 				// Exit with SUCCESS to avoid the unnecessary "operf-record process ended
 				// abnormally" message
-				_exit(EXIT_SUCCESS);
+				goto fail_out;
 			}
 			if (startApp) {
-				int ready = 1;
+				ready = 1;
 				if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
 					perror("Internal error on operf_record_ready_pipe");
-					_exit(EXIT_FAILURE);
+					goto fail_out;
 				}
 			}
 
@@ -304,9 +313,21 @@ int start_profiling_app(void)
 			_exit(EXIT_SUCCESS);
 		} catch (runtime_error re) {
 			cerr << "Caught runtime_error: " << re.what() << endl;
-			if (startApp)
-				kill(app_PID, SIGKILL);
-			_exit(EXIT_FAILURE);
+			goto fail_out;
+		}
+fail_out:
+		ofstream of;
+		of.open(outputfile.c_str(), ios_base::trunc);
+		of.close();
+		if (startApp && !ready){
+			/* ready==0 means we've not yet told parent we're ready,
+			 * but the parent is reading our pipe.  So we tell the
+			 * parent we're not ready so it can continue.
+			 */
+			if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
+				perror("Internal error on operf_record_ready_pipe");
+			}
+			_exit(EXIT_SUCCESS);
 		}
 	} else {  // parent
 		if (startApp) {
@@ -325,6 +346,11 @@ int start_profiling_app(void)
 				return -1;
 			} else if (recorder_ready != 1) {
 				cerr << "operf record process failure; exiting" << endl;
+				cverb << vdebug << "telling child to abort starting of app" << endl;
+				startup = 0;
+				if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
+					perror("Internal error on start_app_pipe");
+				}
 				return -1;
 			}
 
@@ -380,7 +406,6 @@ static end_code_t _run(void)
 	sigprocmask(SIG_BLOCK, &ss, NULL);
 
 	if (start_profiling_app() < 0) {
-		perror("Internal error: fork failed");
 		return PERF_RECORD_ERROR;
 	}
 	// parent continues here
@@ -460,6 +485,89 @@ static int __delete_sample_data(const char *fpath,
 	}
 }
 
+static void _jitconv_complete(int val __attribute__((unused)))
+{
+	int child_status;
+	pid_t the_pid = wait(&child_status);
+	if (the_pid != jitconv_pid) {
+		return;
+	}
+	jit_conversion_running = false;
+	if (WIFEXITED(child_status) && (!WEXITSTATUS(child_status))) {
+		cverb << vmisc << "JIT dump processing complete." << endl;
+	} else {
+		 if (WIFSIGNALED(child_status))
+			 cerr << "child received signal " << WTERMSIG(child_status) << endl;
+		 else
+			 cerr << "JIT dump processing exited abnormally: "
+			 << WEXITSTATUS(child_status) << endl;
+	}
+}
+
+
+static void _do_jitdump_convert()
+{
+	int arg_num;
+	unsigned long long end_time = 0ULL;
+	struct timeval tv;
+	char end_time_str[32];
+	char opjitconv_path[PATH_MAX + 1];
+	char * exec_args[7];
+	struct sigaction act;
+	sigset_t ss;
+
+	sigfillset(&ss);
+	sigprocmask(SIG_UNBLOCK, &ss, NULL);
+
+	act.sa_handler = _jitconv_complete;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGCHLD);
+
+	if (sigaction(SIGCHLD, &act, NULL)) {
+		perror("operf: install of SIGCHLD handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+
+	jitconv_pid = fork();
+	switch (jitconv_pid) {
+	case -1:
+		perror("Error forking JIT dump process!");
+		break;
+	case 0: {
+		const char * jitconv_pgm = "opjitconv";
+		const char * debug_option = "-d";
+		const char * non_root_user = "--non-root";
+		gettimeofday(&tv, NULL);
+		end_time = tv.tv_sec;
+		sprintf(end_time_str, "%llu", end_time);
+		sprintf(opjitconv_path, "%s/%s", OP_BINDIR, jitconv_pgm);
+		arg_num = 0;
+		exec_args[arg_num++] = (char *)jitconv_pgm;
+		if (cverb << vmisc)
+			exec_args[arg_num++] = (char *)debug_option;
+		if (my_uid != 0)
+			exec_args[arg_num++] = (char *)non_root_user;
+		exec_args[arg_num++] = (char *)operf_options::session_dir.c_str();
+		exec_args[arg_num++] = start_time_str;
+		exec_args[arg_num++] = end_time_str;
+		exec_args[arg_num] = (char *) NULL;
+		execvp(opjitconv_path, exec_args);
+		fprintf(stderr, "Failed to exec %s: %s\n",
+		        exec_args[0], strerror(errno));
+		/* We don't want any cleanup in the child */
+		_exit(EXIT_FAILURE);
+		break;
+	}
+	default: // parent
+		jit_conversion_running = true;
+		break;
+	}
+
+}
+
+
 static void complete(void)
 {
 	int rc;
@@ -520,6 +628,16 @@ static void complete(void)
 			cerr << "Caught exception from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;
 		}
+	}
+	// Invoke opjitconv and set up a SIGCHLD signal for when it's done
+	_do_jitdump_convert();
+	int keep_waiting = 0;
+	while (jit_conversion_running && (keep_waiting < 2)) {
+		sleep(1);
+		keep_waiting++;
+	}
+	if (jit_conversion_running) {
+		kill(jitconv_pid, SIGKILL);
 	}
 	cleanup();
 }
@@ -1010,8 +1128,8 @@ int main(int argc, char const *argv[])
 	cpu_type = op_get_cpu_type();
 	cpu_speed = op_cpu_frequency();
 	process_args(argc, argv);
-	uid_t uid = geteuid();
-	if (operf_options::system_wide && uid != 0) {
+	my_uid = geteuid();
+	if (operf_options::system_wide && my_uid != 0) {
 		cerr << "You must be root to do system-wide profiling." << endl;
 		exit(1);
 	}

@@ -28,7 +28,6 @@ struct operf_kernel_image;
 #define CG_HASH_SIZE 16
 #define INVALID_IMAGE "INVALID IMAGE"
 
-// TODO: VMA_SHIFT should be defined in new operf_anon.h ?
 #define VMA_SHIFT 13
 /**
  * Each set of sample files (where a set is over the physical counter
@@ -50,9 +49,9 @@ struct operf_sfile {
 	unsigned int cpu;
 	/** kernel image if applicable */
 	struct operf_kernel_image * kernel;
-	/** anonymous mapping */
-	// TODO: replace anon_mapping
-	//struct anon_mapping * anon;
+	bool is_anon;
+	vma_t start_addr;
+	vma_t end_addr;
 
 	/** hash table link */
 	struct list_head hash;
@@ -85,8 +84,7 @@ struct operf_cg_entry {
 struct operf_transient {
 	struct operf_sfile * current;
 	struct operf_sfile * last;
-	struct anon_mapping * anon;
-	struct anon_mapping * last_anon;
+	bool is_anon;
 	operf_process_info * cur_procinfo;
 	vma_t pc;
 	const char * image_name;
@@ -108,11 +106,6 @@ struct operf_transient {
 
 /** clear any sfiles that are for the kernel */
 void operf_sfile_clear_kernel(void);
-
-struct anon_mapping;
-
-/** clear any sfiles for the given anon mapping */
-void operf_sfile_clear_anon(struct anon_mapping *);
 
 /** sync sample files */
 void operf_sfile_sync_files(void);

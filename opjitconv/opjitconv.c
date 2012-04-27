@@ -70,6 +70,8 @@ struct jitentry ** entries_address_ascending;
 
 /* debug flag, print some information */
 int debug;
+/* indicates opjitconv invoked by non-root user via operf */
+int non_root;
 
 /*
  *  Front-end processing from this point to end of the source.
@@ -161,6 +163,8 @@ int change_owner(char * path)
 	int rc = OP_JIT_CONV_OK;
 	int fd;
 	
+	if (non_root)
+		return rc;
 	fd = open(path, 0);
 	if (fd < 0) {
 		printf("opjitconv: File cannot be opened for changing ownership.\n");
@@ -371,13 +375,13 @@ chk_proc_id:
 		verbprintf(debug, "Converting %s to %s\n", dmp_pathname,
 			   elf_file);
 		/* Set eGID of the special user 'oprofile'. */
-		if (setegid(pw_oprofile->pw_gid) != 0) {
+		if (!non_root && setegid(pw_oprofile->pw_gid) != 0) {
 			perror("opjitconv: setegid to special user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
 		}
 		/* Set eUID of the special user 'oprofile'. */
-		if (seteuid(pw_oprofile->pw_uid) != 0) {
+		if (!non_root && seteuid(pw_oprofile->pw_uid) != 0) {
 			perror("opjitconv: seteuid to special user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
@@ -385,13 +389,13 @@ chk_proc_id:
 		/* Convert the dump file as the special user 'oprofile'. */
 		rc = op_jit_convert(dmp_info, tmp_elffile, start_time, end_time);
 		/* Set eUID back to the original user. */
-		if (seteuid(getuid()) != 0) {
+		if (!non_root && seteuid(getuid()) != 0) {
 			perror("opjitconv: seteuid to original user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
 		}
 		/* Set eGID back to the original user. */
-		if (setegid(getgid()) != 0) {
+		if (!non_root && setegid(getgid()) != 0) {
 			perror("opjitconv: setegid to original user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
@@ -483,8 +487,9 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	struct list_head * pos1, * pos2;
 	int rc = OP_JIT_CONV_OK;
 	char jitdumpfile[PATH_MAX + 1];
-	char oprofile_tmp_template[] = "/tmp/oprofile.XXXXXX";
+	char oprofile_tmp_template[PATH_MAX + 1];
 	char const * jitdump_dir = "/var/lib/oprofile/jitdump/";
+
 	LIST_HEAD(jd_fnames);
 	char const * anon_dir_filter = "*/{dep}/{anon:anon}/[0-9]*.*";
 	LIST_HEAD(anon_dnames);
@@ -492,16 +497,37 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	int samples_dir_len = strlen(session_dir) + strlen(samples_subdir);
 	char * samples_dir;
 	/* temporary working directory for dump file conversion step */
-	char * tmp_conv_dir;
+	char * tmp_conv_dir = NULL;
+
+	if (non_root)
+		sprintf(oprofile_tmp_template, "%s/tmp", session_dir);
+	else
+		strcpy(oprofile_tmp_template, "/tmp/oprofile.XXXXXX");
 
 	/* Create a temporary working directory used for the conversion step.
 	 */
-	tmp_conv_dir = mkdtemp(oprofile_tmp_template);
+	if (non_root) {
+		sprintf(sys_cmd_buffer, "/bin/rm -rf %s", oprofile_tmp_template);
+		if (system(sys_cmd_buffer) != 0) {
+			printf("opjitconv: Removing temporary working directory %s failed.\n",
+			       oprofile_tmp_template);
+			rc = OP_JIT_CONV_TMPDIR_NOT_REMOVED;
+		} else {
+			if (!mkdir(oprofile_tmp_template, S_IRWXU | S_IRWXG ))
+				tmp_conv_dir = oprofile_tmp_template;
+		}
+	} else {
+		tmp_conv_dir = mkdtemp(oprofile_tmp_template);
+	}
+
 	if (tmp_conv_dir == NULL) {
-		printf("opjitconv: Temporary working directory cannot be created.\n");
+		printf("opjitconv: Temporary working directory %s cannot be created.\n",
+		       oprofile_tmp_template);
+		perror("Exiting due to error");
 		rc = OP_JIT_CONV_FAIL;
 		goto out;
 	}
+
 
 	if ((rc = get_matching_pathnames(&jd_fnames, get_pathname,
 		jitdump_dir, "*.dump", NO_RECURSION)) < 0
@@ -510,11 +536,15 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 
 	/* Get user information (i.e. UID and GID) for special user 'oprofile'.
 	 */
-	pw_oprofile = getpwnam("oprofile");
-	if (pw_oprofile == NULL) {
-		printf("opjitconv: User information for special user oprofile cannot be found.\n");
-		rc = OP_JIT_CONV_FAIL;
-		goto rm_tmp;
+	if (non_root) {
+		pw_oprofile = NULL;
+	} else {
+		pw_oprofile = getpwnam("oprofile");
+		if (pw_oprofile == NULL) {
+			printf("opjitconv: User information for special user oprofile cannot be found.\n");
+			rc = OP_JIT_CONV_FAIL;
+			goto rm_tmp;
+		}
 	}
 
 	/* Change ownership of the temporary working directory to prevent other users
@@ -590,6 +620,12 @@ int main(int argc, char ** argv)
 	debug = 0;
 	if (argc > 1 && strcmp(argv[1], "-d") == 0) {
 		debug = 1;
+		argc--;
+		argv++;
+	}
+	non_root = 0;
+	if (argc > 1 && strcmp(argv[1], "--non-root") == 0) {
+		non_root = 1;
 		argc--;
 		argv++;
 	}

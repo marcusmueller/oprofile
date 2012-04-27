@@ -38,17 +38,15 @@ extern double cpu_speed;
 
 using namespace std;
 
-/* TODO: handle anon
-static char * mangle_anon(struct anon_mapping const * anon)
+static const char * mangle_anon(struct operf_sfile const * anon)
 {
-	char * name = xmalloc(PATH_MAX);
+	char * name = (char *)xmalloc(PATH_MAX);
 
 	snprintf(name, 1024, "%u.0x%llx.0x%llx", (unsigned int)anon->tgid,
-	       anon->start, anon->end);
+	       anon->start_addr, anon->end_addr);
 
-	return name;
+	return (const char *)name;
 }
-*/
 
 static char *
 mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int counter, int cg)
@@ -62,13 +60,11 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 	if (sf->kernel) {
 		values.image_name = sf->kernel->name;
 		values.flags |= MANGLE_KERNEL;
-	} /* TODO: handle anon
-	else if (sf->anon) {
+	} else if (sf->is_anon) {
 		values.flags |= MANGLE_ANON;
-		values.image_name = mangle_anon(sf->anon);
-		values.anon_name = sf->anon->name;
-	}*/
-	else {
+		values.image_name = mangle_anon(sf);
+		values.anon_name = "anon";
+	} else {
 		values.image_name = sf->image_name;
 	}
 	values.dep_name = sf->app_filename;
@@ -85,16 +81,11 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 		values.flags |= MANGLE_CALLGRAPH;
 		if (last->kernel) {
 			values.cg_image_name = last->kernel->name;
-		}
-		/* TODO: handle anon
-		 *
-		 else if (last->anon) {
+		} else if (last->is_anon) {
 			values.flags |= MANGLE_CG_ANON;
-			values.cg_image_name = mangle_anon(last->anon);
-			values.anon_name = last->anon->name;
-		}
-		*/
-		else {
+			values.cg_image_name = mangle_anon((struct operf_sfile const *)last);
+			values.anon_name = "anon";
+		} else {
 			values.cg_image_name = last->image_name;
 		}
 	}
@@ -180,13 +171,11 @@ retry:
 	else
 		binary = sf->kernel->name;
 
-	/* TODO: handle anon
-	if (last && last->anon)
-		last_start = last->anon->start;
-	 */
+	if (last && last->is_anon)
+		last_start = last->start_addr;
 
 	fill_header((struct opd_header *)odb_get_data(file), counter,
-		    0, last_start,
+		    sf->is_anon ? sf->start_addr : 0, last_start,
 		    !!sf->kernel, last ? !!last->kernel : 0,
 		    0, 0,
 		    binary ? op_get_mtime(binary) : 0);

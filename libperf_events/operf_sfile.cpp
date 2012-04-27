@@ -64,15 +64,10 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 	for (unsigned int i = 0; i < fname_hash_len; i++)
 		val = ((val << 5) + val) ^ fname_ptr[i];
 
-	val ^= trans->tgid << 2;
-
-	// TODO: replace anon
-	/*
-	if (trans->anon) {
-		val ^= trans->anon->start >> VMA_SHIFT;
-		val ^= trans->anon->end >> (VMA_SHIFT + 1);
+	if (trans->is_anon) {
+		val ^= trans->start_addr >> VMA_SHIFT;
+		val ^= trans->end_addr >> (VMA_SHIFT + 1);
 	}
-	*/
 
 	return val & HASH_BITS;
 }
@@ -80,8 +75,8 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 
 static int
 do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
-         //trans->anon,
-         const char * image_name, const char * appname, pid_t tgid, pid_t tid, unsigned int cpu)
+         bool is_anon, const char * image_name, const char * appname, pid_t tgid,
+         pid_t tid, unsigned int cpu)
 {
 	size_t len1, len2;
 
@@ -90,6 +85,9 @@ do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
 	 * correctly.
 	 */
 	if (sf->kernel != ki)
+		return 0;
+
+	if (sf->is_anon != is_anon)
 		return 0;
 
 	len1 = strlen(sf->app_filename);
@@ -108,12 +106,6 @@ do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
 	if (ki)
 		return 1;
 
-	// TODO: handle anon
-	/*
-	if (sf->anon != anon)
-		return 0;
-	 */
-
 	return (!strncmp(sf->image_name, image_name, len1));
 
 }
@@ -122,9 +114,8 @@ static int
 trans_match(struct operf_transient const * trans, struct operf_sfile const * sfile,
             struct operf_kernel_image const * ki)
 {
-	//TODO  anon replacement
 	return do_match(sfile, ki,
-	                //trans->anon,
+	                trans->is_anon,
 	                trans->image_name, trans->app_filename,
 	                trans->tgid, trans->tid, trans->cpu);
 
@@ -134,9 +125,8 @@ trans_match(struct operf_transient const * trans, struct operf_sfile const * sfi
 int
 operf_sfile_equal(struct operf_sfile const * sf, struct operf_sfile const * sf2)
 {
-	//TODO anon replacement
 	return do_match(sf, sf2->kernel,
-	                //sf2->anon,
+	                sf2->is_anon,
 	                sf2->image_name, sf2->app_filename,
 	                sf2->tgid, sf2->tid, sf2->cpu);
 }
@@ -160,8 +150,9 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 	sf->kernel = ki;
 	sf->image_name = trans->image_name;
 	sf->app_filename = trans->app_filename;
-	// TODO: handle anon
-	//sf->anon = trans->anon;
+	sf->is_anon = trans->is_anon;
+	sf->start_addr = trans->start_addr;
+	sf->end_addr = trans->end_addr;
 
 	for (i = 0 ; i < op_nr_counters ; ++i)
 		odb_init(&sf->files[i]);
@@ -182,7 +173,8 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 
 	return sf;
 }
-
+#include <iostream>
+using namespace std;
 struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 {
 	struct operf_sfile * sf;
@@ -201,18 +193,6 @@ struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 		}
 	}
 
-	//TODO anon replacement
-	/*
-	else if (trans->cookie == NO_COOKIE && !trans->anon) {
-		if (vsamples) {
-			char const * app = verbose_cookie(trans->app_cookie);
-			printf("No anon map for pc %llx, app %s.\n",
-			       trans->pc, app);
-		}
-		opd_stats[OPD_LOST_NO_MAPPING]++;
-		return NULL;
-	}
-	*/
 	hash = sfile_hash(trans, ki);
 	list_for_each(pos, &hashes[hash]) {
 		sf = list_entry(pos, struct operf_sfile, hash);
@@ -308,28 +288,18 @@ open:
 
 static void verbose_print_sample(struct operf_sfile * sf, vma_t pc, uint counter)
 {
-	//TODO cookie and anon replacement
-//char const * app = verbose_cookie(sf->app_cookie);
 	printf("0x%llx(%u): ", pc, counter);
-	/*
-	if (sf->anon) {
+	if (sf->is_anon) {
 		printf("anon (tgid %u, 0x%llx-0x%llx), ",
-		       (unsigned int)sf->anon->tgid,
-		       sf->anon->start, sf->anon->end);
-	}
-	*/
-	// TODO: handle kernel
-	/*	else if (sf->kernel) {
+		       (unsigned int)sf->tgid,
+		       sf->start_addr, sf->end_addr);
+	} else if (sf->kernel) {
 		printf("kern (name %s, 0x%llx-0x%llx), ", sf->kernel->name,
 		       sf->kernel->start, sf->kernel->end);
 	} else {
-		//TODO cookie replacement
-		;
-		printf("%s(%llx), ", verbose_cookie(sf->cookie),  sf->cookie);
+		printf("%s), ", sf->image_name);
 	}
-	*/
-	//TODO cookie replacement
-	//printf("app %s(%llx)", app, sf->app_cookie);
+	printf("app: %s: ", sf->app_filename);
 }
 
 
@@ -366,18 +336,16 @@ void  operf_sfile_log_arc(struct operf_transient const * trans)
 	if (trans->last->kernel)
 		to -= trans->last->kernel->start;
 
-	/* TODO handle anon
-	if (trans->current->anon)
-		from -= trans->current->anon->start;
+	if (trans->current->is_anon)
+		from -= trans->current->start_addr;
 
-	if (trans->last->anon)
-		to -= trans->last->anon->start;
-	 */
+	if (trans->last->is_anon)
+		to -= trans->last->start_addr;
 
 	if (cverb << varcs)
 		verbose_arc(trans, from, to);
 
-	/* TODO: handle sstats
+	/* TODO: handle stats
 	if (!file) {
 		opd_stats[OPD_LOST_SAMPLEFILE]++;
 		return;
@@ -414,11 +382,9 @@ void operf_sfile_log_sample_count(struct operf_transient const * trans,
 	/* absolute value -> offset */
 	if (trans->current->kernel)
 		pc -= trans->current->kernel->start;
-// TODO handle anon
-	/*
-	if (trans->current->anon)
-		pc -= trans->current->anon->start;
-	 */
+	if (trans->current->is_anon)
+		pc -= trans->current->start_addr;
+
 	if (cverb << vsfile)
 		verbose_sample(trans, pc);
 	// TODO: handle stats
@@ -480,13 +446,6 @@ static int is_sfile_kernel(struct operf_sfile * sf, void * data __attribute__((u
 	return !!sf->kernel;
 }
 
-/* TODO handle anon
-static int is_sfile_anon(struct operf_sfile * sf, void * data)
-{
-	return sf->anon == data;
-}
-
-*/
 
 typedef int (*operf_sfile_func)(struct operf_sfile *, void *);
 
@@ -532,12 +491,6 @@ static void for_each_sfile(operf_sfile_func func, void * data)
 void operf_sfile_clear_kernel(void)
 {
 	for_each_sfile(is_sfile_kernel, NULL);
-}
-
-
-void operf_sfile_clear_anon(struct anon_mapping * anon)
-{
-	//for_each_sfile(is_sfile_anon, anon);
 }
 
 

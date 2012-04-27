@@ -100,7 +100,6 @@ struct sample_data {
 	u64 time;
 	u64 addr;
 	u64 id;
-	u64 stream_id;
 	u32 cpu;
 	u64 period;
 	u32 raw_size;

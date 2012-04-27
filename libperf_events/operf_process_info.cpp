@@ -44,7 +44,8 @@ void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
 	// If we do not know the full pathname of our app yet,
 	// let's try to determine if the passed filename is a good
 	// candidate appname.
-	if ((appname_is_fullname < YES_FULLNAME) && (num_app_chars_matched < (int)app_basename.length())) {
+
+	if (!mapping->is_anon_mapping && (appname_is_fullname < YES_FULLNAME) && (num_app_chars_matched < (int)app_basename.length())) {
 		string basename;
 		int num_matched_chars = get_num_matching_chars(mapping->filename, basename);
 		if (num_matched_chars > num_app_chars_matched) {

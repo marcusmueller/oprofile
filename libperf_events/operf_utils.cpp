@@ -148,7 +148,7 @@ bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 static inline void update_trans_last(struct operf_transient * trans)
 {
 	trans->last = trans->current;
-	trans->last_anon = trans->anon;
+	trans->is_anon = trans->is_anon;
 	trans->last_pc = trans->pc;
 }
 
@@ -192,19 +192,25 @@ static void __handle_mmap_event(event_t * event)
 
 	range = all_images_map.equal_range(image_basename);
 	for (it = range.first; it != range.second; it++) {
-		if ((strcmp((*it).second->filename, image_basename.c_str())) == 0) {
+		if (((strcmp((*it).second->filename, image_basename.c_str())) == 0)
+				&& ((*it).second->start_addr == event->mmap.start)) {
 			mapping = (*it).second;
 			break;
 		}
 	}
 	if (!mapping) {
 		mapping = new struct operf_mmap;
+		memset(mapping, 0, sizeof(struct operf_mmap));
 		mapping->start_addr = event->mmap.start;
 	        strcpy(mapping->filename, event->mmap.filename);
+	        mapping->is_anon_mapping = (strncmp(mapping->filename,
+	                                            "//anon",
+	                                            strlen("//anon")) == 0) ?
+	                                                                     true
+	                                                                     : false;
 
 		mapping->end_addr = (event->mmap.len == 0ULL)? 0ULL : mapping->start_addr + event->mmap.len - 1;
 		mapping->pgoff = event->mmap.pgoff;
-		mapping->pid = event->mmap.pid;
 
 		cverb << vperf << "PERF_RECORD_MMAP for " << event->mmap.filename << endl;
 		cverb << vperf << "\tstart_addr: " << hex << mapping->start_addr;
@@ -259,16 +265,18 @@ static void __handle_mmap_event(event_t * event)
 
 static struct operf_transient * __get_operf_trans(struct sample_data * data)
 {
-	operf_process_info * proc;
+	operf_process_info * proc = NULL;
 	const struct operf_mmap * op_mmap = NULL;
 	struct operf_transient * retval = NULL;
 
 	if (trans.tgid == data->pid) {
 		proc = trans.cur_procinfo;
+		cverb << vmisc << "trans.tgid == data->pid : " << data->pid << endl;
+
 	} else {
 		// Find operf_process info for data.tgid.
 		std::map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data->pid);
-		if (it != process_map.end() && (it->second->appname_valid())) {
+		if (it != process_map.end() && (it->second->is_valid())) {
 			proc = it->second;
 			trans.cur_procinfo = proc;
 		} else {
@@ -326,7 +334,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 		op_mmap = proc->find_mapping_for_sample(data->ip);
 	}
 	if (op_mmap) {
-		cverb << vperf << "Found mmap for sample" << endl;
+		cverb << vperf << "Found mmap for sample; image_name is " << op_mmap->filename << endl;
 		trans.image_name = op_mmap->filename;
 		trans.app_filename = proc->get_app_name().c_str();
 		trans.start_addr = op_mmap->start_addr;
@@ -334,7 +342,8 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 		trans.tgid = data->pid;
 		trans.tid = data->tid;
 		trans.cpu = data->cpu;
-		if (trans.in_kernel)
+		trans.is_anon = op_mmap->is_anon_mapping;
+		if (trans.in_kernel || trans.is_anon)
 			trans.pc = data->ip;
 		else
 			trans.pc = data->ip - trans.start_addr;
@@ -454,7 +463,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 
 	cverb << vperf << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
 	      << data.tid << ": " << hex << (unsigned long long)data.ip
-	      << endl << "\tdata ID: " << data.id << "; data stream ID: " << data.stream_id << endl;
+	      << endl << "\tdata ID: " << data.id << endl;
 
 	// Verify the sample.
 	trans.event = operfRead.get_eventnum_by_perf_event_id(data.id);
@@ -560,6 +569,7 @@ int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 
 void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type)
 {
+	cverb << vperf << "Reprocessing samples" << endl;
 	list<event_t *>::const_iterator it = unresolved_events.begin();
 	for (; it != unresolved_events.end(); it++) {
 		event_t * evt = (*it);
