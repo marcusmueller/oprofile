@@ -51,21 +51,13 @@ struct operf_mmap {
 class operf_process_info {
 public:
 	operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid);
-	bool is_valid(void) { return (valid && appname_valid()); }
+	bool is_valid(void) { return (valid); }
 	void process_new_mapping(struct operf_mmap * mapping);
 	void process_deferred_mappings(std::string app_shortname);
 	std::string get_app_name(void) { return _appname; }
 	void add_deferred_mapping(struct operf_mmap * mapping)
 	{ deferred_mmappings[mapping->start_addr] = mapping; }
 	const struct operf_mmap * find_mapping_for_sample(u64 sample_addr);
-private:
-	typedef enum {
-		NOT_FULLNAME,
-		MAYBE_FULLNAME,
-		YES_FULLNAME
-	} op_fullname_t;
-	pid_t pid;
-	std::string _appname;
 
 	/* The valid bit is set when a COMM event has been received for the process
 	 * represented by this object.  But since the COMM event only gives a shortname
@@ -75,19 +67,12 @@ private:
 	 * result could be from:
 	 *    (appname_is_fullname == MAYBE_FULLNAME) &&(num_app_chars_matched > 0)
 	 * But this is the best guess we can make.
-	 * So is_valid() has to consider both the 'valid' field and the result of
-	 * appname_valid().
 	 */
-	bool valid;
-	op_fullname_t appname_is_fullname;
-	std::string app_basename;
-	int  num_app_chars_matched;
-	std::map<u64, struct operf_mmap *> mmappings;
-	std::map<u64, struct operf_mmap *> deferred_mmappings;
-	int get_num_matching_chars(std::string mapped_filename, std::string & basename);
-	bool appname_valid(void)
+	bool is_appname_valid(void)
 	{
 		bool result;
+		if (!valid)
+			return false;
 		if (appname_is_fullname == YES_FULLNAME)
 			result = true;
 		else if ((appname_is_fullname == MAYBE_FULLNAME) &&
@@ -97,6 +82,22 @@ private:
 			result = false;
 		return result;
 	}
+
+private:
+	typedef enum {
+		NOT_FULLNAME,
+		MAYBE_FULLNAME,
+		YES_FULLNAME
+	} op_fullname_t;
+	pid_t pid;
+	std::string _appname;
+	bool valid;
+	op_fullname_t appname_is_fullname;
+	std::string app_basename;
+	int  num_app_chars_matched;
+	std::map<u64, struct operf_mmap *> mmappings;
+	std::map<u64, struct operf_mmap *> deferred_mmappings;
+	int get_num_matching_chars(std::string mapped_filename, std::string & basename);
 
 };
 

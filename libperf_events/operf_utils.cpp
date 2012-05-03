@@ -276,7 +276,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 	} else {
 		// Find operf_process info for data.tgid.
 		std::map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data->pid);
-		if (it != process_map.end() && (it->second->is_valid())) {
+		if (it != process_map.end() && (it->second->is_appname_valid())) {
 			proc = it->second;
 			trans.cur_procinfo = proc;
 		} else {
