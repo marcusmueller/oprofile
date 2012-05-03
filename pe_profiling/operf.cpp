@@ -91,6 +91,7 @@ int mmap_pages_mult;
 string session_dir;
 string vmlinux;
 bool separate_cpu;
+bool separate_thread;
 vector<string> evts;
 }
 
@@ -120,6 +121,8 @@ popt::option options_array[] = {
 	             "events"),
 	popt::option(operf_options::separate_cpu, "separate-cpu", 'c',
 	             "Categorize samples by cpu"),
+	popt::option(operf_options::separate_thread, "separate-thread", 't',
+	             "Categorize samples by thread group and thread ID"),
 };
 }
 
@@ -617,13 +620,6 @@ static void complete(void)
 			cerr << endl << "Use '--session-dir=" << operf_options::session_dir << "'" << endl
 			     << "with opreport and other post-processing tools to view your profile data."
 			     << endl;
-			if (operf_options::system_wide)
-				cerr << "\nNOTE: The system-wide profile you requested was collected "
-				"on a per-process basis." << endl
-				<< "Adding '--merge=tgid' when using post-processing tools will make the output"
-				<< endl << "more readable." << endl;
-
-			cerr << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << endl;
 		} catch (runtime_error e) {
 			cerr << "Caught exception from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;

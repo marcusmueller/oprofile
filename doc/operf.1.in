@@ -12,10 +12,9 @@ operf \- Performance profiler tool for Linux
 [ --system-wide | --pid <pid> | [ command [ args ] ] ]
 
 .SH DESCRIPTION
-Operf is a Linux tool that can be used in place of opcontrol for profiling. Operf
-uses Linux Performance Events Subsystem, and hence, does not need the opcontrol daemon to be running
-when running operf. More than that, opcontrol shouldn't be running when running
-operf.
+Operf is an OProfile tool that can be used in place of opcontrol for profiling. Operf
+uses the Linux Performance Events Subsystem, and hence, does not require the use of
+the opcontrol daemon -- in fact, operf and opcontrol usage are mutually exclusive.
 .P
 By default, operf stores profiling data in <current_dir>/oprofile_data.  You can change
 this by way of the
@@ -72,11 +71,6 @@ directory should be /root or a subdirectory of /root to avoid
 storing sample data files in locations accessible by regular users.
 .br
 .TP
-.BI "--verbose / -V [level]"
-A comma-separated list of debugging control values, used to increase the verbosity of the output.
-Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.
-.br
-.TP
 .BI "--callgraph / -g"
 This option enables the callgraph to be saved during profiling. NOTE: The
 full callchain is recorded, so there is no depth limit.
@@ -95,7 +89,20 @@ factor of <buffersize>.
 This option is for passing a comma-separated list of event specifications
 for profiling. Each event spec is of the form:
 .br
-name:count[:unitmask[:kernel[:user]]]
+.I "   name:count[:unitmask[:kernel[:user]]]"
+.br
+When no event specification is given, the default event for the running
+processor type will be used for profiling.
+.br
+.TP
+.BI "--separate-thread / -t"
+This option categorizes samples by thread group ID (tgid) and thread ID (tid).
+The '--separate-thread' option is useful for seeing per-thread samples in
+multi-threaded applications.  When used in conjuction with the '--system-wide'
+option, the '--separate-thread' option is also useful for seeing per-process
+(i.e., per-thread group) samples for the case where multiple processes are
+executing the same program during a profiling run.
+.br
 .TP
 .BI "--separate-cpu / -c"
 This option categorizes samples by cpu.
@@ -106,6 +113,11 @@ This option specifies the session path to hold the sample data. If not specified
 the data is saved in the
 .I oprofile_data
 directory on the current path.
+.br
+.TP
+.BI "--verbose / -V [level]"
+A comma-separated list of debugging control values, used to increase the verbosity of the output.
+Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.
 .br
 .TP
 .BI "--version / -v"

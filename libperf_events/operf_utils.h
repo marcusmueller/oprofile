@@ -31,6 +31,7 @@ extern int pid;
 extern int mmap_pages_mult;
 extern std::string session_dir;
 extern bool separate_cpu;
+extern bool separate_thread;
 }
 
 extern bool no_vmlinux;

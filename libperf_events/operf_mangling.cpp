@@ -68,9 +68,11 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 		values.image_name = sf->image_name;
 	}
 	values.dep_name = sf->app_filename;
-	values.flags |= MANGLE_TGID | MANGLE_TID;
-	values.tid = sf->tid;
-	values.tgid = sf->tgid;
+	if (operf_options::separate_thread) {
+		values.flags |= MANGLE_TGID | MANGLE_TID;
+		values.tid = sf->tid;
+		values.tgid = sf->tgid;
+	}
 
 	if (operf_options::separate_cpu) {
 		values.flags |= MANGLE_CPU;
