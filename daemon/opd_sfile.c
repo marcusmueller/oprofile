@@ -294,9 +294,9 @@ struct sfile * sfile_find(struct transient const * trans)
 			opd_stats[OPD_LOST_KERNEL]++;
 			return NULL;
 		}
-		// We *know* that PID 1 and 2 are pure kernel context tasks, so
+		// We *know* that PID 0, 1, and 2 are pure kernel context tasks, so
 		// we always want to keep these samples.
-		if ((trans->tgid == 1) || (trans->tgid == 2))
+		if ((trans->tgid == 0) || (trans->tgid == 1) || (trans->tgid == 2))
 			goto find_sfile;
 
 		// Decide whether or not this kernel sample should be discarded.
@@ -312,7 +312,9 @@ struct sfile * sfile_find(struct transient const * trans)
 					found = 1;
 					if (kcmd->has_cmdline) {
 						verbprintf(vsamples,
-						           "Dropping user context kernel samples due to no app cookie available.\n");
+						           "Dropping user context kernel sample 0x%llx "
+						           "for process %u due to no app cookie available.\n",
+						           (unsigned long long)trans->pc, trans->tgid);
 						opd_stats[OPD_NO_APP_KERNEL_SAMPLE]++;
 						return NULL;
 					}
@@ -329,6 +331,10 @@ struct sfile * sfile_find(struct transient const * trans)
 				if(fd==-1) {
 					// Most likely due to process ending, so we'll assume it used to have a cmdline
 					kcmd->has_cmdline = 1;
+					verbprintf(vsamples,
+					           "Open of /proc/%u/cmdline failed, so dropping "
+					           "kernel sameple 0x%llx\n",
+					           trans->tgid, (unsigned long long)trans->pc);
 					opd_stats[OPD_NO_APP_KERNEL_SAMPLE]++;
 					dropped = 1;
 				} else {
