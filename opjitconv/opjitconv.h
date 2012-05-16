@@ -82,6 +82,12 @@ struct pathname
 	struct list_head neighbor;
 };
 
+struct jitdump_deletion_candidate
+{
+	char * name;
+	struct list_head neighbor;
+};
+
 /* jitsymbol.c */
 void create_arrays(void);
 int resolve_overlaps(unsigned long long start_time);
