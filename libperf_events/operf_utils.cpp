@@ -280,7 +280,6 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 			proc = it->second;
 			trans.cur_procinfo = proc;
 		} else {
-			// TODO
 			/* This can happen for the following reasons:
 			 *   - We get a sample before getting a COMM or MMAP
 			 *     event for the process being profiled
@@ -291,10 +290,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 			 *     process other than the one we requested (not
 			 *     likely -- this would be a kernel bug if it did)
 			 *
-			 * Need to look into caching these discarded samples and trying to
-			 * process them after we have a valid app name recorded.  This could
-			 * cause a lot of thrashing about.  But at the very least,
-			 * we need to log the lost sample.
+			 * TODO: log the lost sample if !first_time_processing
 			*/
 			if ((cverb << vmisc) && !first_time_processing)
 				cerr << "Dropping sample -- process info unavailable" << endl;

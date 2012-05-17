@@ -585,12 +585,13 @@ static void complete(void)
 	}
 	if (operf_options::reset) {
 		int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
-
+		errno = 0;
 		if (nftw(current_sampledir.c_str(), __delete_sample_data, 32, flags) !=0 &&
 				errno != ENOENT) {
-			cerr << "Problem encountered clearing old sample data."
-			     << " Possible permissions problem." << endl;
-			cerr << "Try a manual removal of " << current_sampledir << endl;
+			cerr << "Unable to remove old sample data at "
+			     << current_sampledir << "." << endl;
+			if (errno)
+				cerr << strerror(errno) << endl;
 			cleanup();
 			exit(1);
 		}
@@ -1066,8 +1067,6 @@ static void process_args(int argc, char const ** argv)
 	_process_session_dir();
 	outputfile = samples_dir + "/" + DEFAULT_OPERF_OUTFILE;
 
-	// TODO: Need to examine ocontrol to see what (if any) additional
-	// event verification is needed here.
 	if (operf_options::evts.empty()) {
 		// Use default event
 		get_default_event();
@@ -1129,14 +1128,44 @@ int main(int argc, char const *argv[])
 	my_uid = geteuid();
 	if (operf_options::system_wide && my_uid != 0) {
 		cerr << "You must be root to do system-wide profiling." << endl;
+		cleanup();
 		exit(1);
 	}
 
 	if (cpu_type == CPU_NO_GOOD) {
 		cerr << "Unable to ascertain cpu type.  Exiting." << endl;
+		cleanup();
 		exit(1);
 	}
 	op_nr_counters = op_get_nr_counters(cpu_type);
+
+	if (my_uid != 0) {
+		/* Pre-check to make sure we have permission to remove old sample data
+		 * or to create new sample data in the specified sample data directory.
+		 * If the user wants us to remove old data, we don't actually do it now,
+		 * since the profile session may fail for some reason or the user may do ctl-c.
+		 * We should exit without unnecessarily removing the old sample data as
+		 * the user may expect it to still be there after an aborted run.
+		 */
+		string current_sampledir = samples_dir + "/current";
+		string current_sampledir_testfile = current_sampledir + "/.xxxTeStFiLe";
+		ofstream afile;
+		errno = 0;
+		afile.open(current_sampledir_testfile.c_str());
+		if (!afile.is_open() && (errno != ENOENT)) {
+			if (operf_options::reset)
+				cerr << "Unable to remove old sample data at "
+				     << current_sampledir << "." << endl;
+			else
+				cerr << "Unable to write to sample data directory at "
+				     << current_sampledir << "." << endl;
+			if (errno)
+				cerr << strerror(errno) << endl;
+			cerr << "Try a manual removal of " << current_sampledir << endl;
+			cleanup();
+			exit(1);
+		}
+	}
 	end_code_t run_result;
 	if ((run_result = _run())) {
 		if (app_started && (run_result != APP_ABNORMAL_END)) {
