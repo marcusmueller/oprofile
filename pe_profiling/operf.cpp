@@ -84,7 +84,7 @@ static uid_t my_uid;
 
 namespace operf_options {
 bool system_wide;
-bool reset;
+bool append;
 int pid;
 bool callgraph;
 int mmap_pages_mult;
@@ -109,8 +109,8 @@ popt::option options_array[] = {
 	             "enable callgraph recording"),
 	popt::option(operf_options::system_wide, "system-wide", 's',
 	             "profile entire system"),
-	popt::option(operf_options::reset, "reset", 'r',
-	             "clear out old profile data"),
+	popt::option(operf_options::append, "append", 'a',
+	             "add new profile data to old profile data"),
 	popt::option(operf_options::pid, "pid", 'p',
 	             "process ID to profile", "PID"),
 	popt::option(operf_options::mmap_pages_mult, "kernel-buffersize-multiplier", 'b',
@@ -475,19 +475,6 @@ static void cleanup(void)
 	system(cmd.c_str());
 }
 
-static int __delete_sample_data(const char *fpath,
-                                const struct stat *sb  __attribute__((unused)),
-                                int tflag  __attribute__((unused)),
-                                struct FTW *ftwbuf __attribute__((unused)))
-{
-	if (remove(fpath)) {
-		perror("sample data removal error");
-		return FTW_STOP;
-	} else {
-		return FTW_CONTINUE;
-	}
-}
-
 static void _jitconv_complete(int val __attribute__((unused)))
 {
 	int child_status;
@@ -572,28 +559,48 @@ static void _do_jitdump_convert()
 
 }
 
+static int __delete_old_previous_sample_data(const char *fpath,
+                                const struct stat *sb  __attribute__((unused)),
+                                int tflag  __attribute__((unused)),
+                                struct FTW *ftwbuf __attribute__((unused)))
+{
+	if (remove(fpath)) {
+		perror("sample data removal error");
+		return FTW_STOP;
+	} else {
+		return FTW_CONTINUE;
+	}
+}
 
 static void complete(void)
 {
 	int rc;
 	string current_sampledir = samples_dir + "/current/";
+	string previous_sampledir = samples_dir + "/previous";
 	current_sampledir.copy(op_samples_current_dir, current_sampledir.length(), 0);
 
 	if (!app_started && !operf_options::system_wide) {
 		cleanup();
 		return;
 	}
-	if (operf_options::reset) {
-		int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
+	if (!operf_options::append) {
+                int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
 		errno = 0;
-		if (nftw(current_sampledir.c_str(), __delete_sample_data, 32, flags) !=0 &&
+		if (nftw(previous_sampledir.c_str(), __delete_old_previous_sample_data, 32, flags) !=0 &&
 				errno != ENOENT) {
-			cerr << "Unable to remove old sample data at "
-			     << current_sampledir << "." << endl;
+			cerr << "Unable to remove old sample data at " << previous_sampledir << "." << endl;
 			if (errno)
 				cerr << strerror(errno) << endl;
 			cleanup();
 			exit(1);
+		}
+		if (rename(current_sampledir.c_str(), previous_sampledir.c_str()) < 0) {
+			if (errno && (errno != ENOENT)) {
+				cerr << "Unable to move old profile data to " << previous_sampledir << endl;
+				cerr << strerror(errno) << endl;
+				cleanup();
+				exit(1);
+			}
 		}
 		reset_done = true;
 	}
@@ -1104,6 +1111,35 @@ static int _check_perf_events_cap(void)
 
 }
 
+static void _precheck_permissions_to_samplesdir(string sampledir, bool for_current)
+{
+	/* Pre-check to make sure we have permission to remove old sample data
+	 * or to create new sample data in the specified sample data directory.
+	 * If the user wants us to remove old data, we don't actually do it now,
+	 * since the profile session may fail for some reason or the user may do ctl-c.
+	 * We should exit without unnecessarily removing the old sample data as
+	 * the user may expect it to still be there after an aborted run.
+	 */
+	string sampledir_testfile = sampledir + "/.xxxTeStFiLe";
+	ofstream afile;
+	errno = 0;
+	afile.open(sampledir_testfile.c_str());
+	if (!afile.is_open() && (errno != ENOENT)) {
+		if (operf_options::append && for_current)
+			cerr << "Unable to write to sample data directory at "
+			     << sampledir << "." << endl;
+		else
+			cerr << "Unable to remove old sample data at "
+			     << sampledir << "." << endl;
+		if (errno)
+			cerr << strerror(errno) << endl;
+		cerr << "Try a manual removal of " << sampledir << endl;
+		cleanup();
+		exit(1);
+	}
+
+}
+
 bool no_vmlinux;
 int main(int argc, char const *argv[])
 {
@@ -1140,30 +1176,13 @@ int main(int argc, char const *argv[])
 	op_nr_counters = op_get_nr_counters(cpu_type);
 
 	if (my_uid != 0) {
-		/* Pre-check to make sure we have permission to remove old sample data
-		 * or to create new sample data in the specified sample data directory.
-		 * If the user wants us to remove old data, we don't actually do it now,
-		 * since the profile session may fail for some reason or the user may do ctl-c.
-		 * We should exit without unnecessarily removing the old sample data as
-		 * the user may expect it to still be there after an aborted run.
-		 */
+		bool for_current = true;
 		string current_sampledir = samples_dir + "/current";
-		string current_sampledir_testfile = current_sampledir + "/.xxxTeStFiLe";
-		ofstream afile;
-		errno = 0;
-		afile.open(current_sampledir_testfile.c_str());
-		if (!afile.is_open() && (errno != ENOENT)) {
-			if (operf_options::reset)
-				cerr << "Unable to remove old sample data at "
-				     << current_sampledir << "." << endl;
-			else
-				cerr << "Unable to write to sample data directory at "
-				     << current_sampledir << "." << endl;
-			if (errno)
-				cerr << strerror(errno) << endl;
-			cerr << "Try a manual removal of " << current_sampledir << endl;
-			cleanup();
-			exit(1);
+		_precheck_permissions_to_samplesdir(current_sampledir, for_current);
+		if (!operf_options::append) {
+			string previous_sampledir = samples_dir + "/previous";
+			for_current = false;
+			_precheck_permissions_to_samplesdir(previous_sampledir, for_current);
 		}
 	}
 	end_code_t run_result;
@@ -1189,7 +1208,5 @@ int main(int argc, char const *argv[])
 		}
 	}
 	complete();
-	if (operf_options::reset && reset_done == false)
-		cerr << "Requested reset was not performed due to problem running operf command." << endl;
 	return 0;
 }

@@ -44,8 +44,9 @@ is required, but
 be used simultaneously.
 .br
 .TP
-.BI "--pid / -p [PID]"
-This option enables operf to profile a running application. <PID>
+.BI "--pid / -p " PID
+This option enables operf to profile a running application.
+.I PID
 should be the process ID of the process you wish to profile.  When
 finished profiling (e.g., when the profiled process ends), press
 Ctrl-c to stop operf.
@@ -71,21 +72,38 @@ directory should be /root or a subdirectory of /root to avoid
 storing sample data files in locations accessible by regular users.
 .br
 .TP
+.BI "--vmlinux / k " vmlinux_path
+A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
+Kernel samples will be attributed to this binary, allowing post-processing tools
+(like opreport) to attribute samples to the appropriate kernel symbols.
+.TP
 .BI "--callgraph / -g"
 This option enables the callgraph to be saved during profiling. NOTE: The
 full callchain is recorded, so there is no depth limit.
 .br
 .TP
-.BI "--reset / -r"
-This option clears out old profile data. You should almost always do this.
+.BI "--append / -a"
+By default,
+.I operf
+moves old profile data from <session_dir>/samples/current to
+<session_dir>/samples/previous.  If a 'previous' profile already existed,
+it will be replaced.  If the
+.I --append
+option is passed, old profile data is left in place and new profile data will
+be added to it, and the 'previous' profile (if one existed) will remain untouched.
+To access the 'previous' profile, simply add a session specification to the normal
+invocation of oprofile post-processing tools.  For example:
+.br
+.I "   opreport --session-dir=`pwd`/oprofile_data session:previous"
 .br
 .TP
-.BI "--kernel-buffersize-multiplier / -k [buffersize]"
+.BI "--kernel-buffersize-multiplier / -k " buffersize
 This option enables operf to increase the kernel buffer size by a
-factor of <buffersize>.
+factor of
+.I buffersize.
 .br
 .TP
-.BI "--events / -e [event1[,event2[,...]]]"
+.BI "--events / -e " event1[,event2[,...]]
 This option is for passing a comma-separated list of event specifications
 for profiling. Each event spec is of the form:
 .br
@@ -108,14 +126,14 @@ executing the same program during a profiling run.
 This option categorizes samples by cpu.
 .br
 .TP
-.BI "--session-dir [path]"
+.BI "--session-dir / -d " path
 This option specifies the session path to hold the sample data. If not specified,
 the data is saved in the
 .I oprofile_data
 directory on the current path.
 .br
 .TP
-.BI "--verbose / -V [level]"
+.BI "--verbose / -V " level
 A comma-separated list of debugging control values, used to increase the verbosity of the output.
 Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.
 .br
