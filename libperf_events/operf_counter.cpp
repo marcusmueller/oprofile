@@ -36,6 +36,7 @@ using namespace OP_perf_utils;
 
 
 volatile bool quit;
+volatile bool read_quit;
 int sample_reads;
 unsigned int pagesize;
 verbose vperf("perf_events");
@@ -121,17 +122,14 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 operf_record::~operf_record()
 {
 	cverb << vperf << "operf_record::~operf_record()" << endl;
-	opHeader.data_size = total_bytes_recorded;
-	if (total_bytes_recorded)
-		write_op_header_info();
 	delete[] poll_data;
-	close(outputFile);
+	close(output_fd);
 	samples_array.clear();
 	evts.clear();
 	perfCounters.clear();
 }
 
-operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pid_running,
+operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_running,
                            vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg,
                            bool separate_by_cpu)
 {
@@ -154,14 +152,8 @@ operf_record::operf_record(string outfile, bool sys_wide, pid_t the_pid, bool pi
 	if (system_wide && (pid != -1 || pid_started))
 		return;  // object is not valid
 
-	opHeader.data_size = 0;
-	outputFile = open(outfile.c_str(), flags, S_IRUSR|S_IWUSR);
-	if (outputFile < 0) {
-		string errmsg = "Internal error:  Could not create output file. errno is ";
-		errmsg += strerror(errno);
-		throw runtime_error(errmsg);
-	}
-	cverb << vperf << "operf_record ctor: successfully opened output file " << outfile << endl;
+	output_fd = out_fd;
+	cverb << vperf << "operf_record ctor using output fd " << output_fd << endl;
 
 	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_sigaction = op_perfrecord_sigusr1_handler;
@@ -198,37 +190,25 @@ void operf_record::write_op_header_info()
 	struct OP_file_header f_header;
 	struct op_file_attr f_attr;
 
-	lseek(outputFile, sizeof(f_header), SEEK_SET);
+	f_header.magic = OP_MAGIC;
+	f_header.size = sizeof(f_header);
+	f_header.attr_size = sizeof(f_attr);
+	f_header.attrs.size = evts.size() * sizeof(f_attr);
+	f_header.data.size = 0;
 
-	for (unsigned i = 0; i < evts.size(); i++) {
-		opHeader.h_attrs[i].id_offset = lseek(outputFile, 0, SEEK_CUR);
-		add_to_total(op_write_output(outputFile, &opHeader.h_attrs[i].ids[0],
-				opHeader.h_attrs[i].ids.size() * sizeof(u64)));
-	}
-
-	opHeader.attr_offset = lseek(outputFile, 0, SEEK_CUR);
+	add_to_total(op_write_output(output_fd, &f_header, sizeof(f_header)));
 
 	for (unsigned i = 0; i < evts.size(); i++) {
 		struct op_header_evt_info attr = opHeader.h_attrs[i];
 		f_attr.attr = attr.attr;
-		f_attr.ids.offset = attr.id_offset;
-		f_attr.ids.size =attr.ids.size() * sizeof(u64);
-		add_to_total(op_write_output(outputFile, &f_attr, sizeof(f_attr)));
+		f_attr.ids.size = attr.ids.size() * sizeof(u64);
+		add_to_total(op_write_output(output_fd, &f_attr, sizeof(f_attr)));
 	}
 
-	opHeader.data_offset = lseek(outputFile, 0, SEEK_CUR);
-
-	f_header.magic = OP_MAGIC;
-	f_header.size = sizeof(f_header);
-	f_header.attr_size = sizeof(f_attr);
-	f_header.attrs.offset = opHeader.attr_offset;
-	f_header.attrs.size = evts.size() * sizeof(f_attr);
-	f_header.data.offset = opHeader.data_offset;
-	f_header.data.size = opHeader.data_size;
-
-	lseek(outputFile, 0, SEEK_SET);
-	add_to_total(op_write_output(outputFile, &f_header, sizeof(f_header)));
-	lseek(outputFile, opHeader.data_offset + opHeader.data_size, SEEK_SET);
+	for (unsigned i = 0; i < evts.size(); i++) {
+		add_to_total(op_write_output(output_fd, &opHeader.h_attrs[i].ids[0],
+		                             opHeader.h_attrs[i].ids.size() * sizeof(u64)));
+	}
 }
 
 int operf_record::prepareToRecord(int counter, int cpu, int fd)
@@ -360,7 +340,7 @@ void operf_record::setup()
 		closedir(dir);
 	write_op_header_info();
 	if (pid_started || system_wide) {
-		if (op_record_process_info(system_wide, pid, this, outputFile) < 0) {
+		if (op_record_process_info(system_wide, pid, this, output_fd) < 0) {
 			for (int i = 0; i < num_cpus; i++) {
 				for (unsigned int evt = 0; evt < evts.size(); evt++)
 					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
@@ -368,7 +348,7 @@ void operf_record::setup()
 			goto error;
 		}
 	}
-	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, outputFile, this);
+	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, output_fd, this);
 
 	// Set bit to indicate we're set to go.
 	valid = true;
@@ -376,7 +356,7 @@ void operf_record::setup()
 
 error:
 	delete[] poll_data;
-	close(outputFile);
+	close(output_fd);
 	if (rc != OP_PERF_HANDLED_ERROR)
 		throw runtime_error(err_msg);
 }
@@ -409,15 +389,33 @@ void operf_record::recordPerfData(void)
 			cverb << vperf << "operf_record::recordPerfData received signal to quit." << endl;
 		}
 	}
+	close(output_fd);
 	cverb << vdebug << "operf recording finished." << endl;
 }
 
-void operf_read::init(string infilename, string samples_loc,  op_cpu cputype, vector<operf_event_t> & events)
+void operf_read::init(int sample_data_pipe_fd, string samples_loc,  op_cpu cputype, vector<operf_event_t> & events)
 {
-	inputFname = infilename;
+	struct sigaction sa;
+	sigset_t ss;
+	sample_data_fd = sample_data_pipe_fd;
 	sampledir = samples_loc;
 	evts = events;
 	cpu_type = cputype;
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_sigaction = op_perfread_sigusr1_handler;
+	sigemptyset(&sa.sa_mask);
+	sigemptyset(&ss);
+	sigaddset(&ss, SIGUSR1);
+	sigprocmask(SIG_UNBLOCK, &ss, NULL);
+	sa.sa_mask = ss;
+	sa.sa_flags = SA_NOCLDSTOP | SA_SIGINFO;
+	cverb << vperf << "operf-read calling sigaction" << endl;
+	if (sigaction(SIGUSR1, &sa, NULL) == -1) {
+		cverb << vperf << "operf-read init: sigaction failed; errno is: "
+		      << strerror(errno) << endl;
+		_exit(EXIT_FAILURE);
+	}
+
 }
 
 operf_read::~operf_read()
@@ -427,72 +425,66 @@ operf_read::~operf_read()
 
 int operf_read::readPerfHeader(void)
 {
-	int ret = 0;
-
-	opHeader.data_size = 0;
-	istrm.open(inputFname.c_str(), ios_base::in);
-	if (!istrm.good()) {
-		return -1;
-	}
-	istrm.peek();
-	if (istrm.eof()) {
-		cverb << vperf << "operf_read::readPerfHeader:  Empty profile data file." << endl;
-		valid = false;
-		return OP_PERF_HANDLED_ERROR;
-	}
-	cverb << vperf << "operf_read: successfully opened input file " << inputFname << endl;
-	read_op_header_info_with_ifstream();
-	valid = true;
-	cverb << vperf << "Successfully read perf header" << endl;
-
-	return ret;
-}
-
-void operf_read::read_op_header_info_with_ifstream(void)
-{
 	struct OP_file_header fheader;
-	istrm.seekg(0, ios_base::beg);
+	string errmsg;
+	int num_fattrs;
+	size_t fattr_size;
+	vector<struct op_file_attr> f_attr_cache;
 
-	if (op_read_from_stream(istrm, (char *)&fheader, sizeof(fheader)) != sizeof(fheader)) {
-		throw runtime_error("Error: input file " + inputFname + " does not have enough data for header");
+	errno = 0;
+	if (read(sample_data_fd, &fheader, sizeof(fheader)) != sizeof(fheader)) {
+		errmsg = "Error reading header on sample data pipe: " + string(strerror(errno));
+		goto fail;
 	}
 
-	if (memcmp(&fheader.magic, __op_magic, sizeof(fheader.magic)))
-		throw runtime_error("Error: input file " + inputFname + " does not have expected header data");
+	if (memcmp(&fheader.magic, __op_magic, sizeof(fheader.magic))) {
+		errmsg = "Error: operf sample data does not have expected header data";
+		goto fail;
+	}
 
 	cverb << vperf << "operf magic number " << (char *)&fheader.magic << " matches expected __op_magic " << __op_magic << endl;
-	opHeader.attr_offset = fheader.attrs.offset;
-	opHeader.data_offset = fheader.data.offset;
-	opHeader.data_size = fheader.data.size;
-	size_t fattr_size = sizeof(struct op_file_attr);
+	fattr_size = sizeof(struct op_file_attr);
 	if (fattr_size != fheader.attr_size) {
-		string msg = "Error: perf_events binary incompatibility. Event data collection was apparently "
+		errmsg = "Error: perf_events binary incompatibility. Event data collection was apparently "
 				"performed under a different kernel version than current.";
-		throw runtime_error(msg);
+		goto fail;
 	}
-	int num_fattrs = fheader.attrs.size/fheader.attr_size;
+	num_fattrs = fheader.attrs.size/fheader.attr_size;
 	cverb << vperf << "num_fattrs  is " << num_fattrs << endl;
-	istrm.seekg(opHeader.attr_offset, ios_base::beg);
 	for (int i = 0; i < num_fattrs; i++) {
 		struct op_file_attr f_attr;
 		streamsize fattr_size = sizeof(f_attr);
-		if (op_read_from_stream(istrm, (char *)&f_attr, fattr_size) != fattr_size)
-			throw runtime_error("Error: Unexpected end of input file " + inputFname + ".");
+		if (read(sample_data_fd, (char *)&f_attr, fattr_size) != fattr_size) {
+			errmsg = "Error reading file attr on sample data pipe: " + string(strerror(errno));
+			goto fail;
+		}
 		opHeader.h_attrs[i].attr = f_attr.attr;
-		streampos next_f_attr = istrm.tellg();
+		f_attr_cache.push_back(f_attr);
+	}
+	for (int i = 0; i < num_fattrs; i++) {
+		vector<struct op_file_attr>::iterator it = f_attr_cache.begin();
+		struct op_file_attr f_attr = *(it);
 		int num_ids = f_attr.ids.size/sizeof(u64);
-		istrm.seekg(f_attr.ids.offset, ios_base::beg);
+
 		for (int id = 0; id < num_ids; id++) {
 			u64 perf_id;
 			streamsize perfid_size = sizeof(perf_id);
-			if (op_read_from_stream(istrm, (char *)& perf_id, perfid_size) != perfid_size)
-				throw runtime_error("Error: Unexpected end of input file " + inputFname + ".");
+			if (read(sample_data_fd, (char *)& perf_id, perfid_size) != perfid_size) {
+				errmsg = "Error reading perf ID on sample data pipe: " + string(strerror(errno));
+				goto fail;
+			}
 			cverb << vperf << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
 			opHeader.h_attrs[i].ids.push_back(perf_id);
 		}
-		istrm.seekg(next_f_attr, ios_base::beg);
+
 	}
-	istrm.close();
+	valid = true;
+	cverb << vperf << "Successfully read perf header" << endl;
+	return 0;
+
+fail:
+	cerr << errmsg;
+	return -1;
 }
 
 int operf_read::get_eventnum_by_perf_event_id(u64 id) const
@@ -507,32 +499,50 @@ int operf_read::get_eventnum_by_perf_event_id(u64 id) const
 	return -1;
 }
 
+int operf_read::_get_one_perf_event(event_t * event)
+{
+	static size_t pe_header_size = sizeof(perf_event_header);
+	char * evt = (char *)event;
+	ssize_t num_read;
+	perf_event_header * header = (perf_event_header *)event;
+	errno = 0;
+	if ((num_read = read(sample_data_fd, header, pe_header_size)) < 0) {
+		cverb << vdebug << "Read 1 of sample data pipe returned with " << strerror(errno) << endl;
+		return -1;
+	} else if (num_read == 0) {
+		return -1;
+	}
+	evt += pe_header_size;
+	if (!header->size)
+		return -1;
+	if ((num_read = read(sample_data_fd, evt, header->size - pe_header_size)) < 0) {
+		cverb << vdebug << "Read 2 of sample data pipe returned with " << strerror(errno) << endl;
+		return -1;
+	} else if (num_read == 0) {
+		return -1;
+	}
+	return 0;
+}
+
 
 int operf_read::convertPerfData(void)
 {
 	int num_bytes = 0;
-	struct mmap_info info;
-	info.file_data_offset = opHeader.data_offset;
-	info.file_data_size = opHeader.data_size;
-	info.traceFD = open(inputFname.c_str(), O_RDONLY);
-	if (op_mmap_trace_file(info) < 0) {
-		close(info.traceFD);
-		throw runtime_error("Error: Unable to mmap operf data file");
-	}
+	// Allocate way more than enough space for a really big event with a long callchain
+	event_t * event = (event_t *)xmalloc(65536);
 
-	cverb << vdebug << "Converting operf.data to oprofile sample data format" << endl;
-	cverb << vdebug << "data size is " << hex << info.file_data_size << "; data offset is " << info.file_data_offset << endl;
-	cverb << vdebug << "head is " << hex << info.head << endl;
+	cverb << vdebug << "Converting operf data to oprofile sample data format" << endl;
 	cverb << vdebug << "sample type is " << hex <<  opHeader.h_attrs[0].attr.sample_type << endl;
 	first_time_processing = true;
+	memset(event, '\0', 65536);
 	while (1) {
 		streamsize rec_size = 0;
-		event_t * event = op_get_perf_event(info);
-		if (event == NULL) {
+		if (_get_one_perf_event(event) < 0) {
 			break;
 		}
 		rec_size = event->header.size;
-		op_write_event(event, opHeader.h_attrs[0].attr.sample_type);
+		if (op_write_event(event, opHeader.h_attrs[0].attr.sample_type) < 0)
+			break;
 		num_bytes += rec_size;
 	}
 	first_time_processing = false;
@@ -548,12 +558,12 @@ int operf_read::convertPerfData(void)
 		delete images_it++->second;
 	all_images_map.clear();
 
-	close(info.traceFD);
 	char * cbuf;
 	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);
 	strcpy(cbuf, operf_options::session_dir.c_str());
 	strcat(cbuf, "/abi");
 	op_write_abi_to_file(cbuf);
 	free(cbuf);
+	free(event);
 	return num_bytes;
 }

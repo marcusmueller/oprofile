@@ -41,17 +41,7 @@ static unsigned long
 sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 {
 	unsigned long val = 0;
-	size_t fname_len = strlen(trans->image_name);
 
-	/* fname_ptr will point at the first character in the image name
-	 * which we'll use for hashing.  We don't need to hash on the whole
-	 * image name to get a decent hash.  Arbitrarily, we'll hash on the
-	 * first 16 chars or fname_len (if fname_len < 16).
-	 */
-	unsigned int fname_hash_len = (fname_len < 16) ? fname_len : 16;
-	const char * fname_ptr = trans->image_name + fname_len - fname_hash_len;
-
-	val ^= trans->tid << 2;
 	val ^= trans->tgid << 2;
 
 	if (operf_options::separate_cpu)
@@ -61,12 +51,28 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 		val ^= ki->start >> 14;
 		val ^= ki->end >> 7;
 	}
-	for (unsigned int i = 0; i < fname_hash_len; i++)
-		val = ((val << 5) + val) ^ fname_ptr[i];
 
 	if (trans->is_anon) {
 		val ^= trans->start_addr >> VMA_SHIFT;
 		val ^= trans->end_addr >> (VMA_SHIFT + 1);
+	} else {
+		size_t fname_len = trans->app_len;
+		/* fname_ptr will point at the first character in the binary file's name
+		 * which we'll use for hashing.  We don't need to hash on the whole
+		 * pathname to get a decent hash.  Arbitrarily, we'll hash on the
+		 * last 16 chars (or last fname_len chars if fname_len < 16).
+		 */
+		unsigned int fname_hash_len = (fname_len < 16) ? fname_len : 16;
+		const char * fname_ptr = trans->app_filename + fname_len - fname_hash_len;
+		for (unsigned int i = 0; i < fname_hash_len; i++)
+			val = ((val << 5) + val) ^ fname_ptr[i];
+
+		// Now do the same for image name
+		fname_len = trans->image_len;
+		fname_hash_len = (fname_len < 16) ? fname_len : 16;
+		fname_ptr = trans->image_name + fname_len - fname_hash_len;
+				for (unsigned int i = 0; i < fname_hash_len; i++)
+					val = ((val << 5) + val) ^ fname_ptr[i];
 	}
 
 	return val & HASH_BITS;
@@ -75,10 +81,11 @@ sfile_hash(struct operf_transient const * trans, struct operf_kernel_image * ki)
 
 static int
 do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
-         bool is_anon, const char * image_name, const char * appname, pid_t tgid,
-         pid_t tid, unsigned int cpu)
+         bool is_anon, const char * image_name, size_t image_len,
+         const char * appname, size_t app_len,
+         pid_t tgid, pid_t tid, unsigned int cpu)
 {
-	size_t len1, len2;
+	size_t shortest_image_len, shortest_app_len;
 
 	/* this is a simplified check for "is a kernel image" AND
 	 * "is the right kernel image". Also handles no-vmlinux
@@ -87,15 +94,13 @@ do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
 	if (sf->kernel != ki)
 		return 0;
 
+	if (sf->tid != tid || sf->tgid != tgid)
+		return 0;
+
 	if (sf->is_anon != is_anon)
 		return 0;
 
-	len1 = strlen(sf->app_filename);
-	len2 = strlen(appname);
-	if ((len1 != len2) || strncmp(sf->app_filename, appname, len1))
-		return 0;
-
-	if (sf->tid != tid || sf->tgid != tgid)
+	if ((sf->app_len != app_len) || (sf->image_len != image_len))
 		return 0;
 
 	if (operf_options::separate_cpu) {
@@ -106,28 +111,22 @@ do_match(struct operf_sfile const * sf, struct operf_kernel_image const * ki,
 	if (ki)
 		return 1;
 
-	return (!strncmp(sf->image_name, image_name, len1));
+	shortest_image_len = sf->image_len < image_len ? sf->image_len : image_len;
+	if (strncmp(sf->image_name, image_name, shortest_image_len))
+		return 0;
+
+	shortest_app_len = sf->app_len < app_len ? sf->app_len : app_len;
+	return !strncmp(sf->app_filename, appname, shortest_app_len);
 
 }
-
-static int
-trans_match(struct operf_transient const * trans, struct operf_sfile const * sfile,
-            struct operf_kernel_image const * ki)
-{
-	return do_match(sfile, ki,
-	                trans->is_anon,
-	                trans->image_name, trans->app_filename,
-	                trans->tgid, trans->tid, trans->cpu);
-
-}
-
 
 int
 operf_sfile_equal(struct operf_sfile const * sf, struct operf_sfile const * sf2)
 {
 	return do_match(sf, sf2->kernel,
 	                sf2->is_anon,
-	                sf2->image_name, sf2->app_filename,
+	                sf2->image_name, sf2->image_len,
+	                sf2->app_filename, sf2->app_len,
 	                sf2->tgid, sf2->tid, sf2->cpu);
 }
 
@@ -143,13 +142,14 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 	sf = (operf_sfile *)xmalloc(sizeof(struct operf_sfile));
 
 	sf->hashval = hash;
-
 	sf->tid = trans->tid;
 	sf->tgid = trans->tgid;
 	sf->cpu = 0;
 	sf->kernel = ki;
 	sf->image_name = trans->image_name;
 	sf->app_filename = trans->app_filename;
+	sf->image_len = trans->image_len;
+	sf->app_len = trans->app_len;
 	sf->is_anon = trans->is_anon;
 	sf->start_addr = trans->start_addr;
 	sf->end_addr = trans->end_addr;
@@ -196,7 +196,11 @@ struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 	hash = sfile_hash(trans, ki);
 	list_for_each(pos, &hashes[hash]) {
 		sf = list_entry(pos, struct operf_sfile, hash);
-		if (trans_match(trans, sf, ki)) {
+		if (do_match(sf, ki,
+		             trans->is_anon,
+		             trans->image_name, trans->image_len,
+		             trans->app_filename, trans->app_len,
+		             trans->tgid, trans->tid, trans->cpu)) {
 			operf_sfile_get(sf);
 			goto lru;
 		}

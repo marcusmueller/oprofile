@@ -107,12 +107,6 @@ struct sample_data {
 	struct ip_callchain * callchain;
 };
 
-struct mmap_info {
-	u64 offset, file_data_size, file_data_offset, head;
-	char * buf;
-	int traceFD;
-};
-
 
 typedef struct operf_event {
 	char name[OP_MAX_EVT_NAME_LEN];
@@ -130,7 +124,6 @@ typedef struct operf_event {
 } operf_event_t;
 
 struct op_file_section {
-	u64 offset;
 	u64 size;
 };
 
@@ -142,7 +135,6 @@ struct op_file_attr {
 struct op_header_evt_info {
 	struct perf_event_attr attr;
 	std::vector<u64> ids;
-	off_t id_offset;
 };
 
 struct OP_file_header {
@@ -155,9 +147,6 @@ struct OP_file_header {
 
 struct OP_header {
 	struct op_header_evt_info h_attrs[OP_MAX_NUM_EVENTS];
-	off_t			attr_offset;
-	off_t			data_offset;
-	u64			data_size;
 };
 /* Some of the above definitions were borrowed from the perf tool's util/event.h file. */
 

@@ -41,6 +41,7 @@ struct operf_sfile {
 	unsigned long hashval;
 	const char * image_name;
 	const char * app_filename;
+	size_t image_len, app_len;
 	/** thread ID, -1 if not set */
 	pid_t tid;
 	/** thread group ID, -1 if not set */
@@ -89,6 +90,7 @@ struct operf_transient {
 	vma_t pc;
 	const char * image_name;
 	const char * app_filename;
+	size_t image_len, app_len;
 	vma_t last_pc;
 	int event;
 	u64 sample_id;

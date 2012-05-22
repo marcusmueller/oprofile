@@ -47,8 +47,10 @@ using namespace std;
 
 typedef enum END_CODE {
 	ALL_OK = 0,
-	APP_ABNORMAL_END = -2,
-	PERF_RECORD_ERROR = -3
+	APP_ABNORMAL_END =  1,
+	PERF_RECORD_ERROR = 2,
+	PERF_READ_ERROR   = 4,
+	PERF_BOTH_ERROR   = 8
 } end_code_t;
 
 // Globals
@@ -60,9 +62,10 @@ double cpu_speed;
 char op_samples_current_dir[PATH_MAX];
 uint op_nr_counters;
 verbose vmisc("misc");
+static void convert_sample_data(void);
+static int sample_data_pipe[2];
 
 
-#define DEFAULT_OPERF_OUTFILE "operf.data"
 #define CALLGRAPH_MIN_COUNT_SCALE 15
 
 static char full_pathname[PATH_MAX];
@@ -72,10 +75,9 @@ static pid_t app_PID = -1;
 static 	pid_t jitconv_pid = -1;
 static bool app_started;
 static pid_t operf_pid;
+static pid_t convert_pid;
 static string samples_dir;
-static string outputfile;
 static bool startApp;
-static bool reset_done = false;
 static char start_time_str[32];
 static vector<operf_event_t> events;
 static bool jit_conversion_running;
@@ -255,6 +257,8 @@ int start_profiling_app(void)
 			perror("Internal error: fork failed");
 			_exit(EXIT_FAILURE);
 		} else if (app_PID == 0) { // child process for exec'ing app
+			close(sample_data_pipe[0]);
+			close(sample_data_pipe[1]);
 			run_app();
 		}
 		// parent
@@ -270,6 +274,7 @@ int start_profiling_app(void)
 		return -1;
 	} else if (operf_pid == 0) { // operf-record process
 		int ready = 0;
+		close(sample_data_pipe[0]);
 		/*
 		 * Since an informative message will be displayed to the user if
 		 * an error occurs, we don't want to blow chunks here; instead, we'll
@@ -281,7 +286,7 @@ int start_profiling_app(void)
 			vi.image_name = operf_options::vmlinux;
 			vi.start = kernel_start;
 			vi.end = kernel_end;
-			operf_record operfRecord(outputfile, operf_options::system_wide, app_PID,
+			operf_record operfRecord(sample_data_pipe[1], operf_options::system_wide, app_PID,
 			                         (operf_options::pid == app_PID), events, vi,
 			                         operf_options::callgraph,
 			                         operf_options::separate_cpu);
@@ -308,7 +313,7 @@ int start_profiling_app(void)
 
 			// start recording
 			operfRecord.recordPerfData();
-			cerr << "Total bytes recorded from perf events: "
+			cverb << vmisc << "Total bytes recorded from perf events: " << dec
 					<< operfRecord.get_total_bytes_recorded() << endl;
 
 			operfRecord.~operf_record();
@@ -319,9 +324,6 @@ int start_profiling_app(void)
 			goto fail_out;
 		}
 fail_out:
-		ofstream of;
-		of.open(outputfile.c_str(), ios_base::trunc);
-		of.close();
 		if (startApp && !ready){
 			/* ready==0 means we've not yet told parent we're ready,
 			 * but the parent is reading our pipe.  So we tell the
@@ -376,6 +378,10 @@ static end_code_t _kill_operf_pid(void)
 {
 	int waitpid_status = 0;
 	end_code_t rc = ALL_OK;
+	struct timeval tv;
+	long long start_time_sec;
+	long long usec_timer;
+	bool keep_trying = true;
 
 	// stop operf-record process
 	if (kill(operf_pid, SIGUSR1) < 0) {
@@ -387,11 +393,64 @@ static end_code_t _kill_operf_pid(void)
 			rc = PERF_RECORD_ERROR;
 		} else {
 			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
-				cverb << vdebug << "waitpid for operf-record process returned OK" << endl;
+				cverb << vdebug << "operf-record process returned OK" << endl;
 			} else {
 				cerr <<  "operf-record process ended abnormally: "
-						<< WEXITSTATUS(waitpid_status) << endl;
+				     << WEXITSTATUS(waitpid_status) << endl;
 				rc = PERF_RECORD_ERROR;
+			}
+		}
+	}
+
+	// Now stop the operf-read process (aka "convert_pid")
+	waitpid_status = 0;
+	gettimeofday(&tv, NULL);
+	start_time_sec = tv.tv_sec;
+	usec_timer = tv.tv_usec;
+	/* We'll initially try the waitpid with WNOHANG once every 100,000 usecs.
+	 * If it hasn't ended within 5 seconds, we'll kill it and do one
+	 * final wait.
+	 */
+	while (keep_trying) {
+		int option = WNOHANG;
+		gettimeofday(&tv, NULL);
+		if (tv.tv_sec > start_time_sec + 5) {
+			keep_trying = false;
+			option = 0;
+			cerr << "now trying to kill convert pid..." << endl;
+
+			if (kill(convert_pid, SIGUSR1) < 0) {
+				perror("Attempt to stop operf-read process failed");
+				rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
+				break;
+			}
+		} else {
+			/* If we exceed the 100000 usec interval or if the tv_usec
+			 * value has rolled over to restart at 0, then we reset
+			 * the usec_timer to current tv_usec and try waitpid.
+			 */
+			if ((tv.tv_usec % 1000000) > (usec_timer + 100000)
+					|| (tv.tv_usec < usec_timer))
+				usec_timer = tv.tv_usec;
+			else
+				continue;
+		}
+		if (waitpid(convert_pid, &waitpid_status, option) < 0) {
+			keep_trying = false;
+			if (errno != ECHILD) {
+				perror("waitpid for operf-read process failed");
+				rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
+			}
+		} else {
+			if (WIFEXITED(waitpid_status)) {
+				keep_trying = false;
+				if (!WEXITSTATUS(waitpid_status)) {
+					cverb << vdebug << "operf-read process returned OK" << endl;
+				} else {
+					cerr <<  "operf-read process ended abnormally.  Status = "
+					     << WEXITSTATUS(waitpid_status) << endl;
+					rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
+				}
 			}
 		}
 	}
@@ -408,13 +467,40 @@ static end_code_t _run(void)
 	sigfillset(&ss);
 	sigprocmask(SIG_BLOCK, &ss, NULL);
 
+	// Create pipe to which operf-record process writes sample data and
+	// from which the operf-read process reads.
+	if (pipe(sample_data_pipe) < 0) {
+		perror("Internal error: operf-record could not create pipe");
+		_exit(EXIT_FAILURE);
+	}
+
 	if (start_profiling_app() < 0) {
 		return PERF_RECORD_ERROR;
 	}
 	// parent continues here
 	if (startApp)
 		cverb << vdebug << "app " << app_PID << " is running" << endl;
+
+	/* If we're not doing system wide profiling and no app is started, then
+	 * there's no profile data to convert. So if this condition is NOT true,
+	 * then we'll do the convert.
+	 */
+	if (!(!app_started && !operf_options::system_wide)) {
+		convert_pid = fork();
+		if (convert_pid < 0) {
+			perror("Internal error: fork failed");
+			_exit(EXIT_FAILURE);
+		} else if (convert_pid == 0) { // child process
+			close(sample_data_pipe[1]);
+			convert_sample_data();
+		}
+		// parent
+		close(sample_data_pipe[0]);
+		close(sample_data_pipe[1]);
+	}
+
 	set_signals();
+	cout << "operf: Profiler started" << endl;
 	if (startApp) {
 		// User passed in command or program name to start
 		cverb << vdebug << "going into waitpid on profiled app " << app_PID << endl;
@@ -438,6 +524,7 @@ static end_code_t _run(void)
 		rc = _kill_operf_pid();
 	} else {
 		// User passed in --pid or --system-wide
+		cout << "operf: Press Ctl-c to stop profiling" << endl;
 		cverb << vdebug << "going into waitpid on operf record process " << operf_pid << endl;
 		if (waitpid(operf_pid, &waitpid_status, 0) < 0) {
 			if (errno == EINTR) {
@@ -453,7 +540,7 @@ static end_code_t _run(void)
 				cverb << vdebug << "waitpid for operf-record process returned OK" << endl;
 			} else if (WIFEXITED(waitpid_status)) {
 				cerr <<  "operf-record process ended abnormally: "
-						<< WEXITSTATUS(waitpid_status) << endl;
+				     << WEXITSTATUS(waitpid_status) << endl;
 				rc = PERF_RECORD_ERROR;
 			} else if (WIFSIGNALED(waitpid_status)) {
 				cerr << "operf-record process killed by signal "
@@ -467,12 +554,10 @@ static end_code_t _run(void)
 
 static void cleanup(void)
 {
-	string cmd = "rm -f " + outputfile;
 	free(app_name_SAVE);
 	free(app_args);
 	events.clear();
 	verbose_string.clear();
-	system(cmd.c_str());
 }
 
 static void _jitconv_complete(int val __attribute__((unused)))
@@ -572,17 +657,17 @@ static int __delete_old_previous_sample_data(const char *fpath,
 	}
 }
 
-static void complete(void)
+/* Read perf_events sample data written by the operf-record process
+ * through the sample_data_pipe and convert this to oprofile format
+ * sample files.
+ */
+static void convert_sample_data(void)
 {
 	int rc;
 	string current_sampledir = samples_dir + "/current/";
 	string previous_sampledir = samples_dir + "/previous";
 	current_sampledir.copy(op_samples_current_dir, current_sampledir.length(), 0);
 
-	if (!app_started && !operf_options::system_wide) {
-		cleanup();
-		return;
-	}
 	if (!operf_options::append) {
                 int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
 		errno = 0;
@@ -592,47 +677,40 @@ static void complete(void)
 			if (errno)
 				cerr << strerror(errno) << endl;
 			cleanup();
-			exit(1);
+			_exit(EXIT_FAILURE);
 		}
 		if (rename(current_sampledir.c_str(), previous_sampledir.c_str()) < 0) {
 			if (errno && (errno != ENOENT)) {
 				cerr << "Unable to move old profile data to " << previous_sampledir << endl;
 				cerr << strerror(errno) << endl;
 				cleanup();
-				exit(1);
+				_exit(EXIT_FAILURE);
 			}
 		}
-		reset_done = true;
 	}
 	rc = mkdir(current_sampledir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (rc && (errno != EEXIST)) {
 		cerr << "Error trying to create " << current_sampledir << " dir." << endl;
 		perror("mkdir failed with");
-		exit(EXIT_FAILURE);
+		_exit(EXIT_FAILURE);
 	}
 
-	operfRead.init(outputfile, current_sampledir, cpu_type, events);
+	operfRead.init(sample_data_pipe[0], current_sampledir, cpu_type, events);
 	if ((rc = operfRead.readPerfHeader()) < 0) {
 		if (rc != OP_PERF_HANDLED_ERROR)
-			cerr << "Error: Cannot create read header info for sample file " << outputfile << endl;
+			cerr << "Error: Cannot create read header info for sample data " << endl;
 		cleanup();
-		exit(1);
+		_exit(EXIT_FAILURE);
 	}
-	cverb << vdebug << "Successfully read header info for sample file " << outputfile << endl;
-	// TODO:  We may want to do incremental conversion of the perf data, since the perf sample format
-	// is very inefficient to store.  For example, using a simple test program that does many
-	// millions of memcpy's over a 12 second span of time, a profile taken via legacy oprofile,
-	// with --separate=all and --image=<app_name> requires ~300K of storage.  Using the perf tool
-	// (not operf) to profile the same application creates an 18MB perf.data file!!
+	cverb << vdebug << "Successfully read header info for sample data " << endl;
 	if (operfRead.is_valid()) {
 		try {
 			operfRead.convertPerfData();
-			cerr << endl << "Use '--session-dir=" << operf_options::session_dir << "'" << endl
-			     << "with opreport and other post-processing tools to view your profile data."
-			     << endl;
 		} catch (runtime_error e) {
 			cerr << "Caught exception from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;
+			cleanup();
+			_exit(EXIT_FAILURE);
 		}
 	}
 	// Invoke opjitconv and set up a SIGCHLD signal for when it's done
@@ -645,7 +723,8 @@ static void complete(void)
 	if (jit_conversion_running) {
 		kill(jitconv_pid, SIGKILL);
 	}
-	cleanup();
+	_exit(EXIT_SUCCESS);
+
 }
 
 
@@ -1072,7 +1151,6 @@ static void process_args(int argc, char const ** argv)
 	}
 
 	_process_session_dir();
-	outputfile = samples_dir + "/" + DEFAULT_OPERF_OUTFILE;
 
 	if (operf_options::evts.empty()) {
 		// Use default event
@@ -1137,6 +1215,7 @@ static void _precheck_permissions_to_samplesdir(string sampledir, bool for_curre
 		cleanup();
 		exit(1);
 	}
+	afile.close();
 
 }
 
@@ -1200,13 +1279,18 @@ int main(int argc, char const *argv[])
 					perror("Attempt to kill profiled app failed.");
 			}
 		}
-		if (run_result == PERF_RECORD_ERROR) {
+		if ((run_result == PERF_RECORD_ERROR) || (run_result == PERF_BOTH_ERROR)) {
 			cerr <<  "Error running profiler" << endl;
-			exit(1);
+		} else if (run_result == PERF_READ_ERROR) {
+			cerr << "Error converting operf sample data to oprofile sample format" << endl;
 		} else {
 			cerr << "WARNING: Profile results may be incomplete due to to abend of profiled app." << endl;
 		}
+	} else {
+		cout << endl << "Use '--session-dir=" << operf_options::session_dir << "'" << endl
+		     << "with opreport and other post-processing tools to view your profile data."
+		     << endl;
 	}
-	complete();
-	return 0;
+	cleanup();
+	return run_result;;
 }
