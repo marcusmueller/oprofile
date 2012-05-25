@@ -208,12 +208,17 @@ static void __handle_mmap_event(event_t * event)
 		memset(mapping, 0, sizeof(struct operf_mmap));
 		mapping->start_addr = event->mmap.start;
 	        strcpy(mapping->filename, event->mmap.filename);
-	        mapping->is_anon_mapping = (strncmp(mapping->filename,
-	                                            "//anon",
-	                                            strlen("//anon")) == 0) ?
-	                                                                     true
-	                                                                     : false;
-
+		/* Mappings starting with "/" are for either a file or shared memory object.
+		 * From the kernel's perf_events subsystem, anon maps have labels like:
+		 *     [heap], [stack], [vdso], //anon
+		 */
+		if (mapping->filename[0] == '[') {
+			mapping->is_anon_mapping = true;
+		} else if ((strncmp(mapping->filename, "//anon",
+		                    strlen("//anon")) == 0)) {
+			mapping->is_anon_mapping = true;
+			strcpy(mapping->filename, "anon");
+		}
 		mapping->end_addr = (event->mmap.len == 0ULL)? 0ULL : mapping->start_addr + event->mmap.len - 1;
 		mapping->pgoff = event->mmap.pgoff;
 

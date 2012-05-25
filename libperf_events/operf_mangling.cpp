@@ -63,7 +63,7 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 	} else if (sf->is_anon) {
 		values.flags |= MANGLE_ANON;
 		values.image_name = mangle_anon(sf);
-		values.anon_name = "anon";
+		values.anon_name = sf->image_name;
 	} else {
 		values.image_name = sf->image_name;
 	}
