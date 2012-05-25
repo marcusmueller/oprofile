@@ -127,6 +127,9 @@ unsigned parse_extra(const char *s)
 		} else if (sscanf(s, "cmask=%x%n", &w, &o) >= 1) {
 			v |= (w & EXTRA_CMASK_MASK) << EXTRA_CMASK_SHIFT;
 			s += o;
+		} else if (strisprefix(s, "any")) {
+			v |= EXTRA_ANY;
+			s += 3;
 		} else {
 			parse_error("Illegal extra field modifier");
 		}
