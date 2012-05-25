@@ -1080,6 +1080,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_NEHALEM:
 		case CPU_WESTMERE:
 		case CPU_SANDYBRIDGE:
+		case CPU_IVYBRIDGE:
 		case CPU_MIPS_LOONGSON2:
 		case CPU_FAMILY12H:
 		case CPU_FAMILY14H:

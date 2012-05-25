@@ -1,0 +1,57 @@
+#
+# Event masks for the Intel "Ivy Bridge" micro architecture
+#
+# See http://ark.intel.com/ for help in identifying Ivy Bridge based CPUs
+#
+include:i386/arch_perfmon
+event:0x3 counters:cpuid um:ld_blocks minimum:100000 name:ld_blocks : Blocked loads
+event:0x5 counters:cpuid um:misalign_mem_ref minimum:2000000 name:misalign_mem_ref : Misaligned memory references
+event:0x7 counters:cpuid um:ld_blocks_partial minimum:100000 name:ld_blocks_partial : Partial loads
+event:0x8 counters:cpuid um:dtlb_load_misses minimum:2000000 name:dtlb_load_misses : D-TLB misses
+event:0xd counters:cpuid um:int_misc minimum:2000000 name:int_misc : Instruction decoder events
+event:0xe counters:0,1,2,3 um:uops_issued minimum:2000000 name:uops_issued : Uops issued
+event:0x14 counters:cpuid um:arith minimum:2000000 name:arith : Arithmetic
+event:0x24 counters:cpuid um:l2_rqsts minimum:200000 name:l2_rqsts : L2 cache requests
+event:0x27 counters:cpuid um:l2_store_lock_rqsts minimum:200000 name:l2_store_lock_rqsts : L2 cache store lock requests
+event:0x28 counters:cpuid um:l2_l1d_wb_rqsts minimum:200000 name:l2_l1d_wb_rqsts : writebacks from L1D to the L2 cache
+event:0x48 counters:2 um:l1d_pend_miss minimum:2000000 name:l1d_pend_miss : L1D miss oustandings
+event:0x49 counters:cpuid um:dtlb_store_misses minimum:2000000 name:dtlb_store_misses : Store misses in all DTLB levels that cause page walks
+event:0x4c counters:cpuid um:load_hit_pre minimum:100000 name:load_hit_pre :  Load dispatches that hit fill buffer
+event:0x51 counters:cpuid um:l1d minimum:2000000 name:l1d : L1D data line replacements
+event:0x58 counters:cpuid um:move_elimination minimum:1000000 name:move_elimination : Integer move elimination
+event:0x5c counters:cpuid um:cpl_cycles minimum:2000000 name:cpl_cycles : Unhalted core cycles qualified by ring
+event:0x5e counters:cpuid um:rs_events minimum:2000000 name:rs_events : Reservation station
+event:0x5f counters:cpuid um:tlb_access minimum:100000 name:tlb_access : TLB access
+event:0x60 counters:cpuid um:offcore_requests_outstanding minimum:2000000 name:offcore_requests_outstanding : Offcore outstanding transactions
+event:0x63 counters:cpuid um:lock_cycles minimum:2000000 name:lock_cycles : Locked cycles
+event:0x79 counters:0,1,2,3 um:idq minimum:2000000 name:idq : Instruction Decode Queue (IDQ)
+event:0x80 counters:cpuid um:icache minimum:200000 name:icache : Instruction cache
+event:0x85 counters:cpuid um:itlb_misses minimum:2000000 name:itlb_misses : Misses at all ITLB levels that cause page walks
+event:0x87 counters:cpuid um:ild_stall minimum:2000000 name:ild_stall : Stalls caused by changing prefix length of the instruction.
+event:0x88 counters:cpuid um:br_inst_exec minimum:200000 name:br_inst_exec : Branch instructions
+event:0x89 counters:cpuid um:br_misp_exec minimum:200000 name:br_misp_exec : Mispredicted branch instructions
+event:0x9c counters:cpuid um:idq_uops_not_delivered minimum:2000000 name:idq_uops_not_delivered : Uops not delivered by the Frontend to the Backend of the machine, while there is no Backend stall
+event:0xa1 counters:cpuid um:uops_dispatched_port minimum:2000000 name:uops_dispatched_port : Cycles per thread when uops are dispatched to port
+event:0xa2 counters:cpuid um:resource_stalls minimum:2000000 name:resource_stalls : Resource-related stall cycles
+event:0xa3 counters:2 um:cycle_activity minimum:2000000 name:cycle_activity : Cycle activity
+event:0xab counters:cpuid um:dsb2mite_switches minimum:2000000 name:dsb2mite_switches : Decode Stream Buffer (DSB)-to-MITE switches
+event:0xac counters:cpuid um:dsb_fill minimum:2000000 name:dsb_fill : Decode Stream Buffer (DSB) fill
+event:0xae counters:cpuid um:itlb minimum:10000 name:itlb : Instruction TLB (ITLB)
+event:0xb0 counters:cpuid um:offcore_requests minimum:100000 name:offcore_requests : Uncore requests
+event:0xb1 counters:0,1,2,3 um:uops_executed minimum:2000000 name:uops_executed : Uops executed
+event:0xbd counters:cpuid um:tlb_flush minimum:10000 name:tlb_flush : DTLB flushes
+event:0xc1 counters:cpuid um:other_assists minimum:100000 name:other_assists : Microcode assists.
+event:0xc2 counters:0,1,2,3 um:uops_retired minimum:2000000 name:uops_retired : Retired uops.
+event:0xc3 counters:cpuid um:machine_clears minimum:100000 name:machine_clears : Machine clears
+event:0xc4 counters:cpuid um:br_inst_retired minimum:400000 name:br_inst_retired : Conditional branch instructions retired.
+event:0xc5 counters:cpuid um:br_misp_retired minimum:400000 name:br_misp_retired : Mispredicted conditional branch instructions retired.
+event:0xca counters:0,1,2,3 um:fp_assist minimum:100000 name:fp_assist : FPU assists
+event:0xcc counters:cpuid um:rob_misc_events minimum:2000000 name:rob_misc_events : ROB (Register Order Buffer) events
+event:0xd0 counters:0,1,2,3 um:mem_uops_retired minimum:2000000 name:mem_uops_retired : Memory Uops
+event:0xd1 counters:0,1,2,3 um:mem_load_uops_retired minimum:50000 name:mem_load_uops_retired : Memory load uops
+event:0xd2 counters:0,1,2,3 um:mem_load_uops_llc_hit_retired minimum:20000 name:mem_load_uops_llc_hit_retired : Memory load uops with LLC (Last Level Cache) hit
+event:0xd3 counters:0,1,2,3 um:mem_load_uops_llc_miss_retired minimum:10000 name:mem_load_uops_llc_miss_retired : Memory load uops with LLC (Last Level Cache) miss
+event:0xe6 counters:cpuid um:baclears minimum:100000 name:baclears : Frontend resteering
+event:0xf0 counters:cpuid um:l2_trans minimum:200000 name:l2_trans : L2 cache transactions
+event:0xf1 counters:cpuid um:l2_lines_in minimum:100000 name:l2_lines_in : L2 cache lines in
+event:0xf2 counters:cpuid um:l2_lines_out minimum:100000 name:l2_lines_out : L2 cache lines out

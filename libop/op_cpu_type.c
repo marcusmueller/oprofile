@@ -99,6 +99,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "TILE-GX", "tile/tilegx", CPU_TILE_TILEGX, 4 },
 	{ "IBM System z10", "s390/z10", CPU_S390_Z10, 1 },
 	{ "IBM zEnterprise z196", "s390/z196", CPU_S390_Z196, 1 },
+	{ "Intel Ivy Bridge microarchitecture", "i386/ivybridge", CPU_IVYBRIDGE, 8 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -124,6 +125,7 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 	case CPU_NEHALEM:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
+	case CPU_IVYBRIDGE:
 		return CPU_ARCH_PERFMON;
 	default:
 		/* assume processor in a class by itself */

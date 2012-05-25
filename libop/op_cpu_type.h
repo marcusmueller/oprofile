@@ -96,6 +96,7 @@ typedef enum {
 	CPU_TILE_TILEGX, /**< Tilera TILE-GX family */
 	CPU_S390_Z10, /* IBM System z10 */
 	CPU_S390_Z196, /* IBM zEnterprise z196 */
+	CPU_IVYBRIDGE, /* Intel Ivy-Bridge microarchitecture */
 	MAX_CPU_TYPE
 } op_cpu;
 
