@@ -122,7 +122,8 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 operf_record::~operf_record()
 {
 	cverb << vperf << "operf_record::~operf_record()" << endl;
-	delete[] poll_data;
+	if (poll_data)
+		delete[] poll_data;
 	close(output_fd);
 	samples_array.clear();
 	evts.clear();
@@ -148,6 +149,7 @@ operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_ru
 	poll_count = 0;
 	evts = events;
 	valid = false;
+	poll_data = NULL;
 
 	if (system_wide && (pid != -1 || pid_started))
 		return;  // object is not valid
@@ -339,16 +341,6 @@ void operf_record::setup()
 	if (!all_cpus_avail)
 		closedir(dir);
 	write_op_header_info();
-	if (pid_started || system_wide) {
-		if (op_record_process_info(system_wide, pid, this, output_fd) < 0) {
-			for (int i = 0; i < num_cpus; i++) {
-				for (unsigned int evt = 0; evt < evts.size(); evt++)
-					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
-			}
-			goto error;
-		}
-	}
-	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, output_fd, this);
 
 	// Set bit to indicate we're set to go.
 	valid = true;
@@ -364,6 +356,17 @@ error:
 void operf_record::recordPerfData(void)
 {
 	bool disabled = false;
+	if (pid_started || system_wide) {
+		if (op_record_process_info(system_wide, pid, this, output_fd) < 0) {
+			for (int i = 0; i < num_cpus; i++) {
+				for (unsigned int evt = 0; evt < evts.size(); evt++)
+					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
+			}
+			throw runtime_error("operf_record: error recording process info");
+		}
+	}
+	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, output_fd, this);
+
 	while (1) {
 		int prev = sample_reads;
 

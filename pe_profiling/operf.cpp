@@ -223,13 +223,12 @@ void run_app(void)
 		_exit(EXIT_FAILURE);
 	}
 	if (startme != 1)
-		goto fail;
+		_exit(EXIT_SUCCESS);
 
 	cverb << vdebug << "parent says start app " << app_name << endl;
 	app_started = true;
 	execvp(app_name, ((char * const *)&exec_args[0]));
 	cerr <<  "Failed to exec " << exec_args[0] << ": " << strerror(errno) << endl;
-fail:
 	/* We don't want any cleanup in the child */
 	_exit(EXIT_FAILURE);
 
@@ -261,19 +260,19 @@ int start_profiling_app(void)
 			close(sample_data_pipe[1]);
 			run_app();
 		}
-		// parent
-		if (pipe(operf_record_ready_pipe) < 0) {
-			perror("Internal error: could not create pipe");
-			return -1;
-		}
 	}
 
-	//parent
+	// parent
+	if (pipe(operf_record_ready_pipe) < 0) {
+		perror("Internal error: could not create pipe");
+		return -1;
+	}
 	operf_pid = fork();
 	if (operf_pid < 0) {
 		return -1;
 	} else if (operf_pid == 0) { // operf-record process
 		int ready = 0;
+		close(operf_record_ready_pipe[0]);
 		close(sample_data_pipe[0]);
 		/*
 		 * Since an informative message will be displayed to the user if
@@ -303,12 +302,11 @@ int start_profiling_app(void)
 				// abnormally" message
 				goto fail_out;
 			}
-			if (startApp) {
-				ready = 1;
-				if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
-					perror("Internal error on operf_record_ready_pipe");
-					goto fail_out;
-				}
+
+			ready = 1;
+			if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
+				perror("Internal error on operf_record_ready_pipe");
+				goto fail_out;
 			}
 
 			// start recording
@@ -324,7 +322,7 @@ int start_profiling_app(void)
 			goto fail_out;
 		}
 fail_out:
-		if (startApp && !ready){
+		if (!ready){
 			/* ready==0 means we've not yet told parent we're ready,
 			 * but the parent is reading our pipe.  So we tell the
 			 * parent we're not ready so it can continue.
@@ -335,8 +333,10 @@ fail_out:
 			_exit(EXIT_SUCCESS);
 		}
 	} else {  // parent
+		int recorder_ready = 0;
+		int startup;
+		close(operf_record_ready_pipe[1]);
 		if (startApp) {
-			int startup;
 			if (read(app_ready_pipe[0], &startup, sizeof(startup)) == -1) {
 				perror("Internal error on app_ready_pipe");
 				return -1;
@@ -344,21 +344,24 @@ fail_out:
 				cerr << "app is not ready to start; exiting" << endl;
 				return -1;
 			}
+		}
 
-			int recorder_ready;
-			if (read(operf_record_ready_pipe[0], &recorder_ready, sizeof(recorder_ready)) == -1) {
-				perror("Internal error on operf_record_ready_pipe");
-				return -1;
-			} else if (recorder_ready != 1) {
-				cerr << "operf record process failure; exiting" << endl;
+		if (read(operf_record_ready_pipe[0], &recorder_ready, sizeof(recorder_ready)) == -1) {
+			perror("Internal error on operf_record_ready_pipe");
+			return -1;
+		} else if (recorder_ready != 1) {
+			cerr << "operf record process failure; exiting" << endl;
+			if (startApp) {
 				cverb << vdebug << "telling child to abort starting of app" << endl;
 				startup = 0;
 				if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
 					perror("Internal error on start_app_pipe");
 				}
-				return -1;
 			}
+			return -1;
+		}
 
+		if (startApp) {
 			// Tell app_PID to start the app
 			cverb << vdebug << "telling child to start app" << endl;
 			if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
@@ -366,6 +369,7 @@ fail_out:
 				return -1;
 			}
 		}
+
 	}
 	if (!operf_options::system_wide)
 		app_started = true;
@@ -1266,7 +1270,7 @@ int main(int argc, char const *argv[])
 	}
 	end_code_t run_result;
 	if ((run_result = _run())) {
-		if (app_started && (run_result != APP_ABNORMAL_END)) {
+		if (startApp && app_started && (run_result != APP_ABNORMAL_END)) {
 			int rc;
 			cverb << vdebug << "Killing profiled app . . ." << endl;
 			rc = kill(app_PID, SIGKILL);

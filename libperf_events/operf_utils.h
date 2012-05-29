@@ -26,7 +26,6 @@
 
 namespace operf_options {
 extern bool system_wide;
-extern bool reset;
 extern int pid;
 extern int mmap_pages_mult;
 extern std::string session_dir;
