@@ -86,13 +86,14 @@ int operf_process_info::get_num_matching_chars(string mapped_filename, string & 
 	size_t app_length;
 	size_t basename_length;
 	const char * app_cstr, * basename_cstr;
+	string app_basename;
 	basename = op_basename(mapped_filename);
 	if (appname_is_fullname == NOT_FULLNAME) {
 		// This implies _appname is storing a short name from a COMM event
 		app_length = _appname.length();
 		app_cstr = _appname.c_str();
 	} else {
-		string app_basename = op_basename(_appname);
+		app_basename = op_basename(_appname);
 		app_length = app_basename.length();
 		app_cstr = app_basename.c_str();
 	}

@@ -74,6 +74,19 @@ void operf_create_module(char const * name, vma_t start, vma_t end)
 	list_add(&image->list, &modules);
 }
 
+void operf_free_modules_list(void)
+{
+	struct list_head * pos;
+	struct list_head * pos2;
+	struct operf_kernel_image * image;
+	list_for_each_safe(pos, pos2, &modules) {
+		image = list_entry(pos, struct operf_kernel_image, list);
+		free(image->name);
+		list_del(&image->list);
+		free(image);
+	}
+
+}
 
 /**
  * find a kernel image by PC value

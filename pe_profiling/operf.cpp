@@ -313,14 +313,13 @@ int start_profiling_app(void)
 			operfRecord.recordPerfData();
 			cverb << vmisc << "Total bytes recorded from perf events: " << dec
 					<< operfRecord.get_total_bytes_recorded() << endl;
-
-			operfRecord.~operf_record();
-			// done
-			_exit(EXIT_SUCCESS);
 		} catch (runtime_error re) {
 			cerr << "Caught runtime_error: " << re.what() << endl;
 			goto fail_out;
 		}
+		// done
+		_exit(EXIT_SUCCESS);
+
 fail_out:
 		if (!ready){
 			/* ready==0 means we've not yet told parent we're ready,
@@ -768,10 +767,13 @@ static int get_PATH_based_pathname(char * path_holder, size_t n)
 			strcat(path_holder, "/");
 			strncat(path_holder, app_name, applen);
 			retval = 0;
+			free(namelist[0]);
+			free(namelist);
 			break;
 		}
 		segment = strtok(NULL, ":");
 	}
+	free(path);
 	return retval;
 }
 int validate_app_name(void)
@@ -875,6 +877,7 @@ static void _process_events_list(void)
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
 		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN);
+		free(event_str);
 		event.count = atoi(strtok(NULL, ":"));
 		/* Name and count are required in the event spec in order for
 		 * 'ophelp --check-events' to pass.  But since unit mask is
@@ -1228,6 +1231,10 @@ int main(int argc, char const *argv[])
 {
 	int rc;
 	if ((rc = _check_perf_events_cap())) {
+		if (rc == EBUSY) {
+			cerr << "Performance monitor unit is busy.  Do 'opcontrol --deinit' and try again." << endl;
+			exit(1);
+		}
 		if (rc == ENOSYS) {
 			cerr << "Your kernel does not implement a required syscall"
 			     << "  for the operf program." << endl;

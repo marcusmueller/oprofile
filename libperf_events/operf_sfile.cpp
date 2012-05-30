@@ -503,10 +503,14 @@ void operf_sfile_sync_files(void)
 	for_each_sfile(sync_sfile, NULL);
 }
 
+static int _release_resources(struct operf_sfile *sf  __attribute__((unused)), void * p  __attribute__((unused)))
+{
+	return 1;
+}
 
 void operf_sfile_close_files(void)
 {
-	for_each_sfile(close_sfile, NULL);
+	for_each_sfile(_release_resources, NULL);
 }
 
 

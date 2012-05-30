@@ -41,6 +41,11 @@ const char * operf_get_vmlinux_name(void);
  */
 void operf_create_module(char const * name, vma_t start, vma_t end);
 
+/** Free resources in modules list.
+ *
+ */
+void operf_free_modules_list(void);
+
 
 
 #endif /* OPERF_KERNEL_H_ */

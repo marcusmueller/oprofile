@@ -551,7 +551,7 @@ out:
  * stream (e.g., dlopen for single-process profiling or new process startup for system-wide
  * profiling.
  */
-int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
+void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 {
 #if 0
 	if (event->header.type < PERF_RECORD_MAX) {
@@ -562,23 +562,23 @@ int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 	switch (event->header.type) {
 	case PERF_RECORD_SAMPLE:
 		__handle_sample_event(event, sample_type);
-		return 0;
+		return;
 	case PERF_RECORD_MMAP:
 		__handle_mmap_event(event);
-		return 0;
+		return;
 	case PERF_RECORD_COMM:
 		if (!sfile_init_done) {
 			operf_sfile_init();
 			sfile_init_done = true;
 		}
 		__handle_comm_event(event);
-		return 0;
+		return;
 	case PERF_RECORD_EXIT:
-		return 0;
+		return;
 	default:
 		// OK, ignore all other header types.
 		cverb << vperf << "No matching event type for " << hex << event->header.type << endl;
-		return 0;
+		return;
 	}
 }
 
@@ -597,6 +597,22 @@ void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type)
 	}
 }
 
+void OP_perf_utils::op_release_resources(void)
+{
+	map<pid_t, operf_process_info *>::iterator it = process_map.begin();
+	while (it != process_map.end())
+		delete it++->second;
+	process_map.clear();
+
+	multimap<string, struct operf_mmap *>::iterator images_it = all_images_map.begin();
+	while (images_it != all_images_map.end())
+		delete images_it++->second;
+	all_images_map.clear();
+
+	operf_sfile_close_files();
+	operf_free_modules_list();
+
+}
 
 void OP_perf_utils::op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 		siginfo_t * siginfo __attribute__((unused)),
@@ -655,6 +671,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 		memset(pathname, '\0', sizeof(pathname));
 		struct mmap_event mmap;
 		size_t size;
+		memset(&mmap, 0, sizeof(mmap));
 		mmap.pgoff = 0;
 		mmap.header.type = PERF_RECORD_MMAP;
 		mmap.header.misc = PERF_RECORD_MISC_USER;
@@ -868,6 +885,7 @@ static void _record_module_info(int output_fd, operf_record * pr)
 	while (1) {
 		struct mmap_event mmap;
 		size_t size;
+		memset(&mmap, 0, sizeof(mmap));
 		mmap.pgoff = 0;
 		line = op_get_line(fp);
 
@@ -915,6 +933,7 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 {
 	struct mmap_event mmap;
 	size_t size;
+	memset(&mmap, 0, sizeof(mmap));
 	mmap.pgoff = 0;
 	mmap.header.type = PERF_RECORD_MMAP;
 	mmap.header.misc = PERF_RECORD_MISC_KERNEL;

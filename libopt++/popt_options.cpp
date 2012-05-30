@@ -101,6 +101,7 @@ static poptContext do_parse_options(int argc, char const ** argv,
 				if (strlen(app_params[i]))
 					free(app_params[i]);
 			}
+			free(app_params);
 		}
 	} else {
 		con = op_poptGetContext(NULL, argc, argv, &options[0], 0);

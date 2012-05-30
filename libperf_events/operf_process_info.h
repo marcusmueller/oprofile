@@ -101,8 +101,5 @@ private:
 
 };
 
-extern std::map<pid_t, operf_process_info *> process_map;
-extern std::multimap<std::string, struct operf_mmap *> all_images_map;
-
 
 #endif /* OPERF_PROCESS_INFO_H_ */

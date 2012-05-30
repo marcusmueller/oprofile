@@ -544,22 +544,13 @@ int operf_read::convertPerfData(void)
 			break;
 		}
 		rec_size = event->header.size;
-		if (op_write_event(event, opHeader.h_attrs[0].attr.sample_type) < 0)
-			break;
+		op_write_event(event, opHeader.h_attrs[0].attr.sample_type);
 		num_bytes += rec_size;
 	}
 	first_time_processing = false;
 	op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
 
-	map<pid_t, operf_process_info *>::iterator it = process_map.begin();
-	while (it != process_map.end())
-		delete it++->second;
-	process_map.clear();
-
-	multimap<string, struct operf_mmap *>::iterator images_it = all_images_map.begin();
-	while (images_it != all_images_map.end())
-		delete images_it++->second;
-	all_images_map.clear();
+	op_release_resources();
 
 	char * cbuf;
 	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);
