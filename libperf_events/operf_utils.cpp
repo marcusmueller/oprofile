@@ -189,6 +189,7 @@ static void __handle_comm_event(event_t * event)
 
 static void __handle_mmap_event(event_t * event)
 {
+	static bool kptr_restrict_warning_displayed_already = false;
 	string image_basename = op_basename(event->mmap.filename);
 	struct operf_mmap * mapping = NULL;
 	multimap<string, struct operf_mmap *>::iterator it;
@@ -242,10 +243,21 @@ static void __handle_mmap_event(event_t * event)
 			 */
 			kernel_mmap = mapping;
 		} else {
-			operf_create_module(mapping->filename,
-			                    mapping->start_addr,
-			                    mapping->end_addr);
-			kernel_modules[mapping->start_addr] = mapping;
+			if ((kptr_restrict == 1) && !no_vmlinux && (my_uid != 0)) {
+				if (!kptr_restrict_warning_displayed_already) {
+					kptr_restrict_warning_displayed_already = true;
+					cerr << endl << "< < < WARNING > > >" << endl;
+					cerr << "Samples for vmlinux kernel will be recorded, but kernel module profiling"
+					     << endl << "is not possible with current system config." << endl;
+					cerr << "Set /proc/sys/kernel/kptr_restrict to 0 to see samples for kernel modules."
+					     << endl << "< < < < < > > > > >" << endl << endl;
+				}
+			} else {
+				operf_create_module(mapping->filename,
+				                    mapping->start_addr,
+				                    mapping->end_addr);
+				kernel_modules[mapping->start_addr] = mapping;
+			}
 		}
 	} else {
 		map<pid_t, operf_process_info *>::iterator it;

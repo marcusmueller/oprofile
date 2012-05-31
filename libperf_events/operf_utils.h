@@ -34,6 +34,8 @@ extern bool separate_thread;
 }
 
 extern bool no_vmlinux;
+extern int kptr_restrict;
+extern uid_t my_uid;
 
 #define OP_APPNAME_LEN 1024
 

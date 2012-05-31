@@ -62,8 +62,9 @@ double cpu_speed;
 char op_samples_current_dir[PATH_MAX];
 uint op_nr_counters;
 verbose vmisc("misc");
-static void convert_sample_data(void);
-static int sample_data_pipe[2];
+uid_t my_uid;
+bool no_vmlinux;
+int kptr_restrict;
 
 
 #define CALLGRAPH_MIN_COUNT_SCALE 15
@@ -81,7 +82,8 @@ static bool startApp;
 static char start_time_str[32];
 static vector<operf_event_t> events;
 static bool jit_conversion_running;
-static uid_t my_uid;
+static void convert_sample_data(void);
+static int sample_data_pipe[2];
 
 
 namespace operf_options {
@@ -1226,7 +1228,20 @@ static void _precheck_permissions_to_samplesdir(string sampledir, bool for_curre
 
 }
 
-bool no_vmlinux;
+static int _get_sys_value(const char * filename)
+{
+	char str[10];
+	int _val = -999;
+	FILE * fp = fopen(filename, "r");
+	if (fp == NULL)
+		return _val;
+	if (!fgets(str, 9, fp))
+		return _val;
+	sscanf(str, "%d", &_val);
+	return _val;
+}
+
+
 int main(int argc, char const *argv[])
 {
 	int rc;
@@ -1275,6 +1290,7 @@ int main(int argc, char const *argv[])
 			_precheck_permissions_to_samplesdir(previous_sampledir, for_current);
 		}
 	}
+	kptr_restrict = _get_sys_value("/proc/sys/kernel/kptr_restrict");
 	end_code_t run_result;
 	if ((run_result = _run())) {
 		if (startApp && app_started && (run_result != APP_ABNORMAL_END)) {
