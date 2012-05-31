@@ -504,6 +504,9 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 			} else if (data.ip >= trans.start_addr && data.ip < trans.end_addr) {
 				trans.pc = data.ip;
 				found_trans = true;
+			} else if (__get_operf_trans(&data)) {
+				trans.current = operf_sfile_find(&trans);
+				found_trans = true;
 			}
 		}
 	} else {
