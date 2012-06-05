@@ -289,7 +289,7 @@ static void __handle_mmap_event(event_t * event)
 	}
 }
 
-static struct operf_transient * __get_operf_trans(struct sample_data * data)
+static struct operf_transient * __get_operf_trans(struct sample_data * data, bool hypervisor_domain)
 {
 	operf_process_info * proc = NULL;
 	const struct operf_mmap * op_mmap = NULL;
@@ -355,6 +355,11 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 		}
 	} else {
 		op_mmap = proc->find_mapping_for_sample(data->ip);
+		// TODO log dropped sample
+		if (op_mmap && op_mmap->is_hypervisor && !hypervisor_domain) {
+			cverb << vperf << "Invalid sample: Address falls within hypervisor address range, but is not a hypervisor domain sample." << endl;
+			op_mmap = NULL;
+		}
 	}
 	if (op_mmap) {
 		if (cverb << vperf)
@@ -378,13 +383,10 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data)
 		retval = &trans;
 	} else {
 		// TODO: log lost sample due to no mapping
-		/* Ditto the comment above -- i.e., we need to look into caching these
-		 * discarded samples and trying to process them later.
-		 */
 		if ((cverb << vmisc) && !first_time_processing) {
 			string domain = trans.in_kernel ? "kernel" : "userspace";
 			cerr << "Discarding " << domain
-			     << " sample where no mapping was found. (pc=0x"
+			     << " sample where no appropriate mapping was found. (pc=0x"
 			     << hex << data->ip <<")" << endl;
 		}
 		retval = NULL;
@@ -404,7 +406,7 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 			if (data->ip >= PERF_CONTEXT_MAX) {
 				switch (data->ip) {
 					case PERF_CONTEXT_HV:
-						// hypervisor samples currently unsupported
+						// hypervisor samples are not supported for callgraph
 						// TODO: log lost callgraph arc
 						break;
 					case PERF_CONTEXT_KERNEL:
@@ -418,7 +420,7 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 				}
 				continue;
 			}
-			if (data->ip && __get_operf_trans(data)) {
+			if (data->ip && __get_operf_trans(data, false)) {
 				if ((trans.current = operf_sfile_find(&trans))) {
 					operf_sfile_log_arc(&trans);
 					update_trans_last(&trans);
@@ -430,12 +432,32 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 	}
 }
 
+static void __map_hypervisor_sample(u64 ip, u32 pid)
+{
+	operf_process_info * proc;
+	map<pid_t, operf_process_info *>::iterator it;
+	it = process_map.find(pid);
+	if (it == process_map.end()) {
+		// Create a new proc info object, but mark it invalid since we have
+		// not yet received a COMM event for this PID.
+		proc = new operf_process_info(pid, app_name ? app_name : NULL,
+		                                            app_name != NULL, false);
+		if (cverb << vperf)
+			cout << "Adding new proc info to collection for PID " << pid << endl;
+		process_map[pid] = proc;
+
+	} else {
+		proc = it->second;
+	}
+	proc->process_hypervisor_mapping(ip);
+}
+
 static void __handle_sample_event(event_t * event, u64 sample_type)
 {
 	struct sample_data data;
 	bool found_trans = false;
 	const struct operf_mmap * op_mmap = NULL;
-
+	bool hypervisor = (event->header.misc == PERF_RECORD_MISC_HYPERVISOR);
 	u64 *array = event->sample.array;
 
 	if (sample_type & PERF_SAMPLE_IP) {
@@ -465,11 +487,44 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		trans.in_kernel = 1;
 	} else if (event->header.misc == PERF_RECORD_MISC_USER) {
 		trans.in_kernel = 0;
-	} else {
-		// TODO: For now, we'll discard hypervisor and guest kernel/
-		// guest user samples.  We should at least log what we're
-		// throwing away.
-		cverb << vmisc << "Discarding sample that is neither user nor kernel domain" << endl;
+	}
+#if (defined(__powerpc__) || defined(__powerpc64__))
+	else if (event->header.misc == PERF_RECORD_MISC_HYPERVISOR) {
+#define MAX_HYPERVISOR_ADDRESS 0xfffffffULL
+		if (data.ip > MAX_HYPERVISOR_ADDRESS) {
+			// TODO Log the discarded sample
+			cverb << vmisc << "Discarding out-of-range hypervisor sample: "
+			      << hex << data.ip << endl;
+			goto out;
+		}
+		trans.in_kernel = 0;
+		if (first_time_processing) {
+			__map_hypervisor_sample(data.ip, data.pid);
+		}
+	}
+#endif
+	else {
+		// TODO: Unhandled types are the guest kernel and guest user samples.
+		// We should at least log what we're throwing away.
+		if (cverb << vmisc) {
+			const char * domain;
+			switch (event->header.misc) {
+			case PERF_RECORD_MISC_HYPERVISOR:
+				domain = "hypervisor";
+				break;
+			case PERF_RECORD_MISC_GUEST_KERNEL:
+				domain = "guest OS";
+				break;
+			case PERF_RECORD_MISC_GUEST_USER:
+				domain = "guest user";
+				break;
+			default:
+				domain = "unknown";
+				break;
+			}
+			cerr << "Discarding sample from " << domain << " domain: "
+			     << hex << data.ip << endl;
+		}
 		goto out;
 	}
 
@@ -500,6 +555,24 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		     << " is invalid. Skipping sample." << endl;
 		goto out;
 	}
+
+	if ((event->header.misc == PERF_RECORD_MISC_HYPERVISOR) && first_time_processing) {
+		/* We defer processing hypervisor samples until all the samples
+		 * are processed.  We do this because we synthesize an mmapping
+		 * for hypervisor samples and need to modify it (start_addr and/or
+		 * end_addr) as new hypervisor samples arrive.  If we completely
+		 * processed the hypervisor samples during "first_time_processing",
+		 * we would end up (usually) with multiple "[hypervisor_bucket]" sample files,
+		 * each with a unique address range.  So we'll stick the event on
+		 * the unresolved_events list to be re-processed later.
+		 */
+		event_t * ev = (event_t *)xmalloc(event->header.size);
+		memcpy(ev, event, event->header.size);
+		unresolved_events.push_back(ev);
+		if (cverb << vperf)
+			cout << "Deferring processing of hypervisor sample." << endl;
+		goto out;
+	}
 	/* Check for the common case first -- i.e., where the current sample is from
 	 * the same context as the previous sample.  For the "no-vmlinux" case, start_addr
 	 * and end_addr will be zero, so need to make sure we detect that.
@@ -513,20 +586,23 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 				trans.pc = data.ip;
 				found_trans = true;
 			// For the case where a vmlinux file is passed in . . .
-			} else if (data.ip >= trans.start_addr && data.ip < trans.end_addr) {
+			} else if (data.ip >= trans.start_addr && data.ip <= trans.end_addr) {
 				trans.pc = data.ip;
 				found_trans = true;
-			} else if (__get_operf_trans(&data)) {
+			} else if (__get_operf_trans(&data, hypervisor)) {
 				trans.current = operf_sfile_find(&trans);
 				found_trans = true;
 			}
 		}
 	} else {
-		if (trans.tgid == data.pid && data.ip >= trans.start_addr && data.ip < trans.end_addr) {
+		if (trans.tgid == data.pid && data.ip >= trans.start_addr && data.ip <= trans.end_addr) {
 			trans.tid = data.tid;
-			trans.pc = data.ip - trans.start_addr;
+			if (trans.is_anon)
+				trans.pc = data.ip;
+			else
+				trans.pc = data.ip - trans.start_addr;
 			found_trans = true;
-		} else if (__get_operf_trans(&data)) {
+		} else if (__get_operf_trans(&data, hypervisor)) {
 			trans.current = operf_sfile_find(&trans);
 			found_trans = true;
 		}

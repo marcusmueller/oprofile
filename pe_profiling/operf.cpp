@@ -75,8 +75,8 @@ static char * app_args = NULL;
 static pid_t app_PID = -1;
 static 	pid_t jitconv_pid = -1;
 static bool app_started;
-static pid_t operf_pid;
-static pid_t convert_pid;
+static pid_t operf_record_pid;
+static pid_t operf_read_pid;
 static string samples_dir;
 static bool startApp;
 static char start_time_str[32];
@@ -84,6 +84,7 @@ static vector<operf_event_t> events;
 static bool jit_conversion_running;
 static void convert_sample_data(void);
 static int sample_data_pipe[2];
+static bool ctl_c = false;
 
 
 namespace operf_options {
@@ -143,10 +144,37 @@ static void op_sig_stop(int val __attribute__((unused)))
 {
 	// Received a signal to quit, so we need to stop the
 	// app being profiled.
+	ctl_c = true;
 	if (cverb << vdebug)
-		write(1, "in op_sig_stop ", 15);
+		write(1, "in op_sig_stop\n", 15);
 	if (startApp)
 		kill(app_PID, SIGKILL);
+}
+
+static void _handle_sigint(int val __attribute__((unused)))
+{
+	ctl_c = true;
+	if (cverb << vdebug)
+		write(1, "in _handle_sigint\n", 19);
+	return;
+}
+
+
+void _set_signals_for_record(void)
+{
+	struct sigaction act;
+	sigset_t ss;
+
+	sigfillset(&ss);
+	sigprocmask(SIG_UNBLOCK, &ss, NULL);
+
+	act.sa_handler = _handle_sigint;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGINT);
+	if (sigaction(SIGINT, &act, NULL)) {
+		perror("operf: install of SIGINT handler failed: ");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void set_signals(void)
@@ -269,11 +297,13 @@ int start_profiling_app(void)
 		perror("Internal error: could not create pipe");
 		return -1;
 	}
-	operf_pid = fork();
-	if (operf_pid < 0) {
+	operf_record_pid = fork();
+	if (operf_record_pid < 0) {
 		return -1;
-	} else if (operf_pid == 0) { // operf-record process
+	} else if (operf_record_pid == 0) { // operf-record process
 		int ready = 0;
+		int exit_code = EXIT_SUCCESS;
+		_set_signals_for_record();
 		close(operf_record_ready_pipe[0]);
 		close(sample_data_pipe[0]);
 		/*
@@ -308,6 +338,7 @@ int start_profiling_app(void)
 			ready = 1;
 			if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
 				perror("Internal error on operf_record_ready_pipe");
+				exit_code = EXIT_FAILURE;
 				goto fail_out;
 			}
 
@@ -316,11 +347,18 @@ int start_profiling_app(void)
 			cverb << vmisc << "Total bytes recorded from perf events: " << dec
 					<< operfRecord.get_total_bytes_recorded() << endl;
 		} catch (runtime_error re) {
-			cerr << "Caught runtime_error: " << re.what() << endl;
+			/* If the user does ctl-c, the operf-record process may get interrupted
+			 * in a system call, causing problems with writes to the sample data pipe.
+			 * So we'll ignore such errors unless the user requests debug info.
+			 */
+			if (!ctl_c || (cverb << vmisc)) {
+				cerr << "Caught runtime_error: " << re.what() << endl;
+				exit_code = EXIT_FAILURE;
+			}
 			goto fail_out;
 		}
 		// done
-		_exit(EXIT_SUCCESS);
+		_exit(exit_code);
 
 fail_out:
 		if (!ready){
@@ -331,8 +369,8 @@ fail_out:
 			if (write(operf_record_ready_pipe[1], &ready, sizeof(ready)) < 0) {
 				perror("Internal error on operf_record_ready_pipe");
 			}
-			_exit(EXIT_SUCCESS);
 		}
+		_exit(exit_code);
 	} else {  // parent
 		int recorder_ready = 0;
 		int startup;
@@ -379,35 +417,14 @@ fail_out:
 	return 0;
 }
 
-static end_code_t _kill_operf_pid(void)
+static end_code_t _kill_operf_read_pid(end_code_t rc)
 {
-	int waitpid_status = 0;
-	end_code_t rc = ALL_OK;
+	// Now stop the operf-read process
+	int waitpid_status;
 	struct timeval tv;
 	long long start_time_sec;
 	long long usec_timer;
 	bool keep_trying = true;
-
-	// stop operf-record process
-	if (kill(operf_pid, SIGUSR1) < 0) {
-		perror("Attempt to stop operf-record process failed");
-		rc = PERF_RECORD_ERROR;
-	} else {
-		if (waitpid(operf_pid, &waitpid_status, 0) < 0) {
-			perror("waitpid for operf-record process failed");
-			rc = PERF_RECORD_ERROR;
-		} else {
-			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
-				cverb << vdebug << "operf-record process returned OK" << endl;
-			} else {
-				cerr <<  "operf-record process ended abnormally: "
-				     << WEXITSTATUS(waitpid_status) << endl;
-				rc = PERF_RECORD_ERROR;
-			}
-		}
-	}
-
-	// Now stop the operf-read process (aka "convert_pid")
 	waitpid_status = 0;
 	gettimeofday(&tv, NULL);
 	start_time_sec = tv.tv_sec;
@@ -418,13 +435,14 @@ static end_code_t _kill_operf_pid(void)
 	 */
 	while (keep_trying) {
 		int option = WNOHANG;
+		int wait_rc;
 		gettimeofday(&tv, NULL);
 		if (tv.tv_sec > start_time_sec + 5) {
 			keep_trying = false;
 			option = 0;
 			cerr << "now trying to kill convert pid..." << endl;
 
-			if (kill(convert_pid, SIGUSR1) < 0) {
+			if (kill(operf_read_pid, SIGUSR1) < 0) {
 				perror("Attempt to stop operf-read process failed");
 				rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
 				break;
@@ -440,21 +458,76 @@ static end_code_t _kill_operf_pid(void)
 			else
 				continue;
 		}
-		if (waitpid(convert_pid, &waitpid_status, option) < 0) {
+		if ((wait_rc = waitpid(operf_read_pid, &waitpid_status, option)) < 0) {
 			keep_trying = false;
 			if (errno != ECHILD) {
 				perror("waitpid for operf-read process failed");
 				rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
 			}
-		} else {
+		} else if (wait_rc) {
 			if (WIFEXITED(waitpid_status)) {
 				keep_trying = false;
 				if (!WEXITSTATUS(waitpid_status)) {
 					cverb << vdebug << "operf-read process returned OK" << endl;
-				} else {
-					cerr <<  "operf-read process ended abnormally.  Status = "
-					     << WEXITSTATUS(waitpid_status) << endl;
-					rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
+				} else if (WIFEXITED(waitpid_status)) {
+					/* If user did ctl-c, operf-record may get spurious errors, like
+					 * broken pipe, etc.  We ignore these unless the user asks for
+					 * debug output.
+					 */
+					if (!ctl_c || cverb << vdebug) {
+						cerr <<  "operf-read process ended abnormally.  Status = "
+						     << WEXITSTATUS(waitpid_status) << endl;
+						rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
+					}
+				}
+			}  else if (WIFSIGNALED(waitpid_status)) {
+				keep_trying = false;
+				/* If user did ctl-c, operf-record may get spurious errors, like
+				 * broken pipe, etc.  We ignore these unless the user asks for
+				 * debug output.
+				 */
+				if (!ctl_c || cverb << vdebug) {
+					cerr << "operf-read process killed by signal "
+					     << WTERMSIG(waitpid_status) << endl;
+					rc = PERF_RECORD_ERROR;
+				}
+			}
+		}
+	}
+	return rc;
+}
+
+static end_code_t _kill_operf_record_pid(void)
+{
+	int waitpid_status = 0;
+	end_code_t rc = ALL_OK;
+
+	// stop operf-record process
+	if (kill(operf_record_pid, SIGUSR1) < 0) {
+		perror("Attempt to stop operf-record process failed");
+		rc = PERF_RECORD_ERROR;
+	} else {
+		if (waitpid(operf_record_pid, &waitpid_status, 0) < 0) {
+			perror("waitpid for operf-record process failed");
+			rc = PERF_RECORD_ERROR;
+		} else {
+			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
+				cverb << vdebug << "operf-record process returned OK" << endl;
+			} else if (WIFEXITED(waitpid_status)) {
+				/* If user did ctl-c, operf-record may get spurious errors, like
+				 * broken pipe, etc.  We ignore these unless the user asks for
+				 * debug output.
+				 */
+				if (!ctl_c || cverb << vdebug) {
+					cerr <<  "operf-record process ended abnormally: "
+							<< WEXITSTATUS(waitpid_status) << endl;
+					rc = PERF_RECORD_ERROR;
+				}
+			} else if (WIFSIGNALED(waitpid_status)) {
+				if (!ctl_c || cverb << vdebug) {
+					cerr << "operf-record process killed by signal "
+					     << WTERMSIG(waitpid_status) << endl;
+					rc = PERF_RECORD_ERROR;
 				}
 			}
 		}
@@ -466,6 +539,7 @@ static end_code_t _run(void)
 {
 	int waitpid_status = 0;
 	end_code_t rc = ALL_OK;
+	bool kill_record = true;
 
 	// Fork processes with signals blocked.
 	sigset_t ss;
@@ -491,11 +565,11 @@ static end_code_t _run(void)
 	 * then we'll do the convert.
 	 */
 	if (!(!app_started && !operf_options::system_wide)) {
-		convert_pid = fork();
-		if (convert_pid < 0) {
+		operf_read_pid = fork();
+		if (operf_read_pid < 0) {
 			perror("Internal error: fork failed");
 			_exit(EXIT_FAILURE);
-		} else if (convert_pid == 0) { // child process
+		} else if (operf_read_pid == 0) { // child process
 			close(sample_data_pipe[1]);
 			convert_sample_data();
 		}
@@ -507,53 +581,119 @@ static end_code_t _run(void)
 	set_signals();
 	cout << "operf: Profiler started" << endl;
 	if (startApp) {
-		// User passed in command or program name to start
+		/* The user passed in a command or program name to start, so we'll need to do waitpid on that
+		 * process.  However, while that user-requested process is running, it's possible we
+		 * may get an error in the operf-record process.  If that happens, we want to know it right
+		 * away so we can stop profiling and kill the user app.  Therefore, we must use WNOHANG
+		 * on the waitpid call and bounce back and forth between the user app and the operf-record
+		 * process, checking their status.  The profiled app may end normally, abnormally, or by way
+		 * of ctrl-C.  The operf-record process should not end here, except abnormally.  The normal
+		 * flow is:
+		 *    1. profiled app ends or is stopped vi ctrl-C
+		 *    2. keep_trying is set to false, so we drop out of while loop and proceed to end of function
+		 *    3. call _kill_operf_record_pid and _kill_operf_read_pid
+		 */
+		struct timeval tv;
+		long long start_time_sec;
+		long long usec_timer;
+		bool keep_trying = true;
+		const char * app_process = "profiled app";
+		const char * record_process = "operf-record process";
+		waitpid_status = 0;
+		gettimeofday(&tv, NULL);
+		start_time_sec = tv.tv_sec;
+		usec_timer = tv.tv_usec;
 		cverb << vdebug << "going into waitpid on profiled app " << app_PID << endl;
-		if (waitpid(app_PID, &waitpid_status, 0) < 0) {
-			if (errno == EINTR) {
-				cverb << vdebug << "Caught ctrl-C.  Killed profiled app." << endl;
-			} else {
-				cerr << "waitpid errno is " << errno << endl;
-				perror("waitpid for profiled app failed");
-				rc = APP_ABNORMAL_END;
+
+		// We'll try the waitpid with WNOHANG once every 100,000 usecs.
+		while (keep_trying) {
+			pid_t the_pid = app_PID;
+			int wait_rc;
+			const char * the_process = app_process;
+			gettimeofday(&tv, NULL);
+			/* If we exceed the 100000 usec interval or if the tv_usec
+			 * value has rolled over to restart at 0, then we reset
+			 * the usec_timer to current tv_usec and try waitpid.
+			 */
+			if ((tv.tv_usec % 1000000) > (usec_timer + 100000)
+					|| (tv.tv_usec < usec_timer))
+				usec_timer = tv.tv_usec;
+			else
+				continue;
+
+			bool trying_user_app = true;
+again:
+			if ((wait_rc = waitpid(the_pid, &waitpid_status, WNOHANG)) < 0) {
+				keep_trying = false;
+				if (errno == EINTR) {
+					//  Ctrl-C will only kill the profiled app.  See the op_sig_stop signal handler.
+					cverb << vdebug << "Caught ctrl-C.  Killed " << the_process << "." << endl;
+				} else {
+					cerr << "waitpid for " << the_process << " failed: " << strerror(errno) << endl;
+					rc = trying_user_app ? APP_ABNORMAL_END : PERF_RECORD_ERROR;
+				}
+			} else if (wait_rc) {
+				keep_trying = false;
+				if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
+					cverb << vdebug << the_process << " ended normally." << endl;
+				} else if (WIFEXITED(waitpid_status)) {
+					cerr <<  the_process << " exited with the following status: "
+					     << WEXITSTATUS(waitpid_status) << endl;
+					rc = trying_user_app ? APP_ABNORMAL_END : PERF_RECORD_ERROR;
+				}  else if (WIFSIGNALED(waitpid_status)) {
+					if (WTERMSIG(waitpid_status) != SIGKILL) {
+						cerr << the_process << " killed by signal "
+						     << WTERMSIG(waitpid_status) << endl;
+						rc = trying_user_app ? APP_ABNORMAL_END : PERF_RECORD_ERROR;
+					}
+				} else {
+					keep_trying = true;
+				}
 			}
-		} else {
-			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
-				cverb << vdebug << "waitpid for profiled app returned OK" << endl;
-			} else if (WIFEXITED(waitpid_status)) {
-				cerr <<  "profiled app ended abnormally: "
-						<< WEXITSTATUS(waitpid_status) << endl;
-				rc = APP_ABNORMAL_END;
+			if (trying_user_app && (rc == ALL_OK)) {
+				trying_user_app = false;
+				the_pid = operf_record_pid;
+				the_process = record_process;
+				goto again;
+			} else if (rc != ALL_OK) {
+				// If trying_user_app == true, implies profiled app ended; otherwise, operf-record process abended.
+				if (!trying_user_app)
+					kill_record = false;
 			}
 		}
-		rc = _kill_operf_pid();
 	} else {
 		// User passed in --pid or --system-wide
 		cout << "operf: Press Ctl-c to stop profiling" << endl;
-		cverb << vdebug << "going into waitpid on operf record process " << operf_pid << endl;
-		if (waitpid(operf_pid, &waitpid_status, 0) < 0) {
+		cverb << vdebug << "going into waitpid on operf record process " << operf_record_pid << endl;
+		if (waitpid(operf_record_pid, &waitpid_status, 0) < 0) {
 			if (errno == EINTR) {
 				cverb << vdebug << "Caught ctrl-C. Killing operf-record process . . ." << endl;
-				rc = _kill_operf_pid();
 			} else {
 				cerr << "waitpid errno is " << errno << endl;
 				perror("waitpid for operf-record process failed");
+				kill_record = false;
 				rc = PERF_RECORD_ERROR;
 			}
 		} else {
 			if (WIFEXITED(waitpid_status) && (!WEXITSTATUS(waitpid_status))) {
 				cverb << vdebug << "waitpid for operf-record process returned OK" << endl;
 			} else if (WIFEXITED(waitpid_status)) {
+				kill_record = false;
 				cerr <<  "operf-record process ended abnormally: "
 				     << WEXITSTATUS(waitpid_status) << endl;
 				rc = PERF_RECORD_ERROR;
 			} else if (WIFSIGNALED(waitpid_status)) {
+				kill_record = false;
 				cerr << "operf-record process killed by signal "
 				     << WTERMSIG(waitpid_status) << endl;
 				rc = PERF_RECORD_ERROR;
 			}
 		}
 	}
+	if (kill_record)
+		rc = _kill_operf_read_pid(_kill_operf_record_pid());
+	else
+		rc = _kill_operf_read_pid(rc);
 	return rc;
 }
 
@@ -574,7 +714,7 @@ static void _jitconv_complete(int val __attribute__((unused)))
 	}
 	jit_conversion_running = false;
 	if (WIFEXITED(child_status) && (!WEXITSTATUS(child_status))) {
-		cverb << vmisc << "JIT dump processing complete." << endl;
+		cverb << vdebug << "JIT dump processing complete." << endl;
 	} else {
 		 if (WIFSIGNALED(child_status))
 			 cerr << "child received signal " << WTERMSIG(child_status) << endl;
@@ -584,15 +724,8 @@ static void _jitconv_complete(int val __attribute__((unused)))
 	}
 }
 
-
-static void _do_jitdump_convert()
+static void _set_signals_for_convert(void)
 {
-	int arg_num;
-	unsigned long long end_time = 0ULL;
-	struct timeval tv;
-	char end_time_str[32];
-	char opjitconv_path[PATH_MAX + 1];
-	char * exec_args[8];
 	struct sigaction act;
 	sigset_t ss;
 
@@ -603,12 +736,28 @@ static void _do_jitdump_convert()
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SIGCHLD);
-
 	if (sigaction(SIGCHLD, &act, NULL)) {
 		perror("operf: install of SIGCHLD handler failed: ");
 		exit(EXIT_FAILURE);
 	}
 
+	act.sa_handler = _handle_sigint;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGINT);
+	if (sigaction(SIGINT, &act, NULL)) {
+		perror("operf: install of SIGINT handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void _do_jitdump_convert()
+{
+	int arg_num;
+	unsigned long long end_time = 0ULL;
+	struct timeval tv;
+	char end_time_str[32];
+	char opjitconv_path[PATH_MAX + 1];
+	char * exec_args[8];
 
 	jitconv_pid = fork();
 	switch (jitconv_pid) {
@@ -673,6 +822,8 @@ static void convert_sample_data(void)
 	string previous_sampledir = samples_dir + "/previous";
 	current_sampledir.copy(op_samples_current_dir, current_sampledir.length(), 0);
 
+	_set_signals_for_convert();
+
 	if (!operf_options::append) {
                 int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
 		errno = 0;
@@ -712,13 +863,12 @@ static void convert_sample_data(void)
 		try {
 			operfRead.convertPerfData();
 		} catch (runtime_error e) {
-			cerr << "Caught exception from operf_read::convertPerfData" << endl;
+			cerr << "Caught runtime error from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;
 			cleanup();
 			_exit(EXIT_FAILURE);
 		}
 	}
-	// Invoke opjitconv and set up a SIGCHLD signal for when it's done
 	_do_jitdump_convert();
 	int keep_waiting = 0;
 	while (jit_conversion_running && (keep_waiting < 2)) {

@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <map>
+#include <string.h>
 #include "operf_process_info.h"
 #include "file_manip.h"
 #include "operf_utils.h"
@@ -37,6 +38,31 @@ operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool ap
 		app_basename = "";
 	}
 
+}
+
+operf_process_info::~operf_process_info()
+{
+	map<u64, struct operf_mmap *>::iterator it;
+	map<u64, struct operf_mmap *>::iterator end;
+
+	if (valid) {
+		it = mmappings.begin();
+		end = mmappings.end();
+	} else {
+		it = deferred_mmappings.begin();
+		end = deferred_mmappings.end();
+	}
+	while (it != end) {
+		if (it->second->is_hypervisor) {
+			struct operf_mmap * mmapping = it->second;
+			delete mmapping;
+			// There is only one hypervisor mmapping.
+			break;
+		}
+		it++;
+	}
+	mmappings.clear();
+	deferred_mmappings.clear();
 }
 
 void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
@@ -122,3 +148,79 @@ const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample
 	}
 	return NULL;
 }
+
+/**
+ * Hypervisor samples cannot be attributed to any real binary, so we synthesize
+ * an operf_mmap object with the name of "[hypervisor_bucket]".  We mark this
+ * mmaping as "is_anon" so that hypervisor samples are handled in the same way as
+ * anon samples (and vdso, heap, and stack) -- i.e., a sample file is created
+ * with the following pieces of information in its name:
+ *   - [hypervisor_bucket]
+ *   - PID
+ *   - address range
+ *
+ * The address range part is problematic for hypervisor samples, since we don't
+ * know the range of sample addresses until we process all the samples.  This is
+ * why we need to adjust the hypervisor_mmaping when we detect an ip that's
+ * outside of the current address range.  This is also why we defer processing
+ * hypervisor samples the first time through the processing of sample
+ * data.  See operf_utils::__handle_sample_event for details relating to how we
+ * defer processing of such samples.
+ */
+void operf_process_info::process_hypervisor_mapping(u64 ip)
+{
+	bool create_new_hyperv_mmap = true;
+	u64 curr_start, curr_end;
+	map<u64, struct operf_mmap *>::iterator it;
+	map<u64, struct operf_mmap *>::iterator end;
+
+	curr_end = curr_start = ~0ULL;
+	if (valid) {
+		it = mmappings.begin();
+		end = mmappings.end();
+	} else {
+		it = deferred_mmappings.begin();
+		end = deferred_mmappings.end();
+	}
+	while (it != end) {
+		if (it->second->is_hypervisor) {
+			struct operf_mmap * _mmap = it->second;
+			curr_start = _mmap->start_addr;
+			curr_end = _mmap->end_addr;
+			if (curr_start > ip) {
+				if (valid)
+					mmappings.erase(it);
+				else
+					deferred_mmappings.erase(it);
+				delete _mmap;
+			} else {
+				create_new_hyperv_mmap = false;
+				if (curr_end <= ip)
+					_mmap->end_addr = ip;
+			}
+			break;
+		}
+		it++;
+	}
+
+	if (create_new_hyperv_mmap) {
+		struct operf_mmap * hypervisor_mmap = new struct operf_mmap;
+		memset(hypervisor_mmap, 0, sizeof(struct operf_mmap));
+		hypervisor_mmap->start_addr = ip;
+		hypervisor_mmap->end_addr = ((curr_end == ~0ULL) || (curr_end < ip)) ? ip : curr_end;
+		strcpy(hypervisor_mmap->filename, "[hypervisor_bucket]");
+		hypervisor_mmap->is_anon_mapping = true;
+		hypervisor_mmap->pgoff = 0;
+		hypervisor_mmap->is_hypervisor = true;
+		if (cverb << vmisc) {
+			cout << "Synthesize mmapping for " << hypervisor_mmap->filename << endl;
+			cout << "\tstart_addr: " << hex << hypervisor_mmap->start_addr;
+			cout << "; end addr: " << hypervisor_mmap->end_addr << endl;
+		}
+		if (valid)
+			process_new_mapping(hypervisor_mmap);
+		else
+			add_deferred_mapping(hypervisor_mmap);
+	}
+}
+

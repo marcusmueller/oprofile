@@ -26,6 +26,7 @@ struct operf_mmap {
 	u64 end_addr;
 	u64 pgoff;
 	bool is_anon_mapping;
+	bool is_hypervisor;
 	char filename[PATH_MAX];
 };
 
@@ -51,8 +52,10 @@ struct operf_mmap {
 class operf_process_info {
 public:
 	operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid);
+	~operf_process_info(void);
 	bool is_valid(void) { return (valid); }
 	void process_new_mapping(struct operf_mmap * mapping);
+	void process_hypervisor_mapping(u64 ip);
 	void process_deferred_mappings(std::string app_shortname);
 	std::string get_app_name(void) { return _appname; }
 	void add_deferred_mapping(struct operf_mmap * mapping)
