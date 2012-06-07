@@ -1032,14 +1032,34 @@ static void _process_events_list(void)
 		free(event_str);
 		event.count = atoi(strtok(NULL, ":"));
 		/* Name and count are required in the event spec in order for
-		 * 'ophelp --check-events' to pass.  But since unit mask is
-		 * optional, we need to ensure the result of strtok is valid.
+		 * 'ophelp --check-events' to pass.  But since unit mask and domain
+		 * control bits are optional, we need to ensure the result of strtok
+		 * is valid.
 		 */
-		char * um = strtok(NULL, ":");
-		if (um)
-			event.evt_um = atoi(um);
-		else
-			event.evt_um = 0;
+		char * info;
+#define	_OP_UM 1
+#define	_OP_KERNEL 2
+#define	_OP_USER 3
+		int place =  _OP_UM;
+		event.evt_um = 0;
+		event.no_kernel = 0;
+		event.no_user = 0;
+		while ((info = strtok(NULL, ":"))) {
+			switch (place) {
+			case _OP_UM:
+				event.evt_um = atoi(info);
+				break;
+			case _OP_KERNEL:
+				if (atoi(info) == 0)
+					event.no_kernel = 1;
+				break;
+			case _OP_USER:
+				if (atoi(info) == 0)
+					event.no_user = 1;
+				break;
+			}
+			place++;
+		}
 		event.op_evt_code = _get_event_code(event.name);
 		event.evt_code = event.op_evt_code;
 		events.push_back(event);

@@ -120,6 +120,7 @@ typedef struct operf_event {
 	unsigned long count;
 	u32 counter;
 	bool no_kernel;
+	bool no_user;
 	bool no_hv;
 } operf_event_t;
 
