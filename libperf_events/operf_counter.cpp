@@ -42,6 +42,7 @@ unsigned int pagesize;
 verbose vperf("perf_events");
 
 extern bool first_time_processing;
+extern bool throttled;
 
 namespace {
 
@@ -125,6 +126,10 @@ operf_record::~operf_record()
 	if (poll_data)
 		delete[] poll_data;
 	close(output_fd);
+	for (int i = 0; i < samples_array.size(); i++) {
+		struct mmap_data *md = &samples_array[i];
+		munmap(md->base, (NUM_MMAP_PAGES + 1) * pagesize);
+	}
 	samples_array.clear();
 	evts.clear();
 	perfCounters.clear();
@@ -213,18 +218,16 @@ void operf_record::write_op_header_info()
 	}
 }
 
-int operf_record::prepareToRecord(int counter, int cpu, int fd)
+int operf_record::prepareToRecord(int cpu, int fd)
 {
 	struct mmap_data md;;
-
-	md.counter = counter;
 	md.prev = 0;
 	md.mask = NUM_MMAP_PAGES * pagesize - 1;
 
 	fcntl(fd, F_SETFL, O_NONBLOCK);
 
-	poll_data[cpu * evts.size() + counter].fd = fd;
-	poll_data[cpu * evts.size() + counter].events = POLLIN;
+	poll_data[cpu].fd = fd;
+	poll_data[cpu].events = POLLIN;
 	poll_count++;
 
 	md.base = mmap(NULL, (NUM_MMAP_PAGES + 1) * pagesize,
@@ -233,8 +236,7 @@ int operf_record::prepareToRecord(int counter, int cpu, int fd)
 		perror("failed to mmap");
 		return -1;
 	}
-	samples_array[cpu].push_back(md);
-	ioctl(fd, PERF_EVENT_IOC_ENABLE);
+	samples_array.push_back(md);
 
 	return 0;
 }
@@ -248,6 +250,8 @@ void operf_record::setup()
 	DIR *dir = NULL;
 	string err_msg;
 	char cpus_online[129];
+	bool need_IOC_enable = (system_wide || pid_started);
+
 
 	if (system_wide)
 		cverb << vperf << "operf_record::setup() for system-wide profiling" << endl;
@@ -276,7 +280,7 @@ void operf_record::setup()
 	if (!num_cpus)
 		throw runtime_error("Number of online CPUs is zero; cannot continue");;
 
-	poll_data = new struct pollfd [evts.size() * num_cpus];
+	poll_data = new struct pollfd [num_cpus];
 
 	cverb << vperf << "calling perf_event_open for pid " << pid << " on "
 	      << num_cpus << " cpus" << endl;
@@ -304,6 +308,8 @@ void operf_record::setup()
 
 	for (int cpu = 0; cpu < num_cpus; cpu++) {
 		int real_cpu;
+		int mmap_fd;
+		bool mmap_done_for_cpu = false;
 		if (all_cpus_avail) {
 			real_cpu = cpu;
 		} else {
@@ -318,10 +324,8 @@ void operf_record::setup()
 
 		// Create new row to hold operf_counter objects since we need one
 		// row for each cpu. Do the same for samples_array.
-		vector<struct mmap_data> tmp_mdvec;
 		vector<operf_counter> tmp_pcvec;
 
-		samples_array.push_back(tmp_mdvec);
 		perfCounters.push_back(tmp_pcvec);
 		for (unsigned event = 0; event < evts.size(); event++) {
 			evts[event].counter = event;
@@ -332,10 +336,21 @@ void operf_record::setup()
 				err_msg = "Internal Error.  Perf event setup failed.";
 				goto error;
 			}
-			if (((rc = prepareToRecord(event, cpu, perfCounters[cpu][event].get_fd()))) < 0) {
-				err_msg = "Internal Error.  Perf event setup failed.";
-				goto error;
+			if (!mmap_done_for_cpu) {
+				if (((rc = prepareToRecord(cpu, perfCounters[cpu][event].get_fd()))) < 0) {
+					err_msg = "Internal Error.  Perf event setup failed.";
+					goto error;
+				}
+				mmap_fd = perfCounters[cpu][event].get_fd();
+				mmap_done_for_cpu = true;
+			} else {
+				if (ioctl(perfCounters[cpu][event].get_fd(),
+				          PERF_EVENT_IOC_SET_OUTPUT, mmap_fd) < 0)
+					goto error;
 			}
+			if (need_IOC_enable)
+				if (ioctl(perfCounters[cpu][event].get_fd(), PERF_EVENT_IOC_ENABLE) < 0)
+					goto error;
 		}
 	}
 	if (!all_cpus_avail)
@@ -348,6 +363,11 @@ void operf_record::setup()
 
 error:
 	delete[] poll_data;
+	for (int i = 0; i < samples_array.size(); i++) {
+		struct mmap_data *md = &samples_array[i];
+		munmap(md->base, (NUM_MMAP_PAGES + 1) * pagesize);
+	}
+	samples_array.clear();
 	close(output_fd);
 	if (rc != OP_PERF_HANDLED_ERROR)
 		throw runtime_error(err_msg);
@@ -370,11 +390,10 @@ void operf_record::recordPerfData(void)
 	while (1) {
 		int prev = sample_reads;
 
-		for (int cpu = 0; cpu < num_cpus; cpu++) {
-			for (unsigned int evt = 0; evt < evts.size(); evt++) {
-				if (samples_array[cpu][evt].base)
-					op_get_kernel_event_data(&samples_array[cpu][evt], this);
-			}
+
+		for (int i = 0; i < samples_array.size(); i++) {
+			if (samples_array[i].base)
+				op_get_kernel_event_data(&samples_array[i], this);
 		}
 		if (quit && disabled)
 			break;
@@ -551,6 +570,8 @@ int operf_read::convertPerfData(void)
 	op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
 
 	op_release_resources();
+	if (throttled)
+		cout << endl << "* * * * ATTENTION: Profiling rate was throttled back by the kernel * * * *" << endl;
 
 	char * cbuf;
 	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);

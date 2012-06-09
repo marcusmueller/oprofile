@@ -1029,7 +1029,6 @@ static void _process_events_list(void)
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
 		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN);
-		free(event_str);
 		event.count = atoi(strtok(NULL, ":"));
 		/* Name and count are required in the event spec in order for
 		 * 'ophelp --check-events' to pass.  But since unit mask and domain
@@ -1060,6 +1059,7 @@ static void _process_events_list(void)
 			}
 			place++;
 		}
+		free(event_str);
 		event.op_evt_code = _get_event_code(event.name);
 		event.evt_code = event.op_evt_code;
 		events.push_back(event);
@@ -1337,6 +1337,7 @@ static void process_args(int argc, char const ** argv)
 	} else  {
 		_process_events_list();
 	}
+	op_nr_counters = events.size();
 
 	if (operf_options::vmlinux.empty()) {
 		no_vmlinux = true;
@@ -1415,6 +1416,7 @@ static int _get_sys_value(const char * filename)
 int main(int argc, char const *argv[])
 {
 	int rc;
+	throttled = false;
 	if ((rc = _check_perf_events_cap())) {
 		if (rc == EBUSY) {
 			cerr << "Performance monitor unit is busy.  Do 'opcontrol --deinit' and try again." << endl;
@@ -1448,7 +1450,6 @@ int main(int argc, char const *argv[])
 		cleanup();
 		exit(1);
 	}
-	op_nr_counters = op_get_nr_counters(cpu_type);
 
 	if (my_uid != 0) {
 		bool for_current = true;

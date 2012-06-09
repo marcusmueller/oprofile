@@ -52,6 +52,7 @@ multimap<string, struct operf_mmap *> all_images_map;
 map<u64, struct operf_mmap *> kernel_modules;
 struct operf_mmap * kernel_mmap;
 bool first_time_processing;
+bool throttled;
 
 static list<event_t *> unresolved_events;
 static struct operf_transient trans;
@@ -165,9 +166,17 @@ static void __handle_comm_event(event_t * event)
 	if (cverb << vperf)
 		cout << "PERF_RECORD_COMM for " << event->comm.comm << ", tgid/tid = "
 		     << event->comm.pid << "/" << event->comm.tid << endl;
+
 	map<pid_t, operf_process_info *>::iterator it;
 	it = process_map.find(event->comm.pid);
 	if (it == process_map.end()) {
+		/* TODO: Handle system housekeeping tasks.  For certain kinds of processes,
+		 * we will get a COMM event, but never get an MMAP event (e.g, kpsmoused).
+		 * Without receiving an MMAP event, we have no clue whether the name given
+		 * with the COMM event is a full "appname" or not, so the operf_process_info
+		 * is marked invalid.  We end up dropping all samples for such tasks when
+		 * doing a system-wide profile.
+		 */
 		operf_process_info * proc = new operf_process_info(event->comm.pid,
 		                                                   app_name ? app_name : event->comm.comm,
 		                                                   app_name != NULL, true);
@@ -175,10 +184,14 @@ static void __handle_comm_event(event_t * event)
 			cout << "Adding new proc info to collection for PID " << event->comm.pid << endl;
 		process_map[event->comm.pid] = proc;
 	} else {
-		// sanity check -- should not get a second COMM event for same PID
+		/* Sanity check -- should not get a second COMM event for same PID/TID.
+		 * Most likely, this COMM event is for a different TID than the original,
+		 * but since we don't record the TID with our operf_process_info handling,
+		 * we'll just display a debug message when requested.
+		 */
 		if (it->second->is_valid()) {
 			if (cverb << vperf)
-				cout << "Received extraneous COMM event for " << event->comm.comm
+				cout << "Received COMM event for " << event->comm.comm
 				      << ", PID " << event->comm.pid << endl;
 		} else {
 			if (cverb << vperf)
@@ -290,7 +303,8 @@ static void __handle_mmap_event(event_t * event)
 	}
 }
 
-static struct operf_transient * __get_operf_trans(struct sample_data * data, bool hypervisor_domain)
+static struct operf_transient * __get_operf_trans(struct sample_data * data, bool hypervisor_domain,
+                                                  bool kernel_mode)
 {
 	operf_process_info * proc = NULL;
 	const struct operf_mmap * op_mmap = NULL;
@@ -306,43 +320,13 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		std::map<pid_t, operf_process_info *>::const_iterator it = process_map.find(data->pid);
 		if (it != process_map.end() && (it->second->is_appname_valid())) {
 			proc = it->second;
-			trans.cur_procinfo = proc;
-		} else if (trans.in_kernel) {
-			if (data->ip >= kernel_mmap->start_addr &&
-					data->ip < kernel_mmap->end_addr) {
-				op_mmap = kernel_mmap;
-			} else {
-				map<u64, struct operf_mmap *>::iterator it;
-				it = kernel_modules.begin();
-				while (it != kernel_modules.end()) {
-					if (data->ip >= it->second->start_addr &&
-							data->ip < it->second->end_addr) {
-						op_mmap = it->second;
-						break;
-					}
-					it++;
-				}
-			} if (!op_mmap) {
-				if ((kernel_mmap->start_addr == 0ULL) &&
-						(kernel_mmap->end_addr == 0ULL))
-					op_mmap = kernel_mmap;
-			}
-			if (op_mmap) {
-				// Create a process_info object for this process running in kernel mode
-				proc = new operf_process_info(data->pid, op_mmap->filename, true, true);
-				proc->process_new_mapping((struct operf_mmap *)op_mmap);
-				if (cverb << vperf)
-					cout << "Created process_info for kernel task " << data->pid << " using image "
-					     << op_mmap->filename << endl;
-				process_map[data->pid] = proc;
-			}
 		} else {
-			/* We may reach this point for the following reasons:
-			 *   - We get a sample without ever getting a COMM
+			/* This can happen for the following reasons:
+			 *   - We get a sample before getting a COMM or MMAP
 			 *     event for the process being profiled
-			 *   - The COMM event has been processed, but no MMAP events.
-			 *     And since the COMM event only gives 16 chars of the
-			 *     app name, we don't have a valid app name yet.
+			 *   - The COMM event has been processed, but since that
+			 *     only gives 16 chars of the app name, we don't
+			 *     have a valid app name yet
 			 *   - The kernel incorrectly records a sample for a
 			 *     process other than the one we requested (not
 			 *     likely -- this would be a kernel bug if it did)
@@ -357,7 +341,33 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 
 	// Now find mmapping that contains the data.ip address.
 	// Use that mmapping to set fields in trans.
-	if (!trans.in_kernel) {
+	if (kernel_mode) {
+		if (data->ip >= kernel_mmap->start_addr &&
+				data->ip <= kernel_mmap->end_addr) {
+			op_mmap = kernel_mmap;
+		} else {
+			map<u64, struct operf_mmap *>::iterator it;
+			it = kernel_modules.begin();
+			while (it != kernel_modules.end()) {
+				if (data->ip >= it->second->start_addr &&
+						data->ip <= it->second->end_addr) {
+					op_mmap = it->second;
+					break;
+				}
+				it++;
+			}
+		} if (!op_mmap) {
+			if ((kernel_mmap->start_addr == 0ULL) &&
+					(kernel_mmap->end_addr == 0ULL))
+				op_mmap = kernel_mmap;
+		}
+		if (!op_mmap) {
+			/* This can happen if a kernel module is loaded after profiling
+			 * starts, and then we get samples for that kernel module.
+			 * TODO:  Fix this.
+			 */
+		}
+	} else {
 		op_mmap = proc->find_mapping_for_sample(data->ip);
 		// TODO log dropped sample
 		if (op_mmap && op_mmap->is_hypervisor && !hypervisor_domain) {
@@ -367,7 +377,8 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 	}
 	if (op_mmap) {
 		if (cverb << vperf)
-			cout << "Found mmap for sample; image_name is " << op_mmap->filename << endl;
+			cout << "Found mmap for sample; image_name is " << op_mmap->filename <<
+			" and app name is " <<proc->get_app_name() << endl;
 		trans.image_name = op_mmap->filename;
 		trans.app_filename = proc->get_app_name().c_str();
 		trans.image_len = strlen(trans.image_name);
@@ -376,8 +387,10 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		trans.end_addr = op_mmap->end_addr;
 		trans.tgid = data->pid;
 		trans.tid = data->tid;
+		trans.cur_procinfo = proc;
 		trans.cpu = data->cpu;
 		trans.is_anon = op_mmap->is_anon_mapping;
+		trans.in_kernel = kernel_mode;
 		if (trans.in_kernel || trans.is_anon)
 			trans.pc = data->ip;
 		else
@@ -387,11 +400,10 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		retval = &trans;
 	} else {
 		// TODO: log lost sample due to no mapping
-		//		if ((cverb << vmisc) && !first_time_processing) {
-		if (!first_time_processing) {
+		if ((cverb << vmisc) && !first_time_processing) {
 			string domain = trans.in_kernel ? "kernel" : "userspace";
-			cerr << "Discarding " << domain
-			     << " sample where no appropriate mapping was found. (pc=0x"
+			cerr << "Discarding " << domain << " sample for process " << data->pid
+			     << " where no appropriate mapping was found. (pc=0x"
 			     << hex << data->ip <<")" << endl;
 		}
 		retval = NULL;
@@ -402,6 +414,7 @@ out:
 
 static void __handle_callchain(u64 * array, struct sample_data * data)
 {
+	bool in_kernel = false;
 	data->callchain = (struct ip_callchain *) array;
 	if (data->callchain->nr) {
 		if (cverb << vperf)
@@ -415,17 +428,17 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 						// TODO: log lost callgraph arc
 						break;
 					case PERF_CONTEXT_KERNEL:
-						trans.in_kernel = 1;
+						in_kernel = true;
 						break;
 					case PERF_CONTEXT_USER:
-						trans.in_kernel = 0;
+						in_kernel = false;
 						break;
 					default:
 						break;
 				}
 				continue;
 			}
-			if (data->ip && __get_operf_trans(data, false)) {
+			if (data->ip && __get_operf_trans(data, false, in_kernel)) {
 				if ((trans.current = operf_sfile_find(&trans))) {
 					operf_sfile_log_arc(&trans);
 					update_trans_last(&trans);
@@ -461,6 +474,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 {
 	struct sample_data data;
 	bool found_trans = false;
+	bool in_kernel;
 	const struct operf_mmap * op_mmap = NULL;
 	bool hypervisor = (event->header.misc == PERF_RECORD_MISC_HYPERVISOR);
 	u64 *array = event->sample.array;
@@ -488,11 +502,10 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		data.cpu = *p;
 		array++;
 	}
-
 	if (event->header.misc == PERF_RECORD_MISC_KERNEL) {
-		trans.in_kernel = 1;
+		in_kernel = true;
 	} else if (event->header.misc == PERF_RECORD_MISC_USER) {
-		trans.in_kernel = 0;
+		in_kernel = false;
 	}
 #if (defined(__powerpc__) || defined(__powerpc64__))
 	else if (event->header.misc == PERF_RECORD_MISC_HYPERVISOR) {
@@ -503,7 +516,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 			      << hex << data.ip << endl;
 			goto out;
 		}
-		trans.in_kernel = 0;
+		in_kernel = false;
 		if (first_time_processing) {
 			__map_hypervisor_sample(data.ip, data.pid);
 		}
@@ -534,15 +547,13 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		goto out;
 	}
 
-
-	/* If the static variable trans.tgid is still holding its initial value of 0,
-	 * then we would incorrectly find trans.tgid and data.pid matching, and
-	 * and make wrong assumptions from that match -- ending seg fault.  So we
-	 * will bail out early if we see a sample for PID 0 coming in and trans.image_name
-	 * is NULL (implying the trans object is still in its initial state).
-	 */
+        /* If the static variable trans.tgid is still holding its initial value of 0,
+         * then we would incorrectly find trans.tgid and data.pid matching, and
+         * and make wrong assumptions from that match -- ending seg fault.  So we
+         * will bail out early if we see a sample for PID 0 coming in and trans.image_name
+         * is NULL (implying the trans object is still in its initial state).
+         */
 	if (!trans.image_name && (data.pid == 0)) {
-		//cverb << vmisc << "Discarding sample for PID 0" << endl;
 		cverb << vmisc << "Discarding sample for PID 0" << endl;
 		goto out;
 	}
@@ -561,14 +572,13 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	}
 
 	/* Only need to check for "no_user" since "no_kernel" is done by
-	 * perf_events code.
-	 */
-	if ((operfRead.get_event_by_counter(trans.event)->no_user) &&
-			(event->header.misc == PERF_RECORD_MISC_USER)) {
-		// Dropping user domain sample by user request in event spec.
-		goto out;
-	}
-
+         * perf_events code.
+         */
+        if ((operfRead.get_event_by_counter(trans.event)->no_user) &&
+                        (event->header.misc == PERF_RECORD_MISC_USER)) {
+                // Dropping user domain sample by user request in event spec.
+                goto out;
+        }
 
 	if ((event->header.misc == PERF_RECORD_MISC_HYPERVISOR) && first_time_processing) {
 		/* We defer processing hypervisor samples until all the samples
@@ -593,13 +603,13 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	 * The last resort (and most expensive) is to call __get_operf_trans() if the
 	 * sample cannot be matched up with a previous tran object.
 	 */
-	if (trans.in_kernel) {
+	if (in_kernel) {
 		if (trans.image_name && trans.tgid == data.pid) {
 			// For the no-vmlinux case . . .
 			if ((trans.start_addr == 0ULL) && (trans.end_addr == 0ULL)) {
 				trans.pc = data.ip;
 				found_trans = true;
-				// For the case where a vmlinux file is passed in . . .
+			// For samples in vmlinux or kernel module
 			} else if (data.ip >= trans.start_addr && data.ip <= trans.end_addr) {
 				trans.pc = data.ip;
 				found_trans = true;
@@ -613,7 +623,8 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 			trans.pc = data.ip - trans.start_addr;
 		found_trans = true;
 	}
-	if (!found_trans && __get_operf_trans(&data, hypervisor)) {
+
+	if (!found_trans && __get_operf_trans(&data, hypervisor, in_kernel)) {
 		trans.current = operf_sfile_find(&trans);
 		found_trans = true;
 	}
@@ -673,6 +684,9 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 			sfile_init_done = true;
 		}
 		__handle_comm_event(event);
+		return;
+	case PERF_RECORD_THROTTLE:
+		throttled = true;
 		return;
 	case PERF_RECORD_EXIT:
 		return;
@@ -1056,7 +1070,7 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 	int num = op_write_output(output_fd, &mmap, mmap.header.size);
 	if (cverb << vperf)
 		cout << "Created MMAP event of size " << mmap.header.size << " for " <<mmap.filename << ". length: "
-		      << hex << mmap.len << "; start addr: " << mmap.start << endl;
+		     << hex << mmap.len << "; start addr: " << mmap.start << endl;
 	pr->add_to_total(num);
 	_record_module_info(output_fd, pr);
 }

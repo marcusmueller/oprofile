@@ -84,7 +84,6 @@ typedef union event_union {
 } event_t;
 
 struct mmap_data {
-	int counter;
 	void *base;
 	u64 mask;
 	u64 prev;

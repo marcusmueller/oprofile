@@ -91,11 +91,11 @@ public:
 private:
 	void create(std::string outfile, std::vector<operf_event_t> & evts);
 	void setup(void);
-	int prepareToRecord(int counter, int cpu, int fd);
+	int prepareToRecord(int cpu, int fd);
 	void write_op_header_info(void);
 	int output_fd;
 	struct pollfd * poll_data;
-	std::vector< std::vector<struct mmap_data> > samples_array;
+	std::vector<struct mmap_data> samples_array;
 	int num_cpus;
 	pid_t pid;
 	bool pid_started;
