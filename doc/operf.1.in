@@ -146,7 +146,7 @@ Show operf version.
 Show a help message.
 .br
 .TP
-.BI "--usage"
+.BI "--usage / -u"
 Display brief usage message.
 .br
 

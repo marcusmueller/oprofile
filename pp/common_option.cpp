@@ -167,7 +167,7 @@ fail:
 options::spec get_options(int argc, char const * argv[])
 {
 	vector<string> non_options;
-	popt::parse_options(argc, argv, non_options, false /*non_option is NOT an app*/);
+	popt::parse_options(argc, argv, non_options);
 
 	// initialize paths in op_config.h
 	init_op_config_dirs(options::session_dir.c_str());

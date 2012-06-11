@@ -59,8 +59,6 @@ namespace popt {
  * @param argc like the parameter of main()
  * @param argv like the parameter of main()
  * @param additional_params additional options are stored here
- * @param non_option_is_app true if app name is expected; otherwise
- *        profile spec is expected
  *
  * Parse the given command line with the previous
  * options created. Multiple additional arguments
@@ -68,8 +66,7 @@ namespace popt {
  * vector.
  */
 void parse_options(int argc, char const ** argv,
-                   std::vector<std::string> & additional_params,
-                   bool non_option_is_app);
+                   std::vector<std::string> & additional_params);
 
 class option_base;
 

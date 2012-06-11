@@ -169,7 +169,7 @@ int main(int argc, char const ** argv)
 {
 
 	vector<string> inputs;
-	popt::parse_options(argc, argv, inputs, false /*non_option is NOT an app*/);
+	popt::parse_options(argc, argv, inputs);
 
 	if (inputs.size() != 1) {
 		cerr << "error: must specify exactly 1 input file" << endl;

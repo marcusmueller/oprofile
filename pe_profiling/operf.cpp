@@ -29,9 +29,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <ftw.h>
+#include <getopt.h>
 #include <iostream>
 #include "operf_utils.h"
-#include "popt_options.h"
 #include "op_libiberty.h"
 #include "string_manip.h"
 #include "cverb.h"
@@ -100,42 +100,38 @@ bool separate_thread;
 vector<string> evts;
 }
 
-namespace {
-vector<string> verbose_string;
+static const char * valid_verbose_vals[] = { "debug", "perf_events", "misc", "sfile", "arcs", "all"};
+#define NUM_VERBOSE_OPTIONS (sizeof(valid_verbose_vals)/sizeof(char *))
 
-popt::option options_array[] = {
-	popt::option(verbose_string, "verbose", 'V',
-	             "verbose output", "debug,perf_events,misc,sfile,arcs,all"),
-	popt::option(operf_options::session_dir, "session-dir", 'd',
-	             "session path to hold sample data", "path"),
-	popt::option(operf_options::vmlinux, "vmlinux", 'k',
-	             "pathname for vmlinux file to use for symbol resolution and debuginfo", "path"),
-	popt::option(operf_options::callgraph, "callgraph", 'g',
-	             "enable callgraph recording"),
-	popt::option(operf_options::system_wide, "system-wide", 's',
-	             "profile entire system"),
-	popt::option(operf_options::append, "append", 'a',
-	             "add new profile data to old profile data"),
-	popt::option(operf_options::pid, "pid", 'p',
-	             "process ID to profile", "PID"),
-	popt::option(operf_options::mmap_pages_mult, "kernel-buffersize-multiplier", 'b',
-	             "factor by which kernel buffer size should be increased", "buffersize"),
-	popt::option(operf_options::evts, "events", 'e',
-	             "comma-separated list of event specifications for profiling. Event spec form is:\n"
-	             "name:count[:unitmask[:kernel[:user]]]",
-	             "events"),
-	popt::option(operf_options::separate_cpu, "separate-cpu", 'c',
-	             "Categorize samples by cpu"),
-	popt::option(operf_options::separate_thread, "separate-thread", 't',
-	             "Categorize samples by thread group and thread ID"),
+struct option long_options [] =
+{
+ {"verbose", required_argument, NULL, 'V'},
+ {"session-dir", required_argument, NULL, 'd'},
+ {"vmlinux", required_argument, NULL, 'k'},
+ {"callgraph", no_argument, NULL, 'g'},
+ {"system-wide", no_argument, NULL, 's'},
+ {"append", no_argument, NULL, 'a'},
+ {"pid", required_argument, NULL, 'p'},
+ {"kernel-buffersize-multiplier", required_argument, NULL, 'b'},
+ {"events", required_argument, NULL, 'e'},
+ {"separate-cpu", no_argument, NULL, 'c'},
+ {"separate-thread", no_argument, NULL, 't'},
+ {"help", no_argument, NULL, 'h'},
+ {"version", no_argument, NULL, 'v'},
+ {"usage", no_argument, NULL, 'u'},
+ {NULL, 9, NULL, 0}
 };
-}
+
+const char * short_options = "V:d:k:gsap:b:e:cthuv";
+
+vector<string> verbose_string;
 
 static void __print_usage_and_exit(const char * extra_msg)
 {
 	if (extra_msg)
 		cerr << extra_msg << endl;
 	cerr << "usage: operf [ options ] [ --system-wide | --pid <pid> | [ command [ args ] ] ]" << endl;
+	cerr << "See operf man page for details." << endl;
 	exit(EXIT_FAILURE);
 }
 
@@ -1164,14 +1160,7 @@ static void _process_session_dir(void)
 			     << " is not a directory" << endl;
 			exit(EXIT_FAILURE);
 		}
-		string tmp = operf_options::session_dir + "/oprofile_data";
-		rc = mkdir(tmp.c_str(), S_IRWXU);
-		if (rc && (errno != EEXIST)) {
-			cerr << "Error trying to create " << tmp << " dir." << endl;
-			perror("mkdir failed with");
-			exit(EXIT_FAILURE);
-		}
-		samples_dir = tmp + "/samples";
+		samples_dir = operf_options::session_dir + "/samples";
 		rc = mkdir(samples_dir.c_str(), S_IRWXU);
 		if (rc && (errno != EEXIST)) {
 			cerr << "Error trying to create " << samples_dir << " dir." << endl;
@@ -1288,22 +1277,140 @@ string _process_vmlinux(string vmlinux_file)
 	return start_end;
 }
 
-static void process_args(int argc, char const ** argv)
+static void _print_valid_verbose_options(void)
 {
-	vector<string> non_options;
-	popt::parse_options(argc, argv, non_options, true/*non-options IS an app*/);
+	cerr << "Valid verbosity options are: ";
+	for (unsigned i = 0; i < (NUM_VERBOSE_OPTIONS - 1); i++)
+		cerr << valid_verbose_vals[i] << ",";
+	cerr << valid_verbose_vals[NUM_VERBOSE_OPTIONS - 1] << endl;
+}
 
-	if (!non_options.empty()) {
+static bool _validate_verbose_args(char * verbosity)
+{
+	bool valid_verbosity = true;
+
+	char * verbose_cand = strtok(verbosity, ",");
+	do {
+		unsigned i;
+		for (i = 0; i < (NUM_VERBOSE_OPTIONS); i++) {
+			if (!strcmp(verbose_cand, valid_verbose_vals[i])) {
+				verbose_string.push_back(verbose_cand);
+				break;
+			}
+		}
+		if (i == NUM_VERBOSE_OPTIONS) {
+			valid_verbosity = false;
+			cerr << "Verbosity argument " << verbose_cand << " is not valid." << endl;
+			_print_valid_verbose_options();
+		}
+	} while ((verbose_cand = strtok(NULL, ",")) && valid_verbosity);
+	return valid_verbosity;
+}
+
+static int _process_operf_and_app_args(int argc, char * const argv[])
+{
+	bool keep_trying = true;
+	int idx_of_non_options = -1;
+	setenv("POSIXLY_CORRECT", "1", 0);
+	while (keep_trying) {
+		int option_idx = 0;
+		int c = getopt_long(argc, argv, short_options, long_options, &option_idx);
+		switch (c) {
+		char * endptr;
+		char * event;
+
+		case -1:
+			if (optind != argc) {
+				idx_of_non_options = optind;
+			}
+			keep_trying = false;
+			break;
+		case '?':
+			cerr << "non-option detected at optind " << optind << endl;
+			keep_trying = false;
+			break;
+		case 'V':
+			if (!_validate_verbose_args(optarg))
+				__print_usage_and_exit("NULL");
+			break;
+		case 'd':
+			operf_options::session_dir = optarg;
+			break;
+		case 'k':
+			operf_options::vmlinux = optarg;
+			break;
+		case 'g':
+			operf_options::callgraph = true;
+			break;
+		case 's':
+			operf_options::system_wide = true;
+			break;
+		case 'a':
+			operf_options::append = true;
+			break;
+		case 'p':
+			operf_options::pid = strtol(optarg, &endptr, 10);
+			if (endptr == optarg)
+				__print_usage_and_exit("operf: Invalid numeric value for --pid option.");
+			break;
+		case 'b':
+			operf_options::mmap_pages_mult = strtol(optarg, &endptr, 10);
+			if (endptr == optarg)
+				__print_usage_and_exit("operf: Invalid numeric value for --kernel-buffersize-multiplier option.");
+			break;
+		case 'e':
+			event = strtok(optarg, ",");
+			do {
+				operf_options::evts.push_back(event);
+			} while ((event = strtok(NULL, ",")));
+			break;
+		case 'c':
+			operf_options::separate_cpu = true;
+			break;
+		case 't':
+			operf_options::separate_thread = true;
+			break;
+		case 'h':
+			__print_usage_and_exit(NULL);
+			break;
+		case 'u':
+			__print_usage_and_exit(NULL);
+			break;
+		case 'v':
+			cout << argv[0] << ": " << PACKAGE << " " << VERSION << " compiled on " << __DATE__
+			     << " " << __TIME__ << endl;
+			exit(EXIT_SUCCESS);
+			break;
+		default:
+			__print_usage_and_exit("unexpected end of arg parsing");
+		}
+	}
+	return idx_of_non_options;
+}
+
+static void process_args(int argc, char * const argv[])
+{
+	int non_options_idx;
+	if ((non_options_idx = _process_operf_and_app_args(argc, argv)) > 0) {
 		if (operf_options::pid || operf_options::system_wide)
 			__print_usage_and_exit(NULL);
 
-		vector<string>::iterator it = non_options.begin();
-		app_name = (char *) xmalloc((*it).length() + 1);
-		strncpy(app_name, ((char *)(*it).c_str()), (*it).length() + 1);
-		if (it++ != non_options.end()) {
-			if ((*it).length() > 0) {
-				app_args = (char *) xmalloc((*it).length() + 1);
-				strncpy(app_args, ((char *)(*it).c_str()), (*it).length() + 1);
+		app_name = (char *) xmalloc(strlen(argv[non_options_idx]) + 1);
+		strcpy(app_name, argv[non_options_idx]);
+		if (non_options_idx < (argc -1)) {
+			size_t length_all_app_args = 0;
+			non_options_idx++;
+			for(int i = non_options_idx; i < argc; i++)
+				length_all_app_args += strlen(argv[i]) + 1;
+			if (length_all_app_args) {
+				app_args = (char *) xmalloc(length_all_app_args);
+				strcpy(app_args, argv[non_options_idx]);
+				non_options_idx++;
+				while (non_options_idx < argc) {
+					strcat(app_args, " ");
+					strcat(app_args, argv[non_options_idx]);
+					non_options_idx++;
+				}
 			}
 		}
 		if (validate_app_name() < 0) {
@@ -1413,7 +1520,7 @@ static int _get_sys_value(const char * filename)
 }
 
 
-int main(int argc, char const *argv[])
+int main(int argc, char * const argv[])
 {
 	int rc;
 	throttled = false;

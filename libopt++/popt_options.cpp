@@ -10,8 +10,7 @@
  */
 
 #include <iostream>
-#include <stdlib.h>
-#include <string.h>
+
 #include "op_popt.h"
 #include "op_version.h"
 
@@ -81,56 +80,39 @@ static struct poptOption appended_options[] = {
  * returned poptContext which contains  pointer inside the options array */
 static poptContext do_parse_options(int argc, char const ** argv,
                                     vector<poptOption> & options,
-                                    vector<string> & additional_params,
-                                    bool non_option_is_app)
+                                    vector<string> & additional_params)
 {
-	poptContext con;
 	options = popt_options();
 
 	int const nr_appended_options =
 		sizeof(appended_options) / sizeof(appended_options[0]);
+
 	options.insert(options.end(), appended_options,
 		       appended_options + nr_appended_options);
 
-	if (non_option_is_app) {
-		char ** app_params = (char **)calloc(2, sizeof(char **));
-		con = op_poptGetOptions_getApp(NULL, argc, argv, &options[0], app_params, 0);
-		if (app_params[0]) {
-			for (int i = 0; i < 2; i++) {
-				additional_params.push_back(app_params[i]);
-				if (strlen(app_params[i]))
-					free(app_params[i]);
-			}
-			free(app_params);
-		}
-	} else {
-		con = op_poptGetContext(NULL, argc, argv, &options[0], 0);
-		char const * file;
-		while ((file = poptGetArg(con)) != 0) {
-			additional_params.push_back(file);
-		}
-	}
+	poptContext con = op_poptGetContext(NULL, argc, argv, &options[0], 0);
 
 	if (showvers)
 		show_version(argv[0]);
 
+	char const * file;
+	while ((file = poptGetArg(con)) != 0)
+		additional_params.push_back(file);
+
 	for (size_t i = 0 ; i < options_list().size() ; ++i)
 		options_list()[i]->post_process();
-
 
 	return con;
 }
 
 
 void parse_options(int argc, char const ** argv,
-                   vector<string> & additional_params,
-                   bool non_option_is_app)
+                   vector<string> & additional_params)
 {
 	vector<poptOption> options;
 
 	poptContext con =
-			do_parse_options(argc, argv, options, additional_params,
-			                 non_option_is_app);
+		do_parse_options(argc, argv, options, additional_params);
 
 	poptFreeContext(con);
 }
