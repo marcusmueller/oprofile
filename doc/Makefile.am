@@ -16,8 +16,11 @@ man_MANS = \
 	opgprof.1 \
 	ophelp.1 \
 	oparchive.1 \
-	opimport.1 \
-	operf.1
+	opimport.1
+
+if BUILD_FOR_PERF_EVENT
+man_MANS += operf.1
+endif
 
 htmldir = $(prefix)/share/doc/oprofile
 dist_html_DATA = oprofile.html internals.html opreport.xsd op-jit-devel.html
