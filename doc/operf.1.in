@@ -113,7 +113,9 @@ for profiling. Each event spec is of the form:
 .I "   name:count[:unitmask[:kernel[:user]]]"
 .br
 When no event specification is given, the default event for the running
-processor type will be used for profiling.
+processor type will be used for profiling.  Use
+.BI ophelp
+to list the available events for your processor type.
 .br
 .TP
 .BI "--separate-thread / -t"
