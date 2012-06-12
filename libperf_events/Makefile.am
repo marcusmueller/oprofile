@@ -22,6 +22,8 @@ libperf_events_a_SOURCES =  \
 	operf_mangling.cpp \
 	operf_mangling.h \
 	operf_sfile.cpp \
-	operf_sfile.h
+	operf_sfile.h \
+	operf_stats.cpp \
+	operf_stats.h
 
 endif

@@ -21,10 +21,7 @@
 #include "cverb.h"
 #include "op_string.h"
 #include "operf_mangling.h"
-
-
-// TODO: handle stats
-//#include "opd_stats.h"
+#include "operf_stats.h"
 #include "op_libiberty.h"
 
 #define HASH_SIZE 2048
@@ -185,10 +182,10 @@ struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 
 	if (trans->in_kernel) {
 		ki = operf_find_kernel_image(trans->pc);
-		/* TODO: handle lost kernel samples */
 		if (!ki) {
-			cverb << vsfile << "Lost kernel sample " << std::hex << trans->pc << std::endl;;
-			//opd_stats[OPD_LOST_KERNEL]++;
+			if (cverb << vsfile)
+				cout << "Lost kernel sample " << std::hex << trans->pc << std::endl;;
+			operf_stats[OPERF_LOST_KERNEL]++;
 			return NULL;
 		}
 	}
@@ -349,12 +346,10 @@ void  operf_sfile_log_arc(struct operf_transient const * trans)
 	if (cverb << varcs)
 		verbose_arc(trans, from, to);
 
-	/* TODO: handle stats
 	if (!file) {
-		opd_stats[OPD_LOST_SAMPLEFILE]++;
+		operf_stats[OPERF_LOST_SAMPLEFILE]++;
 		return;
 	}
-	*/
 
 	/* Possible narrowings to 32-bit value only. */
 	key = to & (0xffffffff);
@@ -391,13 +386,10 @@ void operf_sfile_log_sample_count(struct operf_transient const * trans,
 
 	if (cverb << vsfile)
 		verbose_sample(trans, pc);
-	// TODO: handle stats
-	/*
 	if (!file) {
-		opd_stats[OPD_LOST_SAMPLEFILE]++;
+		operf_stats[OPERF_LOST_SAMPLEFILE]++;
 		return;
 	}
-	 */
 	err = odb_update_node_with_offset(file,
 					  (odb_key_t)pc,
 					  count);
@@ -405,6 +397,11 @@ void operf_sfile_log_sample_count(struct operf_transient const * trans,
 		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();
 	}
+	operf_stats[OPERF_SAMPLES]++;
+	if (trans->in_kernel)
+		operf_stats[OPERF_KERNEL]++;
+	else
+		operf_stats[OPERF_PROCESS]++;
 }
 
 

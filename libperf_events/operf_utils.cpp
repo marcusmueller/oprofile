@@ -34,6 +34,7 @@
 #include "operf_sfile.h"
 #include "op_fileio.h"
 #include "op_libiberty.h"
+#include "operf_stats.h"
 
 
 extern verbose vmisc;
@@ -331,10 +332,14 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 			 *     process other than the one we requested (not
 			 *     likely -- this would be a kernel bug if it did)
 			 *
-			 * TODO: log the lost sample if !first_time_processing
 			*/
-			if ((cverb << vmisc) && !first_time_processing)
+			if ((cverb << vmisc) && !first_time_processing) {
 				cerr << "Dropping sample -- process info unavailable" << endl;
+				if (kernel_mode)
+					operf_stats[OPERF_NO_APP_KERNEL_SAMPLE]++;
+				else
+					operf_stats[OPERF_NO_APP_USER_SAMPLE]++;
+			}
 			goto out;
 		}
 	}
@@ -369,9 +374,9 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		}
 	} else {
 		op_mmap = proc->find_mapping_for_sample(data->ip);
-		// TODO log dropped sample
 		if (op_mmap && op_mmap->is_hypervisor && !hypervisor_domain) {
 			cverb << vperf << "Invalid sample: Address falls within hypervisor address range, but is not a hypervisor domain sample." << endl;
+			operf_stats[OPERF_INVALID_CTX]++;
 			op_mmap = NULL;
 		}
 	}
@@ -399,12 +404,12 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		trans.sample_id = data->id;
 		retval = &trans;
 	} else {
-		// TODO: log lost sample due to no mapping
 		if ((cverb << vmisc) && !first_time_processing) {
 			string domain = trans.in_kernel ? "kernel" : "userspace";
 			cerr << "Discarding " << domain << " sample for process " << data->pid
 			     << " where no appropriate mapping was found. (pc=0x"
 			     << hex << data->ip <<")" << endl;
+			operf_stats[OPERF_LOST_NO_MAPPING]++;
 		}
 		retval = NULL;
 	}
@@ -444,7 +449,8 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 					update_trans_last(&trans);
 				}
 			} else {
-				// TODO: log lost callgraph arc, but only for non-zero data->ip
+				if (data->ip)
+					operf_stats[OPERF_BT_LOST_NO_MAPPING]++;
 			}
 		}
 	}
@@ -511,9 +517,9 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	else if (event->header.misc == PERF_RECORD_MISC_HYPERVISOR) {
 #define MAX_HYPERVISOR_ADDRESS 0xfffffffULL
 		if (data.ip > MAX_HYPERVISOR_ADDRESS) {
-			// TODO Log the discarded sample
 			cverb << vmisc << "Discarding out-of-range hypervisor sample: "
 			      << hex << data.ip << endl;
+			operf_stats[OPERF_LOST_INVALID_HYPERV_ADDR]++;
 			goto out;
 		}
 		in_kernel = false;
@@ -687,6 +693,9 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 		return;
 	case PERF_RECORD_THROTTLE:
 		throttled = true;
+		return;
+	case PERF_RECORD_LOST:
+		operf_stats[OPERF_RECORD_LOST_SAMPLE] += event->lost.lost;
 		return;
 	case PERF_RECORD_EXIT:
 		return;

@@ -42,6 +42,7 @@
 #include "op_string.h"
 #include "operf_kernel.h"
 #include "child_reader.h"
+#include "op_get_time.h"
 
 using namespace std;
 
@@ -65,7 +66,7 @@ verbose vmisc("misc");
 uid_t my_uid;
 bool no_vmlinux;
 int kptr_restrict;
-
+char * start_time_human_readable;
 
 #define CALLGRAPH_MIN_COUNT_SCALE 15
 
@@ -270,6 +271,7 @@ int start_profiling_app(void)
 	start_time = 0ULL;
 	start_time = tv.tv_sec;
 	sprintf(start_time_str, "%llu", start_time);
+	start_time_human_readable = op_get_time();
 	startApp = ((app_PID != operf_options::pid) && (operf_options::system_wide == false));
 
 	if (startApp) {

@@ -1,5 +1,6 @@
 .\" Manpage for operf
 .\" Author: Breno Leitao <brenohl@br.ibm.com>
+.\" Modifications: Maynard Johnson <maynardj@us.ibm.com>
 .TH OPERF 1 "@DATE@" "oprofile @VERSION@"
 .SH NAME
 operf \- Performance profiler tool for Linux
@@ -16,8 +17,8 @@ Operf is an OProfile tool that can be used in place of opcontrol for profiling. 
 uses the Linux Performance Events Subsystem, and hence, does not require the use of
 the opcontrol daemon -- in fact, operf and opcontrol usage are mutually exclusive.
 .P
-By default, operf stores profiling data in <current_dir>/oprofile_data.  You can change
-this by way of the
+By default, operf uses <current_dir>/oprofile_data as the session-dir and stores profiling data there.
+You can change this by way of the
 .I --session-dir
 option.
 .P
@@ -25,7 +26,9 @@ The usual post-profiling analysis tools such as
 .BI opreport(1)
 and
 .BI opannotate(1)
-can be used to generate profile reports.
+can be used to generate profile reports.  Statistics, such as total samples received
+and lost samples, are written to the operf.log file that can be found in the
+<session_dir>/samples directory.
 .br
 
 .SH OPTIONS

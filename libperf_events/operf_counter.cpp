@@ -29,6 +29,7 @@
 #include "cverb.h"
 #include "operf_process_info.h"
 #include "op_libiberty.h"
+#include "operf_stats.h"
 
 
 using namespace std;
@@ -553,6 +554,9 @@ int operf_read::convertPerfData(void)
 	// Allocate way more than enough space for a really big event with a long callchain
 	event_t * event = (event_t *)xmalloc(65536);
 
+	for (int i = 0; i < OPERF_MAX_STATS; i++)
+		operf_stats[i] = 0;
+
 	cverb << vdebug << "Converting operf data to oprofile sample data format" << endl;
 	cverb << vdebug << "sample type is " << hex <<  opHeader.h_attrs[0].attr.sample_type << endl;
 	first_time_processing = true;
@@ -570,8 +574,7 @@ int operf_read::convertPerfData(void)
 	op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
 
 	op_release_resources();
-	if (throttled)
-		cout << endl << "* * * * ATTENTION: Profiling rate was throttled back by the kernel * * * *" << endl;
+	operf_print_stats(operf_options::session_dir, start_time_human_readable, throttled);
 
 	char * cbuf;
 	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);

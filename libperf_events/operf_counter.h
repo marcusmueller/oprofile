@@ -34,6 +34,8 @@
 #include "op_cpu_type.h"
 #include "operf_utils.h"
 
+extern char * start_time_human_readable;
+
 class operf_record;
 
 #define OP_BASIC_SAMPLE_FORMAT (PERF_SAMPLE_ID | PERF_SAMPLE_IP \
