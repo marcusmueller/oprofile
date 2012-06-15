@@ -12,6 +12,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
+#include "config.h"
 #include "name_storage.h"
 #include "growable_vector.h"
 #include "sparse_array.h"

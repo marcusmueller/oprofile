@@ -26,6 +26,7 @@
 #define OP_JIT_CONV_ALREADY_DONE 5
 #define OP_JIT_CONV_TMPDIR_NOT_REMOVED 6
 
+#include "config.h"
 #include <bfd.h>
 #include <stddef.h>
 #include <sys/stat.h>

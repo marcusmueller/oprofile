@@ -50,6 +50,7 @@
  *   See libopagent/Makefile.am for more information.
  *******************************************************************/
 
+#include "config.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
