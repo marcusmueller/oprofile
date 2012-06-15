@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/utsname.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "op_cpu_type.h"
 #include "op_hw_specific.h"
@@ -105,44 +106,114 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
 
-static op_cpu _get_ppc64_cpu_type(void)
+static char * _get_cpuinfo_cpu_type(char * buf, int len, const char * prefix)
 {
-	char line[100];
-	op_cpu cpu_type = CPU_NO_GOOD;
-	FILE * fp;
-	fp = fopen("/proc/cpuinfo", "r");
+	char * ret = NULL;
+	int prefix_len = strlen(prefix);
+	FILE * fp = fopen("/proc/cpuinfo", "r");
+
 	if (!fp) {
 		perror("Unable to open /proc/cpuinfo\n");
-		return cpu_type;
+		return ret;
 	}
-	memset(line, 0, 100);
-	while (cpu_type == CPU_NO_GOOD) {
-		if (fgets(line, sizeof(line), fp) == NULL) {
-			fprintf(stderr, "Did not find processor type in /proc/cpuinfo.\n");
-			goto out;
-		}
-		if (!strncmp(line, "cpu", 3)) {
-			char cpu_name[64];
-			char *cpu = line + 3;
-			while (*cpu && isspace(*cpu))
-				++cpu;
-			if (sscanf(cpu, ":%s ", cpu_name) == 1) {
-				int i;
-				char cpu_type_str[64], cpu_name_lowercase[64];
-				size_t len = strlen(cpu_name);
-				for (i = 0; i < (int)len ; i++)
-					cpu_name_lowercase[i] = tolower(cpu_name[i]);
 
-				cpu_type_str[0] = '\0';
-				strcat(cpu_type_str, "ppc64/");
-				strncat(cpu_type_str, cpu_name_lowercase, len);
-				cpu_type = op_get_cpu_number(cpu_type_str);
-			}
+	memset(buf, 0, len);
+
+	while (!ret) {
+		if (fgets(buf, len, fp) == NULL) {
+			fprintf(stderr, "Did not find processor type in /proc/cpuinfo.\n");
+			break;
+		}
+		if (!strncmp(buf, prefix, prefix_len)) {
+			ret = buf + prefix_len;
+			/* Strip leading whitespace and ':' delimiter */
+			while (*ret && (*ret == ':' || isspace(*ret)))
+				++ret;
+			buf = ret;
+			/* Scan ahead to the end of the token */
+			while (*buf && !isspace(*buf))
+				++buf;
+			/* Trim trailing whitespace */
+			*buf = '\0';
+			break;
 		}
 	}
-	out:
+
 	fclose(fp);
-	return cpu_type;
+	return ret;
+}
+
+static op_cpu _get_ppc64_cpu_type(void)
+{
+	int i;
+	size_t len;
+	char line[100], cpu_type_str[64], cpu_name_lowercase[64], * cpu_name;
+
+	cpu_name = _get_cpuinfo_cpu_type(line, 100, "cpu");
+	if (!cpu_name)
+		return CPU_NO_GOOD;
+
+	len = strlen(cpu_name);
+	for (i = 0; i < (int)len ; i++)
+		cpu_name_lowercase[i] = tolower(cpu_name[i]);
+
+	cpu_type_str[0] = '\0';
+	strcat(cpu_type_str, "ppc64/");
+	strncat(cpu_type_str, cpu_name_lowercase, len);
+	return op_get_cpu_number(cpu_type_str);
+}
+
+static op_cpu _get_arm_cpu_type(void)
+{
+	unsigned long cpuid, vendorid;
+	char line[100];
+	char * cpu_part, * cpu_implementer;
+
+	cpu_implementer = _get_cpuinfo_cpu_type(line, 100, "CPU implementer");
+	if (!cpu_implementer)
+		return CPU_NO_GOOD;
+
+	errno = 0;
+	vendorid = strtoul(cpu_implementer, NULL, 16);
+	if (errno) {
+		fprintf(stderr, "Unable to parse CPU implementer %s\n", cpu_implementer);
+		return CPU_NO_GOOD;
+	}
+
+	cpu_part = _get_cpuinfo_cpu_type(line, 100, "CPU part");
+	if (!cpu_part)
+		return CPU_NO_GOOD;
+
+	errno = 0;
+	cpuid = strtoul(cpu_part, NULL, 16);
+	if (errno) {
+		fprintf(stderr, "Unable to parse CPU part %s\n", cpu_part);
+		return CPU_NO_GOOD;
+	}
+
+	if (vendorid == 0x41) {		/* ARM Ltd. */
+		switch (cpuid) {
+		case 0xb36:
+		case 0xb56:
+		case 0xb76:
+			return op_get_cpu_number("arm/armv6");
+		case 0xb02:
+			return op_get_cpu_number("arm/mpcore");
+		case 0xc08:
+			return op_get_cpu_number("arm/armv7");
+		case 0xc09:
+			return op_get_cpu_number("arm/armv7-ca9");
+		}
+	} else if (vendorid == 0x69) {	/* Intel xscale */
+		switch (cpuid >> 9) {
+		case 1:
+			return op_get_cpu_number("arm/xscale1");
+		case 2:
+			return op_get_cpu_number("arm/xscale2");
+		}
+	}
+
+	return CPU_NO_GOOD;
 }
 
 static op_cpu _get_x86_64_cpu_type(void)
@@ -164,6 +235,9 @@ static op_cpu __get_cpu_type_alt_method(void)
 	}
 	if (strncmp(uname_info.machine, "ppc64", 5) == 0) {
 		return _get_ppc64_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "arm", 3) == 0) {
+		return _get_arm_cpu_type();
 	}
 	return CPU_NO_GOOD;
 }
