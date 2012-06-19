@@ -216,6 +216,27 @@ static op_cpu _get_arm_cpu_type(void)
 	return CPU_NO_GOOD;
 }
 
+static op_cpu _get_tile_cpu_type(void)
+{
+	int i;
+	size_t len;
+	char line[100], cpu_type_str[64], cpu_name_lowercase[64], * cpu_name;
+
+	cpu_name = _get_cpuinfo_cpu_type(line, 100, "model name");
+	if (!cpu_name)
+		return CPU_NO_GOOD;
+
+	len = strlen(cpu_name);
+	for (i = 0; i < (int)len ; i++)
+		cpu_name_lowercase[i] = tolower(cpu_name[i]);
+
+	cpu_type_str[0] = '\0';
+	strcat(cpu_type_str, "tile/");
+	strncat(cpu_type_str, cpu_name_lowercase, len);
+	return op_get_cpu_number(cpu_type_str);
+}
+
+
 static op_cpu _get_x86_64_cpu_type(void)
 {
 	// TODO: Horrible HACK!!!
@@ -238,6 +259,9 @@ static op_cpu __get_cpu_type_alt_method(void)
 	}
 	if (strncmp(uname_info.machine, "arm", 3) == 0) {
 		return _get_arm_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "tile", 4) == 0) {
+		return _get_tile_cpu_type();
 	}
 	return CPU_NO_GOOD;
 }
