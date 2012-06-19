@@ -313,7 +313,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 
 	if (trans.tgid == data->pid) {
 		proc = trans.cur_procinfo;
-		if (cverb << vmisc)
+		if (cverb << vperf)
 			cout << "trans.tgid == data->pid : " << data->pid << endl;
 
 	} else {
@@ -333,7 +333,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 			 *     likely -- this would be a kernel bug if it did)
 			 *
 			*/
-			if ((cverb << vmisc) && !first_time_processing) {
+			if ((cverb << vperf) && !first_time_processing) {
 				cerr << "Dropping sample -- process info unavailable" << endl;
 				if (kernel_mode)
 					operf_stats[OPERF_NO_APP_KERNEL_SAMPLE]++;
@@ -404,7 +404,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		trans.sample_id = data->id;
 		retval = &trans;
 	} else {
-		if ((cverb << vmisc) && !first_time_processing) {
+		if ((cverb << vperf) && !first_time_processing) {
 			string domain = trans.in_kernel ? "kernel" : "userspace";
 			cerr << "Discarding " << domain << " sample for process " << data->pid
 			     << " where no appropriate mapping was found. (pc=0x"
@@ -517,7 +517,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	else if (event->header.misc == PERF_RECORD_MISC_HYPERVISOR) {
 #define MAX_HYPERVISOR_ADDRESS 0xfffffffULL
 		if (data.ip > MAX_HYPERVISOR_ADDRESS) {
-			cverb << vmisc << "Discarding out-of-range hypervisor sample: "
+			cverb << vperf << "Discarding out-of-range hypervisor sample: "
 			      << hex << data.ip << endl;
 			operf_stats[OPERF_LOST_INVALID_HYPERV_ADDR]++;
 			goto out;
@@ -531,7 +531,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	else {
 		// TODO: Unhandled types are the guest kernel and guest user samples.
 		// We should at least log what we're throwing away.
-		if (cverb << vmisc) {
+		if (cverb << vperf) {
 			const char * domain;
 			switch (event->header.misc) {
 			case PERF_RECORD_MISC_HYPERVISOR:
@@ -560,7 +560,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
          * is NULL (implying the trans object is still in its initial state).
          */
 	if (!trans.image_name && (data.pid == 0)) {
-		cverb << vmisc << "Discarding sample for PID 0" << endl;
+		cverb << vperf << "Discarding sample for PID 0" << endl;
 		goto out;
 	}
 

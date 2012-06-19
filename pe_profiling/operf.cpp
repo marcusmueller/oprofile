@@ -773,7 +773,7 @@ static void _do_jitdump_convert()
 		sprintf(opjitconv_path, "%s/%s", OP_BINDIR, jitconv_pgm);
 		arg_num = 0;
 		exec_args[arg_num++] = (char *)jitconv_pgm;
-		if (cverb << vmisc)
+		if (cverb << vdebug)
 			exec_args[arg_num++] = (char *)debug_option;
 		if (my_uid != 0)
 			exec_args[arg_num++] = (char *)non_root_user;
