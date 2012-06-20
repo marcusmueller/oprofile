@@ -577,10 +577,25 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	}
 
 
+	errno = 0;
 	if ((rc = get_matching_pathnames(&jd_fnames, get_pathname,
 		jitdump_dir, "*.dump", NO_RECURSION)) < 0
-			|| list_empty(&jd_fnames))
+			|| list_empty(&jd_fnames)) {
+		if (errno) {
+			if (errno != ENOENT) {
+				char msg[PATH_MAX];
+				strcpy(msg, "opjitconv: fatal error trying to find JIT dump files in ");
+				strcat(msg, jitdump_dir);
+				perror(msg);
+				rc = OP_JIT_CONV_FAIL;
+			} else {
+				verbprintf(debug, "opjitconv: Non-fatal error trying to find JIT dump files in %s: %s\n",
+				           jitdump_dir, strerror(errno));
+				rc = OP_JIT_CONV_NO_DUMPFILE;
+			}
+		}
 		goto rm_tmp;
+	}
 
 	if (delete_jitdumps)
 		_add_jitdumps_to_deletion_list(&jd_fnames, jitdump_dir);
