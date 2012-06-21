@@ -71,7 +71,7 @@ operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec, bool do_cg
 	attr.inherit = 1;
 	attr.enable_on_exec = enable_on_exec ? 1 : 0;
 	attr.disabled  = 1;
-	attr.exclude_idle = 1;
+	attr.exclude_idle = 0;
 	attr.exclude_kernel = evt.no_kernel;
 	attr.exclude_hv = evt.no_hv;
 	attr.read_format = PERF_FORMAT_ID;
