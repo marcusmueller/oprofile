@@ -859,7 +859,8 @@ static void convert_sample_data(void)
 	cverb << vdebug << "Successfully read header info for sample data " << endl;
 	if (operfRead.is_valid()) {
 		try {
-			operfRead.convertPerfData();
+			int num = operfRead.convertPerfData();
+			cverb << vdebug << "operf_read: Total bytes received from operf_record process: " << dec << num << endl;
 		} catch (runtime_error e) {
 			cerr << "Caught runtime error from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;

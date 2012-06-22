@@ -528,19 +528,36 @@ int operf_read::_get_one_perf_event(event_t * event)
 	char * evt = (char *)event;
 	ssize_t num_read;
 	perf_event_header * header = (perf_event_header *)event;
+
+	/* A signal handler was setup for the operf_read process to handle interrupts
+	 * (i.e., from ctrl-C), so the read syscalls below may get interrupted.  But the
+	 * operf_read process should ignore the interrupt and continue processing
+	 * until there's no more data to read or until the parent operf process
+	 * forces us to stop.  So we must try the read operation again if it was
+	 * interrupted.
+	 */
+again:
 	errno = 0;
 	if ((num_read = read(sample_data_fd, header, pe_header_size)) < 0) {
 		cverb << vdebug << "Read 1 of sample data pipe returned with " << strerror(errno) << endl;
-		return -1;
+		if (errno == EINTR)
+			goto again;
+		else
+			return -1;
 	} else if (num_read == 0) {
 		return -1;
 	}
 	evt += pe_header_size;
 	if (!header->size)
 		return -1;
+
+again2:
 	if ((num_read = read(sample_data_fd, evt, header->size - pe_header_size)) < 0) {
 		cverb << vdebug << "Read 2 of sample data pipe returned with " << strerror(errno) << endl;
-		return -1;
+		if (errno == EINTR)
+			goto again2;
+		else
+			return -1;
 	} else if (num_read == 0) {
 		return -1;
 	}

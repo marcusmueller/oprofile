@@ -163,6 +163,10 @@ retry:
 			}
 			goto retry;
 		}
+		if (err == EINTR) {
+			cverb << vsfile << "operf: open of " << mangled << " was interrupted. Trying again." << endl;
+			goto retry;
+		}
 
 		cerr << "operf: open of " << mangled << " failed: " << strerror(err) << endl;
 		goto out;
