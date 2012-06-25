@@ -56,16 +56,26 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 	if (operf_stats[OPERF_RECORD_LOST_SAMPLE]) {
 		fprintf(stderr, "\n\n * * * ATTENTION: The kernel lost %lu samples. * * *\n",
 		        operf_stats[OPERF_RECORD_LOST_SAMPLE]);
+		fprintf(stderr, "Decrease the sampling rate to eliminate (or reduce) lost samples.\n");
 	} else if (throttled) {
 		fprintf(stderr, "* * * * WARNING: Profiling rate was throttled back by the kernel * * * *\n");
-		fprintf(stderr, "The number of samples actually recorded is less than expected.\n");
+		fprintf(stderr, "The number of samples actually recorded is less than expected, but is\n");
+		fprintf(stderr, "probably still statistically valid.  Decreasing the sampling rate is the\n");
+		fprintf(stderr, "best option if you want to avoid throttling.");
 	}
-	if (operf_stats[OPERF_RECORD_LOST_SAMPLE] || throttled) {
-		fprintf(stderr, "Try decreasing your sampling rate.\n");
-		fprintf(stderr, "See the %s file for more profiling statistics.\n", operf_log.c_str());
-	}
+
 	// TODO: handle extended stats
 	//operf_ext_print_stats();
+
+	bool print_log_info_msg = false;
+	for (int i = OPERF_INDEX_OF_FIRST_LOST_STAT; i < OPERF_MAX_STATS; i++) {
+		if (operf_stats[i]) {
+			print_log_info_msg = true;
+			break;
+		}
+	}
+	if (print_log_info_msg)
+		fprintf(stderr, "\nSee the %s file for statistics about lost samples.\n", operf_log.c_str());
 
 	fflush(fp);
 }

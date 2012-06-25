@@ -100,12 +100,6 @@ invocation of oprofile post-processing tools.  For example:
 .I "   opreport --session-dir=`pwd`/oprofile_data session:previous"
 .br
 .TP
-.BI "--kernel-buffersize-multiplier / -k " buffersize
-This option enables operf to increase the kernel buffer size by a
-factor of
-.I buffersize.
-.br
-.TP
 .BI "--events / -e " event1[,event2[,...]]
 This option is for passing a comma-separated list of event specifications
 for profiling. Each event spec is of the form:

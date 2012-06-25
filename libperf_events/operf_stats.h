@@ -31,6 +31,7 @@ enum {	OPERF_SAMPLES, /**< nr. samples */
 	OPERF_RECORD_LOST_SAMPLE, /**<nr. samples lost reported by perf_events kernel */
 	OPERF_MAX_STATS /**< end of stats */
 };
+#define OPERF_INDEX_OF_FIRST_LOST_STAT 3
 
 void operf_print_stats(std::string sampledir, char * starttime, bool throttled);
 

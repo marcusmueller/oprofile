@@ -113,7 +113,6 @@ struct option long_options [] =
  {"system-wide", no_argument, NULL, 's'},
  {"append", no_argument, NULL, 'a'},
  {"pid", required_argument, NULL, 'p'},
- {"kernel-buffersize-multiplier", required_argument, NULL, 'b'},
  {"events", required_argument, NULL, 'e'},
  {"separate-cpu", no_argument, NULL, 'c'},
  {"separate-thread", no_argument, NULL, 't'},
@@ -123,7 +122,7 @@ struct option long_options [] =
  {NULL, 9, NULL, 0}
 };
 
-const char * short_options = "V:d:k:gsap:b:e:cthuv";
+const char * short_options = "V:d:k:gsap:e:cthuv";
 
 vector<string> verbose_string;
 
@@ -1355,11 +1354,6 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 			operf_options::pid = strtol(optarg, &endptr, 10);
 			if (endptr == optarg)
 				__print_usage_and_exit("operf: Invalid numeric value for --pid option.");
-			break;
-		case 'b':
-			operf_options::mmap_pages_mult = strtol(optarg, &endptr, 10);
-			if (endptr == optarg)
-				__print_usage_and_exit("operf: Invalid numeric value for --kernel-buffersize-multiplier option.");
 			break;
 		case 'e':
 			event = strtok(optarg, ",");
