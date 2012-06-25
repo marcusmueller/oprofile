@@ -39,6 +39,7 @@ using namespace OP_perf_utils;
 volatile bool quit;
 volatile bool read_quit;
 int sample_reads;
+int num_mmap_pages;
 unsigned int pagesize;
 verbose vperf("perf_events");
 
@@ -129,7 +130,7 @@ operf_record::~operf_record()
 	close(output_fd);
 	for (int i = 0; i < samples_array.size(); i++) {
 		struct mmap_data *md = &samples_array[i];
-		munmap(md->base, (NUM_MMAP_PAGES + 1) * pagesize);
+		munmap(md->base, (num_mmap_pages + 1) * pagesize);
 	}
 	samples_array.clear();
 	evts.clear();
@@ -223,7 +224,7 @@ int operf_record::prepareToRecord(int cpu, int fd)
 {
 	struct mmap_data md;;
 	md.prev = 0;
-	md.mask = NUM_MMAP_PAGES * pagesize - 1;
+	md.mask = num_mmap_pages * pagesize - 1;
 
 	fcntl(fd, F_SETFL, O_NONBLOCK);
 
@@ -231,7 +232,7 @@ int operf_record::prepareToRecord(int cpu, int fd)
 	poll_data[cpu].events = POLLIN;
 	poll_count++;
 
-	md.base = mmap(NULL, (NUM_MMAP_PAGES + 1) * pagesize,
+	md.base = mmap(NULL, (num_mmap_pages + 1) * pagesize,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 	if (md.base == MAP_FAILED) {
 		perror("failed to mmap");
@@ -277,6 +278,7 @@ void operf_record::setup()
 
 	}
 	pagesize = sysconf(_SC_PAGE_SIZE);
+	num_mmap_pages = (512 * 1024)/pagesize;
 	num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
 	if (!num_cpus)
 		throw runtime_error("Number of online CPUs is zero; cannot continue");;
@@ -366,7 +368,7 @@ error:
 	delete[] poll_data;
 	for (int i = 0; i < samples_array.size(); i++) {
 		struct mmap_data *md = &samples_array[i];
-		munmap(md->base, (NUM_MMAP_PAGES + 1) * pagesize);
+		munmap(md->base, (num_mmap_pages + 1) * pagesize);
 	}
 	samples_array.clear();
 	close(output_fd);
