@@ -1312,7 +1312,7 @@ static bool _validate_verbose_args(char * verbosity)
 static int _process_operf_and_app_args(int argc, char * const argv[])
 {
 	bool keep_trying = true;
-	int idx_of_non_options = -1;
+	int idx_of_non_options = 0;
 	setenv("POSIXLY_CORRECT", "1", 0);
 	while (keep_trying) {
 		int option_idx = 0;
@@ -1330,6 +1330,7 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 		case '?':
 			cerr << "non-option detected at optind " << optind << endl;
 			keep_trying = false;
+			idx_of_non_options = -1;
 			break;
 		case 'V':
 			if (!_validate_verbose_args(optarg))
@@ -1387,8 +1388,11 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 
 static void process_args(int argc, char * const argv[])
 {
-	int non_options_idx;
-	if ((non_options_idx = _process_operf_and_app_args(argc, argv)) > 0) {
+	int non_options_idx  = _process_operf_and_app_args(argc, argv);
+
+	if (non_options_idx < 0) {
+		__print_usage_and_exit(NULL);
+	} else if ((non_options_idx) > 0) {
 		if (operf_options::pid || operf_options::system_wide)
 			__print_usage_and_exit(NULL);
 
@@ -1413,14 +1417,16 @@ static void process_args(int argc, char * const argv[])
 		if (validate_app_name() < 0) {
 			__print_usage_and_exit(NULL);
 		}
-	} else if (operf_options::pid) {
-		if (operf_options::system_wide)
+	} else {  // non_options_idx == 0
+		if (operf_options::pid) {
+			if (operf_options::system_wide)
+				__print_usage_and_exit(NULL);
+			app_PID = operf_options::pid;
+		} else if (operf_options::system_wide) {
+			app_PID = -1;
+		} else {
 			__print_usage_and_exit(NULL);
-		app_PID = operf_options::pid;
-	} else if (operf_options::system_wide) {
-		app_PID = -1;
-	} else {
-		__print_usage_and_exit(NULL);
+		}
 	}
 	/*  At this point, we know which of the three kinds of profiles the user requested:
 	 *    - profile app by name
