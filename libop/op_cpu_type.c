@@ -106,9 +106,10 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
 
-static char * _get_cpuinfo_cpu_type(char * buf, int len, const char * prefix)
+static char * _get_cpuinfo_cpu_type_line(char * buf, int len, const char * prefix, int token)
 {
 	char * ret = NULL;
+	char * end = NULL;
 	int prefix_len = strlen(prefix);
 	FILE * fp = fopen("/proc/cpuinfo", "r");
 
@@ -130,17 +131,33 @@ static char * _get_cpuinfo_cpu_type(char * buf, int len, const char * prefix)
 			while (*ret && (*ret == ':' || isspace(*ret)))
 				++ret;
 			buf = ret;
-			/* Scan ahead to the end of the token */
-			while (*buf && !isspace(*buf))
-				++buf;
-			/* Trim trailing whitespace */
-			*buf = '\0';
-			break;
+			/* if token param 0 then read the whole line else
+			 * first token only. */
+			if (token == 0) {
+				/* Trim trailing whitespace */
+				end = buf + strlen(buf) - 1;
+				while (isspace(*end))
+					--end;
+				*(++end) = '\0';
+				break;
+			} else {
+				/* Scan ahead to the end of the token */
+				while (*buf && !isspace(*buf))
+					++buf;
+				/* Trim trailing whitespace */
+				*buf = '\0';
+				break;
+			}
 		}
 	}
 
 	fclose(fp);
 	return ret;
+}
+
+static char * _get_cpuinfo_cpu_type(char * buf, int len, const char * prefix)
+{
+	return _get_cpuinfo_cpu_type_line(buf, len, prefix, 1);
 }
 
 static op_cpu _get_ppc64_cpu_type(void)
@@ -244,6 +261,60 @@ static op_cpu _get_x86_64_cpu_type(void)
 	return op_cpu_specific_type(CPU_ARCH_PERFMON);
 }
 
+struct mips_cpu_descr
+{
+	const char * key;
+	const char * value;
+};
+
+static struct mips_cpu_descr mips_cpu_descrs[] = {
+	{ .key = "MIPS 5Kc", .value = "mips/5K" },		/* CPU_5KC */
+	{ .key = "MIPS 20Kc", .value = "mips/20K" },		/* CPU_20KC */
+	{ .key = "MIPS 24Kc", .value = "mips/24K" },		/* CPU_24K */
+	{ .key = "MIPS 25Kc", .value = "mips/25K" },		/* CPU_25KF */
+	{ .key = "MIPS 34Kc", .value = "mips/34K" },		/* CPU_34K */
+	{ .key = "MIPS 74Kc", .value = "mips/74K" },		/* CPU_74K */
+	{ .key = "MIPS M14Kc", .value = "mips/M14Kc" },		/* CPU_M14KC */
+	{ .key = "RM9000", .value = "mips/rm9000" },		/* CPU_RM9000 */
+	{ .key = "R10000", .value = "mips/r10000" }, 		/* CPU_R10000 */
+	{ .key = "R12000", .value = "mips/r12000" },		/* CPU_R12000 */
+	{ .key = "R14000", .value = "mips/r12000" },		/* CPU_R14000 */
+	{ .key = "ICT Loongson-2", .value = "mips/loongson2" },	/* CPU_LOONGSON2 */
+	{ .key = NULL, .value = NULL }
+};
+
+static const char * _get_mips_op_name(const char * key)
+{
+	struct mips_cpu_descr * p_it = mips_cpu_descrs;
+	size_t len;
+
+
+	while (p_it->key != NULL) {
+		len = strlen(p_it->key);
+		if (0 == strncmp(key, p_it->key, len))
+			return p_it->value;
+		++p_it;
+	}
+	return NULL;
+}
+
+static op_cpu _get_mips_cpu_type(void)
+{
+	char line[100];
+	char * cpu_model;
+	const char * op_name = NULL;
+
+	cpu_model = _get_cpuinfo_cpu_type_line(line, 100, "cpu model", 0);
+	if (!cpu_model)
+		return CPU_NO_GOOD;
+
+	op_name = _get_mips_op_name(cpu_model);
+
+	if (op_name)
+		return op_get_cpu_number(op_name);
+	return CPU_NO_GOOD;
+}
+
 static op_cpu __get_cpu_type_alt_method(void)
 {
 	struct utsname uname_info;
@@ -262,6 +333,9 @@ static op_cpu __get_cpu_type_alt_method(void)
 	}
 	if (strncmp(uname_info.machine, "tile", 4) == 0) {
 		return _get_tile_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "mips", 4) == 0) {
+		return _get_mips_cpu_type();
 	}
 	return CPU_NO_GOOD;
 }
