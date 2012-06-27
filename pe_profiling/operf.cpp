@@ -15,6 +15,8 @@
  *
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -981,7 +983,8 @@ static u32 _get_event_code(char name[])
 	FILE * fp;
 	char oprof_event_code[9];
 	string command;
-	command = "ophelp ";
+	command = OP_BINDIR;
+	command += "/ophelp ";
 	command += name;
 
 	fp = popen(command.c_str(), "r");
@@ -1001,7 +1004,8 @@ static u32 _get_event_code(char name[])
 
 static void _process_events_list(void)
 {
-	string cmd = "ophelp --check-events ";
+	string cmd = OP_BINDIR;
+	cmd += "/ophelp --check-events ";
 	for (unsigned int i = 0; i <  operf_options::evts.size(); i++) {
 		FILE * fp;
 		string full_cmd = cmd;
