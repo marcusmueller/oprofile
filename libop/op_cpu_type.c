@@ -15,6 +15,7 @@
 #include <sys/utsname.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fnmatch.h>
 
 #include "op_cpu_type.h"
 #include "op_hw_specific.h"
@@ -253,13 +254,138 @@ static op_cpu _get_tile_cpu_type(void)
 	return op_get_cpu_number(cpu_type_str);
 }
 
+#if defined(__x86_64__) || defined(__i386__)
+static unsigned cpuid_eax(unsigned func)
+{
+	cpuid_data d;
+
+	cpuid(func, &d);
+	return d.eax;
+}
+
+static inline int perfmon_available(void)
+{
+        unsigned eax;
+        if (cpuid_eax(0) < 10)
+                return 0;
+        eax = cpuid_eax(10);
+        if ((eax & 0xff) == 0)
+                return 0;
+        return (eax >> 8) & 0xff;
+}
+
+static int cpu_info_number(char *name, unsigned long *number)
+{
+        char buf[100];
+        char *end;
+
+        if (!_get_cpuinfo_cpu_type(buf, sizeof buf, name))
+                return 0;
+        *number = strtoul(buf, &end, 0);
+        return end > buf;
+}
+
+static op_cpu _get_intel_cpu_type(void)
+{
+	unsigned eax, family, model;
+
+	if (perfmon_available())
+		return op_cpu_specific_type(CPU_ARCH_PERFMON);
+
+	/* Handle old non arch perfmon CPUs */
+	eax = cpuid_signature();
+	family = cpu_family(eax);
+	model = cpu_model(eax);
+
+	if (family == 6) {
+		/* Reproduce kernel p6_init logic. Only for non arch perfmon cpus */
+		switch (model) {
+		case 0 ... 2:
+			return op_get_cpu_number("i386/ppro");
+		case 3 ... 5:
+			return op_get_cpu_number("i386/pii");
+		case 6 ... 8:
+		case 10 ... 11:
+			return op_get_cpu_number("i386/piii");
+		case 9:
+		case 13:
+			return op_get_cpu_number("i386/p6_mobile");
+		}
+	} else if (family == 15) {
+		unsigned long siblings;
+
+		/* Reproduce kernel p4_init() logic */
+		if (model > 6 || model == 5)
+			return CPU_NO_GOOD;
+		if (!cpu_info_number("siblings", &siblings) ||
+		    siblings == 1)
+			return op_get_cpu_number("i386/p4");
+		if (siblings == 2)
+			return op_get_cpu_number("i386/p4-ht");
+	}
+	return CPU_NO_GOOD;			
+}
+
+static op_cpu _get_amd_cpu_type(void)
+{
+	unsigned eax, family, model;
+	op_cpu ret = CPU_NO_GOOD;
+
+	eax = cpuid_signature();
+	family = cpu_family(eax);
+	model = cpu_model(eax);
+
+	switch (family) {
+	case 0x0f:
+		ret = op_get_cpu_number("x86-64/hammer");
+		break;
+	case 0x10:
+		ret = op_get_cpu_number("x86-64/family10");
+		break;
+	case 0x11:
+		ret = op_get_cpu_number("x86-64/family11h");
+		break;
+	case 0x12:
+		ret = op_get_cpu_number("x86-64/family12h");
+		break;
+	case 0x14:
+		ret = op_get_cpu_number("x86-64/family14h");
+		break;
+	case 0x15:
+		switch (model) {
+		case 0x00 ... 0x0f:
+			ret = op_get_cpu_number("x86-64/family15h");
+			break;		
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return ret;			
+}
 
 static op_cpu _get_x86_64_cpu_type(void)
 {
-	// TODO: Horrible HACK!!!
-	fprintf(stderr, "!!! WARNING !!! operf currently supports only arch_perfmon CPUs.\n");
-	return op_cpu_specific_type(CPU_ARCH_PERFMON);
+	op_cpu ret = CPU_NO_GOOD;
+
+	if (cpuid_vendor("GenuineIntel")) {
+		ret = _get_intel_cpu_type();
+	} else if (cpuid_vendor("AuthenticAMD")) {
+		ret = _get_amd_cpu_type();
+	}
+
+	return ret;
 }
+
+#else
+static op_cpu _get_x86_64_cpu_type(void)
+{
+	return CPU_NO_GOOD;
+}
+#endif
 
 struct mips_cpu_descr
 {
@@ -322,7 +448,8 @@ static op_cpu __get_cpu_type_alt_method(void)
 		perror("uname failed");
 		return CPU_NO_GOOD;
 	}
-	if (strncmp(uname_info.machine, "x86_64", 6) ==0) {
+	if (strncmp(uname_info.machine, "x86_64", 6) == 0 || 
+	    fnmatch("i?86", uname_info.machine, 0) == 0) {
 		return _get_x86_64_cpu_type();
 	}
 	if (strncmp(uname_info.machine, "ppc64", 5) == 0) {
