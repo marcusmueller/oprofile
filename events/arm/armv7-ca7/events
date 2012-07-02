@@ -1,0 +1,10 @@
+# ARM Cortex A7 events
+# From Cortex A7 TRM
+#
+include:arm/armv7-common
+include:arm/armv7-ca5
+
+event:0x60 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_LD : Bus access, read
+event:0x61 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_ST : Bus access, write
+
+event:0xCA counters:1,2,3,4,5,6 um:zero minimum:500 name:LOCAL_CLUSTER_SNOOP : Data read transaction snooped from another processor within the local A7 cluster

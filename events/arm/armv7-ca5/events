@@ -1,0 +1,15 @@
+# ARM Cortex A5 events
+# From Cortex A5 TRM
+#
+include:arm/armv7-common
+event:0x86 counters:1,2,3,4,5,6 um:zero minimum:500 name:EXC_IRQ : IRQ exception taken
+event:0x87 counters:1,2,3,4,5,6 um:zero minimum:500 name:EXC_FIQ : FIQ exception taken
+
+event:0xC0 counters:1,2,3,4,5,6 um:zero minimum:500 name:EXT_MEM_REQ : External memory request
+event:0xC1 counters:1,2,3,4,5,6 um:zero minimum:500 name:EXT_MEM_REQ_NC : Non-cacheable external memory request
+event:0xC2 counters:1,2,3,4,5,6 um:zero minimum:500 name:PREFETCH_LINEFILL : Linefill because of prefetch
+event:0xC3 counters:1,2,3,4,5,6 um:zero minimum:500 name:PREFETCH_LINEFILL_DROP : Prefetch linefill dropped
+event:0xC4 counters:1,2,3,4,5,6 um:zero minimum:500 name:READ_ALLOC_ENTER : Entering read allocate mode
+event:0xC5 counters:1,2,3,4,5,6 um:zero minimum:500 name:READ_ALLOC : Read allocate mode
+
+event:0xC9 counters:1,2,3,4,5,6 um:zero minimum:500 name:STALL_SB_FULL : Data write operation that stalls the pipeline because the store buffer is full

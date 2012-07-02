@@ -1116,7 +1116,10 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_MPCORE:
 		case CPU_ARM_V6:
 		case CPU_ARM_V7:
+		case CPU_ARM_V7_CA5:
+		case CPU_ARM_V7_CA7:
 		case CPU_ARM_V7_CA9:
+		case CPU_ARM_V7_CA15:
 		case CPU_AVR32:
 		case CPU_ARM_SCORPION:
 		case CPU_ARM_SCORPIONMP:

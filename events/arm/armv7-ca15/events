@@ -1,0 +1,57 @@
+# ARM Cortex A15 events
+# From Cortex A15 TRM
+#
+include:arm/armv7-common
+
+event:0x40 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_LD : Level 1 data cache access, read
+event:0x41 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_ST : Level 1 data cache access, write
+event:0x42 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_REFILL_LD : Level 1 data cache refill, read
+event:0x43 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_REFILL_ST : Level 1 data cache refill, write
+
+event:0x46 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_WB_VICTIM : Level 1 data cache write-back, victim
+event:0x47 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_WB_CLEAN : Level 1 data cache write-back, cleaning and coherency
+event:0x48 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_INVAL : Level 1 data cache invalidate
+
+event:0x4C counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_TLB_REFILL_LD : Level 1 data TLB refill, read
+event:0x4D counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_TLB_REFILL_ST : Level 1 data TLB refill, write
+
+event:0x50 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_LD : Level 2 data cache access, read
+event:0x52 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_ST : Level 2 data cache access, write
+event:0x52 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_REFILL_LD : Level 2 data cache refill, read
+event:0x53 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_REFILL_ST : Level 2 data cache refill, write
+
+event:0x56 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_WB_VICTIM : Level 2 data cache write-back, victim
+event:0x57 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_WB_CLEAN : Level 2 data cache write-back, cleaning and coherency
+event:0x58 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_INVAL : Level 2 data cache invalidate
+
+event:0x60 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_LD : Bus access, read
+event:0x61 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_ST : Bus access, write
+event:0x62 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_SHARED : Bus access, normal, cacheable, shareable
+event:0x63 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_NOT_SHARED : Bus access, not normal, cacheable, shareable
+event:0x64 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_NORMAL : Bus access, normal
+event:0x65 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_PERIPH : Bus access, peripheral
+event:0x66 counters:1,2,3,4,5,6 um:zero minimum:500 name:MEM_ACCESS_LD : Data memory access, read
+event:0x67 counters:1,2,3,4,5,6 um:zero minimum:500 name:MEM_ACCESS_ST : Data memory access, write
+event:0x68 counters:1,2,3,4,5,6 um:zero minimum:500 name:UNALIGNED_LD_SPEC : Unaligned access, read
+event:0x69 counters:1,2,3,4,5,6 um:zero minimum:500 name:UNALIGNED_ST_SPEC : Unaligned access, write
+event:0x6A counters:1,2,3,4,5,6 um:zero minimum:500 name:UNALIGNED_LDST_SPEC : Unaligned access
+
+event:0x6C counters:1,2,3,4,5,6 um:zero minimum:500 name:LDREX_SPEC : ldrex instruction speculatively executed
+event:0x6D counters:1,2,3,4,5,6 um:zero minimum:500 name:STREX_PASS_SPEC : strex instruction speculatively executed, pass
+event:0x6E counters:1,2,3,4,5,6 um:zero minimum:500 name:STREX_FAIL_SPEC : strex instruction speculatively executed, fail
+
+event:0x70 counters:1,2,3,4,5,6 um:zero minimum:500 name:LD_SPEC : Load instruction speculatively executed
+event:0x71 counters:1,2,3,4,5,6 um:zero minimum:500 name:ST_SPEC : Store instruction speculatively executed
+event:0x72 counters:1,2,3,4,5,6 um:zero minimum:500 name:LDST_SPEC : Load or store instruction speculatively executed
+event:0x73 counters:1,2,3,4,5,6 um:zero minimum:500 name:DP_SPEC : Integer data processing instruction speculatively executed
+event:0x74 counters:1,2,3,4,5,6 um:zero minimum:500 name:ASE_SPEC : Advanced SIMD extension instruction speculatively executed
+event:0x75 counters:1,2,3,4,5,6 um:zero minimum:500 name:VFP_SPEC : Floating-point extension instruction speculatively executed
+event:0x76 counters:1,2,3,4,5,6 um:zero minimum:500 name:PC_WRITE_SPEC : Software change of the PC instruction speculatively executed
+
+event:0x78 counters:1,2,3,4,5,6 um:zero minimum:500 name:BR_IMMED_SPEC : Immediate branch instruction speculatively executed
+event:0x79 counters:1,2,3,4,5,6 um:zero minimum:500 name:BR_RETURN_SPEC : Procedure return instruction speculatively executed
+event:0x7A counters:1,2,3,4,5,6 um:zero minimum:500 name:BR_INDIRECT_SPEC : Indirect branch instruction speculatively executed
+
+event:0x7C counters:1,2,3,4,5,6 um:zero minimum:500 name:ISB_SPEC : ISB barrier instruction speculatively executed
+event:0x7D counters:1,2,3,4,5,6 um:zero minimum:500 name:DSB_SPEC : DSB barrier instruction speculatively executed
+event:0x7E counters:1,2,3,4,5,6 um:zero minimum:500 name:DMB_SPEC : DMB barrier instruction speculatively executed

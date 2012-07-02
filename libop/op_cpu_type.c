@@ -103,6 +103,9 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "TILE-GX", "tile/tilegx", CPU_TILE_TILEGX, 4 },
 	{ "IBM System z10", "s390/z10", CPU_S390_Z10, 1 },
 	{ "IBM zEnterprise z196", "s390/z196", CPU_S390_Z196, 1 },
+	{ "ARM Cortex-A5", "arm/armv7-ca5", CPU_ARM_V7_CA5, 3 },
+	{ "ARM Cortex-A7", "arm/armv7-ca7", CPU_ARM_V7_CA7, 5 },
+	{ "ARM Cortex-A15", "arm/armv7-ca15", CPU_ARM_V7_CA15, 7 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -217,10 +220,16 @@ static op_cpu _get_arm_cpu_type(void)
 			return op_get_cpu_number("arm/armv6");
 		case 0xb02:
 			return op_get_cpu_number("arm/mpcore");
+		case 0xc05:
+			return op_get_cpu_number("arm/armv7-ca5");
+		case 0xc07:
+			return op_get_cpu_number("arm/armv7-ca7");
 		case 0xc08:
 			return op_get_cpu_number("arm/armv7");
 		case 0xc09:
 			return op_get_cpu_number("arm/armv7-ca9");
+		case 0xc0f:
+			return op_get_cpu_number("arm/armv7-ca15");
 		}
 	} else if (vendorid == 0x69) {	/* Intel xscale */
 		switch (cpuid >> 9) {

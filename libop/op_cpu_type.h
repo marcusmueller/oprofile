@@ -96,6 +96,9 @@ typedef enum {
 	CPU_TILE_TILEGX, /**< Tilera TILE-GX family */
 	CPU_S390_Z10, /* IBM System z10 */
 	CPU_S390_Z196, /* IBM zEnterprise z196 */
+	CPU_ARM_V7_CA5, /**< ARM Cortex-A5 */
+	CPU_ARM_V7_CA7, /**< ARM Cortex-A7 */
+	CPU_ARM_V7_CA15, /**< ARM Cortex-A15 */
 	MAX_CPU_TYPE
 } op_cpu;
 
