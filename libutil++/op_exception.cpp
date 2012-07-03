@@ -30,6 +30,15 @@ char const * op_exception::what() const throw()
 	return message.c_str();
 }
 
+op_no_samples_exception::op_no_samples_exception(string const & msg)
+	:
+	op_exception(msg)
+{
+}
+
+op_no_samples_exception::~op_no_samples_exception(void) throw()
+{
+}
 
 op_fatal_error::op_fatal_error(string const & msg)
 	:

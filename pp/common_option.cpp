@@ -24,18 +24,24 @@
 #include "common_option.h"
 #include "file_manip.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <limits.h>
+
 using namespace std;
 
 namespace options {
 	double threshold = 0.0;
 	string threshold_opt;
-	string session_dir = OP_SESSION_DIR_DEFAULT;
+	string session_dir;
 	string command_options;
 	vector<string> image_path;
 	string root_path;
 }
 
 namespace {
+
 
 vector<string> verbose_strings;
 
@@ -51,6 +57,8 @@ popt::option common_options_array[] = {
 		     "path to filesystem to search for missing binaries", "path"),
 };
 
+int session_dir_supplied;
+int trying_default_session_dir;
 
 double handle_threshold(string threshold)
 {
@@ -163,13 +171,34 @@ fail:
 	exit(EXIT_FAILURE);
 }
 
-
 options::spec get_options(int argc, char const * argv[])
 {
 	vector<string> non_options;
 	popt::parse_options(argc, argv, non_options);
 
 	// initialize paths in op_config.h
+	if (options::session_dir.empty()) {
+		char * cwd;
+		struct stat sb;
+		// First try <curr_dir>/oprofile_data session-dir (i.e., used by operf)
+		cwd = new char[PATH_MAX];
+		options::session_dir = getcwd(cwd, PATH_MAX);
+		delete cwd;
+		options::session_dir +="/oprofile_data";
+		if ((stat(options::session_dir.c_str(), &sb) < 0) ||
+				((sb.st_mode & S_IFMT) != S_IFDIR)) {
+			// Try the standard default session dir instead
+			options::session_dir = "/var/lib/oprofile";
+			trying_default_session_dir = 1;
+		} else {
+			// OK, we'll try <cur_dir>/oprofile_data first; then, if we don't find
+			// any samples there, we'll also try the default session dir /var/lib/oprofile.
+			trying_default_session_dir = 0;
+		}
+		session_dir_supplied = 0;
+	} else {
+		session_dir_supplied = 1;
+	}
 	init_op_config_dirs(options::session_dir.c_str());
 
 	if (!options::threshold_opt.empty())
@@ -289,4 +318,16 @@ merge_option handle_merge_option(vector<string> const & mergespec,
 	}
 
 	return merge_by;
+}
+
+int try_another_session_dir(void)
+{
+	if (!session_dir_supplied && !trying_default_session_dir) {
+		trying_default_session_dir = 1;
+		options::session_dir = "/var/lib/oprofile";
+		init_op_config_dirs(options::session_dir.c_str());
+		return 1;
+	} else {
+		return 0;
+	}
 }

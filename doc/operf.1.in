@@ -26,7 +26,11 @@ The usual post-profiling analysis tools such as
 .BI opreport(1)
 and
 .BI opannotate(1)
-can be used to generate profile reports.  Statistics, such as total samples received
+can be used to generate profile reports.  The post-processing analysis tools will search for samples in
+.I <current_dir>/oprofile_data
+first; then, if no samples found there, they will look in /var/lib/oprofile.
+.P
+Statistics, such as total samples received
 and lost samples, are written to the operf.log file that can be found in the
 <session_dir>/samples directory.
 .br
@@ -97,7 +101,8 @@ be added to it, and the 'previous' profile (if one existed) will remain untouche
 To access the 'previous' profile, simply add a session specification to the normal
 invocation of oprofile post-processing tools.  For example:
 .br
-.I "   opreport --session-dir=`pwd`/oprofile_data session:previous"
+.BI "   opreport"
+.BI session:previous
 .br
 .TP
 .BI "--events / -e " event1[,event2[,...]]

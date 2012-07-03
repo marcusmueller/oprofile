@@ -15,7 +15,9 @@
 #include <algorithm>
 #include <iterator>
 #include <fstream>
+#include <string.h>
 
+#include "op_config.h"
 #include "profile_spec.h"
 #include "arrange_profiles.h"
 #include "oparchive_options.h"
@@ -23,6 +25,7 @@
 #include "string_filter.h"
 #include "file_manip.h"
 #include "cverb.h"
+#include "op_exception.h"
 
 
 using namespace std;
@@ -99,7 +102,15 @@ void handle_options(options::spec const & spec)
 	profile_spec const pspec =
 		profile_spec::create(spec.common, image_path, root_path);
 
-	sample_files = pspec.generate_file_list(exclude_dependent, false);
+again:
+	try {
+		sample_files = pspec.generate_file_list(exclude_dependent, false);
+	} catch (op_no_samples_exception & e) {
+		if (try_another_session_dir())
+			goto again;
+		else
+			throw op_fatal_error(e.what());
+	}
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;
@@ -116,4 +127,10 @@ void handle_options(options::spec const & spec)
 		     "too strict ?" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+	if (strncmp(op_session_dir, "/var/lib/oprofile", strlen("/var/lib/oprofile")))
+		cerr << "NOTE: The sample data in this archive is located at " << op_session_dir << endl
+		     << "instead of the standard location of /var/lib/oprofile.  Hence, when using opreport" << endl
+		     << "and other post-processing tools on this archive, you must pass the following option:" << endl
+		     << "\t--session-dir=" << op_session_dir << endl;
 }

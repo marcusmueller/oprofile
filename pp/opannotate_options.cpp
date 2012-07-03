@@ -125,7 +125,16 @@ void handle_options(options::spec const & spec)
 		profile_spec::create(spec.common, options::image_path,
 				     options::root_path);
 
-	list<string> sample_files = pspec.generate_file_list(exclude_dependent, true);
+	list<string> sample_files;
+again:
+	try {
+		sample_files = pspec.generate_file_list(exclude_dependent, true);
+	} catch (op_no_samples_exception & e) {
+		if (try_another_session_dir())
+			goto again;
+		else
+			throw op_fatal_error(e.what());
+	}
 
 	cverb << vsfile << "Archive: " << pspec.get_archive_path() << endl;
 

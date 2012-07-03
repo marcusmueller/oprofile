@@ -82,7 +82,13 @@ looking for them in --search-dirs.
 .br
 .TP
 .BI "--session-dir="dir_path
-Use sample database out of directory dir_path instead of the default location (/var/lib/oprofile).
+Use sample database from the specified directory
+.I dir_path
+instead of the default locations. If
+.I --session-dir
+is not specified, then opreport will search for samples in
+.I <current_dir>/oprofile_data
+first; then, if no samples found there, it will look in /var/lib/oprofile.
 .br
 .TP
 .BI "--source / -s"
@@ -106,9 +112,15 @@ Show version.
 No special environment variables are recognised by opannotate.
 
 .SH FILES
-.TP
+.I <current_dir>/oprofile_data/samples
+.RS 7
+Or
+.RE
 .I /var/lib/oprofile/samples/
+.LP
+.RS 7
 The location of the generated sample files.
+.RE
 
 .SH VERSION
 .TP

@@ -578,7 +578,7 @@ static end_code_t _run(void)
 	}
 
 	set_signals();
-	cout << "operf: Profiler started" << endl;
+	cerr << "operf: Profiler started" << endl;
 	if (startApp) {
 		/* The user passed in a command or program name to start, so we'll need to do waitpid on that
 		 * process.  However, while that user-requested process is running, it's possible we
@@ -1599,9 +1599,7 @@ int main(int argc, char * const argv[])
 			cerr << "WARNING: Profile results may be incomplete due to to abend of profiled app." << endl;
 		}
 	} else {
-		cout << endl << "Use '--session-dir=" << operf_options::session_dir << "'" << endl
-		     << "with opreport and other post-processing tools to view your profile data."
-		     << endl;
+		cerr << endl << "Profiling done." << endl;
 	}
 	cleanup();
 	return run_result;;
