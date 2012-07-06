@@ -6,7 +6,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil++ \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb \
-	-I ${top_srcdir}/libperf_events
+	-I ${top_srcdir}/libperf_events \
+	@PERF_EVENT_FLAGS@
 
 noinst_LIBRARIES = libperf_events.a
 libperf_events_a_SOURCES =  \

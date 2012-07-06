@@ -1,11 +1,12 @@
-LIBS=@POPT_LIBS@ @LIBERTY_LIBS@ @PFM_LIB@
+LIBS=@LIBERTY_LIBS@ @PFM_LIB@
 if BUILD_FOR_PERF_EVENT
 
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil++ \
-	-I ${top_srcdir}/libperf_events
+	-I ${top_srcdir}/libperf_events \
+	@PERF_EVENT_FLAGS@
 
 operf_SOURCES = operf.cpp
 
