@@ -91,6 +91,19 @@ In addition, built-in support is included for the following:</para>
 For information on how to use OProfile's JIT support, see <xref linkend="setup-jit"/>.
 </para>
 </sect2>
+
+<sect2 id="guestsupport">
+<title>No support for virtual machine guests</title>
+<para>
+OProfile currently does not support event-based profiling (i.e, using hardware events like cache misses,
+branch mispredicts) on virtual machine guests running under systems such as VMware.  The list of
+supported events displayed by ophelp or 'opcontrol --list-events' is based on CPU type and does
+not take into account whether the running system is a guest system or real system.  To use
+OProfile on such guest systems, you can use timer mode (see <xref linkend="timer" />).
+</para>
+</sect2>
+
+
 </sect1>
 
 <sect1 id="requirements">
@@ -1019,7 +1032,9 @@ is not able to profile code that has interrupts disabled.
 <para>
 You can force use of the timer interrupt by using the <option>timer=1</option> module
 parameter (or <option>oprofile.timer=1</option> on the boot command line if OProfile is
-built-in).
+built-in).  If OProfile was built as a kernel module, then you must pass the 'timer=1'
+parameter with the modprobe command.  Do this before executing 'opcontrol --init' or
+edit the opcontrol command's invocation of modprobe to pass the 'timer=1' parameter.
 </para>
 </sect2>
 
