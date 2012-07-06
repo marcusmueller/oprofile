@@ -69,8 +69,8 @@ AC_ARG_WITH(kernel,
 If this option is not specified, configure will look for kernel header files in the usual installation location
 for a kernel-headers package -- /usr/include. Use this option in cross-compile enviroments
 or in situations where the host system does not support perf_events but you wish to build binaries
-for a target system that does support perf_events.
-The kernel headers used should match the version of the target system.])],
+for a target system that does support perf_events. Because of OProfile's use of syscalls, be sure that the
+kernel headers used match the architecture of the intended target system.])],
 KERNELDIR=$withval)
 
 
