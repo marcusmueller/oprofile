@@ -35,6 +35,11 @@ private:
 	std::string message;
 };
 
+class op_no_samples_exception : public op_exception {
+public:
+	explicit op_no_samples_exception(std::string const & msg);
+	~op_no_samples_exception() throw();
+};
 
 /**
  * fatal exception, never catch it except at top level (likely main or

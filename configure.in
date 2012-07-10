@@ -12,7 +12,7 @@
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
-AM_INIT_AUTOMAKE(oprofile, 0.9.8git)
+AM_INIT_AUTOMAKE(oprofile, 0.9.8_perf_events)
 AM_CONFIG_HEADER(config.h)
 
 AC_CHECK_DECLS([basename], [], [], [[#include <libgen.h>]])
@@ -63,6 +63,61 @@ AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
 
+# --with-kernel for cross compilation
+AC_ARG_WITH(kernel,
+[AS_HELP_STRING([--with-kernel=dir], [Path to kernel include directory (...include/linux/perf_event.h) to use.
+If this option is not specified, configure will look for kernel header files in the usual installation location
+for a kernel-headers package -- /usr/include. Use this option in cross-compile enviroments
+or in situations where the host system does not support perf_events but you wish to build binaries
+for a target system that does support perf_events. Because of OProfile's use of syscalls, be sure that the
+kernel headers used match the architecture of the intended target system.])],
+KERNELDIR=$withval)
+
+
+dnl Check kernel version for perf_events supported
+AC_MSG_CHECKING([kernel version supports perf_events])
+if test "$KERNELDIR" != ""; then
+	KINC="$KERNELDIR/include"
+fi
+AX_KERNEL_VERSION(2, 6, 31, <=, kernel_has_perf_events_support="yes",
+kernel_has_perf_events_support="no")
+
+if test "$kernel_has_perf_events_support" = "no"; then
+	AC_MSG_RESULT([This kernel does not have perf_events support; falling back to legacy oprofile])
+else
+	AC_MSG_RESULT([This kernel has perf_events support])
+fi
+
+if test "$KERNELDIR" == ""; then
+	PERF_EVENT_H="/usr/include/linux/perf_event.h"
+else
+	PERF_EVENT_H="$KERNELDIR/include/linux/perf_event.h"
+fi
+AC_CHECK_HEADER($PERF_EVENT_H,PERF_EVENT_H_EXISTS="yes")
+AM_CONDITIONAL(BUILD_FOR_PERF_EVENT, test -n "$PERF_EVENT_H_EXISTS")
+if test "$PERF_EVENT_H_EXISTS" = "yes"; then
+	HAVE_PERF_EVENTS='1'
+	if test "$KERNELDIR" != ""; then
+		PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
+		AC_SUBST(PERF_EVENT_FLAGS)
+	fi
+else
+	HAVE_PERF_EVENTS='0'
+fi
+AC_DEFINE_UNQUOTED(HAVE_PERF_EVENTS, $HAVE_PERF_EVENTS, [Kernel support for perf_events exists])
+
+if test "$HAVE_PERF_EVENTS" = "1"; then
+	PFM_LIB=
+	arch="`uname -m`"
+	if test "$arch" = "ppc64"; then
+		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
+		AC_CHECK_LIB(pfm,pfm_find_event,, [AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])
+		PFM_LIB="-lpfm"
+	fi
+	AC_SUBST(PFM_LIB)
+
+fi
+
 AC_ARG_WITH(java,
 [  --with-java=java-home        Path to Java home directory (default is "no"; "yes" will use /usr as Java home)],
 JAVA_HOMEDIR=$with_java, [with_java=no])
@@ -98,7 +153,6 @@ ORIG_SAVE_LIBS="$LIBS"
 dnl advanced glibc features which we need but may not be present
 AC_CHECK_FUNCS(sched_setaffinity perfmonctl)
 
-AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))
 AX_BINUTILS
 AX_CELL_SPU
 
@@ -278,6 +332,8 @@ OP_DOCDIR=`eval echo "${my_op_prefix}/share/doc/$PACKAGE/"`
 AC_SUBST(OP_DOCDIR)
 
 AC_OUTPUT(Makefile \
+	pe_profiling/Makefile \
+	libperf_events/Makefile \
 	m4/Makefile \
 	libutil/Makefile \
 	libutil/tests/Makefile \
@@ -309,6 +365,7 @@ AC_OUTPUT(Makefile \
 	doc/opgprof.1 \
 	doc/oparchive.1 \
 	doc/opimport.1 \
+	doc/operf.1 \
 	doc/srcdoc/Doxyfile \
 	libpp/Makefile \
 	opjitconv/Makefile \
@@ -350,5 +407,10 @@ elif test "`getent passwd oprofile 2>/dev/null`" == "" || \
 		echo "             group name: 'oprofile'"
 		echo "         The 'oprofile' group must be the default group for the 'oprofile' user."
 	fi
+fi
+
+if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_has_perf_events_support" = "yes"; then
+	echo "Warning: perf_event.h not found.  Please install the kernel headers package if you"
+	echo "         want non-root support built into OProfile."
 fi
 

@@ -1616,6 +1616,11 @@ do_param_setup()
 do_start_daemon()
 {
 
+	$OPDIR/op-check-perfevents
+	if [ "$?" = "0" ]; then
+		echo "ATTENTION: Use of opcontrol is discouraged.  Please see the man page for operf."
+	fi
+
 	if test -f "$LOCK_FILE"; then
 		kill -0 `cat $LOCK_FILE` 2>/dev/null
 		if test "$?" -eq 0; then

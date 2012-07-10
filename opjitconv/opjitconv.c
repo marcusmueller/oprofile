@@ -70,6 +70,11 @@ struct jitentry ** entries_address_ascending;
 
 /* debug flag, print some information */
 int debug;
+/* indicates opjitconv invoked by non-root user via operf */
+int non_root;
+/* indicates we should delete jitdump files owned by the user */
+int delete_jitdumps;
+LIST_HEAD(jitdump_deletion_candidates);
 
 /*
  *  Front-end processing from this point to end of the source.
@@ -161,6 +166,8 @@ int change_owner(char * path)
 	int rc = OP_JIT_CONV_OK;
 	int fd;
 	
+	if (non_root)
+		return rc;
 	fd = open(path, 0);
 	if (fd < 0) {
 		printf("opjitconv: File cannot be opened for changing ownership.\n");
@@ -307,8 +314,17 @@ chk_proc_id:
 		goto out;
 	}
 	if (!(anon_dir = find_anon_dir_match(anon_sample_dirs, proc_id))) {
-		printf("Possible error: No matching anon samples for %s\n",
-		       dmp_pathname);
+		/* With the capability of profiling with operf (as well as with
+		 * the legacy oprofile daemon), users will not be using opcontrol
+		 * to remove all jitdump files; instead, opjitconv will remove old
+		 * jitdump files (see _cleanup_jitdumps() for details).  But this cleanup
+		 * strategy makes it quite likely that opjitconv will sometimes find
+		 * jitdump files that are not owned by the current user or are in use
+		 * by other operf users, thus, the current profile data would not have
+		 * matching anon samples for such jitdump files.
+		 */
+		verbprintf(debug, "Informational message: No matching anon samples for %s\n",
+		           dmp_pathname);
 		rc = OP_JIT_CONV_NO_MATCHING_ANON_SAMPLES;
 		goto free_res1;
 	}
@@ -371,13 +387,13 @@ chk_proc_id:
 		verbprintf(debug, "Converting %s to %s\n", dmp_pathname,
 			   elf_file);
 		/* Set eGID of the special user 'oprofile'. */
-		if (setegid(pw_oprofile->pw_gid) != 0) {
+		if (!non_root && setegid(pw_oprofile->pw_gid) != 0) {
 			perror("opjitconv: setegid to special user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
 		}
 		/* Set eUID of the special user 'oprofile'. */
-		if (seteuid(pw_oprofile->pw_uid) != 0) {
+		if (!non_root && seteuid(pw_oprofile->pw_uid) != 0) {
 			perror("opjitconv: seteuid to special user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
@@ -385,13 +401,13 @@ chk_proc_id:
 		/* Convert the dump file as the special user 'oprofile'. */
 		rc = op_jit_convert(dmp_info, tmp_elffile, start_time, end_time);
 		/* Set eUID back to the original user. */
-		if (seteuid(getuid()) != 0) {
+		if (!non_root && seteuid(getuid()) != 0) {
 			perror("opjitconv: seteuid to original user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
 		}
 		/* Set eGID back to the original user. */
-		if (setegid(getgid()) != 0) {
+		if (!non_root && setegid(getgid()) != 0) {
 			perror("opjitconv: setegid to original user failed");
 			rc = OP_JIT_CONV_FAIL;
 			goto free_res3;
@@ -477,14 +493,51 @@ static void filter_anon_samples_list(struct list_head * anon_dirs)
 }
 
 
+static void _add_jitdumps_to_deletion_list(void * all_jitdumps, char const * jitdump_dir )
+{
+	struct list_head * jd_fnames = (struct list_head *) all_jitdumps;
+	struct list_head * pos1, *pos2;
+	size_t dir_len = strlen(jitdump_dir);
+
+	list_for_each_safe(pos1, pos2, jd_fnames) {
+		struct pathname * dmpfile =
+				list_entry(pos1, struct pathname, neighbor);
+		struct stat mystat;
+		char dmpfile_pathname[dir_len + 20];
+		int fd;
+		memset(dmpfile_pathname, '\0', dir_len + 20);
+		strcpy(dmpfile_pathname, jitdump_dir);
+		strcat(dmpfile_pathname,dmpfile->name);
+		fd = open(dmpfile_pathname, O_RDONLY);
+		if (fd < 0) {
+			// Non-fatal error, so just display debug message and continue
+			verbprintf(debug, "opjitconv: cannot open jitdump file %s\n",
+			           dmpfile_pathname);
+			continue;
+		}
+		if (fstat(fd, &mystat) < 0) {
+			// Non-fatal error, so just display debug message and continue
+			verbprintf(debug, "opjitconv: cannot fstat jitdump file");
+			continue;
+		}
+		if (geteuid() == mystat.st_uid) {
+			struct jitdump_deletion_candidate * jdc =
+					xmalloc(sizeof(struct jitdump_deletion_candidate));
+			jdc->name = xstrdup(dmpfile->name);
+			list_add(&jdc->neighbor, &jitdump_deletion_candidates);
+		}
+	}
+}
+
 static int op_process_jit_dumpfiles(char const * session_dir,
 	unsigned long long start_time, unsigned long long end_time)
 {
 	struct list_head * pos1, * pos2;
 	int rc = OP_JIT_CONV_OK;
 	char jitdumpfile[PATH_MAX + 1];
-	char oprofile_tmp_template[] = "/tmp/oprofile.XXXXXX";
+	char oprofile_tmp_template[PATH_MAX + 1];
 	char const * jitdump_dir = "/var/lib/oprofile/jitdump/";
+
 	LIST_HEAD(jd_fnames);
 	char const * anon_dir_filter = "*/{dep}/{anon:anon}/[0-9]*.*";
 	LIST_HEAD(anon_dnames);
@@ -492,29 +545,72 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	int samples_dir_len = strlen(session_dir) + strlen(samples_subdir);
 	char * samples_dir;
 	/* temporary working directory for dump file conversion step */
-	char * tmp_conv_dir;
+	char * tmp_conv_dir = NULL;
+
+	if (non_root)
+		sprintf(oprofile_tmp_template, "%s/tmp", session_dir);
+	else
+		strcpy(oprofile_tmp_template, "/tmp/oprofile.XXXXXX");
 
 	/* Create a temporary working directory used for the conversion step.
 	 */
-	tmp_conv_dir = mkdtemp(oprofile_tmp_template);
+	if (non_root) {
+		sprintf(sys_cmd_buffer, "/bin/rm -rf %s", oprofile_tmp_template);
+		if (system(sys_cmd_buffer) != 0) {
+			printf("opjitconv: Removing temporary working directory %s failed.\n",
+			       oprofile_tmp_template);
+			rc = OP_JIT_CONV_TMPDIR_NOT_REMOVED;
+		} else {
+			if (!mkdir(oprofile_tmp_template, S_IRWXU | S_IRWXG ))
+				tmp_conv_dir = oprofile_tmp_template;
+		}
+	} else {
+		tmp_conv_dir = mkdtemp(oprofile_tmp_template);
+	}
+
 	if (tmp_conv_dir == NULL) {
-		printf("opjitconv: Temporary working directory cannot be created.\n");
+		printf("opjitconv: Temporary working directory %s cannot be created.\n",
+		       oprofile_tmp_template);
+		perror("Exiting due to error");
 		rc = OP_JIT_CONV_FAIL;
 		goto out;
 	}
 
+
+	errno = 0;
 	if ((rc = get_matching_pathnames(&jd_fnames, get_pathname,
 		jitdump_dir, "*.dump", NO_RECURSION)) < 0
-			|| list_empty(&jd_fnames))
+			|| list_empty(&jd_fnames)) {
+		if (errno) {
+			if (errno != ENOENT) {
+				char msg[PATH_MAX];
+				strcpy(msg, "opjitconv: fatal error trying to find JIT dump files in ");
+				strcat(msg, jitdump_dir);
+				perror(msg);
+				rc = OP_JIT_CONV_FAIL;
+			} else {
+				verbprintf(debug, "opjitconv: Non-fatal error trying to find JIT dump files in %s: %s\n",
+				           jitdump_dir, strerror(errno));
+				rc = OP_JIT_CONV_NO_DUMPFILE;
+			}
+		}
 		goto rm_tmp;
+	}
+
+	if (delete_jitdumps)
+		_add_jitdumps_to_deletion_list(&jd_fnames, jitdump_dir);
 
 	/* Get user information (i.e. UID and GID) for special user 'oprofile'.
 	 */
-	pw_oprofile = getpwnam("oprofile");
-	if (pw_oprofile == NULL) {
-		printf("opjitconv: User information for special user oprofile cannot be found.\n");
-		rc = OP_JIT_CONV_FAIL;
-		goto rm_tmp;
+	if (non_root) {
+		pw_oprofile = NULL;
+	} else {
+		pw_oprofile = getpwnam("oprofile");
+		if (pw_oprofile == NULL) {
+			printf("opjitconv: User information for special user oprofile cannot be found.\n");
+			rc = OP_JIT_CONV_FAIL;
+			goto rm_tmp;
+		}
 	}
 
 	/* Change ownership of the temporary working directory to prevent other users
@@ -581,6 +677,82 @@ out:
 	return rc;
 }
 
+static void _cleanup_jitdumps(void)
+{
+	struct list_head * pos1, *pos2;
+	char const * jitdump_dir = "/var/lib/oprofile/jitdump/";
+	size_t dir_len = strlen(jitdump_dir);
+	char dmpfile_pathname[dir_len + 20];
+	char proc_fd_dir[PATH_MAX];
+
+	if (!delete_jitdumps)
+		return;
+
+	/* The delete_jitdumps flag tells us to try to delete the jitdump files we found
+	 * that belong to this user.  Only operf should pass the --delete-jitdumps
+	 * argument to opjitconv since legacy oprofile uses opcontrol to delete old
+	 * jitdump files.
+	 *
+	 * The code below will only delete jitdump files that are not currently
+	 * being used by another process.
+	 */
+	list_for_each_safe(pos1, pos2, &jitdump_deletion_candidates) {
+		DIR * dir;
+		struct dirent * dirent;
+		int pid;
+		size_t dmpfile_name_len;
+		int do_not_delete = 0;
+		struct jitdump_deletion_candidate * cand = list_entry(pos1,
+		                                                      struct jitdump_deletion_candidate,
+		                                                      neighbor);
+		memset(dmpfile_pathname, '\0', dir_len + 20);
+		memset(proc_fd_dir, '\0', PATH_MAX);
+
+		if ((sscanf(cand->name, "%d", &pid)) != 1) {
+			verbprintf(debug, "Cannot get process id from jitdump file %s\n",
+			           cand->name);
+			continue;
+		}
+
+		strcpy(dmpfile_pathname, jitdump_dir);
+		strcat(dmpfile_pathname, cand->name);
+		dmpfile_name_len = strlen(dmpfile_pathname);
+
+		sprintf(proc_fd_dir, "/proc/%d/fd/", pid);
+		if ((dir = opendir(proc_fd_dir))) {
+			size_t proc_fd_dir_len = strlen(proc_fd_dir);
+			while ((dirent = readdir(dir))) {
+				if (dirent->d_type == DT_LNK) {
+					char buf[1024];
+					char fname[1024];
+					memset(fname, '\0', 1024);
+					strcpy(fname, proc_fd_dir);
+					strncat(fname, dirent->d_name, 1023 - proc_fd_dir_len);
+					if (readlink(fname, buf, 1023) > 0) {
+						verbprintf(debug, "readlink found for %s\n", buf);
+						if (strncmp(buf, dmpfile_pathname,
+						            dmpfile_name_len) == 0) {
+							do_not_delete = 1;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (!do_not_delete)
+			remove(dmpfile_pathname);
+	}
+	list_for_each_safe(pos1, pos2, &jitdump_deletion_candidates) {
+		struct jitdump_deletion_candidate * pname = list_entry(pos1,
+		                                                       struct jitdump_deletion_candidate,
+		                                                       neighbor);
+		free(pname->name);
+		list_del(&pname->neighbor);
+		free(pname);
+	}
+
+}
+
 int main(int argc, char ** argv)
 {
 	unsigned long long start_time, end_time;
@@ -590,6 +762,19 @@ int main(int argc, char ** argv)
 	debug = 0;
 	if (argc > 1 && strcmp(argv[1], "-d") == 0) {
 		debug = 1;
+		argc--;
+		argv++;
+	}
+	non_root = 0;
+	if (argc > 1 && strcmp(argv[1], "--non-root") == 0) {
+		non_root = 1;
+		argc--;
+		argv++;
+	}
+
+	delete_jitdumps = 0;
+	if (argc > 1 && strcmp(argv[1], "--delete-jitdumps") == 0) {
+		delete_jitdumps = 1;
 		argc--;
 		argv++;
 	}
@@ -625,6 +810,9 @@ int main(int argc, char ** argv)
 	verbprintf(debug, "start time/end time is %llu/%llu\n",
 		   start_time, end_time);
 	rc = op_process_jit_dumpfiles(session_dir, start_time, end_time);
+	if (delete_jitdumps)
+		_cleanup_jitdumps();
+
 	if (rc > OP_JIT_CONV_OK) {
 		verbprintf(debug, "opjitconv: Ending with rc = %d. This code"
 			   " is usually OK, but can be useful for debugging"

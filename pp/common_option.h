@@ -69,4 +69,10 @@ demangle_type handle_demangle_option(std::string const & option);
 merge_option handle_merge_option(std::vector<std::string> const & mergespec,
        bool allow_lib, bool exclude_dependent);
 
+/**
+ * Determine if tool should look at any other potential locations for
+ * a session dir.  Returns '0' for "no" and '1' for "yes".
+ */
+int try_another_session_dir(void);
+
 #endif /* !COMMON_OPTION_H */

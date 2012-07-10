@@ -35,6 +35,22 @@ poptContext op_poptGetContext(char const * name,
                 int argc, char const ** argv,
                 struct poptOption const * options, int flags);
 
+/**
+ * op_poptGetOptions_getApp
+ *
+ * Use this function when the argv array may be of the form:
+ *    <pgm> [options] <app-to-profile> [app-args]
+ * The <app-to-profile and app-args are passed back in app_options.
+ * The caller MUST allocate a char * array of size 2 and pass that
+ * array in app_options argument.  The first member of this array will
+ * be set to the app-to-profile pathname; the second member will be
+ * set to the app's args.
+ */
+poptContext op_poptGetOptions_getApp(char const * name, int argc,
+                                     char const ** argv,
+                                     struct poptOption const * options,
+                                     char **app_options, int flags);
+
 #ifdef __cplusplus
 }
 #endif

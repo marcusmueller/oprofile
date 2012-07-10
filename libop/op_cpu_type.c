@@ -12,6 +12,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/utsname.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fnmatch.h>
 
 #include "op_cpu_type.h"
 #include "op_hw_specific.h"
@@ -100,9 +104,378 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "IBM System z10", "s390/z10", CPU_S390_Z10, 1 },
 	{ "IBM zEnterprise z196", "s390/z196", CPU_S390_Z196, 1 },
 	{ "Intel Ivy Bridge microarchitecture", "i386/ivybridge", CPU_IVYBRIDGE, 8 },
+	{ "ARM Cortex-A5", "arm/armv7-ca5", CPU_ARM_V7_CA5, 3 },
+	{ "ARM Cortex-A7", "arm/armv7-ca7", CPU_ARM_V7_CA7, 5 },
+	{ "ARM Cortex-A15", "arm/armv7-ca15", CPU_ARM_V7_CA15, 7 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
+
+static char * _get_cpuinfo_cpu_type_line(char * buf, int len, const char * prefix, int token)
+{
+	char * ret = NULL;
+	char * end = NULL;
+	int prefix_len = strlen(prefix);
+	FILE * fp = fopen("/proc/cpuinfo", "r");
+
+	if (!fp) {
+		perror("Unable to open /proc/cpuinfo\n");
+		return ret;
+	}
+
+	memset(buf, 0, len);
+
+	while (!ret) {
+		if (fgets(buf, len, fp) == NULL) {
+			fprintf(stderr, "Did not find processor type in /proc/cpuinfo.\n");
+			break;
+		}
+		if (!strncmp(buf, prefix, prefix_len)) {
+			ret = buf + prefix_len;
+			/* Strip leading whitespace and ':' delimiter */
+			while (*ret && (*ret == ':' || isspace(*ret)))
+				++ret;
+			buf = ret;
+			/* if token param 0 then read the whole line else
+			 * first token only. */
+			if (token == 0) {
+				/* Trim trailing whitespace */
+				end = buf + strlen(buf) - 1;
+				while (isspace(*end))
+					--end;
+				*(++end) = '\0';
+				break;
+			} else {
+				/* Scan ahead to the end of the token */
+				while (*buf && !isspace(*buf))
+					++buf;
+				/* Trim trailing whitespace */
+				*buf = '\0';
+				break;
+			}
+		}
+	}
+
+	fclose(fp);
+	return ret;
+}
+
+static char * _get_cpuinfo_cpu_type(char * buf, int len, const char * prefix)
+{
+	return _get_cpuinfo_cpu_type_line(buf, len, prefix, 1);
+}
+
+static op_cpu _get_ppc64_cpu_type(void)
+{
+	int i;
+	size_t len;
+	char line[100], cpu_type_str[64], cpu_name_lowercase[64], * cpu_name;
+
+	cpu_name = _get_cpuinfo_cpu_type(line, 100, "cpu");
+	if (!cpu_name)
+		return CPU_NO_GOOD;
+
+	len = strlen(cpu_name);
+	for (i = 0; i < (int)len ; i++)
+		cpu_name_lowercase[i] = tolower(cpu_name[i]);
+
+	cpu_type_str[0] = '\0';
+	strcat(cpu_type_str, "ppc64/");
+	strncat(cpu_type_str, cpu_name_lowercase, len);
+	return op_get_cpu_number(cpu_type_str);
+}
+
+static op_cpu _get_arm_cpu_type(void)
+{
+	unsigned long cpuid, vendorid;
+	char line[100];
+	char * cpu_part, * cpu_implementer;
+
+	cpu_implementer = _get_cpuinfo_cpu_type(line, 100, "CPU implementer");
+	if (!cpu_implementer)
+		return CPU_NO_GOOD;
+
+	errno = 0;
+	vendorid = strtoul(cpu_implementer, NULL, 16);
+	if (errno) {
+		fprintf(stderr, "Unable to parse CPU implementer %s\n", cpu_implementer);
+		return CPU_NO_GOOD;
+	}
+
+	cpu_part = _get_cpuinfo_cpu_type(line, 100, "CPU part");
+	if (!cpu_part)
+		return CPU_NO_GOOD;
+
+	errno = 0;
+	cpuid = strtoul(cpu_part, NULL, 16);
+	if (errno) {
+		fprintf(stderr, "Unable to parse CPU part %s\n", cpu_part);
+		return CPU_NO_GOOD;
+	}
+
+	if (vendorid == 0x41) {		/* ARM Ltd. */
+		switch (cpuid) {
+		case 0xb36:
+		case 0xb56:
+		case 0xb76:
+			return op_get_cpu_number("arm/armv6");
+		case 0xb02:
+			return op_get_cpu_number("arm/mpcore");
+		case 0xc05:
+			return op_get_cpu_number("arm/armv7-ca5");
+		case 0xc07:
+			return op_get_cpu_number("arm/armv7-ca7");
+		case 0xc08:
+			return op_get_cpu_number("arm/armv7");
+		case 0xc09:
+			return op_get_cpu_number("arm/armv7-ca9");
+		case 0xc0f:
+			return op_get_cpu_number("arm/armv7-ca15");
+		}
+	} else if (vendorid == 0x69) {	/* Intel xscale */
+		switch (cpuid >> 9) {
+		case 1:
+			return op_get_cpu_number("arm/xscale1");
+		case 2:
+			return op_get_cpu_number("arm/xscale2");
+		}
+	}
+
+	return CPU_NO_GOOD;
+}
+
+static op_cpu _get_tile_cpu_type(void)
+{
+	int i;
+	size_t len;
+	char line[100], cpu_type_str[64], cpu_name_lowercase[64], * cpu_name;
+
+	cpu_name = _get_cpuinfo_cpu_type(line, 100, "model name");
+	if (!cpu_name)
+		return CPU_NO_GOOD;
+
+	len = strlen(cpu_name);
+	for (i = 0; i < (int)len ; i++)
+		cpu_name_lowercase[i] = tolower(cpu_name[i]);
+
+	cpu_type_str[0] = '\0';
+	strcat(cpu_type_str, "tile/");
+	strncat(cpu_type_str, cpu_name_lowercase, len);
+	return op_get_cpu_number(cpu_type_str);
+}
+
+#if defined(__x86_64__) || defined(__i386__)
+static unsigned cpuid_eax(unsigned func)
+{
+	cpuid_data d;
+
+	cpuid(func, &d);
+	return d.eax;
+}
+
+static inline int perfmon_available(void)
+{
+        unsigned eax;
+        if (cpuid_eax(0) < 10)
+                return 0;
+        eax = cpuid_eax(10);
+        if ((eax & 0xff) == 0)
+                return 0;
+        return (eax >> 8) & 0xff;
+}
+
+static int cpu_info_number(char *name, unsigned long *number)
+{
+        char buf[100];
+        char *end;
+
+        if (!_get_cpuinfo_cpu_type(buf, sizeof buf, name))
+                return 0;
+        *number = strtoul(buf, &end, 0);
+        return end > buf;
+}
+
+static op_cpu _get_intel_cpu_type(void)
+{
+	unsigned eax, family, model;
+
+	if (perfmon_available())
+		return op_cpu_specific_type(CPU_ARCH_PERFMON);
+
+	/* Handle old non arch perfmon CPUs */
+	eax = cpuid_signature();
+	family = cpu_family(eax);
+	model = cpu_model(eax);
+
+	if (family == 6) {
+		/* Reproduce kernel p6_init logic. Only for non arch perfmon cpus */
+		switch (model) {
+		case 0 ... 2:
+			return op_get_cpu_number("i386/ppro");
+		case 3 ... 5:
+			return op_get_cpu_number("i386/pii");
+		case 6 ... 8:
+		case 10 ... 11:
+			return op_get_cpu_number("i386/piii");
+		case 9:
+		case 13:
+			return op_get_cpu_number("i386/p6_mobile");
+		}
+	} else if (family == 15) {
+		unsigned long siblings;
+
+		/* Reproduce kernel p4_init() logic */
+		if (model > 6 || model == 5)
+			return CPU_NO_GOOD;
+		if (!cpu_info_number("siblings", &siblings) ||
+		    siblings == 1)
+			return op_get_cpu_number("i386/p4");
+		if (siblings == 2)
+			return op_get_cpu_number("i386/p4-ht");
+	}
+	return CPU_NO_GOOD;			
+}
+
+static op_cpu _get_amd_cpu_type(void)
+{
+	unsigned eax, family, model;
+	op_cpu ret = CPU_NO_GOOD;
+
+	eax = cpuid_signature();
+	family = cpu_family(eax);
+	model = cpu_model(eax);
+
+	switch (family) {
+	case 0x0f:
+		ret = op_get_cpu_number("x86-64/hammer");
+		break;
+	case 0x10:
+		ret = op_get_cpu_number("x86-64/family10");
+		break;
+	case 0x11:
+		ret = op_get_cpu_number("x86-64/family11h");
+		break;
+	case 0x12:
+		ret = op_get_cpu_number("x86-64/family12h");
+		break;
+	case 0x14:
+		ret = op_get_cpu_number("x86-64/family14h");
+		break;
+	case 0x15:
+		switch (model) {
+		case 0x00 ... 0x0f:
+			ret = op_get_cpu_number("x86-64/family15h");
+			break;		
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return ret;			
+}
+
+static op_cpu _get_x86_64_cpu_type(void)
+{
+	op_cpu ret = CPU_NO_GOOD;
+
+	if (cpuid_vendor("GenuineIntel")) {
+		ret = _get_intel_cpu_type();
+	} else if (cpuid_vendor("AuthenticAMD")) {
+		ret = _get_amd_cpu_type();
+	}
+
+	return ret;
+}
+
+#else
+static op_cpu _get_x86_64_cpu_type(void)
+{
+	return CPU_NO_GOOD;
+}
+#endif
+
+struct mips_cpu_descr
+{
+	const char * key;
+	const char * value;
+};
+
+static struct mips_cpu_descr mips_cpu_descrs[] = {
+	{ .key = "MIPS 5Kc", .value = "mips/5K" },		/* CPU_5KC */
+	{ .key = "MIPS 20Kc", .value = "mips/20K" },		/* CPU_20KC */
+	{ .key = "MIPS 24Kc", .value = "mips/24K" },		/* CPU_24K */
+	{ .key = "MIPS 25Kc", .value = "mips/25K" },		/* CPU_25KF */
+	{ .key = "MIPS 34Kc", .value = "mips/34K" },		/* CPU_34K */
+	{ .key = "MIPS 74Kc", .value = "mips/74K" },		/* CPU_74K */
+	{ .key = "MIPS M14Kc", .value = "mips/M14Kc" },		/* CPU_M14KC */
+	{ .key = "RM9000", .value = "mips/rm9000" },		/* CPU_RM9000 */
+	{ .key = "R10000", .value = "mips/r10000" }, 		/* CPU_R10000 */
+	{ .key = "R12000", .value = "mips/r12000" },		/* CPU_R12000 */
+	{ .key = "R14000", .value = "mips/r12000" },		/* CPU_R14000 */
+	{ .key = "ICT Loongson-2", .value = "mips/loongson2" },	/* CPU_LOONGSON2 */
+	{ .key = NULL, .value = NULL }
+};
+
+static const char * _get_mips_op_name(const char * key)
+{
+	struct mips_cpu_descr * p_it = mips_cpu_descrs;
+	size_t len;
+
+
+	while (p_it->key != NULL) {
+		len = strlen(p_it->key);
+		if (0 == strncmp(key, p_it->key, len))
+			return p_it->value;
+		++p_it;
+	}
+	return NULL;
+}
+
+static op_cpu _get_mips_cpu_type(void)
+{
+	char line[100];
+	char * cpu_model;
+	const char * op_name = NULL;
+
+	cpu_model = _get_cpuinfo_cpu_type_line(line, 100, "cpu model", 0);
+	if (!cpu_model)
+		return CPU_NO_GOOD;
+
+	op_name = _get_mips_op_name(cpu_model);
+
+	if (op_name)
+		return op_get_cpu_number(op_name);
+	return CPU_NO_GOOD;
+}
+
+static op_cpu __get_cpu_type_alt_method(void)
+{
+	struct utsname uname_info;
+	if (uname(&uname_info) < 0) {
+		perror("uname failed");
+		return CPU_NO_GOOD;
+	}
+	if (strncmp(uname_info.machine, "x86_64", 6) == 0 || 
+	    fnmatch("i?86", uname_info.machine, 0) == 0) {
+		return _get_x86_64_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "ppc64", 5) == 0) {
+		return _get_ppc64_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "arm", 3) == 0) {
+		return _get_arm_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "tile", 4) == 0) {
+		return _get_tile_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "mips", 4) == 0) {
+		return _get_mips_cpu_type();
+	}
+	return CPU_NO_GOOD;
+}
 
 int op_cpu_variations(op_cpu cpu_type)
 {
@@ -144,8 +517,10 @@ op_cpu op_get_cpu_type(void)
 		/* Try 2.6's oprofilefs one instead. */
 		fp = fopen("/dev/oprofile/cpu_type", "r");
 		if (!fp) {
-			fprintf(stderr, "Unable to open cpu_type file for reading\n");
-			fprintf(stderr, "Make sure you have done opcontrol --init\n");
+			if ((cpu_type = __get_cpu_type_alt_method()) == CPU_NO_GOOD) {
+				fprintf(stderr, "Unable to open cpu_type file for reading\n");
+				fprintf(stderr, "Make sure you have done opcontrol --init\n");
+			}
 			return cpu_type;
 		}
 	}

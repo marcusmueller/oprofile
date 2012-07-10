@@ -1,0 +1,167 @@
+.\" Manpage for operf
+.\" Author: Breno Leitao <brenohl@br.ibm.com>
+.\" Modifications: Maynard Johnson <maynardj@us.ibm.com>
+.TH OPERF 1 "@DATE@" "oprofile @VERSION@"
+.SH NAME
+operf \- Performance profiler tool for Linux
+
+.SH SYNOPSIS
+.B operf
+[
+.I options
+]
+[ --system-wide | --pid <pid> | [ command [ args ] ] ]
+
+.SH DESCRIPTION
+Operf is an OProfile tool that can be used in place of opcontrol for profiling. Operf
+uses the Linux Performance Events Subsystem, and hence, does not require the use of
+the opcontrol daemon -- in fact, operf and opcontrol usage are mutually exclusive.
+.P
+By default, operf uses <current_dir>/oprofile_data as the session-dir and stores profiling data there.
+You can change this by way of the
+.I --session-dir
+option.
+.P
+The usual post-profiling analysis tools such as
+.BI opreport(1)
+and
+.BI opannotate(1)
+can be used to generate profile reports.  The post-processing analysis tools will search for samples in
+.I <current_dir>/oprofile_data
+first; then, if no samples found there, they will look in /var/lib/oprofile.
+.P
+Statistics, such as total samples received
+and lost samples, are written to the operf.log file that can be found in the
+<session_dir>/samples directory.
+.br
+
+.SH OPTIONS
+.TP
+.BI command
+The command or application to be profiled.
+.I args
+are the input arguments that the command or application requires.  Either
+.I command
+,
+.I --pid
+or
+.I --system-wide
+is required, but
+.B cannot
+be used simultaneously.
+.br
+.TP
+.BI "--pid / -p " PID
+This option enables operf to profile a running application.
+.I PID
+should be the process ID of the process you wish to profile.  When
+finished profiling (e.g., when the profiled process ends), press
+Ctrl-c to stop operf.
+.br
+.TP
+.BI "--system-wide / -s"
+This option is for performing a system-wide profile.  You must
+have root authority to run operf in this mode.  When finished profiling,
+Ctrl-c to stop operf. If you run
+.BI operf
+.BI --system-wide
+as a background job (i.e., with the &), you
+.B must
+stop it in a controlled manner in order for it to process the profile
+data it has collected.  Use
+.BI kill
+.BI -SIGINT
+.BI <operf-PID>
+for this purpose.
+It is recommended
+that when running operf with this option, the user's current working
+directory should be /root or a subdirectory of /root to avoid
+storing sample data files in locations accessible by regular users.
+.br
+.TP
+.BI "--vmlinux / k " vmlinux_path
+A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
+Kernel samples will be attributed to this binary, allowing post-processing tools
+(like opreport) to attribute samples to the appropriate kernel symbols.
+.TP
+.BI "--callgraph / -g"
+This option enables the callgraph to be saved during profiling. NOTE: The
+full callchain is recorded, so there is no depth limit.
+.br
+.TP
+.BI "--append / -a"
+By default,
+.I operf
+moves old profile data from <session_dir>/samples/current to
+<session_dir>/samples/previous.  If a 'previous' profile already existed,
+it will be replaced.  If the
+.I --append
+option is passed, old profile data is left in place and new profile data will
+be added to it, and the 'previous' profile (if one existed) will remain untouched.
+To access the 'previous' profile, simply add a session specification to the normal
+invocation of oprofile post-processing tools.  For example:
+.br
+.BI "   opreport"
+.BI session:previous
+.br
+.TP
+.BI "--events / -e " event1[,event2[,...]]
+This option is for passing a comma-separated list of event specifications
+for profiling. Each event spec is of the form:
+.br
+.I "   name:count[:unitmask[:kernel[:user]]]"
+.br
+When no event specification is given, the default event for the running
+processor type will be used for profiling.  Use
+.BI ophelp
+to list the available events for your processor type.
+.br
+.TP
+.BI "--separate-thread / -t"
+This option categorizes samples by thread group ID (tgid) and thread ID (tid).
+The '--separate-thread' option is useful for seeing per-thread samples in
+multi-threaded applications.  When used in conjuction with the '--system-wide'
+option, the '--separate-thread' option is also useful for seeing per-process
+(i.e., per-thread group) samples for the case where multiple processes are
+executing the same program during a profiling run.
+.br
+.TP
+.BI "--separate-cpu / -c"
+This option categorizes samples by cpu.
+.br
+.TP
+.BI "--session-dir / -d " path
+This option specifies the session path to hold the sample data. If not specified,
+the data is saved in the
+.I oprofile_data
+directory on the current path.
+.br
+.TP
+.BI "--verbose / -V " level
+A comma-separated list of debugging control values, used to increase the verbosity of the output.
+Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.
+.br
+.TP
+.BI "--version / -v"
+Show operf version.
+.br
+.TP
+.BI "--help / -h"
+Show a help message.
+.br
+.TP
+.BI "--usage / -u"
+Display brief usage message.
+.br
+
+.SH EXAMPLE
+$ operf make
+
+.SH VERSION
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+opreport(1), opannotate(1).
+
+.SH BUGS
+Some parameters are still under development.
