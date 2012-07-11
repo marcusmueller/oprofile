@@ -87,7 +87,7 @@ bool is_jit_sample(string const & filename)
 
 void check_mtime(string const & file, opd_header const & header)
 {
-	time_t const newmtime = op_get_mtime(file.c_str());
+	u64 newmtime = op_get_mtime(file.c_str());
 
 	if (newmtime == header.mtime)
 		return;

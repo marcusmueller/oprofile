@@ -28,7 +28,7 @@ struct opd_header {
 	// for cg file the from_cg_is_kernel
 	u32 is_kernel;
 	double cpu_speed;
-	time_t mtime;
+	u64 mtime;
 	u32 cg_to_is_kernel;
 	/* spu_profile=1 says sample file contains Cell BE SPU profile data */
 	u32 spu_profile;
