@@ -1,6 +1,7 @@
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil \
-	-I ${top_srcdir}/libop
+	-I ${top_srcdir}/libop \
+	@OP_CPPFLAGS@
 
 AM_CFLAGS = @OP_CFLAGS@ -DOPROFILE_SRCDIR=\"@top_srcdir@\"
 

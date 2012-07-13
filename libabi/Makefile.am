@@ -6,10 +6,11 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libdb \
-	-I ${top_srcdir}/libopt++
+	-I ${top_srcdir}/libopt++ \
+	@OP_CPPFLAGS@
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
-
+AM_LDFLAGS = @OP_LDFLAGS@
 noinst_LIBRARIES = libabi.a
 libabi_a_SOURCES = abi.cpp abi.h op_abi.c op_abi.h
 

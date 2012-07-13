@@ -41,10 +41,12 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libabi \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libop \
-	-I ${top_srcdir}/libdb
+	-I ${top_srcdir}/libdb \
+	@OP_CPPFLAGS@
 
 # -fno-omit-frame-pointer needed for daemon build: see ChangeLog-2004 02-23
 AM_CFLAGS = @OP_CFLAGS@ -fno-omit-frame-pointer
+AM_LDFLAGS = @OP_LDFLAGS@
 
 bin_PROGRAMS = oprofiled
 

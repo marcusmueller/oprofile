@@ -10,7 +10,11 @@ libopagent_la_SOURCES = opagent.c \
 EXTRA_DIST = opagent_symbols.ver
 
 
-libopagent_la_CFLAGS = -fPIC -I ${top_srcdir}/libop -I ${top_srcdir}/libutil
+libopagent_la_CFLAGS = -fPIC
+libopagent_la_CPPFLAGS = -I ${top_srcdir}/libop \
+	-I ${top_srcdir}/libutil \
+	@OP_CPPFLAGS@
+
 libopagent_la_LIBADD = $(BFD_LIBS)
 
 # Do not increment the major version for this library except to
@@ -20,6 +24,7 @@ libopagent_la_LIBADD = $(BFD_LIBS)
 # See http://www.gnu.org/software/binutils/manual/ld-2.9.1/html_node/ld_25.html
 # for details about the --version-script option.
 libopagent_la_LDFLAGS = -version-info  1:0:0 \
-			-Wl,--version-script=${top_srcdir}/libopagent/opagent_symbols.ver
+			-Wl,--version-script=${top_srcdir}/libopagent/opagent_symbols.ver \
+			@OP_LDFLAGS@
 
 

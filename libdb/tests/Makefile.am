@@ -1,7 +1,8 @@
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil \
-	-I ${top_srcdir}/libdb
+	-I ${top_srcdir}/libdb \
+	@OP_CPPFLAGS@
 
 AM_CFLAGS = @OP_CFLAGS@
 

@@ -24,21 +24,17 @@ dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
 AC_SUBST(DATE)
 
-# this needs to come before --with-gcc so we link with binutil's version
-# of libiberty ... sigh
+# Since we should not permanently alter user environment variables, we'll
+# save the contents of the original flags in case the user has set them
+# prior to running this configue script.
+CPPFLAGS_SAVE="$CPPFLAGS"
+LDFLAGS_SAVE="$LDFLAGS"
 AC_ARG_WITH(binutils,
 [  --with-binutils=dir		Path to binutils installation to use], BINUTILSDIR=$withval)
 
 if test "$BINUTILSDIR" != ""; then
 	LD="$BINUTILSDIR/ld"
-	if test "$CFLAGS" = ""; then
-		CFLAGS="-g -O2"
-	fi
-	if test "$CXXFLAGS" = ""; then
-		CXXFLAGS="-g -O2"
-	fi
-	CFLAGS="$CFLAGS -I$BINUTILSDIR/include"
-	CXXFLAGS="$CXXFLAGS -I$BINUTILSDIR/include"
+	CPPFLAGS="$CPPFLAGS -I$BINUTILSDIR/include"
 	AC_ARG_WITH(binutils-libname,
 		[  --with-binutils-libname       Lib dir name under binutils installation; @<:@lib@:>@]],
 		BINUTILSLIB=$withval)
@@ -46,16 +42,15 @@ if test "$BINUTILSDIR" != ""; then
 		BINUTILSLIB="lib"
 	fi
 	LDFLAGS="$LDFLAGS -L$BINUTILSDIR/$BINUTILSLIB -Xlinker -R -Xlinker $BINUTILSDIR/$BINUTILSLIB"
+	OP_LDFLAGS="$LDFLAGS"
+	OP_CPPFLAGS="$CPPFLAGS"
+else
+	OP_LDFLAGS=
+	OP_CPPFLAGS=
 fi
 
-AC_ARG_WITH(gcc,
-[  --with-gcc=dir		Path to GCC installation to use], GCCDIR=$withval)
-
-if test "$GCCDIR" != ""; then
-	CC="$GCCDIR/bin/gcc"
-	CXX="$GCCDIR/bin/g++"
-	LDFLAGS="$LDFLAGS -L$GCCDIR/lib -Xlinker -R -Xlinker $GCCDIR/lib"
-fi
+# We can't restore original flag values for CPPFLAGS and LDFLAGS until we're done
+# checking for bfd.h and libiberty.h (in AX_BINUTILS).
 
 AC_PROG_CC
 AC_PROG_CPP
@@ -155,6 +150,13 @@ AC_CHECK_FUNCS(sched_setaffinity perfmonctl)
 
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))
 AX_BINUTILS
+# Now we can restore original flag values, and may as well do the
+# AC_SUBST, too.
+CPPFLAGS="$CPPFLAGS_SAVE"
+LDFLAGS="$LDFLAGS_SAVE"
+AC_SUBST(OP_CPPFLAGS)
+AC_SUBST(OP_LDFLAGS)
+
 AX_CELL_SPU
 
 # C++ tests

@@ -2,7 +2,8 @@ SUBDIRS=. tests
 
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
-	-I ${top_srcdir}/libutil
+	-I ${top_srcdir}/libutil \
+	@OP_CPPFLAGS@
 
 AM_CFLAGS = @OP_CFLAGS@
 

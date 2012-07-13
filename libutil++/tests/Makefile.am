@@ -4,7 +4,7 @@ REALPATH= readlink -f
 SRCDIR := $(shell $(REALPATH) $(topdir)/libutil++/tests/ )
 
 AM_CPPFLAGS = \
-	-I ${top_srcdir}/libutil++ -D SRCDIR="\"$(SRCDIR)/\""
+	-I ${top_srcdir}/libutil++ -D SRCDIR="\"$(SRCDIR)/\"" @OP_CPPFLAGS@
 
 COMMON_LIBS = ../libutil++.a ../../libutil/libutil.a
 

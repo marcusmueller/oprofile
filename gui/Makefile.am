@@ -17,7 +17,8 @@ AM_CPPFLAGS = \
 	@QT_CFLAGS@ \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil++ \
-	-I ${top_srcdir}/libutil
+	-I ${top_srcdir}/libutil \
+	@OP_CPPFLAGS@
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
 

@@ -5,9 +5,11 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libopt++ \
 	-I ${top_srcdir}/libutil++ \
 	-I ${top_srcdir}/libregex \
-	-I ${top_srcdir}/libpp
+	-I ${top_srcdir}/libpp \
+	@OP_CPPFLAGS@
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
+AM_LDFLAGS = @OP_LDFLAGS@
 
 bin_PROGRAMS = opreport opannotate opgprof oparchive
 

@@ -7,7 +7,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb \
 	-I ${top_srcdir}/libperf_events \
-	@PERF_EVENT_FLAGS@
+	@PERF_EVENT_FLAGS@ \
+	@OP_CPPFLAGS@
 
 noinst_LIBRARIES = libperf_events.a
 libperf_events_a_SOURCES =  \

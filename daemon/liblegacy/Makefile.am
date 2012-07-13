@@ -7,7 +7,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb \
-	-I ${top_srcdir}/daemon
+	-I ${top_srcdir}/daemon \
+	@OP_CPPFLAGS@
 
 liblegacy_a_SOURCES = \
 	opd_24_stats.c \

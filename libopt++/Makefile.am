@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil
+AM_CPPFLAGS=-I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil @OP_CPPFLAGS@
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
 noinst_LIBRARIES = libopt++.a

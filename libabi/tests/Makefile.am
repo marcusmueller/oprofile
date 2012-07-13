@@ -5,7 +5,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb \
 	-I ${top_srcdir}/libopt++ \
-	-I ${top_srcdir}/libutil
+	-I ${top_srcdir}/libutil \
+	@OP_CPPFLAGS@
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
 

@@ -1,6 +1,6 @@
 SUBDIRS = . tests
 
-AM_CPPFLAGS=-I${top_srcdir}/libutil
+AM_CPPFLAGS=-I${top_srcdir}/libutil @OP_CPPFLAGS@
 AM_CFLAGS = @OP_CFLAGS@
 
 noinst_LIBRARIES = libop.a
