@@ -1010,10 +1010,10 @@ static void _process_events_list(void)
 		FILE * fp;
 		string full_cmd = cmd;
 		string event_spec = operf_options::evts[i];
-		full_cmd += event_spec;
 		if (operf_options::callgraph) {
-			full_cmd += " --callgraph=1";
+			full_cmd += " --callgraph=1 ";
 		}
+		full_cmd += event_spec;
 		fp = popen(full_cmd.c_str(), "r");
 		if (fp == NULL) {
 			cerr << "Unable to execute ophelp to get info for event "
