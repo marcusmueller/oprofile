@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding='ISO-8859-1'?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 
 <book id="oprofile-guide">
@@ -30,7 +29,7 @@
 This manual applies to OProfile version <oprofileversion />.
 OProfile is a profiling system for Linux 2.6 and higher systems on a number of architectures. It is capable of profiling
 all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
-to binaries. It runs transparently in the background collecting information at a low overhead. These
+to binaries. OProfile can profile the whole system in the background, collecting information at a low overhead. These
 features make it ideal for profiling entire systems to determine bottle necks in real-world systems.
 </para>
 <para>
@@ -40,8 +39,44 @@ repeatedly, every time a certain (configurable) number of events has occurred, t
 This information is aggregated into profiles for each binary image.</para>
 <para>
 Some hardware setups do not allow OProfile to use performance counters: in these cases, no
-events are available so OProfile operates in timer mode, as described in later chapters.
+events are available so OProfile operates in timer mode, as described in later chapters. Timer
+mode is only available in "legacy mode" (see <xref linkend="legacy_mode"/>).
 </para>
+<sect1 id="legacy_mode">
+<title>OProfile legacy mode</title>
+"Legacy" OProfile consists of the <command>opcontrol</command> shell script, the <command>oprofiled</command> daemon, and several post-processing tools (e.g.,
+<command>opreport</command>). The <command>opcontrol</command> script is used for configuring, starting, and stopping a profiling session. An OProfile
+kernel driver (usually built as a kernel module) is used for collecting samples, which are then recorded into sample files by
+<command>oprofiled</command>. Using OProfile in "legacy mode" requires root user authority since the profiling is done on a system-wide basis, which may
+(if misused) cause adverse effects to the system.
+<note>
+Profiling setup parameters that you specify using <command>opcontrol</command> are cached in <filename>/root/.oprofile/daemonrc</filename>.
+Subsequent runs of <code>opcontrol --start</code> will continue to use these cached values until you
+override them with new values.
+</note>
+</sect1>
+<sect1 id="perf_events">
+<title>OProfile perf_events mode</title>
+As of release 0.9.8, OProfile now includes the ability to profile a single process versus the system-wide technique
+of legacy OProfile. With this new technique, the <command>operf</command> program is used to control profiling instead of the
+<command>opcontrol</command> script and <command>oprofiled</command> daemon of leagacy mode. Also, <command>operf</command> does not require the
+special OProfile kernel driver that legacy mode does; instead, it interfaces with the kernel to collect samples via the Linux Kernel
+Performance Events Subsystem (hereafter referred to as "perf_events"). Using <command>operf</command> to profile a single
+process can be done as a normal user; however, root authority <emphasis>is</emphasis> required to run <command>operf</command> in system-wide
+profiling mode.
+<note>
+<title>Note 1</title>
+The same OProfile post-processing tools are used whether you collect your profile with <command>operf</command> or <command>opcontrol</command>.
+</note>
+<note>
+<title>Note 2</title>
+Some older processor models are not supported by the underlying perf_events kernel and, thus, are not supported by <command>operf</command>.
+If you receive the message
+<screen>  Your kernel's Performance Events Subsystem does not support your processor type</screen>
+when attempting to use <command>operf</command>, try profiling with <command>opcontrol</command>
+to see if your processor type may be supported by OProfile's legacy mode.
+</note>
+</sect1>
 <sect1 id="applications">
 <title>Applications of OProfile</title>
 <para>
@@ -64,7 +99,6 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 </para>
 <itemizedlist>
 <listitem><para>require call graph profiles on platforms other than x86, ARM, and PowerPC</para></listitem>
-<listitem><para>don't have root permissions</para></listitem>
 <listitem><para>require 100% instruction-accurate profiles</para></listitem>
 <listitem><para>need function call counts or an interstitial profiling API</para></listitem>
 <listitem><para>cannot tolerate any disturbance to the system whatsoever</para></listitem>
@@ -77,7 +111,7 @@ Older versions of OProfile were not capable of attributing samples to symbols fr
 compiled code, i.e. "just-in-time (JIT) code". Typical JIT compilers load the JIT code into
 anonymous memory regions. OProfile reported the samples from such code, but the attribution
 provided was simply:
-        <screen>"anon: &lt;tgid&gt;&lt;address range&gt;" </screen>
+<screen>     anon: &lt;tgid&gt;&lt;address range&gt;</screen>
 Due to this limitation, it wasn't possible to profile applications executed by virtual machines (VMs)
 like the Java Virtual Machine. OProfile now contains an infrastructure to support JITed code.
 A development library is provided to allow developers
@@ -118,9 +152,6 @@ OProfile on such guest systems, you can use timer mode (see <xref linkend="timer
 			in profiling reports without any samples in these regions.
 			</para>
 
-			<para>
-			PPC64 processors (Power4/Power5/PPC970, etc.) require a 2.6.5 or later kernel. 
-                       </para>
                        <para>
                        Profiling the Cell Broadband Engine PowerPC Processing Element (PPE) requires a kernel version
                        of 2.6.18 or more recent.
@@ -165,6 +196,14 @@ OProfile on such guest systems, you can use timer mode (see <xref linkend="timer
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
 			<filename>liberty</filename> (debian users: libiberty is provided in binutils-dev package), <filename>dl</filename>,
 			plus the standard C++ libraries.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>Required kernel headers</term>
+		<listitem><para>
+			In order to build the perf_events-enabled <command>operf</command> program, you need to either
+			install the kernel-headers package for your system or use the <code>--with-kernel</code>
+			configure option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -280,7 +319,7 @@ is often all you need, but note these arguments to <command>./configure</command
 			do something like the following:
 			<screen>
 			# CFLAGS="-m64" CXXFLAGS="-m64" ./configure \
-			--with-kernel-support --with-java={my_jdk_installdir} \
+			--with-java={my_jdk_installdir} \
 			--libdir=/usr/local/lib64
 			</screen>
 			</para>
@@ -323,6 +362,17 @@ is often all you need, but note these arguments to <command>./configure</command
 			back-trace etc.)
 		</para></listitem>
 	</varlistentry>
+	<varlistentry id="with-kernel">
+		<term><option>--with-kernel></option></term>
+		<listitem><para>
+			This option is used to specify the location of the kernel headers <filename>include</filename> directory
+			needed to build the perf_events-enabled <command>operf</command> program. By default, the OProfile
+			build system expects to find this directory under <filename>/usr</filename>. Use this option if your
+			kernel headers are in a non-standard location or if building in a cross-compile enviroment or in a
+			situation where the host system does not support perf_events but you wish to build binaries for a
+			target system that does support perf_events.
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 <para>
 It is recommended that if you have a
@@ -353,11 +403,37 @@ remove all installed files except your configuration file in the directory <file
 
 <chapter id="overview"> 
 <title>Overview</title>
-
-<sect1 id="getting-started">
-<title>Getting started</title>
+<sect1 id="getting-started-with-operf">
+<title>Getting started with OProfile using <command>operf</command></title>
 <para>
-Before you can use OProfile, you must set it up. The minimum setup required for this
+Profiling with <command>operf</command> is the recommended profiling mode with OProfile. Using
+this mode not only allows you to target your profiling more precisely (i.e., single process
+or system-wide), it also allows OProfile to co-exist better with other tools on your system that
+may also be using the perf_events kernel subsystem.
+</para>
+<para>
+With <command>operf</command>, there is no initial setup needed -- simply invoke <command>operf</command> with
+the options you need; then run the OProfile post-processing tool(s). The <command>operf</command> syntax
+is as follows:
+</para>
+<screen>operf [ options ] [ --system-wide | --pid=&lt;PID&gt; | [ command [ args ] ] ]</screen>
+<para>
+A typical usage might look like this:
+</para>
+<screen>operf ./my_test_program my_arg</screen>
+<para>
+When <filename>./my_test_program</filename> completes (or when you press Ctrl-C), profiling
+stops and you're ready to use <command>opreport</command> or other OProfile post-processing tools.
+By default, <command>operf</command> stores the sample data in <filename>&lt;cur_dir&gt;/oprofile_data/samples/current</filename>,
+and <command>opreport</command> and other post-processing tools will look in that location first for profile data,
+unless you pass the <code>--session-dir</code> option.
+</para>
+</sect1>
+
+<sect1 id="getting-started-with-legacy">
+<title>Getting started with OProfile using legacy mode</title>
+<para>
+Before you can use OProfile's legacy mode, you must set it up. The minimum setup required for this
 is to tell OProfile where the <filename>vmlinux</filename> file corresponding to the
 running kernel is, for example :
 </para>
@@ -373,7 +449,7 @@ the profile data :
 </para>
 <screen>opcontrol --start</screen>
 <para>
-When I want to stop profiling, I can do so with :
+When you want to stop profiling, you can do so with :
 </para>
 <screen>opcontrol --shutdown</screen>
 <para>
@@ -388,7 +464,9 @@ These profile files cover shared libraries, applications, the kernel (vmlinux), 
 You can clear the profile data (at any time) with <command>opcontrol --reset</command>.
 </para>
 <para>
-To place these sample database files in a specific directory instead of the default location (<filename>/var/lib/oprofile</filename>) use the <option>--session-dir=dir</option> option. You must also specify the <option>--session-dir</option> to tell the tools to continue using this directory. (In the future, we should allow this to be specified in an environment variable.) :
+To place these sample database files in a specific directory instead of the default location
+(<filename>/var/lib/oprofile</filename>) use the <option>--session-dir=dir</option> option.
+You must also specify the <option>--session-dir</option> to tell the tools to continue using this directory.
 </para>
 <screen>opcontrol --no-vmlinux --session-dir=/home/me/tmpsession</screen>
 <screen>opcontrol --start --session-dir=/home/me/tmpsession</screen>
@@ -422,11 +500,18 @@ This section gives a brief description of the available OProfile utilities and t
 		This utility lists the available events and short descriptions.
 	</para></listitem>
 </varlistentry>
+
+<varlistentry>
+	<term><filename>operf</filename></term>
+	<listitem><para>
+		This is the recommended program for collecting profile data.
+	</para></listitem>
+</varlistentry>
 	
 <varlistentry>
 	<term><filename>opcontrol</filename></term>
 	<listitem><para>
-		Used for controlling the OProfile data collection, discussed in <xref linkend="controlling" />.
+		Used for controlling OProfile data collection in legacy mode, discussed in <xref linkend="controlling" />.
 	</para></listitem>
 </varlistentry>
 
@@ -491,29 +576,175 @@ This section gives a brief description of the available OProfile utilities and t
 <chapter id="controlling">
 <title>Controlling the profiler</title>
 
-<sect1 id="controlling-daemon">
-<title>Using <command>opcontrol</command></title>
+<sect1 id="controlling-operf">
+<title>Using <command>operf</command></title>
 <para>
-In this section we describe the configuration and control of the profiling system
-with opcontrol in more depth.
-The <command>opcontrol</command> script has a default setup, but you
-can alter this with the options given below. In particular,
-if your hardware supports performance counters, you can configure them.
-There are a number of counters (for example, counter 0 and counter 1
-on the Pentium III). Each of these counters can be programmed with
-an event to count, such as cache misses or MMX operations. The event
+This section describes in detail how <command>operf</command> is used to
+control profiling. Unless otherwise directed, <command>operf</command> will profile using
+the default event for your system. For most systems, the default event is some
+cycles-based event, assuming your processor type supports hardware performance
+counters. If your hardware <emphasis>does</emphasis> support performance counters, you can specify
+something other than the default hardware event on which to profile. The performance
+monitor counters can be programmed to count various hardware events,
+such as cache misses or MMX operations. The event
 chosen for each counter is reflected in the profile data collected
 by OProfile: functions and binaries at the top of the profiles reflect
 that most of the chosen events happened within that code.
 </para>
 <para>
-Additionally, each counter has a "count" value: this corresponds to how
+Additionally, each counter is programmed with a "count" value, which corresponds to how
 detailed the profile is. The lower the value, the more frequently profile
-samples are taken. A counter can choose to sample only kernel code, user-space code,
+samples are taken. You can choose to sample only kernel code, user-space code,
 or both (both is the default). Finally, some events have a "unit mask"
-- this is a value that further restricts the types of event that are counted. 
+-- this is a value that further restricts the types of event that are counted.
+You can see the event types and unit masks for your CPU using <command>ophelp</command>.
+More information on event specification can be found at <xref linkend="eventspec"/>.
+</para>
+<para>
+The <command>operf</command> command syntax is:
+</para>
+<screen>operf [ options ] [ --system-wide | --pid=&lt;PID&gt; | [ command [ args ] ] ]</screen>
+<para>
+Following is a description of the options.
+</para>
+<variablelist>
+	<varlistentry>
+		<term><option>command</option></term>
+		<listitem><para>
+		The command or application to be profiled. <command>args</command> are the input arguments
+        that the command or application requires. Either <code>command</code>, <code>--pid</code> or
+        <code>--system-wide</code> is required, but cannot be used simultaneously.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--pid / -p [PID]</option></term>
+		<listitem><para>
+		This option enables <command>operf</command> to profile a running application. <code>PID</code>
+		should be the process ID of the process you wish to profile. When
+		finished profiling (e.g., when the profiled process ends), press
+		Ctrl-c to stop <command>operf</command>.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--system-wide / -s</option></term>
+		<listitem><para>
+		This option is for performing a system-wide profile. You must
+		have root authority to run <command>operf</command> in this mode.
+		When finished profiling, Ctrl-C to stop <command>operf</command>. If you run
+		<code>operf --system-wide</code> as a background job (i.e., with the &amp;), you
+		<emphasis>must</emphasis> stop it in a controlled manner in order to process
+		the profile data it has collected.  Use <code>kill -SIGINT &lt;operf-PID&gt;</code>
+		for this purpose. It is recommended that when running <command>operf</command>
+		with this option, your current working directory should be <filename>/root</filename> or a subdirectory
+		of <filename>/root</filename> to avoid storing sample data files in locations accessible by regular users.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--vmlinux / k [vmlinux_path]</option></term>
+		<listitem><para>
+		A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
+		Kernel samples will be attributed to this binary, allowing post-processing tools
+		(like <command>opreport</command>) to attribute samples to the appropriate kernel symbols.
+		If this option is not specified, all kernel samples will be attributed to a pseudo
+		binary named "no-vmlinux".
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--callgraph / -g</option></term>
+		<listitem><para>
+		This option enables the callgraph to be saved during profiling. NOTE: The
+		full callchain is recorded, so there is no depth limit.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--append / -a</option></term>
+		<listitem><para>
+		By default, <command>operf</command> moves old profile data from
+		<filename>&lt;session_dir&gt;/samples/current</filename> to
+		<filename>&lt;session_dir&gt;/samples/previous</filename>.
+		If a 'previous' profile already existed, it will be replaced. If the
+		<code>--append</code> option is passed, old profile data in 'current' is left in place and
+		new profile data will be added to it, and the 'previous' profile (if one existed)
+		will remain untouched. To access the 'previous' profile, simply add a session
+		specification to the normal invocation of oprofile post-processing tools; for example:
+		</para>
+		<para>
+		<screen>opreport session:previous</screen>
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--events / -e  [event1[,event2[,...]]]</option></term>
+		<listitem><para>
+		This option is for passing a comma-separated list of event specifications
+		for profiling. Each event spec is of the form:
+		</para>
+		<screen>name:count[:unitmask[:kernel[:user]]]</screen>
+		<para>
+		When no event specification is given, the default event for the running
+		processor type will be used for profiling. Use <command>ophelp</command>
+		to list the available events for your processor type.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--separate-thread / -t</option></term>
+		<listitem><para>
+		This option categorizes samples by thread group ID (tgid) and thread ID (tid).
+		The <code>--separate-thread</code> option is useful for seeing per-thread samples in
+		multi-threaded applications.  When used in conjuction with the <code>--system-wide</code>
+		option, <code>--separate-thread</code> is also useful for seeing per-process
+		(i.e., per-thread group) samples for the case where multiple processes are
+		executing the same program during a profiling run.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--separate-cpu / -c</option></term>
+		<listitem><para>
+		This option categorizes samples by cpu.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--session-dir / -d [path]</option></term>
+		<listitem><para>
+		This option specifies the session directory to hold the sample data. If not specified,
+		the data is saved in the <filename>oprofile_data</filename> directory on the current path.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--verbose / -V [level]</option></term>
+		<listitem><para>
+		A comma-separated list of debugging control values used to increase the verbosity of the
+		output. Valid values are: debug, perf_events, misc, sfile, arcs, and the special value, 'all'.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--version -v </option></term>
+		<listitem><para>
+		Show <command>operf</command> version.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--help / -h</option></term>
+		<listitem><para>
+		Show a help message.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+</sect1>
+
+<sect1 id="controlling-daemon">
+<title>Using <command>opcontrol</command></title>
+<para>
+In this section we describe the configuration and control of the profiling system
+with opcontrol in more depth. See <xref linkend="controlling-operf"/> for a description
+of the preferred profiling method.
+</para>
+<para>
+The <command>opcontrol</command> script has a default setup, but you
+can alter this with the options given below. In particular, you can select
+specific hardware events on which to base your profile. See <xref linkend="controlling-operf"/> for an
+introduction to hardware events and performance counter configuration.
 The event types and unit masks for your CPU are listed by <command>opcontrol
---list-events</command>.
+--list-events</command> or <command>ophelp</command>.
 </para>
 <para>
 The <command>opcontrol</command> script provides the following actions :
@@ -799,23 +1030,35 @@ current session, <command>opcontrol --reset</command>.
 </para>
 </sect3>
 </sect2> 
+</sect1>
 
-<sect2 id="eventspec">
+<sect1 id="eventspec">
 <title>Specifying performance counter events</title>
 <para>
-The <option>--event</option> option to <command>opcontrol</command>
-takes a specification that indicates how the details of each
-hardware performance counter should be setup. If you want to
-revert to OProfile's default setting (<option>--event</option>
-is strictly optional), use <option>--event=default</option>. Use of this
-option over-rides all previous event selections.
+Both methods of profiling (<command>operf</command> and <command>opcontrol</command>)
+allow you to give one or more event specifications to provide details of how each
+hardware performance counter should be setup. With <command>operf</command>, you
+can provide a comma-separated list of event specfications using the <code>--events</code>
+option.  With <command>opcontrol</command>, you use the <code>--event</code> option
+for each desired event specification.
+The event specification is a colon-separated string of the form
+<option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option>
+as described in the table below.
 </para>
 <para>
-You can pass multiple event specifications. OProfile will allocate
-hardware counters as necessary. Note that some combinations are not
-allowed by the CPU; running <command>opcontrol --list-events</command> gives the details
-of each event. The event specification is a colon-separated string
-of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option> as described in this table:
+If no event specs are passed to <command>operf</command>, it will use the default
+event for profiling. With <command>opcontrol</command>, if you want to
+revert to the default event, use <option>--event=default</option>. Use of this
+option overrides all previous event selections that have been cached.
+</para>
+<para>
+<note>OProfile will allocate hardware counters as necessary, but some processor
+types have restrictions as to what hardware events may be counted simultaneously.
+The <command>operf</command> program uses a multiplexing technique when such
+hardware restrictions are encountered, but <command>opcontrol</command> does
+not have this capability; instead, <command>opcontrol</command> will display an
+error message if you select an incompatible set of events.
+</note>
 </para>
 <informaltable frame="all">
 <tgroup cols='2'> 
@@ -835,15 +1078,15 @@ they will be set to the default values (a unit mask of 0, and profiling both ker
 userspace code). Note that some events require a unit mask.
 </para>
 <note><para>
-For the PowerPC platforms, all events specified must be in the same group; i.e., the group number
-appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9</constant>) must be the same.
+When using legacy mode <command>opcontrol</command> on PowerPC platforms, all events specified must be in the same group;
+i.e., the group number appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9
+</constant>) must be the same.
 </para></note>
 <para>
-If OProfile is using timer-interrupt mode, there is no configuration possible.
+If OProfile is using timer-interrupt mode, there is no event configuration possible.
 </para>
 <para>
-The table below lists the events selected by default
-(<option>--event=default</option>) for the various computer architectures:
+The table below lists the default event for various processor types:
 </para>
 <informaltable frame="all">
 <tgroup cols='3'> 
@@ -871,15 +1114,12 @@ The table below lists the events selected by default
 <row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
-<row><entry>IBM iseries</entry><entry>PowerPC 4/5/970</entry><entry>CYCLES:10000:0:1:1</entry></row>
-<row><entry>IBM pseries</entry><entry>PowerPC 4/5/970/Cell</entry><entry>CYCLES:10000:0:1:1</entry></row>
+<row><entry>IBM pseries</entry><entry>PowerPC 4/5/6/7/970/Cell</entry><entry>CYCLES:100000:0:1:1</entry></row>
 <row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
 <row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
 </tbody>
 </tgroup>
 </informaltable>
-
-</sect2>
 
 </sect1>
  
@@ -951,7 +1191,9 @@ Note that quitting <command>oprof_start</command> does not stop the profiler.
 Your configuration is saved in the same file as <command>opcontrol</command> uses; that is,
 <filename>~/.oprofile/daemonrc</filename>.
 </para>
-
+<para>
+<note><command>oprof_start</command> does not currently support <command>operf</command>.</note>
+</para>
 </sect1>
 
 <sect1 id="detailed-parameters">
@@ -959,12 +1201,15 @@ Your configuration is saved in the same file as <command>opcontrol</command> use
 
 <sect2 id="hardware-counters">
 <title>Hardware performance counters</title>
+<para>Most processor models include performance monitor units that can be configured to monitor (count)
+various types of hardware events.  This section is where you can find architecture-specific information
+to help you use these events for profiling. You do not really need to read this section unless you are interested in using
+events other than the default event chosen by OProfile.
+</para>
 <note>
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
 you must use OProfile in timer mode (see <xref linkend="timer" />). 
-You do not really need to read this section unless you are interested in using 
-events other than the default event chosen by OProfile.
 </para>
 </note>
 <para>
@@ -973,17 +1218,18 @@ from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink
 The AMD Athlon/Opteron/Phenom/Turion implementation is detailed in <ulink
 url="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf">
 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>.
-For PowerPC64 processors in IBM iSeries, pSeries, and blade server systems, processor documentation
-is available at <ulink url="http://www-01.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC/">
-http://www-01.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC</ulink>.  (For example, the
-specific publication containing information on the performance monitor unit for the PowerPC970 is 
-"IBM PowerPC 970FX RISC Microprocessor User's Manual.")
+For IBM PowerPC processors, documentation is available at <ulink url="https://www.power.org/">
+https://www.power.org/</ulink>. For example, <ulink url="https://www.power.org/events/Power7">
+https://www.power.org/events/Power7</ulink> contains specific information on the performance
+monitor unit for the IBM POWER7.
+</para>
+<para>
 These processors are capable of delivering an interrupt when a counter overflows.
 This is the basic mechanism on which OProfile is based. The delivery mode is <acronym>NMI</acronym>,
 so blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
 the current <acronym>PC</acronym> value and the current task are recorded into the profiling structure.
 This allows the overflow event to be attached to a specific assembly instruction in a binary image.
-The daemon receives this data from the kernel, and writes it to the sample files.
+OProfile receives this data from the kernel and writes it to the sample files.
 </para>
 <para>
 If we use an event such as <constant>CPU_CLK_UNHALTED</constant> or <constant>INST_RETIRED</constant>
@@ -1025,7 +1271,7 @@ Specifying too small a value can lead to higher performance overhead.
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
 some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix).
-On these machines, OProfile falls back to using the timer interrupt for profiling. 
+On these machines, OProfile falls back to using the timer interrupt for profiling,
 back to using the real-time clock interrupt to collect samples.  In timer mode, OProfile
 is not able to profile code that has interrupts disabled.
 </para>
@@ -1035,6 +1281,8 @@ parameter (or <option>oprofile.timer=1</option> on the boot command line if OPro
 built-in).  If OProfile was built as a kernel module, then you must pass the 'timer=1'
 parameter with the modprobe command.  Do this before executing 'opcontrol --init' or
 edit the opcontrol command's invocation of modprobe to pass the 'timer=1' parameter.
+
+<note>Timer mode is only available using the legacy <command>opcontrol</command> command.</note>
 </para>
 </sect2>
 
@@ -1170,6 +1418,8 @@ A New Performance Analysis Technique for AMD Family 10h Processors" (
 <ulink url="http://developer.amd.com/assets/AMD_IBS_paper_EN.pdf">
 http://developer.amd.com/assets/AMD_IBS_paper_EN.pdf</ulink>).
 There are two types of IBS profile types, described in the following sections.
+<note>Profiling on IBS events is only supported with legacy mode profiling
+(i.e., with <command>opcontrol</command>).</note>
 </para>
 
 <sect3 id="ibs-fetch">
@@ -1247,6 +1497,8 @@ sampling approach like better sampling resolution with less overhead
 and the possibility to get samples within code sections where
 interrupts are disabled (useful especially for Linux kernel code).
 </para>
+<note>Profiling with the instruction sampling facility is currently only supported
+with legacy mode profiling (i.e., with <command>opcontrol</command>).</note>
 <para>
 A public description of the System z CPU-Measurement Facilities can be
 found here:
@@ -1321,18 +1573,19 @@ supported.
 <sect2 id="misuse">
 <title>Dangerous counter settings</title>
 <para>
-OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
-If too low a count reset value is set for a counter, the system can become overloaded with counter
-interrupts, and seem as if the system has frozen. Whilst some validation is done, it
-is not foolproof.
+OProfile is a low-level profiler which allows continuous profiling with a low-overhead cost.
+When using OProfile legacy mode profiling, it may be possible to configure such a low a counter reset value
+(i.e., high sampling rate) that the system can become overloaded with counter interrupts and your
+system's responsiveness may be severely impacted. Whilst some validation is done on the <code>count</code>
+values you pass to <command>opcontrol</command> with your event specification, it is not foolproof.
 </para>
 <note><para>
 This can happen as follows: When the profiler count
-reaches zero an NMI handler is called which stores the sample values in an internal buffer, then resets the counter
-to its original value. If the count is very low, a pending NMI can be sent before the NMI handler has
-completed. Due to the priority of the NMI, the local APIC delivers the pending interrupt immediately after
+reaches zero, an NMI handler is called which stores the sample values in an internal buffer, then resets the counter
+to its original value. If the reset count you specified is very low, a pending NMI can be sent before the NMI handler has
+completed. Due to the priority of the NMI, the pending interrupt is delivered immediately after
 completion of the previous interrupt handler, and control never returns to other parts of the system.
-In this way the system seems to be frozen.
+If all processors are stuck in this mode, the system will appear to be frozen.
 </para></note>
 <para>If this happens, it will be impossible to bring the system back to a workable state.
 There is no way to provide real security against this happening, other than making sure to use a reasonable value
@@ -1341,8 +1594,13 @@ is likely to freeze the system.
 </para>
 <para>
 In short : <command>Don't try a foolish sample count value</command>. Unfortunately the definition of a foolish value
-is really dependent on the event type - if ever in doubt, e-mail </para>
-<address><email>oprofile-list@lists.sf.net</email>.</address>
+is really dependent on the event type. If ever in doubt, post a message to <address><email>oprofile-list@lists.sf.net</email>.</address>
+</para>
+<note>
+The scenario described above cannot occur if you use <command>operf</command> for profiling instead of
+<command>opcontrol</command>, because the perf_events kernel subsystem automatically detects when performance monitor
+interrupts are arriving at a dangerous level and will throttle back the sampling rate.
+</note>
 </sect2>
 
 </sect1>
@@ -1352,12 +1610,17 @@ is really dependent on the event type - if ever in doubt, e-mail </para>
 <chapter id="results">
 <title>Obtaining results</title>
 <para>
-OK, so the profiler has been running, but it's not much use unless we can get some data out. Fairly often,
+OK, so the profiler has been running, but it's not much use unless we can get some data out. Sometimes,
 OProfile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
-the profiler. This can happen on lightly-loaded machines. Remember you can force a dump at any time with :
+the profiler. This can happen on lightly-loaded machines. If you're using OPorifle legacy mode, you can
+force a dump at any time with :
 </para>
 <para><command>opcontrol --dump</command></para>
-<para>Remember to do this before complaining there is no profiling data !
+<para>This ensures that any profile data collected by the <command>oprofiled</command> daemon has been flusehd
+to disk.  Remember to do a <code>dump</code>, <code>stop</code>, <code>shutdown</code>, or <code>deinit</code>
+before complaining there is no profiling data!
+</para>
+<para>
 Now that we've got some data, it has to be processed. That's the job of <command>opreport</command>,
 <command>opannotate</command>, or <command>opgprof</command>.
 </para>
@@ -1516,8 +1779,9 @@ Differential profile of an archived binary with the current session :
 		<term><option>count:</option><emphasis>eventcountlist</emphasis></term>
 		<listitem><para>
 		The event count to match on, e.g. <option>event:DATA_MEM_REFS count:30000</option>.
-		Note that this value refers to the setting used for <command>opcontrol</command>
-		only, and has nothing to do with the sample counts in the profile data
+		Note that this value refers to the count value in the event spec you passed
+		to <command>opcontrol</command> or <command>operf</command> when setting up to do a
+		profile run.  It has nothing to do with the sample counts in the profile data
 		itself.
 		You can pass a list of events for side-by-side comparison with <command>opreport</command>.
 		When using the timer interrupt, the count is always 0 (indicating it cannot be set).
@@ -1569,7 +1833,9 @@ Differential profile of an archived binary with the current session :
 <sect2 id="locating-and-managing-binary-images">
 <title>Locating and managing binary images</title>
 <para>
-Each session's sample files can be found in the $SESSION_DIR/samples/ directory (default: <filename>/var/lib/oprofile/samples/</filename>).
+Each session's sample files can be found in the $SESSION_DIR/samples/ directory (default when
+using legacy mode: <filename>/var/lib/oprofile/samples/</filename>; default when using
+<command>operf</command>:  <filename>&lt;cur_dir&gt;/oprofile_data/samples/</filename>).
 These are used, along with the binary image files, to produce human-readable data.
 In some circumstances (e.g., kernel modules), OProfile
 will not be able to find the binary images. All the tools have an <option>--image-path</option>
@@ -1605,27 +1871,29 @@ You specified a binary name, but spelt it wrongly. Check your spelling !
 </para></listitem></varlistentry>
 <varlistentry><term>profiler wasn't running</term><listitem><para>
 Make very sure that OProfile was actually up and running when you ran
-the binary.
+the application you wish to profile.
 </para></listitem></varlistentry>
-<varlistentry><term>binary didn't run long enough</term><listitem><para>
+<varlistentry><term>application didn't run long enough</term><listitem><para>
 Remember OProfile is a statistical profiler - you're not guaranteed to
 get samples for short-running programs. You can help this by using a
 lower count for the performance counter, so there are a lot more samples
 taken per second.
 </para></listitem></varlistentry>
-<varlistentry><term>binary spent most of its time in libraries</term><listitem><para>
-Similarly, if the binary spends little time in the main binary image
+<varlistentry><term>application spent most of its time in libraries</term><listitem><para>
+Similarly, if the application spends little time in the main binary image
 itself, with most of it spent in shared libraries it uses, you might
-not see any samples for the binary image itself. You can check this
-by using <command>opcontrol --separate=lib</command> before the
-profiling session, so <command>opreport</command> and friends show
-the library profiles on a per-application basis.
+not see any samples for the binary image (i.e., executable) itself. If you're
+using OProfile legacy mode profiling, then we recommend using
+<command>opcontrol --separate=lib</command> before the
+profiling session so that <command>opreport</command> and friends show
+the library profiles on a per-application basis.  This is done automatically
+when profiling with <command>operf</command>, so no special setup is necessary.
 </para></listitem></varlistentry>
 <varlistentry><term>specification was really too strict</term><listitem><para>
 For example, you specified something like <option>tgid:3433</option>,
 but no task with that group ID ever ran the code.
 </para></listitem></varlistentry>
-<varlistentry><term>binary didn't generate any events</term><listitem><para>
+<varlistentry><term>application didn't generate any events</term><listitem><para>
 If you're using a particular event counter, for example counting MMX
 operations, the code might simply have not generated any events in the
 first place. Verify the code you're profiling does what you expect it
@@ -1703,14 +1971,15 @@ can do a lot more than that, as described below.
 <sect2 id="opreport-merging">
 <title>Merging separate profiles</title>
 
-If you have used one of the <option>--separate=</option> options
+If you have used one of the <option>--separate[*]</option> options
 whilst profiling, there can be several separate profiles for
 a single binary image within a session. Normally the output
-will keep these images separated (so, for example, the image summary
-output shows library image summaries on a per-application basis,
-when using <option>--separate=lib</option>).
-Sometimes it can be useful to merge these results back together
-before getting results. The <option>--merge</option> option allows
+will keep these images separated. So, for example, if you profiled
+with separation on a per-cpu basis (<code>opcontrol --separate=cpu</code> or
+<code>operf --separate-cpu</code>), you would see separate columns in
+the output of <command>opreport</command> for each CPU where samples
+were recorded. But it can be useful to merge these results back together
+to make the report more readable. The <option>--merge</option> option allows
 you to do that.
 </sect2>
 
@@ -1730,7 +1999,7 @@ This section provides details on how to use the OProfile callgraph feature.
 <sect3 id="op-cg1">
 <title>Callgraph details</title>
 <para>
-When using the <option>opcontrol --callgraph</option> option, you can see what
+When using the <option>--callgraph</option> option, you can see what
 functions are calling other functions in the output. Consider the
 following program:
 </para>
@@ -1957,7 +2226,7 @@ samples  %        image name    		                symbol name
 <para>
 Note that, since such mappings are dependent upon individual invocations of
 a binary, these mappings are always listed as a dependent image,
-even when using <option>--separate=none</option>.
+even when using the legacy mode <option>opcontrol --separate=none</option> command.
 Equally, the results are not affected by the <option>--merge</option>
 option.
 </para>
@@ -2260,9 +2529,8 @@ Show version.
 <sect1 id="getting-jit-reports">
 	<title>OProfile results with JIT samples</title>
 	<para>
-		After profiling a Java (or other supported VM) application, the command
-		<screen><command>"opcontrol --dump"</command> </screen>
-		flushes the sample buffers and creates ELF binaries from the
+		After profiling a Java (or other supported VM) application, the
+		OProfile JIT support creates ELF binaries from the
 		intermediate files that were written by the agent library.
 		The ELF binaries are named <filename>&lt;tgid&gt;.jo</filename>.
 		With the symbol information stored in these ELF files, it is
@@ -2915,7 +3183,7 @@ common example is two memory reads: one from L1 cache and the other from memory:
 the second memory read is likely to have more samples.
 There are many other causes of hidden cost of instructions. A non-exhaustive
 list: mis-predicted branch, TLB cache miss, partial register stall,
-partial register dependencies, memory mismatch stall, re-executed µops. If you want to write
+partial register dependencies, memory mismatch stall, re-executed Âµops. If you want to write
 programs at the assembly level, be sure to take a look at the Intel and
 AMD documentation at <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>
 and <ulink url="http://developer.amd.com/devguides.jsp/">http://developer.amd.com/devguides.jsp</ulink>.
