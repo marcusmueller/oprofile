@@ -262,7 +262,7 @@ void run_app(void)
 
 }
 
-int start_profiling_app(void)
+int start_profiling(void)
 {
 	// The only process that should return from this function is the process
 	// which invoked it.  Any forked process must do _exit() rather than return().
@@ -326,6 +326,7 @@ int start_profiling_app(void)
 				 *   - profiled process has already ended
 				 *   - passed PID was invalid
 				 *   - device or resource busy
+				 *   - failure to mmap kernel profile data
 				 */
 				cerr << "operf record init failed" << endl;
 				cerr << "usage: operf [ options ] [ --system-wide | --pid <pid> | [ command [ args ] ] ]" << endl;
@@ -388,7 +389,7 @@ fail_out:
 			perror("Internal error on operf_record_ready_pipe");
 			return -1;
 		} else if (recorder_ready != 1) {
-			cerr << "operf record process failure; exiting" << endl;
+			cverb << vdebug << "operf record process failure; exiting" << endl;
 			if (startApp) {
 				cverb << vdebug << "telling child to abort starting of app" << endl;
 				startup = 0;
@@ -552,7 +553,7 @@ static end_code_t _run(void)
 		_exit(EXIT_FAILURE);
 	}
 
-	if (start_profiling_app() < 0) {
+	if (start_profiling() < 0) {
 		return PERF_RECORD_ERROR;
 	}
 	// parent continues here
@@ -662,7 +663,7 @@ again:
 		}
 	} else {
 		// User passed in --pid or --system-wide
-		cout << "operf: Press Ctl-c to stop profiling" << endl;
+		cout << "operf: Press Ctl-c or 'kill -SIGINT " << getpid() << "' to stop profiling" << endl;
 		cverb << vdebug << "going into waitpid on operf record process " << operf_record_pid << endl;
 		if (waitpid(operf_record_pid, &waitpid_status, 0) < 0) {
 			if (errno == EINTR) {
@@ -1552,9 +1553,12 @@ int main(int argc, char * const argv[])
 	cpu_type = op_get_cpu_type();
 	cpu_speed = op_cpu_frequency();
 	process_args(argc, argv);
+
+	int perf_event_paranoid = _get_sys_value("/proc/sys/kernel/perf_event_paranoid");
 	my_uid = geteuid();
-	if (operf_options::system_wide && my_uid != 0) {
-		cerr << "You must be root to do system-wide profiling." << endl;
+	if (operf_options::system_wide && ((my_uid != 0) && (perf_event_paranoid > 0))) {
+		cerr << "To do system-wide profiling, either you must be root or" << endl;
+		cerr << "/proc/sys/kernel/perf_event_paranoid must be set to 0 or -1." << endl;
 		cleanup();
 		exit(1);
 	}

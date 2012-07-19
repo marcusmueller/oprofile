@@ -75,4 +75,9 @@ merge_option handle_merge_option(std::vector<std::string> const & mergespec,
  */
 int try_another_session_dir(void);
 
+/**
+ * Answer the question 'did the user pass in a session-dir argument?'.
+ */
+bool was_session_dir_supplied(void);
+
 #endif /* !COMMON_OPTION_H */

@@ -235,7 +235,13 @@ int operf_record::prepareToRecord(int cpu, int fd)
 	md.base = mmap(NULL, (num_mmap_pages + 1) * pagesize,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 	if (md.base == MAP_FAILED) {
-		perror("failed to mmap");
+		if (errno == EPERM) {
+			cerr << "Failed to mmap kernel profile data." << endl;
+			cerr << "Increasing the value of /proc/sys/kernel/perf_event_mlock_kb might resolve the problem." << endl;
+			return OP_PERF_HANDLED_ERROR;
+		} else {
+			perror("failed to mmap");
+		}
 		return -1;
 	}
 	samples_array.push_back(md);
@@ -366,6 +372,7 @@ void operf_record::setup()
 
 error:
 	delete[] poll_data;
+	poll_data = NULL;
 	for (int i = 0; i < samples_array.size(); i++) {
 		struct mmap_data *md = &samples_array[i];
 		munmap(md->base, (num_mmap_pages + 1) * pagesize);

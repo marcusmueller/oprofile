@@ -17,6 +17,7 @@
 #include <iostream>
 #include <cstdlib>
 
+#include "op_config.h"
 #include "profile_spec.h"
 #include "arrange_profiles.h"
 #include "op_exception.h"
@@ -135,6 +136,8 @@ again:
 		else
 			throw op_fatal_error(e.what());
 	}
+	if (!was_session_dir_supplied())
+		cerr << "Using " << op_samples_dir << " for session-dir" << endl;
 
 	cverb << vsfile << "Archive: " << pspec.get_archive_path() << endl;
 

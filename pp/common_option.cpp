@@ -331,3 +331,8 @@ int try_another_session_dir(void)
 		return 0;
 	}
 }
+
+bool was_session_dir_supplied(void)
+{
+	return session_dir_supplied;
+}

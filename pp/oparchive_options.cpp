@@ -111,6 +111,8 @@ again:
 		else
 			throw op_fatal_error(e.what());
 	}
+	if (!was_session_dir_supplied())
+		cerr << "Using " << op_samples_dir << " for session-dir" << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;

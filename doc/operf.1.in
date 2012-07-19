@@ -56,7 +56,17 @@ This option enables operf to profile a running application.
 .I PID
 should be the process ID of the process you wish to profile.  When
 finished profiling (e.g., when the profiled process ends), press
-Ctrl-c to stop operf.
+Ctrl-c to stop operf. If you run
+.BI operf
+.BI --pid
+as a background job (i.e., with the &), you
+.B must
+stop it in a controlled manner in order for it to process the profile
+data it has collected.  Use
+.BI kill
+.BI -SIGINT
+.BI <operf-PID>
+for this purpose.
 .br
 .TP
 .BI "--system-wide / -s"
