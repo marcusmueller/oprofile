@@ -221,10 +221,15 @@ int oparchive(options::spec const & spec)
 	              options::outdirectory + abi_name);
 
 	/* copy over the <session-dir>/samples/oprofiled.log file */
-
 	string log_name = string(real_session_dir) + string("/samples") + "/oprofiled.log";
 	copy_one_file(image_ok, archive_path + log_name,
 	              options::outdirectory + log_name);
+
+	/* copy over the <session-dir>/samples/operf.log file */
+	log_name = string(real_session_dir) + string("/samples") + "/operf.log";
+	copy_one_file(image_ok, archive_path + log_name,
+	              options::outdirectory + log_name);
+
 	free(real_session_dir);
 
 	return 0;
