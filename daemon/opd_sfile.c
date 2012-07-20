@@ -271,11 +271,6 @@ struct sfile * sfile_find(struct transient const * trans)
 	struct kernel_image * ki = NULL;
 	unsigned long hash;
 
-	if (trans->tracing != TRACING_ON) {
-		opd_stats[OPD_SAMPLES]++;
-		opd_stats[trans->in_kernel == 1 ? OPD_KERNEL : OPD_PROCESS]++;
-	}
-
 	/* There is a small race where this *can* happen, see
 	 * caller of cpu_buffer_reset() in the kernel
 	 */

@@ -116,6 +116,12 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 	if (!trans->current)
 		goto out;
 
+	if (trans->tracing != TRACING_ON) {
+		opd_stats[OPD_SAMPLES]++;
+		opd_stats[trans->in_kernel == 1 ? OPD_KERNEL : OPD_PROCESS]++;
+	}
+
+
 	/* FIXME: this logic is perhaps too harsh? */
 	if (trans->current->ignored || (trans->last && trans->last->ignored))
 		goto out;
