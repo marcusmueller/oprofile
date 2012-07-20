@@ -54,7 +54,7 @@ void opd_print_stats(void)
 		opd_stats[OPD_LOST_NO_MAPPING]);
 	printf("Nr. user context kernel samples lost due to no app info available: %lu\n",
 	       opd_stats[OPD_NO_APP_KERNEL_SAMPLE]);
-	print_if("Nr. event lost due to buffer overflow: %u\n",
+	print_if("Nr. samples lost due to buffer overflow: %u\n",
 	       "/dev/oprofile/stats", "event_lost_overflow", 1);
 	print_if("Nr. samples lost due to no mapping: %u\n",
 	       "/dev/oprofile/stats", "sample_lost_no_mapping", 1);
