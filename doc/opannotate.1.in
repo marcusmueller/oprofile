@@ -18,7 +18,13 @@ session. See oprofile(1) for how to write profile specifications.
 .SH OPTIONS
 .TP
 .BI "--assembly / -a"
-Output annotated assembly. If this is combined with --source, then mixed
+Output annotated assembly. The binary file to be annotated does not need full debugging
+information to use this option, but symbol information
+.I is
+required. Without symbol information,
+.B opannotate
+will silently refuse to annotate the binary.
+If this option is combined with --source, then mixed
 source / assembly annotations are output.
 .br
 .TP

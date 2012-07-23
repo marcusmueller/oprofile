@@ -2367,7 +2367,8 @@ If you want to see the source file, the profiled application needs to have debug
 must be available through this debug information. For GCC, you must use the <option>-g</option> option
 when you are compiling.
 If the binary doesn't contain sufficient debug information, you can still
-use <command>opannotate <option>--assembly</option></command> to get annotated assembly.
+use <command>opannotate <option>--assembly</option></command> to get annotated assembly
+as long as the binary has (at least) symbol information.
 </para>
 <para>
 Note that for the reason explained in <xref linkend="hardware-counters" /> the results can be
