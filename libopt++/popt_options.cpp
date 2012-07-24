@@ -40,7 +40,7 @@ public:
 	 */
 	option_base(char const * option_name, char short_name,
 		    char const * help_str, char const * arg_help_str,
-		    void * data, int popt_flags);
+		    void * data, unsigned int popt_flags);
 
 	virtual ~option_base() {}
 
@@ -248,7 +248,7 @@ option::option(vector<string> & value, char const * name, char short_name,
 
 option_base::option_base(char const * name, char short_name,
                          char const * help, char const * arg_help,
-                         void * data, int popt_flags)
+                         void * data, unsigned int popt_flags)
 	: option_name(name)
 {
 	poptOption const opt = { name, short_name, popt_flags,
