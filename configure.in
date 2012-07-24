@@ -110,10 +110,10 @@ if test "$HAVE_PERF_EVENTS" = "1"; then
 			AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1',
 			[AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])])
 		PFM_LIB="-lpfm"
+		AC_DEFINE_UNQUOTED(HAVE_LIBPFM3, $HAVE_LIBPFM3, [Define to 1 if using libpfm3; 0 if using newer libpfm])
+		AC_DEFINE_UNQUOTED(HAVE_LIBPFM, $HAVE_LIBPFM, [Define to 1 if libpfm is available])
 	fi
 	AC_SUBST(PFM_LIB)
-	AC_DEFINE_UNQUOTED(HAVE_LIBPFM3, $HAVE_LIBPFM3, [Define to 1 if using libpfm3; 0 if using newer libpfm])
-	AC_DEFINE_UNQUOTED(HAVE_LIBPFM, $HAVE_LIBPFM, [Define to 1 if libpfm is available])
 fi
 
 AC_ARG_WITH(java,
