@@ -80,6 +80,8 @@ static event_t comm_event;
  */
 #if (defined(__powerpc__) || defined(__powerpc64__))
 #define NIL_CODE ~0U
+
+#if HAVE_LIBPFM3
 static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
                                  vector<operf_event_t> * evt_vec)
 {
@@ -119,6 +121,61 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 	}
 	return (events_converted == num_events);
 }
+#else
+static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
+{
+	int ret, i;
+	unsigned int num_events = evt_vec->size();
+	char evt_name[OP_MAX_EVT_NAME_LEN];
+	char * grp_name;
+	unsigned int events_converted = 0;
+	uint64_t code[1];
+
+	typedef struct {
+		uint64_t    *codes;
+		char        **fstr;
+		size_t      size;
+		int         count;
+		int         idx;
+	} pfm_raw_pmu_encode_t;
+
+	pfm_raw_pmu_encode_t raw;
+	raw.codes = code;
+	raw.count = 1;
+	raw.fstr = NULL;
+
+	if (pfm_initialize() != PFM_SUCCESS)
+		throw runtime_error("Unable to initialize libpfm; cannot continue");
+
+	for (unsigned int i = 0; i < num_events; i++) {
+		operf_event_t event = (*evt_vec)[i];
+		memset(evt_name, 0, OP_MAX_EVT_NAME_LEN);
+		if (!strcmp(event.name, "CYCLES")) {
+			strcpy(evt_name ,"PM_CYC") ;
+		} else if ((grp_name = strstr(event.name, "_GRP"))) {
+			strncpy(evt_name, event.name, grp_name - event.name);
+		} else {
+			strncpy(evt_name, event.name, strlen(event.name));
+		}
+
+		memset(&raw, 0, sizeof(raw));
+		ret = pfm_get_os_event_encoding(evt_name, PFM_PLM3, PFM_OS_NONE, &raw);
+		if (ret != PFM_SUCCESS) {
+			string evt_name_str = event.name;
+			string msg = "libpfm cannot find event code for " + evt_name_str +
+					"; cannot continue";
+			throw runtime_error(msg);
+		}
+
+		event.evt_code = raw.codes[0];
+		(*evt_vec)[i] = event;
+		events_converted++;
+		cverb << vperf << "Successfully converted " << event.name << " to perf_event code "
+		      << hex << event.evt_code << endl;
+	}
+	return (events_converted == num_events);
+}
+#endif
 
 bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 {
@@ -130,7 +187,11 @@ bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 		event.evt_code = NIL_CODE;
 		(*evt_vec)[i] = event;
 	}
-	pfm_initialize();
+
+#if HAVE_LIBPFM3
+	if (pfm_initialize() != PFMLIB_SUCCESS)
+		throw runtime_error("Unable to initialize libpfm; cannot continue");
+
 	ret = pfm_get_num_events(&count);
 	if (ret != PFMLIB_SUCCESS)
 		throw runtime_error("Unable to use libpfm to obtain event code; cannot continue");
@@ -143,6 +204,9 @@ bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 			break;
 	}
 	return (i != count);
+#else
+	return _op_get_event_codes(evt_vec);
+#endif
 }
 
 #endif
