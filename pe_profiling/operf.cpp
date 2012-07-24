@@ -594,14 +594,12 @@ static end_code_t _run(void)
 		 *    3. call _kill_operf_record_pid and _kill_operf_read_pid
 		 */
 		struct timeval tv;
-		long long start_time_sec;
 		long long usec_timer;
 		bool keep_trying = true;
 		const char * app_process = "profiled app";
 		const char * record_process = "operf-record process";
 		waitpid_status = 0;
 		gettimeofday(&tv, NULL);
-		start_time_sec = tv.tv_sec;
 		usec_timer = tv.tv_usec;
 		cverb << vdebug << "going into waitpid on profiled app " << app_PID << endl;
 
