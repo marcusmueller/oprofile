@@ -21,13 +21,14 @@ namespace {
 
 bool check_throw(cached_value<bool> const & boolval)
 {
+	bool foo;
 	try {
-		bool foo = boolval.get();
+		foo = boolval.get();
 		foo = false;
 	} catch (op_fatal_error const & e) {
-		return true;
+		foo = true;
 	}
-	return false;
+	return foo;
 }
 
 
