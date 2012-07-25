@@ -142,18 +142,20 @@ static void op_sig_stop(int val __attribute__((unused)))
 {
 	// Received a signal to quit, so we need to stop the
 	// app being profiled.
+	size_t dummy __attribute__ ((__unused__));
 	ctl_c = true;
 	if (cverb << vdebug)
-		write(1, "in op_sig_stop\n", 15);
+		dummy = write(1, "in op_sig_stop\n", 15);
 	if (startApp)
 		kill(app_PID, SIGKILL);
 }
 
 static void _handle_sigint(int val __attribute__((unused)))
 {
+	size_t dummy __attribute__ ((__unused__));
 	ctl_c = true;
 	if (cverb << vdebug)
-		write(1, "in _handle_sigint\n", 19);
+		dummy = write(1, "in _handle_sigint\n", 19);
 	return;
 }
 
@@ -946,12 +948,22 @@ int validate_app_name(void)
 		strncpy(full_pathname, app_name, len);
 	} else if ((app_name[0] == '.') && (app_name[1] == '/')) {
 		// Passed app is in current directory; e.g., "./myApp"
-		getcwd(full_pathname, PATH_MAX);
+		if (getcwd(full_pathname, PATH_MAX) == NULL) {
+			rc = -1;
+			cerr << "getcwd [1] failed when trying to find app name " << app_name << ". Aborting."
+			     << endl;
+			goto out;
+		}
 		strcat(full_pathname, "/");
 		strcat(full_pathname, (app_name + 2));
 	} else if (index(app_name, '/')) {
 		// Passed app is in a subdirectory of cur dir; e.g., "test-stuff/myApp"
-		getcwd(full_pathname, PATH_MAX);
+		if (getcwd(full_pathname, PATH_MAX) == NULL) {
+			rc = -1;
+			cerr << "getcwd [2] failed when trying to find app name " << app_name << ". Aborting."
+			     << endl;
+			goto out;
+		}
 		strcat(full_pathname, "/");
 		strcat(full_pathname, app_name);
 	} else {
