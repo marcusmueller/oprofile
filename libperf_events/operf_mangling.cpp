@@ -55,6 +55,7 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 	struct mangle_values values;
 	const struct operf_event * event = operfRead.get_event_by_counter(counter);
 
+	values.anon_name = NULL;
 	values.flags = 0;
 
 	if (sf->kernel) {

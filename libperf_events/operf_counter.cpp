@@ -77,6 +77,7 @@ operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec, bool do_cg
 	attr.exclude_hv = evt.no_hv;
 	attr.read_format = PERF_FORMAT_ID;
 	event_name = evt.name;
+	fd = id = -1;
 }
 
 operf_counter::~operf_counter() {
@@ -157,11 +158,12 @@ operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_ru
 	evts = events;
 	valid = false;
 	poll_data = NULL;
+	output_fd = out_fd;
+	num_cpus = -1;
 
 	if (system_wide && (pid != -1 || pid_started))
 		return;  // object is not valid
 
-	output_fd = out_fd;
 	cverb << vperf << "operf_record ctor using output fd " << output_fd << endl;
 
 	memset(&sa, 0, sizeof(struct sigaction));
@@ -281,7 +283,7 @@ void operf_record::setup()
 			cverb << vperf << "couldn't open " << fname << endl;
 			return;
 		}
-
+		fclose(fp);
 	}
 	pagesize = sysconf(_SC_PAGE_SIZE);
 	num_mmap_pages = (512 * 1024)/pagesize;
@@ -295,7 +297,6 @@ void operf_record::setup()
 	      << num_cpus << " cpus" << endl;
 	FILE * online_cpus = fopen("/sys/devices/system/cpu/online", "r");
 	if (!online_cpus) {
-		fclose(online_cpus);
 		err_msg = "Internal Error: Number of online cpus cannot be determined.";
 		rc = -1;
 		goto error;
@@ -311,7 +312,12 @@ void operf_record::setup()
 	}
 	if (index(cpus_online, ',')) {
 		all_cpus_avail = false;
-		dir = opendir("/sys/devices/system/cpu");
+		if ((dir = opendir("/sys/devices/system/cpu")) == NULL) {
+			fclose(online_cpus);
+			err_msg = "Internal Error: Number of online cpus cannot be determined.";
+			rc = -1;
+			goto error;
+		}
 	}
 	fclose(online_cpus);
 
@@ -324,7 +330,6 @@ void operf_record::setup()
 		} else {
 			real_cpu = op_get_next_online_cpu(dir, entry);
 			if (real_cpu < 0) {
-				closedir(dir);
 				err_msg = "Internal Error: Number of online cpus cannot be determined.";
 				rc = -1;
 				goto error;
@@ -362,7 +367,7 @@ void operf_record::setup()
 					goto error;
 		}
 	}
-	if (!all_cpus_avail)
+	if (dir)
 		closedir(dir);
 	write_op_header_info();
 
@@ -378,6 +383,8 @@ error:
 		munmap(md->base, (num_mmap_pages + 1) * pagesize);
 	}
 	samples_array.clear();
+	if (dir)
+		closedir(dir);
 	close(output_fd);
 	if (rc != OP_PERF_HANDLED_ERROR)
 		throw runtime_error(err_msg);

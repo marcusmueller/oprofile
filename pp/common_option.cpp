@@ -182,8 +182,8 @@ options::spec get_options(int argc, char const * argv[])
 		struct stat sb;
 		// First try <curr_dir>/oprofile_data session-dir (i.e., used by operf)
 		cwd = new char[PATH_MAX];
-		options::session_dir = getcwd(cwd, PATH_MAX);
-		delete cwd;
+		options::session_dir = (getcwd(cwd, PATH_MAX) == NULL) ? "" : cwd;
+		delete [] cwd;
 		options::session_dir +="/oprofile_data";
 		if ((stat(options::session_dir.c_str(), &sb) < 0) ||
 				((sb.st_mode & S_IFMT) != S_IFDIR)) {

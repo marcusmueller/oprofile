@@ -29,6 +29,10 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 	string operf_log (sessiondir);
 	operf_log.append("/samples/operf.log");
 	FILE * fp = fopen(operf_log.c_str(), "a");
+	if (!fp) {
+		fprintf(stderr, "Unable to open %s file.\n", operf_log.c_str());
+		return;
+	}
 	fprintf(fp, "\nProfiling started at %s", starttime);
 	fprintf(fp, "Profiling stopped at %s", op_get_time());
 	fprintf(fp, "\n-- OProfile/operf Statistics --\n");
@@ -78,4 +82,5 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 		fprintf(stderr, "\nSee the %s file for statistics about lost samples.\n", operf_log.c_str());
 
 	fflush(fp);
+	fclose(fp);
 }

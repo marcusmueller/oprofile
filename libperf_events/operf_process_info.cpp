@@ -25,9 +25,10 @@ using namespace OP_perf_utils;
 operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid)
 : pid(tgid), _appname(appname ? appname : ""), valid(is_valid)
 {
-	if (app_arg_is_fullname) {
+	if (app_arg_is_fullname && appname) {
 		appname_is_fullname = YES_FULLNAME;
 		app_basename = op_basename(appname);
+		num_app_chars_matched = (int)app_basename.length();
 	} else if (appname) {
 		appname_is_fullname = MAYBE_FULLNAME;
 		num_app_chars_matched = -1;

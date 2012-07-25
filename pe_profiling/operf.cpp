@@ -169,6 +169,7 @@ void _set_signals_for_record(void)
 	sigprocmask(SIG_UNBLOCK, &ss, NULL);
 
 	act.sa_handler = _handle_sigint;
+	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SIGINT);
 	if (sigaction(SIGINT, &act, NULL)) {
@@ -1005,11 +1006,13 @@ static u32 _get_event_code(char name[])
 		exit(EXIT_FAILURE);
 	}
 	if (fgets(oprof_event_code, sizeof(oprof_event_code), fp) == NULL) {
+		pclose(fp);
 		cerr << "Unable to find info for event "
 		     << name << endl;
 		exit(EXIT_FAILURE);
 	}
 
+	pclose(fp);
 	return atoi(oprof_event_code);
 }
 
@@ -1032,6 +1035,7 @@ static void _process_events_list(void)
 			exit(EXIT_FAILURE);
 		}
 		if (fgetc(fp) == EOF) {
+			pclose(fp);
 			cerr << "Error retrieving info for event "
 			     << event_spec << endl;
 			if (operf_options::callgraph)
@@ -1039,6 +1043,7 @@ static void _process_events_list(void)
 				     << endl << "15 times the minimum count value for the event."  << endl;
 			exit(EXIT_FAILURE);
 		}
+		fclose(fp);
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
 		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN);
@@ -1531,9 +1536,9 @@ static int _get_sys_value(const char * filename)
 	FILE * fp = fopen(filename, "r");
 	if (fp == NULL)
 		return _val;
-	if (!fgets(str, 9, fp))
-		return _val;
-	sscanf(str, "%d", &_val);
+	if (fgets(str, 9, fp))
+		sscanf(str, "%d", &_val);
+	fclose(fp);
 	return _val;
 }
 

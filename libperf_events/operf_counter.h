@@ -115,7 +115,7 @@ private:
 
 class operf_read {
 public:
-	operf_read(void) { valid = false; }
+	operf_read(void) : sample_data_fd(-1), cpu_type(CPU_NO_GOOD) { valid = false; }
 	void init(int sample_data_pipe_fd, std::string samples_dir, op_cpu cputype,
 	          std::vector<operf_event_t> & evts);
 	~operf_read();

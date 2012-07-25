@@ -216,6 +216,10 @@ int oparchive(options::spec const & spec)
 
 	/* copy over the <session-dir>/abi file if it exists */
 	char * real_session_dir = realpath(op_session_dir, NULL);
+	if (!real_session_dir) {
+		cerr << "Unable to to obtain realpath for " << op_session_dir << endl;
+		exit (EXIT_FAILURE);
+	}
 	string abi_name = string(real_session_dir) + "/abi";
 	copy_one_file(image_ok, archive_path + abi_name,
 	              options::outdirectory + abi_name);

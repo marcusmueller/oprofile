@@ -215,7 +215,6 @@ bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 static inline void update_trans_last(struct operf_transient * trans)
 {
 	trans->last = trans->current;
-	trans->is_anon = trans->is_anon;
 	trans->last_pc = trans->pc;
 }
 
@@ -447,7 +446,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 	if (op_mmap) {
 		if (cverb << vperf)
 			cout << "Found mmap for sample; image_name is " << op_mmap->filename <<
-			" and app name is " <<proc->get_app_name() << endl;
+			" and app name is " << proc->get_app_name() << endl;
 		trans.image_name = op_mmap->filename;
 		trans.app_filename = proc->get_app_name().c_str();
 		trans.image_len = strlen(trans.image_name);
@@ -796,6 +795,7 @@ void OP_perf_utils::op_release_resources(void)
 	while (images_it != all_images_map.end())
 		delete images_it++->second;
 	all_images_map.clear();
+	delete kernel_mmap;
 
 	operf_sfile_close_files();
 	operf_free_modules_list();
@@ -923,6 +923,8 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 			cerr << "Unable to find process information for process " << pid << "." << endl;
 			cverb << vperf << "couldn't open " << fname << endl;
 			return -1;
+		} else {
+			return 0;
 		}
 	}
 
@@ -1006,7 +1008,7 @@ out:
 int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_record * pr,
                                           int output_fd)
 {
-	int ret;
+	int ret = 0;
 	if (cverb << vperf)
 		cout << "op_record_process_info" << endl;
 	if (!system_wide) {
@@ -1207,8 +1209,15 @@ int OP_perf_utils::op_get_next_online_cpu(DIR * dir, struct dirent *entry)
 	res = sscanf(entry->d_name, "cpu%u", &cpu_num);
 	if (res <= 0)
 		goto again;
+
+	errno = 0;
 	snprintf(cpu_online_pathname, 40, "/sys/devices/system/cpu/cpu%u/online", cpu_num);
-	online = fopen(cpu_online_pathname, "r");
+	if ((online = fopen(cpu_online_pathname, "r")) == NULL) {
+		cerr << "Unable to open " << cpu_online_pathname << endl;
+		if (errno)
+			cerr << strerror(errno) << endl;
+		return -1;
+	}
 	res = fgetc(online);
 	fclose(online);
 	if (res == OFFLINE)
