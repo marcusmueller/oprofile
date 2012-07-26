@@ -1065,7 +1065,6 @@ static void _process_events_list(void)
 			switch (place) {
 			case _OP_UM:
 				event.evt_um = strtoul(info, NULL, 0);
-				cerr << "strtoul of UM is " << hex << event.evt_um << endl;
 				break;
 			case _OP_KERNEL:
 				if (atoi(info) == 0)
