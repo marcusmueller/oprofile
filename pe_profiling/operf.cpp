@@ -1064,7 +1064,8 @@ static void _process_events_list(void)
 		while ((info = strtok(NULL, ":"))) {
 			switch (place) {
 			case _OP_UM:
-				event.evt_um = atoi(info);
+				event.evt_um = strtoul(info, NULL, 0);
+				cerr << "strtoul of UM is " << hex << event.evt_um << endl;
 				break;
 			case _OP_KERNEL:
 				if (atoi(info) == 0)
@@ -1373,7 +1374,7 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 			break;
 		case 'p':
 			operf_options::pid = strtol(optarg, &endptr, 10);
-			if (endptr == optarg)
+			if ((endptr >= optarg) && (endptr <= (optarg + strlen(optarg) - 1)))
 				__print_usage_and_exit("operf: Invalid numeric value for --pid option.");
 			break;
 		case 'e':

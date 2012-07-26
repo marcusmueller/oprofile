@@ -1046,10 +1046,11 @@ The event specification is a colon-separated string of the form
 as described in the table below.
 </para>
 <para>
-If no event specs are passed to <command>operf</command>, it will use the default
-event for profiling. With <command>opcontrol</command>, if you want to
-revert to the default event, use <option>--event=default</option>. Use of this
-option overrides all previous event selections that have been cached.
+If no event specs are passed to <command>operf</command> or <command>opcontrol</command>,
+the default event will be used for profiling. With <command>opcontrol</command>, if you have
+previously specified some non-default event but want to revert to the default event, use
+<option>--event=default</option>. Use of this option overrides all previous event selections
+that have been cached.
 </para>
 <para>
 <note>OProfile will allocate hardware counters as necessary, but some processor
@@ -1076,6 +1077,14 @@ given by the first word of the description (only valid for unit masks having an 
 The last three values are optional, if you omit them (e.g. <option>--event=DATA_MEM_REFS:30000</option>),
 they will be set to the default values (a unit mask of 0, and profiling both kernel and
 userspace code). Note that some events require a unit mask.
+</para>
+<para>
+When specifying a unit mask value, it may be either a hexadecimal value (which
+<emphasis>must</emphasis> begin with "0x") or a string (i.e, symbolic name) which matches
+the first word in the unit mask description. Specifying a symbolic name for
+the unit mask is valid only for unit masks having "extra:" parameters, as
+shown by the output of <command>ophelp</command>.  Unit masks with "extra:" parameters must be
+specified using the symbolic name.
 </para>
 <note><para>
 When using legacy mode <command>opcontrol</command> on PowerPC platforms, all events specified must be in the same group;

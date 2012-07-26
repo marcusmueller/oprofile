@@ -121,10 +121,23 @@ for profiling. Each event spec is of the form:
 .br
 .I "   name:count[:unitmask[:kernel[:user]]]"
 .br
+When specifying a unit mask value, it may be either a hexadecimal value (which
+.I must
+begin with "0x") or a string (i.e, symbolic name) which matches the first word in
+the unit mask description. Specifying a symbolic name for the unit mask is valid only
+for unit masks having "extra:" parameters, as shown by the output of
+.B ophelp.
+Unit masks with "extra:" parameters
+.I must
+be specified using the symbolic name.
+.P
+.RS
 When no event specification is given, the default event for the running
-processor type will be used for profiling.  Use
+processor type will be used for profiling.
+Use
 .BI ophelp
 to list the available events for your processor type.
+.RE
 .br
 .TP
 .BI "--separate-thread / -t"
