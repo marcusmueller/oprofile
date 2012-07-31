@@ -70,12 +70,6 @@ merge_option handle_merge_option(std::vector<std::string> const & mergespec,
        bool allow_lib, bool exclude_dependent);
 
 /**
- * Determine if tool should look at any other potential locations for
- * a session dir.  Returns '0' for "no" and '1' for "yes".
- */
-int try_another_session_dir(void);
-
-/**
  * Answer the question 'did the user pass in a session-dir argument?'.
  */
 bool was_session_dir_supplied(void);

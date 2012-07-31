@@ -94,9 +94,11 @@ Use sample database from the specified directory
 .I dir_path
 instead of the default locations. If
 .I --session-dir
-is not specified, then opreport will search for samples in
+is not specified, then
+.B opreport
+will search for samples in
 .I <current_dir>/oprofile_data
-first; then, if no samples found there, it will look in /var/lib/oprofile.
+first. If that directory does not exist, the standard session-dir of /var/lib/oprofile is used.
 .br
 .TP
 .BI "--show-address / -w"

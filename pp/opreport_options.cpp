@@ -26,7 +26,6 @@
 #include "xml_output.h"
 #include "xml_utils.h"
 #include "cverb.h"
-#include "op_exception.h"
 
 using namespace std;
 
@@ -255,19 +254,11 @@ void process_spec(profile_classes & classes, list<string> const & spec)
 		profile_spec::create(spec, options::image_path,
 				     options::root_path);
 
-	list<string> sample_files;
-again:
-	try {
-		sample_files = pspec.generate_file_list(exclude_dependent,
-		                                        !options::callgraph);
-	} catch (op_no_samples_exception e) {
-		if (try_another_session_dir())
-			goto again;
-		else
-			throw op_fatal_error(e.what());
-	}
 	if (!was_session_dir_supplied())
 		cerr << "Using " << op_samples_dir << " for samples directory." << endl;
+
+	list<string> sample_files = pspec.generate_file_list(exclude_dependent,
+		                                        !options::callgraph);
 
 	cverb << vsfile << "Archive: " << pspec.get_archive_path() << endl;
 

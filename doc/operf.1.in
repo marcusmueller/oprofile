@@ -28,7 +28,7 @@ and
 .BI opannotate(1)
 can be used to generate profile reports.  The post-processing analysis tools will search for samples in
 .I <current_dir>/oprofile_data
-first; then, if no samples found there, they will look in /var/lib/oprofile.
+first. If that directory does not exist, the post-processing tools use the standard session-dir of /var/lib/oprofile.
 .P
 Statistics, such as total samples received
 and lost samples, are written to the operf.log file that can be found in the

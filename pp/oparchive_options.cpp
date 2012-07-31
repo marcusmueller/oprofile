@@ -25,7 +25,6 @@
 #include "string_filter.h"
 #include "file_manip.h"
 #include "cverb.h"
-#include "op_exception.h"
 
 
 using namespace std;
@@ -102,17 +101,10 @@ void handle_options(options::spec const & spec)
 	profile_spec const pspec =
 		profile_spec::create(spec.common, image_path, root_path);
 
-again:
-	try {
-		sample_files = pspec.generate_file_list(exclude_dependent, false);
-	} catch (op_no_samples_exception & e) {
-		if (try_another_session_dir())
-			goto again;
-		else
-			throw op_fatal_error(e.what());
-	}
 	if (!was_session_dir_supplied())
 		cerr << "Using " << op_samples_dir << " for session-dir" << endl;
+
+	sample_files = pspec.generate_file_list(exclude_dependent, false);
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;
