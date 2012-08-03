@@ -33,6 +33,11 @@ enum {	OPERF_SAMPLES, /**< nr. samples */
 };
 #define OPERF_INDEX_OF_FIRST_LOST_STAT 3
 
+/* Warn on lost samples if number of lost samples is greater the this fraction
+ * of the total samples
+*/
+#define OPERF_WARN_LOST_SAMPLES_THRESHOLD   0.0001
+
 void operf_print_stats(std::string sampledir, char * starttime, bool throttled);
 
 #endif /* OPERF_STATS_H */

@@ -27,6 +27,8 @@ using namespace std;
 void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 {
 	string operf_log (sessiondir);
+	int total_lost_samples = 0;
+
 	operf_log.append("/samples/operf.log");
 	FILE * fp = fopen(operf_log.c_str(), "a");
 	if (!fp) {
@@ -71,14 +73,11 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 	// TODO: handle extended stats
 	//operf_ext_print_stats();
 
-	bool print_log_info_msg = false;
-	for (int i = OPERF_INDEX_OF_FIRST_LOST_STAT; i < OPERF_MAX_STATS; i++) {
-		if (operf_stats[i]) {
-			print_log_info_msg = true;
-			break;
-		}
-	}
-	if (print_log_info_msg)
+	for (int i = OPERF_INDEX_OF_FIRST_LOST_STAT; i < OPERF_MAX_STATS; i++)
+		total_lost_samples += operf_stats[i];
+
+	if (total_lost_samples > (int)(OPERF_WARN_LOST_SAMPLES_THRESHOLD
+				       * operf_stats[OPERF_SAMPLES]))
 		fprintf(stderr, "\nSee the %s file for statistics about lost samples.\n", operf_log.c_str());
 
 	fflush(fp);
