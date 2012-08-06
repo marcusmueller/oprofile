@@ -11,10 +11,10 @@
 #ifndef BFD_SUPPORT_H
 #define BFD_SUPPORT_H
 
+#include "config.h"
 #include "utility.h"
 #include "op_types.h"
 #include "locate_images.h"
-#include "config.h"
 
 #include <bfd.h>
 #include <stdint.h>
