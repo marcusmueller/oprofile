@@ -54,9 +54,18 @@ public:
 	operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid);
 	~operf_process_info(void);
 	bool is_valid(void) { return (valid); }
+	bool is_forked(void) { return forked; }
 	void process_new_mapping(struct operf_mmap * mapping);
 	void process_hypervisor_mapping(u64 ip);
 	void process_deferred_mappings(std::string app_shortname);
+	void connect_forked_process_to_parent(operf_process_info * parent);
+	void copy_new_parent_mapping(struct operf_mmap * mapping)
+	{ mmappings[mapping->start_addr] = mapping; }
+	void add_forked_pid_association(operf_process_info * forked_pid)
+	{ forked_processes.push_back(forked_pid); }
+	void copy_mappings_to_forked_process(operf_process_info * forked_pid);
+	void disassociate_from_parent(char * appname);
+	void remove_forked_process(pid_t forked_pid);
 	std::string get_app_name(void) { return _appname; }
 	void add_deferred_mapping(struct operf_mmap * mapping)
 	{ deferred_mmappings[mapping->start_addr] = mapping; }
@@ -95,13 +104,23 @@ private:
 	pid_t pid;
 	std::string _appname;
 	bool valid;
+	bool forked;
 	op_fullname_t appname_is_fullname;
 	std::string app_basename;
 	int  num_app_chars_matched;
 	std::map<u64, struct operf_mmap *> mmappings;
 	std::map<u64, struct operf_mmap *> deferred_mmappings;
+	/* When a FORK event is recieved, we try to associate that forked
+	 * process with its parent, but if the parent operf_process_info is
+	 * not yet valid, we have to defer this association until
+	 * after the parent becomes valid.  This forked_processes collection
+	 * holds those forked processes for which the association to the
+	 * parent has been deferred.
+	 */
+	std::vector<operf_process_info *> forked_processes;
+	operf_process_info * parent_of_fork;
 	int get_num_matching_chars(std::string mapped_filename, std::string & basename);
-
+	void process_deferred_forked_processes(void);
 };
 
 

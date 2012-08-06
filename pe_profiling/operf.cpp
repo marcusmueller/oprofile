@@ -58,6 +58,7 @@ typedef enum END_CODE {
 
 // Globals
 char * app_name = NULL;
+pid_t app_PID = -1;
 uint64_t kernel_start, kernel_end;
 operf_read operfRead;
 op_cpu cpu_type;
@@ -75,7 +76,6 @@ char * start_time_human_readable;
 static char full_pathname[PATH_MAX];
 static char * app_name_SAVE = NULL;
 static char * app_args = NULL;
-static pid_t app_PID = -1;
 static 	pid_t jitconv_pid = -1;
 static bool app_started;
 static pid_t operf_record_pid;

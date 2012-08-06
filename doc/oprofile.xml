@@ -605,7 +605,13 @@ The <command>operf</command> command syntax is:
 </para>
 <screen>operf [ options ] [ --system-wide | --pid=&lt;PID&gt; | [ command [ args ] ] ]</screen>
 <para>
-Following is a description of the options.
+When profiling an application using either the <code>command</code> or <code>--pid</code> option of
+<command>operf</command>, forks and execs of the profiled process will also be profiled. The samples
+from an exec'ed process will be attributed to the executable binary run by that process. See
+<xref linkend="interpreting_operf_results"/>
+</para>
+<para>
+Following is a description of the <command>operf</command> options.
 </para>
 <variablelist>
 	<varlistentry>
@@ -3185,6 +3191,64 @@ show such example
 	</para>
 </sect1>
 
+<sect1 id="interpreting_operf_results">
+<title>Using operf to profile fork/execs</title>
+<para>
+When profiling an application that forks one or more new processes, <command>operf</command> will
+record samples for both the parent process and forked processes. This is also true even if the
+forked process performs an exec of some sort (e.g., <code>execvp</code>). If the
+process does <emphasis>not</emphasis> perform an exec, you will see that <command>opreport</command>
+will attribute samples for the forked process to the main application executable.  On the other
+hand, if the forked process <emphasis>does</emphasis> perform an exec, then <command>opreport</command>
+will attribute samples to the executable being exec'ed.
+</para>
+<para>
+To demonstrate this, consider the following examples.
+When using <command>operf</command> to profile a single application (either with the <code>--pid</code>
+option or <code>command</code> option), the normal <command>opreport</command> summary output
+(i.e., invoking <command>opreport</command> with no options) looks something like the following:
+<screen>
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+   112342 100.000 sprintft
+	CPU_CLK_UNHALT...|
+	  samples|      %|
+	------------------
+	   104209 92.7605 libc-2.12.so
+	     7273  6.4740 sprintft
+	      858  0.7637 no-vmlinux
+	        2  0.0018 ld-2.12.so
+</screen>
+</para>
+<para>
+But if you profile an application that does a fork/exec, the <command>opreport</command> summary output
+will show samples for both the main application you profiled, as well as the exec'ed program.
+An example is shown below where <code>s-m-fork</code> is the main application being profiled, which
+in turn forks a process that does an <code>execvp</code> of the <code>memcpyt</code> program.
+<screen>
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+   133382 70.5031 memcpyt
+	CPU_CLK_UNHALT...|
+	  samples|      %|
+	------------------
+	   123852 92.8551 libc-2.12.so
+	     8522  6.3892 memcpyt
+	     1007  0.7550 no-vmlinux
+	        1 7.5e-04 ld-2.12.so
+    55804 29.4969 s-m-fork
+	CPU_CLK_UNHALT...|
+	  samples|      %|
+	------------------
+	    51801 92.8267 libc-2.12.so
+	     3589  6.4314 s-m-fork
+	      414  0.7419 no-vmlinux
+</screen>
+</para>
+</sect1>
+
 <sect1 id="hidden-cost">
 <title>Other discrepancies</title>
 <para>
@@ -3200,8 +3264,6 @@ and <ulink url="http://developer.amd.com/devguides.jsp/">http://developer.amd.co
 </para>
 </sect1>
 </chapter>
-
-
 <chapter id="ack">
 <title>Acknowledgments</title>
 <para>

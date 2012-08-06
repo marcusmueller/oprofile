@@ -38,7 +38,8 @@ operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool ap
 		num_app_chars_matched = -1;
 		app_basename = "";
 	}
-
+	forked = false;
+	parent_of_fork = NULL;
 }
 
 operf_process_info::~operf_process_info()
@@ -52,15 +53,6 @@ operf_process_info::~operf_process_info()
 	} else {
 		it = deferred_mmappings.begin();
 		end = deferred_mmappings.end();
-	}
-	while (it != end) {
-		if (it->second->is_hypervisor) {
-			struct operf_mmap * mmapping = it->second;
-			delete mmapping;
-			// There is only one hypervisor mmapping.
-			break;
-		}
-		it++;
 	}
 	mmappings.clear();
 	deferred_mmappings.clear();
@@ -84,6 +76,15 @@ void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
 		}
 	}
 	mmappings[mapping->start_addr] = mapping;
+	vector<operf_process_info *>::iterator it = forked_processes.begin();
+	while (it != forked_processes.end()) {
+		operf_process_info * p = *it;
+		p->copy_new_parent_mapping(mapping);
+		cverb << vmisc << "Copied new parent mapping for " << mapping->filename
+		      << " for forked process " << p->pid << endl;
+		it++;
+	}
+
 }
 
 /* This method should only be invoked when a "delayed" COMM event is processed.
@@ -106,6 +107,7 @@ void operf_process_info::process_deferred_mappings(string app_shortname)
 		it++;
 	}
 	deferred_mmappings.clear();
+	process_deferred_forked_processes();
 }
 
 int operf_process_info::get_num_matching_chars(string mapped_filename, string & basename)
@@ -225,3 +227,90 @@ void operf_process_info::process_hypervisor_mapping(u64 ip)
 	}
 }
 
+void operf_process_info::copy_mappings_to_forked_process(operf_process_info * forked_pid)
+{
+	map<u64, struct operf_mmap *>::iterator it = mmappings.begin();
+	while (it != mmappings.end()) {
+		struct operf_mmap * mapping = it->second;
+		/* We can pass just the pointer of the operf_mmap object because the
+		 * original object is created in operf_utils:__handle_mmap_event and
+		 * is saved in the global all_images_map.
+		 */
+	        forked_pid->process_new_mapping(mapping);
+	        it++;
+	}
+}
+
+void operf_process_info::connect_forked_process_to_parent(operf_process_info * parent)
+{
+	forked = true;
+	parent_of_fork = parent;
+	if (parent->is_valid()) {
+		valid = true;
+		_appname = parent->get_app_name();
+		if (parent->is_appname_valid() && !_appname.empty()) {
+			appname_is_fullname = YES_FULLNAME;
+			app_basename = op_basename(_appname);
+			num_app_chars_matched = (int)app_basename.length();
+		} else if (!_appname.empty()) {
+			appname_is_fullname = MAYBE_FULLNAME;
+			num_app_chars_matched = -1;
+			app_basename = _appname;
+		} else {
+			appname_is_fullname = NOT_FULLNAME;
+			num_app_chars_matched = -1;
+			app_basename = "";
+		}
+		parent->copy_mappings_to_forked_process(this);
+	}
+}
+
+void operf_process_info::process_deferred_forked_processes(void)
+{
+	vector<operf_process_info *>::iterator it = forked_processes.begin();
+	while (it != forked_processes.end()) {
+		operf_process_info * p = *it;
+		p->connect_forked_process_to_parent(this);
+		cverb << vmisc << "Processed deferred forked process " << p->pid << endl;
+		it++;
+	}
+}
+
+void operf_process_info::remove_forked_process(pid_t forked_pid)
+{
+	std::vector<operf_process_info *>::iterator it = forked_processes.begin();
+	while (it != forked_processes.end()) {
+		if ((*it)->pid == forked_pid) {
+			forked_processes.erase(it);
+			break;
+		}
+		it++;
+	}
+}
+
+/* This function is called as a result of the following scenario:
+ *   1. An operf_process_info was created for a FORK event
+ *   2. The forked process was connected to (associated with) its parent,
+ *      adding the parent's mmappings to the forked process's operf_process_info.
+ *   3. Then the forked process does an exec, which results in a COMM
+ *      event. The forked process is now considered completely separate
+ *      from its parent, so we need to disassociate it from the parent.
+ */
+void operf_process_info::disassociate_from_parent(char * app_shortname)
+{
+	_appname = app_shortname;
+	app_basename = app_shortname;
+	appname_is_fullname = NOT_FULLNAME;
+	valid = true;
+	/* Now that we have a valid app shortname (from the COMM event data),
+	 * let's spin through our mmappings and process them -- see if we can
+	 * find one that has a good appname candidate.
+	 */
+	num_app_chars_matched = 0;
+	map<u64, struct operf_mmap *>::iterator it = mmappings.begin();
+	while (it != mmappings.end()) {
+		process_new_mapping(it->second);
+		it++;
+	}
+	parent_of_fork->remove_forked_process(this->pid);
+}

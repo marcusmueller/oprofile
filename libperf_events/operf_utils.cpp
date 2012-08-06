@@ -44,6 +44,7 @@ extern operf_read operfRead;
 extern int sample_reads;
 extern unsigned int pagesize;
 extern char * app_name;
+extern pid_t app_PID;
 extern verbose vperf;
 
 using namespace std;
@@ -218,6 +219,76 @@ static inline void update_trans_last(struct operf_transient * trans)
 	trans->last_pc = trans->pc;
 }
 
+static inline void clear_trans(struct operf_transient * trans)
+{
+	trans->tgid = ~0U;
+	trans->cur_procinfo = NULL;
+}
+
+static void __handle_fork_event(event_t * event)
+{
+	if (cverb << vperf)
+		cout << "PERF_RECORD_FORK for tgid/tid = " << event->fork.pid
+		     << "/" << event->fork.tid << endl;
+
+	map<pid_t, operf_process_info *>::iterator it;
+	operf_process_info * parent = NULL;
+	operf_process_info * forked_proc = NULL;
+
+	it = process_map.find(event->fork.ppid);
+	if (it != process_map.end()) {
+		parent = it->second;
+	} else {
+		// Create a new proc info object for the parent, but mark it invalid since we have
+		// not yet received a COMM event for this PID.
+		parent = new operf_process_info(event->fork.ppid, app_name ? app_name : NULL,
+		                                                           app_name != NULL, false);
+		if (cverb << vperf)
+			cout << "Adding new proc info to collection for PID " << event->fork.ppid << endl;
+		process_map[event->fork.ppid] = parent;
+	}
+
+	it = process_map.find(event->fork.pid);
+	if (it == process_map.end()) {
+		forked_proc = new operf_process_info(event->fork.pid,
+		                                     parent->get_app_name().c_str(),
+		                                     parent->is_appname_valid(), parent->is_valid());
+		if (cverb << vperf)
+			cout << "Adding new proc info to collection for PID " << event->fork.pid << endl;
+		process_map[event->fork.pid] = forked_proc;
+		forked_proc->connect_forked_process_to_parent(parent);
+		parent->add_forked_pid_association(forked_proc);
+		if (cverb << vperf)
+			cout << "Connecting forked proc " << event->fork.pid << " to parent" << endl;
+	} else {
+		/* There are two ways that we may get to this point. One way is if
+		 * we've received a COMM event for the forked process before the FORK event.
+		 * Normally, if parent process A forks child process B which then does an exec, we
+		 * first see a FORK event, followed by a COMM event. But apparently there's no
+		 * guarantee in what order these events may be seen by userspace. No matter -- since
+		 * the exec'ed process is now a standalone process (which will get MMAP events
+		 * for all of its mmappings, there's no need to re-associate it back to the parent
+		 * as we do for a non-exec'ed forked process.  So we'll just ignore it.
+		 *
+		 * But the second way that there may be an existing operf_process_info object is if
+		 * a new mmap event (a real MMAP event or a synthesized event (e.g. for hypervisor
+		 * mmapping) occurred for the forked process before a COMM event was received for it.
+		 * In this case, the forked process will be marked invalid until the COMM event
+		 * is received. But if this process does *not* do an exec, there will never be a
+		 * COMM event for it.  Such forked processes should be tightly connected to their
+		 * parent, so we'll go ahead and associate the forked process with its parent.
+		 * If a COMM event comes later for the forked process, we'll disassociate them.
+		 */
+		forked_proc = it->second;
+		if (!forked_proc->is_valid()) {
+			forked_proc->connect_forked_process_to_parent(parent);
+			parent->add_forked_pid_association(forked_proc);
+			if (cverb << vperf)
+				cout << "Connecting existing incomplete forked proc " << event->fork.pid
+				     << " to parent" << endl;
+		}
+	}
+}
 
 static void __handle_comm_event(event_t * event)
 {
@@ -241,22 +312,44 @@ static void __handle_comm_event(event_t * event)
 		 * is marked invalid.  We end up dropping all samples for such tasks when
 		 * doing a system-wide profile.
 		 */
-		operf_process_info * proc = new operf_process_info(event->comm.pid,
-		                                                   app_name ? app_name : event->comm.comm,
-		                                                   app_name != NULL, true);
+
+		/* A COMM event can occur as the result of the app doing a fork/exec,
+		 * where the COMM event is for the forked process.  In that case, we
+		 * pass the event->comm field as the appname argument to the ctor.
+		 */
+		const char * appname_arg;
+		bool is_complete_appname;
+		if (app_name && (app_PID == event->comm.pid)) {
+			appname_arg = app_name;
+			is_complete_appname = true;
+		} else {
+			appname_arg = event->comm.comm;
+			is_complete_appname = false;
+		}
+		operf_process_info * proc = new operf_process_info(event->comm.pid,appname_arg,
+		                                                   is_complete_appname, true);
 		if (cverb << vperf)
 			cout << "Adding new proc info to collection for PID " << event->comm.pid << endl;
 		process_map[event->comm.pid] = proc;
 	} else {
-		/* Sanity check -- should not get a second COMM event for same PID/TID.
-		 * Most likely, this COMM event is for a different TID than the original,
-		 * but since we don't record the TID with our operf_process_info handling,
-		 * we'll just display a debug message when requested.
-		 */
 		if (it->second->is_valid()) {
-			if (cverb << vperf)
-				cout << "Received COMM event for " << event->comm.comm
-				      << ", PID " << event->comm.pid << endl;
+			if (it->second->is_forked()) {
+				/* If the operf_process_info object we found was created as a result of
+				 * a FORK event, then it was associated with the parent process and contains
+				 * the parent's appname.  But now we're getting a COMM event for this forked
+				 * process, which means it did an exec, so we need to change the appname
+				 * to the executable associated with this COMM event, which is done via
+				 * calling disassociate_from_parent().
+				 */
+				if (cverb << vperf)
+					cout << "Disassociating forked proc " << event->comm.pid
+					     << " from parent" << endl;
+				it->second->disassociate_from_parent(event->comm.comm);
+			} else {
+				if (cverb << vperf)
+					cout << "Received extraneous COMM event for " << event->comm.comm
+					<< ", PID " << event->comm.pid << endl;
+			}
 		} else {
 			if (cverb << vperf)
 				cout << "Processing deferred mappings" << endl;
@@ -341,10 +434,26 @@ static void __handle_mmap_event(event_t * event)
 		map<pid_t, operf_process_info *>::iterator it;
 		it = process_map.find(event->mmap.pid);
 		if (it == process_map.end()) {
-			// Create a new proc info object, but mark it invalid since we have
-			// not yet received a COMM event for this PID.
-			operf_process_info * proc = new operf_process_info(event->mmap.pid, app_name ? app_name : NULL,
-			                                                                             app_name != NULL, false);
+			/* Create a new proc info object, but mark it invalid since we have
+			 * not yet received a COMM event for this PID. This MMAP event may
+			 * be on behalf of a process created as a result of a fork/exec.
+			 * The order of delivery of events is not guaranteed so we may see
+			 * this MMAP event before getting the COMM event for that process.
+			 * If this is the case here, we just pass NULL for appname arg.
+			 * It will get fixed up later when the COMM event occurs.
+			 */
+			const char * appname_arg;
+			bool is_complete_appname;
+			if (app_name && (app_PID == event->mmap.pid)) {
+				appname_arg = app_name;
+				is_complete_appname = true;
+			} else {
+				appname_arg = NULL;
+				is_complete_appname = false;
+			}
+
+			operf_process_info * proc = new operf_process_info(event->mmap.pid, appname_arg,
+			                                                   is_complete_appname, false);
 			proc->add_deferred_mapping(mapping);
 			if (cverb << vperf)
 				cout << "Added deferred mapping " << event->mmap.filename
@@ -362,6 +471,9 @@ static void __handle_mmap_event(event_t * event)
 				cout << "Added deferred mapping " << event->mmap.filename
 				      << " for existing but incomplete process_info object" << endl;
 		} else {
+			if (cverb << vperf)
+				cout << "Process mapping for " << event->mmap.filename << " on behalf of "
+				     << event->mmap.pid << endl;
 			it->second->process_new_mapping(mapping);
 		}
 	}
@@ -525,10 +637,27 @@ static void __map_hypervisor_sample(u64 ip, u32 pid)
 	map<pid_t, operf_process_info *>::iterator it;
 	it = process_map.find(pid);
 	if (it == process_map.end()) {
-		// Create a new proc info object, but mark it invalid since we have
-		// not yet received a COMM event for this PID.
-		proc = new operf_process_info(pid, app_name ? app_name : NULL,
-		                                            app_name != NULL, false);
+		/* Create a new proc info object, but mark it invalid since we have
+		 * not yet received a COMM event for this PID. This sample may be
+		 * on behalf of a process created as a result of a fork/exec.
+		 * The order of delivery of events is not guaranteed so we may see
+		 * this sample event before getting the COMM event for that process.
+		 * If this is the case here, we just pass NULL for appname arg.
+		 * It will get fixed up later when the COMM event occurs.
+		 */
+		const char * appname_arg;
+		bool is_complete_appname;
+		if (app_name && (app_PID == pid)) {
+			appname_arg = app_name;
+			is_complete_appname = true;
+		} else {
+			appname_arg = NULL;
+			is_complete_appname = false;
+		}
+
+		proc = new operf_process_info(pid, appname_arg,
+		                              is_complete_appname, false);
+
 		if (cverb << vperf)
 			cout << "Adding new proc info to collection for PID " << pid << endl;
 		process_map[pid] = proc;
@@ -709,7 +838,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		update_trans_last(&trans);
 		if (sample_type & PERF_SAMPLE_CALLCHAIN)
 			__handle_callchain(array, &data);
-		goto out;
+		goto done;
 	}
 
 	if (first_time_processing) {
@@ -719,6 +848,8 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	}
 
 out:
+	clear_trans(&trans);
+done:
 	return;
 }
 
@@ -753,6 +884,9 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 			sfile_init_done = true;
 		}
 		__handle_comm_event(event);
+		return;
+	case PERF_RECORD_FORK:
+		__handle_fork_event(event);
 		return;
 	case PERF_RECORD_THROTTLE:
 		throttled = true;
