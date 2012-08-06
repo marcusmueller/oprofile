@@ -176,6 +176,15 @@ int main(int argc, char const ** argv)
 		exit(1);
 	}
 
+	if (inputs[0].rfind(".jo") == inputs[0].size() - 3) {
+		if (verbose) {
+			cerr << "Found a .jo file. Import is not allowed or necessary. Done." << endl;
+			cerr << inputs[0] << endl;
+		}
+		// Silently exit with success.
+		exit(EXIT_SUCCESS);
+	}
+
 	abi current_abi, input_abi;
 
 	{
