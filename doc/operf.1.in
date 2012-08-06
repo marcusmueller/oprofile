@@ -177,7 +177,7 @@ to wait until profiling is completed to do the conversion of profile data.
 .TP
 .BI "--verbose / -V " level
 A comma-separated list of debugging control values, used to increase the verbosity of the output.
-Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.
+Valid values are:  debug, record, convert, misc, sfile, arcs, or the special value, 'all'.
 .br
 .TP
 .BI "--version / -v"

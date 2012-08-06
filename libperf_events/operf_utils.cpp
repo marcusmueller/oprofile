@@ -45,7 +45,8 @@ extern int sample_reads;
 extern unsigned int pagesize;
 extern char * app_name;
 extern pid_t app_PID;
-extern verbose vperf;
+extern verbose vrecord;
+extern verbose vconvert;
 
 using namespace std;
 
@@ -119,7 +120,7 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 		event.evt_code = tmp_code;
 		(*evt_vec)[i] = event;
 		events_converted++;
-		cverb << vperf << "Successfully converted " << event.name << " to perf_event code "
+		cverb << vrecord << "Successfully converted " << event.name << " to perf_event code "
 		      << hex << tmp_code << endl;
 	}
 	return (events_converted == num_events);
@@ -173,7 +174,7 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 		event.evt_code = raw.codes[0];
 		(*evt_vec)[i] = event;
 		events_converted++;
-		cverb << vperf << "Successfully converted " << event.name << " to perf_event code "
+		cverb << vrecord << "Successfully converted " << event.name << " to perf_event code "
 		      << hex << event.evt_code << endl;
 	}
 	return (events_converted == num_events);
@@ -229,7 +230,7 @@ static inline void clear_trans(struct operf_transient * trans)
 
 static void __handle_fork_event(event_t * event)
 {
-	if (cverb << vperf)
+	if (cverb << vconvert)
 		cout << "PERF_RECORD_FORK for tgid/tid = " << event->fork.pid
 		     << "/" << event->fork.tid << endl;
 
@@ -245,7 +246,7 @@ static void __handle_fork_event(event_t * event)
 		// not yet received a COMM event for this PID.
 		parent = new operf_process_info(event->fork.ppid, app_name ? app_name : NULL,
 		                                                           app_name != NULL, false);
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Adding new proc info to collection for PID " << event->fork.ppid << endl;
 		process_map[event->fork.ppid] = parent;
 	}
@@ -255,12 +256,12 @@ static void __handle_fork_event(event_t * event)
 		forked_proc = new operf_process_info(event->fork.pid,
 		                                     parent->get_app_name().c_str(),
 		                                     parent->is_appname_valid(), parent->is_valid());
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Adding new proc info to collection for PID " << event->fork.pid << endl;
 		process_map[event->fork.pid] = forked_proc;
 		forked_proc->connect_forked_process_to_parent(parent);
 		parent->add_forked_pid_association(forked_proc);
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Connecting forked proc " << event->fork.pid << " to parent" << endl;
 	} else {
 		/* There are two ways that we may get to this point. One way is if
@@ -285,7 +286,7 @@ static void __handle_fork_event(event_t * event)
 		if (!forked_proc->is_valid()) {
 			forked_proc->connect_forked_process_to_parent(parent);
 			parent->add_forked_pid_association(forked_proc);
-			if (cverb << vperf)
+			if (cverb << vconvert)
 				cout << "Connecting existing incomplete forked proc " << event->fork.pid
 				     << " to parent" << endl;
 		}
@@ -300,7 +301,7 @@ static void __handle_comm_event(event_t * event)
 		return;
 	}
 #endif
-	if (cverb << vperf)
+	if (cverb << vconvert)
 		cout << "PERF_RECORD_COMM for " << event->comm.comm << ", tgid/tid = "
 		     << event->comm.pid << "/" << event->comm.tid << endl;
 
@@ -330,7 +331,7 @@ static void __handle_comm_event(event_t * event)
 		}
 		operf_process_info * proc = new operf_process_info(event->comm.pid,appname_arg,
 		                                                   is_complete_appname, true);
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Adding new proc info to collection for PID " << event->comm.pid << endl;
 		process_map[event->comm.pid] = proc;
 	} else {
@@ -343,17 +344,17 @@ static void __handle_comm_event(event_t * event)
 				 * to the executable associated with this COMM event, which is done via
 				 * calling disassociate_from_parent().
 				 */
-				if (cverb << vperf)
+				if (cverb << vconvert)
 					cout << "Disassociating forked proc " << event->comm.pid
 					     << " from parent" << endl;
 				it->second->disassociate_from_parent(event->comm.comm);
 			} else {
-				if (cverb << vperf)
+				if (cverb << vconvert)
 					cout << "Received extraneous COMM event for " << event->comm.comm
 					<< ", PID " << event->comm.pid << endl;
 			}
 		} else {
-			if (cverb << vperf)
+			if (cverb << vconvert)
 				cout << "Processing deferred mappings" << endl;
 			it->second->process_deferred_mappings(event->comm.comm);
 		}
@@ -396,7 +397,7 @@ static void __handle_mmap_event(event_t * event)
 		mapping->end_addr = (event->mmap.len == 0ULL)? 0ULL : mapping->start_addr + event->mmap.len - 1;
 		mapping->pgoff = event->mmap.pgoff;
 
-		if (cverb << vperf) {
+		if (cverb << vconvert) {
 			cout << "PERF_RECORD_MMAP for " << event->mmap.filename << endl;
 			cout << "\tstart_addr: " << hex << mapping->start_addr;
 			cout << "; end addr: " << mapping->end_addr << endl;
@@ -457,7 +458,7 @@ static void __handle_mmap_event(event_t * event)
 			operf_process_info * proc = new operf_process_info(event->mmap.pid, appname_arg,
 			                                                   is_complete_appname, false);
 			proc->add_deferred_mapping(mapping);
-			if (cverb << vperf)
+			if (cverb << vconvert)
 				cout << "Added deferred mapping " << event->mmap.filename
 				      << " for new process_info object" << endl;
 			process_map[event->mmap.pid] = proc;
@@ -469,11 +470,11 @@ static void __handle_mmap_event(event_t * event)
 #endif
 		} else if (!it->second->is_valid()) {
 			it->second->add_deferred_mapping(mapping);
-			if (cverb << vperf)
+			if (cverb << vconvert)
 				cout << "Added deferred mapping " << event->mmap.filename
 				      << " for existing but incomplete process_info object" << endl;
 		} else {
-			if (cverb << vperf)
+			if (cverb << vconvert)
 				cout << "Process mapping for " << event->mmap.filename << " on behalf of "
 				     << event->mmap.pid << endl;
 			it->second->process_new_mapping(mapping);
@@ -490,7 +491,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 
 	if (trans.tgid == data->pid) {
 		proc = trans.cur_procinfo;
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "trans.tgid == data->pid : " << data->pid << endl;
 
 	} else {
@@ -510,7 +511,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 			 *     likely -- this would be a kernel bug if it did)
 			 *
 			*/
-			if ((cverb << vperf) && !first_time_processing) {
+			if ((cverb << vconvert) && !first_time_processing) {
 				cerr << "Dropping sample -- process info unavailable" << endl;
 				if (kernel_mode)
 					operf_stats[OPERF_NO_APP_KERNEL_SAMPLE]++;
@@ -552,13 +553,13 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 	} else {
 		op_mmap = proc->find_mapping_for_sample(data->ip);
 		if (op_mmap && op_mmap->is_hypervisor && !hypervisor_domain) {
-			cverb << vperf << "Invalid sample: Address falls within hypervisor address range, but is not a hypervisor domain sample." << endl;
+			cverb << vconvert << "Invalid sample: Address falls within hypervisor address range, but is not a hypervisor domain sample." << endl;
 			operf_stats[OPERF_INVALID_CTX]++;
 			op_mmap = NULL;
 		}
 	}
 	if (op_mmap) {
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Found mmap for sample; image_name is " << op_mmap->filename <<
 			" and app name is " << proc->get_app_name() << endl;
 		trans.image_name = op_mmap->filename;
@@ -581,7 +582,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		trans.sample_id = data->id;
 		retval = &trans;
 	} else {
-		if ((cverb << vperf) && !first_time_processing) {
+		if ((cverb << vconvert) && !first_time_processing) {
 			string domain = trans.in_kernel ? "kernel" : "userspace";
 			cerr << "Discarding " << domain << " sample for process " << data->pid
 			     << " where no appropriate mapping was found. (pc=0x"
@@ -599,7 +600,7 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 	bool in_kernel = false;
 	data->callchain = (struct ip_callchain *) array;
 	if (data->callchain->nr) {
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Processing callchain" << endl;
 		for (int i = 0; i < data->callchain->nr; i++) {
 			data->ip = data->callchain->ips[i];
@@ -660,7 +661,7 @@ static void __map_hypervisor_sample(u64 ip, u32 pid)
 		proc = new operf_process_info(pid, appname_arg,
 		                              is_complete_appname, false);
 
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Adding new proc info to collection for PID " << pid << endl;
 		process_map[pid] = proc;
 
@@ -711,7 +712,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	else if (event->header.misc == PERF_RECORD_MISC_HYPERVISOR) {
 #define MAX_HYPERVISOR_ADDRESS 0xfffffffULL
 		if (data.ip > MAX_HYPERVISOR_ADDRESS) {
-			cverb << vperf << "Discarding out-of-range hypervisor sample: "
+			cverb << vconvert << "Discarding out-of-range hypervisor sample: "
 			      << hex << data.ip << endl;
 			operf_stats[OPERF_LOST_INVALID_HYPERV_ADDR]++;
 			goto out;
@@ -725,7 +726,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	else {
 		// TODO: Unhandled types are the guest kernel and guest user samples.
 		// We should at least log what we're throwing away.
-		if (cverb << vperf) {
+		if (cverb << vconvert) {
 			const char * domain;
 			switch (event->header.misc) {
 			case PERF_RECORD_MISC_HYPERVISOR:
@@ -754,11 +755,11 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
          * is NULL (implying the trans object is still in its initial state).
          */
 	if (!trans.image_name && (data.pid == 0)) {
-		cverb << vperf << "Discarding sample for PID 0" << endl;
+		cverb << vconvert << "Discarding sample for PID 0" << endl;
 		goto out;
 	}
 
-	if (cverb << vperf)
+	if (cverb << vconvert)
 		cout << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
 		      << data.tid << ": " << hex << (unsigned long long)data.ip
 		      << endl << "\tdata ID: " << data.id << endl;
@@ -793,7 +794,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		event_t * ev = (event_t *)xmalloc(event->header.size);
 		memcpy(ev, event, event->header.size);
 		unresolved_events.push_back(ev);
-		if (cverb << vperf)
+		if (cverb << vconvert)
 			cout << "Deferring processing of hypervisor sample." << endl;
 		goto out;
 	}
@@ -869,7 +870,7 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 {
 #if 0
 	if (event->header.type < PERF_RECORD_MAX) {
-		cverb << vperf << "PERF_RECORD type " << hex << event->header.type << endl;
+		cverb << vconvert << "PERF_RECORD type " << hex << event->header.type << endl;
 	}
 #endif
 
@@ -900,14 +901,14 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 		return;
 	default:
 		// OK, ignore all other header types.
-		cverb << vperf << "No matching event type for " << hex << event->header.type << endl;
+		cverb << vconvert << "No matching event type for " << hex << event->header.type << endl;
 		return;
 	}
 }
 
 void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type)
 {
-	cverb << vperf << "Reprocessing samples" << endl;
+	cverb << vconvert << "Reprocessing samples" << endl;
 	list<event_t *>::const_iterator it = unresolved_events.begin();
 	for (; it != unresolved_events.end(); it++) {
 		event_t * evt = (*it);
@@ -978,7 +979,7 @@ static int __mmap_trace_file(struct mmap_info & info)
 		return -1;
 	}
 	else {
-		cverb << vperf << hex << "mmap with the following parameters" << endl
+		cverb << vconvert << hex << "mmap with the following parameters" << endl
 		      << "\tinfo.head: " << info.head << endl
 		      << "\tinfo.offset: " << info.offset << endl;
 		return 0;
@@ -1039,7 +1040,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 	fp = fopen(fname, "r");
 	if (fp == NULL) {
 		// Process must have exited already or invalid pid.
-		cverb << vperf << "couldn't open " << fname << endl;
+		cverb << vrecord << "couldn't open " << fname << endl;
 		return;
 	}
 
@@ -1081,7 +1082,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 			mmap.header.size = (sizeof(mmap) -
 					(sizeof(mmap.filename) - size));
 			int num = OP_perf_utils::op_write_output(output_fd, &mmap, mmap.header.size);
-			if (cverb << vperf)
+			if (cverb << vrecord)
 				cout << "Created MMAP event for " << imagename << endl;
 			pr->add_to_total(num);
 		}
@@ -1114,7 +1115,7 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 		 */
 		if (!sys_wide) {
 			cerr << "Unable to find process information for process " << pid << "." << endl;
-			cverb << vperf << "couldn't open " << fname << endl;
+			cverb << vrecord << "couldn't open " << fname << endl;
 			return -1;
 		} else {
 			return 0;
@@ -1125,7 +1126,7 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 	while (!comm.comm[0] || !comm.pid) {
 		if (fgets(buff, sizeof(buff), fp) == NULL) {
 			ret = -1;
-			cverb << vperf << "Did not find Name or PID field in status file." << endl;
+			cverb << vrecord << "Did not find Name or PID field in status file." << endl;
 			goto out;
 		}
 		if (!strncmp(buff, "Name:", 5)) {
@@ -1162,7 +1163,7 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 	if (tids == NULL) {
 		// process must have exited
 		ret = -1;
-		cverb << vperf << "opendir returned NULL" << endl;
+		cverb << vrecord << "opendir returned NULL" << endl;
 		goto out;
 	}
 
@@ -1178,7 +1179,7 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 		pr->add_to_total(num);
 	}
 	closedir(tids);
-	if (cverb << vperf)
+	if (cverb << vrecord)
 		cout << "Created COMM event for " << comm.comm << endl;
 
 out:
@@ -1186,7 +1187,7 @@ out:
 
 	fclose(fp);
 	if (ret) {
-		cverb << vperf << "couldn't get app name and tgid for pid "
+		cverb << vrecord << "couldn't get app name and tgid for pid "
 		      << dec << pid << " from /proc fs." << endl;
 	}
 	return ret;
@@ -1202,7 +1203,7 @@ int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_rec
                                           int output_fd)
 {
 	int ret = 0;
-	if (cverb << vperf)
+	if (cverb << vrecord)
 		cout << "op_record_process_info" << endl;
 	if (!system_wide) {
 		ret = _record_one_process_info(pid, system_wide, pr, output_fd);
@@ -1300,7 +1301,7 @@ static void _record_module_info(int output_fd, operf_record * pr)
 		mmap.header.size = (sizeof(mmap) -
 				(sizeof(mmap.filename) - size));
 		int num = OP_perf_utils::op_write_output(output_fd, &mmap, mmap.header.size);
-		if (cverb << vperf)
+		if (cverb << vrecord)
 			cout << "Created MMAP event for " << module_name << ". Size: "
 			      << module_size << "; start addr: " << start_address << endl;
 		pr->add_to_total(num);
@@ -1336,7 +1337,7 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 	mmap.header.size = (sizeof(mmap) -
 			(sizeof(mmap.filename) - size));
 	int num = op_write_output(output_fd, &mmap, mmap.header.size);
-	if (cverb << vperf)
+	if (cverb << vrecord)
 		cout << "Created MMAP event of size " << mmap.header.size << " for " <<mmap.filename << ". length: "
 		     << hex << mmap.len << "; start addr: " << mmap.start << endl;
 	pr->add_to_total(num);

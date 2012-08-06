@@ -732,7 +732,7 @@ Following is a description of the <command>operf</command> options.
 		<term><option>--verbose / -V [level]</option></term>
 		<listitem><para>
 		A comma-separated list of debugging control values used to increase the verbosity of the
-		output. Valid values are: debug, perf_events, misc, sfile, arcs, and the special value, 'all'.
+		output. Valid values are: debug, record, convert, misc, sfile, arcs, and the special value, 'all'.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

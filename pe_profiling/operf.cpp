@@ -107,7 +107,7 @@ bool post_conversion;
 vector<string> evts;
 }
 
-static const char * valid_verbose_vals[] = { "debug", "perf_events", "misc", "sfile", "arcs", "all"};
+static const char * valid_verbose_vals[] = { "debug", "record", "convert", "misc", "sfile", "arcs", "all"};
 #define NUM_VERBOSE_OPTIONS (sizeof(valid_verbose_vals)/sizeof(char *))
 
 struct option long_options [] =

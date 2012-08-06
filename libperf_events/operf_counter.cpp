@@ -41,7 +41,8 @@ volatile bool read_quit;
 int sample_reads;
 int num_mmap_pages;
 unsigned int pagesize;
-verbose vperf("perf_events");
+verbose vrecord("record");
+verbose vconvert("convert");
 
 extern bool first_time_processing;
 extern bool throttled;
@@ -118,7 +119,7 @@ try_again:
 					(info.head + event->header.size > mmap_size))) {
 		int ret;
 		u64 shift = pg_sz * (info.head / pg_sz);
-		cverb << vperf << "Remapping perf data file" << endl;
+		cverb << vconvert << "Remapping perf data file" << endl;
 		ret = munmap(info.buf, mmap_size);
 		if (ret) {
 			string errmsg = "Internal error:  munmap of perf data file failed with errno: ";
@@ -195,7 +196,7 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 	fd = op_perf_event_open(&attr, ppid, cpu, -1, 0);
 	if (fd < 0) {
 		int ret = -1;
-		cverb << vperf << "perf_event_open failed: " << strerror(errno) << endl;
+		cverb << vrecord << "perf_event_open failed: " << strerror(errno) << endl;
 		if (errno == EBUSY) {
 			cerr << "The performance monitoring hardware reports EBUSY. Is another profiling tool in use?" << endl
 			     << "On some architectures, tools such as oprofile and perf being used in system-wide "
@@ -216,13 +217,13 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 	}
 	rec->register_perf_event_id(event, read_data.id, attr);
 
-	cverb << vperf << "perf_event_open returning fd " << fd << endl;
+	cverb << vrecord << "perf_event_open returning fd " << fd << endl;
 	return fd;
 }
 
 operf_record::~operf_record()
 {
-	cverb << vperf << "operf_record::~operf_record()" << endl;
+	cverb << vrecord << "operf_record::~operf_record()" << endl;
 	opHeader.data_size = total_bytes_recorded;
 	if (total_bytes_recorded)
 		write_op_header_info();
@@ -267,7 +268,7 @@ bool separate_by_cpu, bool out_fd_is_file)
 	if (system_wide && (pid != -1 || pid_started))
 		return;  // object is not valid
 
-	cverb << vperf << "operf_record ctor using output fd " << output_fd << endl;
+	cverb << vrecord << "operf_record ctor using output fd " << output_fd << endl;
 
 	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_sigaction = op_perfrecord_sigusr1_handler;
@@ -277,13 +278,13 @@ bool separate_by_cpu, bool out_fd_is_file)
 	sigprocmask(SIG_UNBLOCK, &ss, NULL);
 	sa.sa_mask = ss;
 	sa.sa_flags = SA_NOCLDSTOP | SA_SIGINFO;
-	cverb << vperf << "calling sigaction" << endl;
+	cverb << vrecord << "calling sigaction" << endl;
 	if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-		cverb << vperf << "operf_record ctor: sigaction failed; errno is: "
+		cverb << vrecord << "operf_record ctor: sigaction failed; errno is: "
 		      << strerror(errno) << endl;
 		_exit(EXIT_FAILURE);
 	}
-	cverb << vperf << "calling setup" << endl;
+	cverb << vrecord << "calling setup" << endl;
 	setup();
 }
 
@@ -360,7 +361,7 @@ void operf_record::register_perf_event_id(unsigned event, u64 id, perf_event_att
 	// is invoked once for each event for each cpu; but it's not worth the bother of trying
 	// to avoid it.
 	opHeader.h_attrs[event].attr = attr;
-	cverb << vperf << "Perf header: id = " << hex << (unsigned long long)id << " for event num "
+	cverb << vrecord << "Perf header: id = " << hex << (unsigned long long)id << " for event num "
 			<< event << ", code " << attr.config <<  endl;
 	opHeader.h_attrs[event].ids.push_back(id);
 }
@@ -415,9 +416,9 @@ void operf_record::setup()
 
 
 	if (system_wide)
-		cverb << vperf << "operf_record::setup() for system-wide profiling" << endl;
+		cverb << vrecord << "operf_record::setup() for system-wide profiling" << endl;
 	else
-		cverb << vperf << "operf_record::setup() with pid_started = " << pid_started << endl;
+		cverb << vrecord << "operf_record::setup() with pid_started = " << pid_started << endl;
 
 	if (!system_wide && pid_started) {
 		/* We need to verify the existence of the passed PID before trying
@@ -431,7 +432,7 @@ void operf_record::setup()
 			// Process must have finished or invalid PID passed into us.
 			// We'll bail out now.
 			cerr << "Unable to find process information for PID " << pid << "." << endl;
-			cverb << vperf << "couldn't open " << fname << endl;
+			cverb << vrecord << "couldn't open " << fname << endl;
 			return;
 		}
 		fclose(fp);
@@ -444,7 +445,7 @@ void operf_record::setup()
 
 	poll_data = new struct pollfd [num_cpus];
 
-	cverb << vperf << "calling perf_event_open for pid " << pid << " on "
+	cverb << vrecord << "calling perf_event_open for pid " << pid << " on "
 	      << num_cpus << " cpus" << endl;
 	FILE * online_cpus = fopen("/sys/devices/system/cpu/online", "r");
 	if (!online_cpus) {
@@ -576,7 +577,7 @@ void operf_record::recordPerfData(void)
 					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
 			}
 			disabled = true;
-			cverb << vperf << "operf_record::recordPerfData received signal to quit." << endl;
+			cverb << vrecord << "operf_record::recordPerfData received signal to quit." << endl;
 		}
 	}
 	cverb << vdebug << "operf recording finished." << endl;
@@ -601,9 +602,9 @@ void operf_read::init(int sample_data_pipe_fd, string input_filename, string sam
 	sigprocmask(SIG_UNBLOCK, &ss, NULL);
 	sa.sa_mask = ss;
 	sa.sa_flags = SA_NOCLDSTOP | SA_SIGINFO;
-	cverb << vperf << "operf-read calling sigaction" << endl;
+	cverb << vconvert << "operf-read calling sigaction" << endl;
 	if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-		cverb << vperf << "operf-read init: sigaction failed; errno is: "
+		cverb << vconvert << "operf-read init: sigaction failed; errno is: "
 		      << strerror(errno) << endl;
 		_exit(EXIT_FAILURE);
 	}
@@ -628,7 +629,7 @@ void operf_read::_read_header_info_with_ifstream(void)
 	if (memcmp(&fheader.magic, __op_magic, sizeof(fheader.magic)))
 		throw runtime_error("Error: input file " + inputFname + " does not have expected header data");
 
-	cverb << vperf << "operf magic number " << (char *)&fheader.magic << " matches expected __op_magic " << __op_magic << endl;
+	cverb << vconvert << "operf magic number " << (char *)&fheader.magic << " matches expected __op_magic " << __op_magic << endl;
 	opHeader.attr_offset = fheader.attrs.offset;
 	opHeader.data_offset = fheader.data.offset;
 	opHeader.data_size = fheader.data.size;
@@ -639,7 +640,7 @@ void operf_read::_read_header_info_with_ifstream(void)
 		throw runtime_error(msg);
 	}
 	int num_fattrs = fheader.attrs.size/fheader.attr_size;
-	cverb << vperf << "num_fattrs  is " << num_fattrs << endl;
+	cverb << vconvert << "num_fattrs  is " << num_fattrs << endl;
 	istrm.seekg(opHeader.attr_offset, ios_base::beg);
 	for (int i = 0; i < num_fattrs; i++) {
 		struct op_file_attr f_attr;
@@ -655,7 +656,7 @@ void operf_read::_read_header_info_with_ifstream(void)
 			streamsize perfid_size = sizeof(perf_id);
 			if (op_read_from_stream(istrm, (char *)& perf_id, perfid_size) != perfid_size)
 				throw runtime_error("Error: Unexpected end of input file " + inputFname + ".");
-			cverb << vperf << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
+			cverb << vconvert << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
 			opHeader.h_attrs[i].ids.push_back(perf_id);
 		}
 		istrm.seekg(next_f_attr, ios_base::beg);
@@ -674,14 +675,14 @@ int operf_read::_read_perf_header_from_file(void)
 	}
 	istrm.peek();
 	if (istrm.eof()) {
-		cverb << vperf << "operf_read::readPerfHeader:  Empty profile data file." << endl;
+		cverb << vconvert << "operf_read::readPerfHeader:  Empty profile data file." << endl;
 		valid = false;
 		return OP_PERF_HANDLED_ERROR;
 	}
-	cverb << vperf << "operf_read: successfully opened input file " << inputFname << endl;
+	cverb << vconvert << "operf_read: successfully opened input file " << inputFname << endl;
 	_read_header_info_with_ifstream();
 	valid = true;
-	cverb << vperf << "Successfully read perf header" << endl;
+	cverb << vconvert << "Successfully read perf header" << endl;
 
 	return ret;
 }
@@ -705,7 +706,7 @@ int operf_read::_read_perf_header_from_pipe(void)
 		goto fail;
 	}
 
-	cverb << vperf << "operf magic number " << (char *)&fheader.magic << " matches expected __op_magic " << __op_magic << endl;
+	cverb << vconvert << "operf magic number " << (char *)&fheader.magic << " matches expected __op_magic " << __op_magic << endl;
 	fattr_size = sizeof(struct op_file_attr);
 	if (fattr_size != fheader.attr_size) {
 		errmsg = "Error: perf_events binary incompatibility. Event data collection was apparently "
@@ -713,7 +714,7 @@ int operf_read::_read_perf_header_from_pipe(void)
 		goto fail;
 	}
 	num_fattrs = fheader.attrs.size/fheader.attr_size;
-	cverb << vperf << "num_fattrs  is " << num_fattrs << endl;
+	cverb << vconvert << "num_fattrs  is " << num_fattrs << endl;
 	for (int i = 0; i < num_fattrs; i++) {
 		struct op_file_attr f_attr;
 		streamsize fattr_size = sizeof(f_attr);
@@ -736,13 +737,13 @@ int operf_read::_read_perf_header_from_pipe(void)
 				errmsg = "Error reading perf ID on sample data pipe: " + string(strerror(errno));
 				goto fail;
 			}
-			cverb << vperf << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
+			cverb << vconvert << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
 			opHeader.h_attrs[i].ids.push_back(perf_id);
 		}
 
 	}
 	valid = true;
-	cverb << vperf << "Successfully read perf header" << endl;
+	cverb << vconvert << "Successfully read perf header" << endl;
 	return 0;
 
 fail:
