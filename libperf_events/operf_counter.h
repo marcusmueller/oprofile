@@ -78,9 +78,9 @@ public:
 	 * For single app profiling, set sys_wide=false, the_pid=<processID-to-profile>,
 	 * and pid_running=true if profiling an already active process; otherwise false.
 	 */
-	operf_record(int output_pipe_fd, bool sys_wide, pid_t the_pid, bool pid_running,
+	operf_record(int output_fd, bool sys_wide, pid_t the_pid, bool pid_running,
 	             std::vector<operf_event_t> & evts, OP_perf_utils::vmlinux_info_t vi,
-	             bool callgraph, bool separate_by_cpu);
+	             bool callgraph, bool separate_by_cpu, bool output_fd_is_file);
 	~operf_record();
 	void recordPerfData(void);
 	int out_fd(void) const { return output_fd; }
@@ -94,7 +94,10 @@ private:
 	void setup(void);
 	int prepareToRecord(int cpu, int fd);
 	void write_op_header_info(void);
+	int _write_header_to_file(void);
+	int _write_header_to_pipe(void);
 	int output_fd;
+	bool write_to_file;
 	struct pollfd * poll_data;
 	std::vector<struct mmap_data> samples_array;
 	int num_cpus;
@@ -115,9 +118,9 @@ private:
 
 class operf_read {
 public:
-	operf_read(void) : sample_data_fd(-1), cpu_type(CPU_NO_GOOD) { valid = false; }
-	void init(int sample_data_pipe_fd, std::string samples_dir, op_cpu cputype,
-	          std::vector<operf_event_t> & evts);
+	operf_read(void) : sample_data_fd(-1), inputFname(""), cpu_type(CPU_NO_GOOD) { valid = false; }
+	void init(int sample_data_pipe_fd, std::string input_filename, std::string samples_dir, op_cpu cputype,
+	          std::vector<operf_event_t> & evts, bool systemwide);
 	~operf_read();
 	int readPerfHeader(void);
 	int convertPerfData(void);
@@ -127,13 +130,18 @@ public:
 
 private:
 	int sample_data_fd;
+	std::string inputFname;
 	std::string sampledir;
 	std::ifstream istrm;
 	struct OP_header opHeader;
 	std::vector<operf_event_t> evts;
 	bool valid;
+	bool syswide;
 	op_cpu cpu_type;
 	int _get_one_perf_event(event_t *);
+	void _read_header_info_with_ifstream(void);
+	int _read_perf_header_from_file(void);
+	int _read_perf_header_from_pipe(void);
 };
 
 

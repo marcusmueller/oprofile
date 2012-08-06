@@ -55,6 +55,8 @@ map<u64, struct operf_mmap *> kernel_modules;
 struct operf_mmap * kernel_mmap;
 bool first_time_processing;
 bool throttled;
+size_t mmap_size;
+size_t pg_sz;
 
 static list<event_t *> unresolved_events;
 static struct operf_transient trans;
@@ -949,6 +951,63 @@ void OP_perf_utils::op_perfread_sigusr1_handler(int sig __attribute__((unused)),
 {
 	read_quit = true;
 }
+
+int OP_perf_utils::op_read_from_stream(ifstream & is, char * buf, streamsize sz)
+{
+	int rc = 0;
+	is.read(buf, sz);
+	if (!is.eof() && is.fail()) {
+		cerr << "Internal error:  Failed to read from input file." << endl;
+		rc = -1;
+	} else {
+		rc = is.gcount();
+	}
+	return rc;
+}
+
+
+static int __mmap_trace_file(struct mmap_info & info)
+{
+	int mmap_prot  = PROT_READ;
+	int mmap_flags = MAP_SHARED;
+
+	info.buf = (char *) mmap(NULL, mmap_size, mmap_prot,
+	                         mmap_flags, info.traceFD, info.offset);
+	if (info.buf == MAP_FAILED) {
+		cerr << "Error: mmap failed with errno:\n\t" << strerror(errno) << endl;
+		return -1;
+	}
+	else {
+		cverb << vperf << hex << "mmap with the following parameters" << endl
+		      << "\tinfo.head: " << info.head << endl
+		      << "\tinfo.offset: " << info.offset << endl;
+		return 0;
+	}
+}
+
+
+int OP_perf_utils::op_mmap_trace_file(struct mmap_info & info, bool init)
+{
+	u64 shift;
+	if (init) {
+		if (!pg_sz)
+			pg_sz = sysconf(_SC_PAGESIZE);
+		if (!mmap_size) {
+			if (MMAP_WINDOW_SZ > info.file_data_size) {
+				mmap_size = info.file_data_size;
+			} else {
+				mmap_size = MMAP_WINDOW_SZ;
+			}
+		}
+		info.offset = 0;
+		info.head = info.file_data_offset;
+		shift = pg_sz * (info.head / pg_sz);
+		info.offset += shift;
+		info.head -= shift;
+	}
+	return __mmap_trace_file(info);
+}
+
 
 int OP_perf_utils::op_write_output(int output, void *buf, size_t size)
 {

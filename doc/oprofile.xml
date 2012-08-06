@@ -716,6 +716,19 @@ Following is a description of the <command>operf</command> options.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+	   <term><option>---lazy-conversion / -l</option></term>
+		<listitem><para>
+		Use this option to reduce the overhead of <command>operf</command> during profiling.
+		Normally, profile data received from the kernel is converted to OProfile format
+		during profiling time. This is typically not an issue when profiling a single
+		application. But when using the <code>--system-wide</code> option, this on-the-fly
+		conversion process can cause noticeable overhead, particularly on busy
+		multi-processor systems. The <code>--lazy-conversion</code> option directs
+		<command>operf</command> to wait until profiling is completed to do the conversion
+		of profile data.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--verbose / -V [level]</option></term>
 		<listitem><para>
 		A comma-separated list of debugging control values used to increase the verbosity of the

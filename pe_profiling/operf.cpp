@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <ftw.h>
 #include <getopt.h>
@@ -71,6 +72,7 @@ bool no_vmlinux;
 int kptr_restrict;
 char * start_time_human_readable;
 
+#define DEFAULT_OPERF_OUTFILE "operf.data"
 #define CALLGRAPH_MIN_COUNT_SCALE 15
 
 static char full_pathname[PATH_MAX];
@@ -82,6 +84,7 @@ static pid_t operf_record_pid;
 static pid_t operf_read_pid;
 static string samples_dir;
 static bool startApp;
+static string outputfile;
 static char start_time_str[32];
 static vector<operf_event_t> events;
 static bool jit_conversion_running;
@@ -100,6 +103,7 @@ string session_dir;
 string vmlinux;
 bool separate_cpu;
 bool separate_thread;
+bool post_conversion;
 vector<string> evts;
 }
 
@@ -118,13 +122,14 @@ struct option long_options [] =
  {"events", required_argument, NULL, 'e'},
  {"separate-cpu", no_argument, NULL, 'c'},
  {"separate-thread", no_argument, NULL, 't'},
+ {"lazy-conversion", no_argument, NULL, 'l'},
  {"help", no_argument, NULL, 'h'},
  {"version", no_argument, NULL, 'v'},
  {"usage", no_argument, NULL, 'u'},
  {NULL, 9, NULL, 0}
 };
 
-const char * short_options = "V:d:k:gsap:e:cthuv";
+const char * short_options = "V:d:k:gsap:e:ctlhuv";
 
 vector<string> verbose_string;
 
@@ -288,8 +293,10 @@ int start_profiling(void)
 			perror("Internal error: fork failed");
 			_exit(EXIT_FAILURE);
 		} else if (app_PID == 0) { // child process for exec'ing app
-			close(sample_data_pipe[0]);
-			close(sample_data_pipe[1]);
+			if (!operf_options::post_conversion) {
+				close(sample_data_pipe[0]);
+				close(sample_data_pipe[1]);
+			}
 			run_app();
 		}
 	}
@@ -307,7 +314,8 @@ int start_profiling(void)
 		int exit_code = EXIT_SUCCESS;
 		_set_signals_for_record();
 		close(operf_record_ready_pipe[0]);
-		close(sample_data_pipe[0]);
+		if (!operf_options::post_conversion)
+			close(sample_data_pipe[0]);
 		/*
 		 * Since an informative message will be displayed to the user if
 		 * an error occurs, we don't want to blow chunks here; instead, we'll
@@ -316,13 +324,25 @@ int start_profiling(void)
 		 */
 		try {
 			OP_perf_utils::vmlinux_info_t vi;
+			int outfd;
+			int flags = O_WRONLY | O_CREAT | O_TRUNC;
 			vi.image_name = operf_options::vmlinux;
 			vi.start = kernel_start;
 			vi.end = kernel_end;
-			operf_record operfRecord(sample_data_pipe[1], operf_options::system_wide, app_PID,
+			if (operf_options::post_conversion) {
+				outfd = open(outputfile.c_str(), flags, S_IRUSR|S_IWUSR);
+				if (outfd < 0) {
+					string errmsg = "Internal error: Could not create temporary output file. errno is ";
+					errmsg += strerror(errno);
+					throw runtime_error(errmsg);
+				}
+			} else {
+				outfd = sample_data_pipe[1];
+			}
+			operf_record operfRecord(outfd, operf_options::system_wide, app_PID,
 			                         (operf_options::pid == app_PID), events, vi,
 			                         operf_options::callgraph,
-			                         operf_options::separate_cpu);
+			                         operf_options::separate_cpu, operf_options::post_conversion);
 			if (operfRecord.get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
 				 * occurred:
@@ -549,9 +569,10 @@ static end_code_t _run(void)
 	sigfillset(&ss);
 	sigprocmask(SIG_BLOCK, &ss, NULL);
 
-	// Create pipe to which operf-record process writes sample data and
-	// from which the operf-read process reads.
-	if (pipe(sample_data_pipe) < 0) {
+	/* By default (unless the user specifies --lazy-conversion), the operf-record process
+	 * writes the sample data to a pipe, from which the operf-read process reads.
+	 */
+	if (!operf_options::post_conversion && pipe(sample_data_pipe) < 0) {
 		perror("Internal error: operf-record could not create pipe");
 		_exit(EXIT_FAILURE);
 	}
@@ -566,19 +587,25 @@ static end_code_t _run(void)
 	/* If we're not doing system wide profiling and no app is started, then
 	 * there's no profile data to convert. So if this condition is NOT true,
 	 * then we'll do the convert.
+	 * Note that if --lazy-connversion is passed, then operf_options::post_conversion
+	 * will be set, and we will defer conversion until after the operf-record
+	 * process is done.
 	 */
-	if (!(!app_started && !operf_options::system_wide)) {
-		operf_read_pid = fork();
-		if (operf_read_pid < 0) {
-			perror("Internal error: fork failed");
-			_exit(EXIT_FAILURE);
-		} else if (operf_read_pid == 0) { // child process
+	if (!operf_options::post_conversion) {
+		if (!(!app_started && !operf_options::system_wide)) {
+			cverb << vdebug << "Forking read pid" << endl;
+			operf_read_pid = fork();
+			if (operf_read_pid < 0) {
+				perror("Internal error: fork failed");
+				_exit(EXIT_FAILURE);
+			} else if (operf_read_pid == 0) { // child process
+				close(sample_data_pipe[1]);
+				convert_sample_data();
+			}
+			// parent
+			close(sample_data_pipe[0]);
 			close(sample_data_pipe[1]);
-			convert_sample_data();
 		}
-		// parent
-		close(sample_data_pipe[0]);
-		close(sample_data_pipe[1]);
 	}
 
 	set_signals();
@@ -691,10 +718,16 @@ again:
 			}
 		}
 	}
-	if (kill_record)
-		rc = _kill_operf_read_pid(_kill_operf_record_pid());
-	else
-		rc = _kill_operf_read_pid(rc);
+	if (kill_record) {
+		if (operf_options::post_conversion)
+			rc = _kill_operf_record_pid();
+		else
+			rc = _kill_operf_read_pid(_kill_operf_record_pid());
+	} else {
+		if (!operf_options::post_conversion)
+			rc = _kill_operf_read_pid(rc);
+	}
+
 	return rc;
 }
 
@@ -704,6 +737,10 @@ static void cleanup(void)
 	free(app_args);
 	events.clear();
 	verbose_string.clear();
+	if (operf_options::post_conversion) {
+		string cmd = "rm -f " + outputfile;
+		system(cmd.c_str());
+	}
 }
 
 static void _jitconv_complete(int val __attribute__((unused)))
@@ -818,12 +855,16 @@ static int __delete_old_previous_sample_data(const char *fpath,
  */
 static void convert_sample_data(void)
 {
-	int rc;
+	int inputfd;
+	string inputfname;
+	int rc = EXIT_SUCCESS;
+	int keep_waiting = 0;
 	string current_sampledir = samples_dir + "/current/";
 	string previous_sampledir = samples_dir + "/previous";
 	current_sampledir.copy(op_samples_current_dir, current_sampledir.length(), 0);
 
-	_set_signals_for_convert();
+	if (!app_started && !operf_options::system_wide)
+		return;
 
 	if (!operf_options::append) {
                 int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
@@ -833,15 +874,15 @@ static void convert_sample_data(void)
 			cerr << "Unable to remove old sample data at " << previous_sampledir << "." << endl;
 			if (errno)
 				cerr << strerror(errno) << endl;
-			cleanup();
-			_exit(EXIT_FAILURE);
+			rc = EXIT_FAILURE;
+			goto out;
 		}
 		if (rename(current_sampledir.c_str(), previous_sampledir.c_str()) < 0) {
 			if (errno && (errno != ENOENT)) {
 				cerr << "Unable to move old profile data to " << previous_sampledir << endl;
 				cerr << strerror(errno) << endl;
-				cleanup();
-				_exit(EXIT_FAILURE);
+				rc = EXIT_FAILURE;
+				goto out;
 			}
 		}
 	}
@@ -849,15 +890,23 @@ static void convert_sample_data(void)
 	if (rc && (errno != EEXIST)) {
 		cerr << "Error trying to create " << current_sampledir << " dir." << endl;
 		perror("mkdir failed with");
-		_exit(EXIT_FAILURE);
+		rc = EXIT_FAILURE;
+		goto out;
 	}
 
-	operfRead.init(sample_data_pipe[0], current_sampledir, cpu_type, events);
+	if (operf_options::post_conversion) {
+		inputfd = -1;
+		inputfname = outputfile;
+	} else {
+		inputfd = sample_data_pipe[0];
+		inputfname = "";
+	}
+	operfRead.init(inputfd, inputfname, current_sampledir, cpu_type, events, operf_options::system_wide);
 	if ((rc = operfRead.readPerfHeader()) < 0) {
 		if (rc != OP_PERF_HANDLED_ERROR)
 			cerr << "Error: Cannot create read header info for sample data " << endl;
-		cleanup();
-		_exit(EXIT_FAILURE);
+		rc = EXIT_FAILURE;
+		goto out;
 	}
 	cverb << vdebug << "Successfully read header info for sample data " << endl;
 	if (operfRead.is_valid()) {
@@ -867,12 +916,13 @@ static void convert_sample_data(void)
 		} catch (runtime_error e) {
 			cerr << "Caught runtime error from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;
-			cleanup();
-			_exit(EXIT_FAILURE);
+			rc = EXIT_FAILURE;
+			goto out;
 		}
 	}
+	_set_signals_for_convert();
+	cverb << vdebug << "Calling _do_jitdump_convert" << endl;
 	_do_jitdump_convert();
-	int keep_waiting = 0;
 	while (jit_conversion_running && (keep_waiting < 2)) {
 		sleep(1);
 		keep_waiting++;
@@ -880,8 +930,9 @@ static void convert_sample_data(void)
 	if (jit_conversion_running) {
 		kill(jitconv_pid, SIGKILL);
 	}
-	_exit(EXIT_SUCCESS);
-
+out:
+	if (!operf_options::post_conversion)
+		_exit(rc);
 }
 
 
@@ -1388,6 +1439,9 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 		case 't':
 			operf_options::separate_thread = true;
 			break;
+		case 'l':
+			operf_options::post_conversion = true;
+			break;
 		case 'h':
 			__print_usage_and_exit(NULL);
 			break;
@@ -1460,6 +1514,8 @@ static void process_args(int argc, char * const argv[])
 	}
 
 	_process_session_dir();
+	if (operf_options::post_conversion)
+		outputfile = samples_dir + "/" + DEFAULT_OPERF_OUTFILE;
 
 	if (operf_options::evts.empty()) {
 		// Use default event
@@ -1619,6 +1675,10 @@ int main(int argc, char * const argv[])
 		}
 	} else {
 		cerr << endl << "Profiling done." << endl;
+	}
+	if (operf_options::post_conversion) {
+		if (!(!app_started && !operf_options::system_wide))
+			convert_sample_data();
 	}
 	cleanup();
 	return run_result;;

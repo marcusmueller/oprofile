@@ -39,6 +39,11 @@ extern uid_t my_uid;
 extern bool throttled;
 
 #define OP_APPNAME_LEN 1024
+#if BITS_PER_LONG == 64
+#define MMAP_WINDOW_SZ ULLONG_MAX
+#else
+#define MMAP_WINDOW_SZ (32 * 1024 * 1024ULL)
+#endif
 
 extern unsigned int op_nr_counters;
 
@@ -66,6 +71,8 @@ void op_perfread_sigusr1_handler(int sig __attribute__((unused)),
 int op_record_process_info(bool system_wide, pid_t pid, operf_record * pr, int output_fd);
 int op_write_output(int output, void *buf, size_t size);
 void op_write_event(event_t * event, u64 sample_type);
+int op_read_from_stream(std::ifstream & is, char * buf, std::streamsize sz);
+int op_mmap_trace_file(struct mmap_info & info, bool init);
 int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
 bool op_convert_event_vals(std::vector<operf_event_t> * evt_vec);
 void op_reprocess_unresolved_events(u64 sample_type);

@@ -160,6 +160,21 @@ the data is saved in the
 directory on the current path.
 .br
 .TP
+.BI "--lazy-conversion / -l"
+Use this option to reduce the overhead of
+.BI operf
+during profiling. Normally, profile data received from the kernel is converted
+to OProfile format during profiling time. This is typically not an issue when
+profiling a single application. But when using the
+.I --system-wide
+option, this on-the-fly conversion process can cause noticeable overhead,
+particularly on busy multi-processor systems. The
+.I --lazy-conversion
+option directs
+.BI operf
+to wait until profiling is completed to do the conversion of profile data.
+.br
+.TP
 .BI "--verbose / -V " level
 A comma-separated list of debugging control values, used to increase the verbosity of the output.
 Valid values are:  debug, perf_events, misc, sfile, arcs, or the special value, 'all'.

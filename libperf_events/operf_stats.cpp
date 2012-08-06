@@ -67,7 +67,7 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 		fprintf(stderr, "* * * * WARNING: Profiling rate was throttled back by the kernel * * * *\n");
 		fprintf(stderr, "The number of samples actually recorded is less than expected, but is\n");
 		fprintf(stderr, "probably still statistically valid.  Decreasing the sampling rate is the\n");
-		fprintf(stderr, "best option if you want to avoid throttling.");
+		fprintf(stderr, "best option if you want to avoid throttling.\n");
 	}
 
 	// TODO: handle extended stats
