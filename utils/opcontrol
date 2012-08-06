@@ -1716,6 +1716,7 @@ do_status()
 	else
 		echo "Daemon not running"
 	fi
+	echo "Session-dir: $SESSION_DIR"
 
 	if test "$NR_CHOSEN" != "0"; then
 		for f in `seq 0 $((NR_CHOSEN - 1))`; do
