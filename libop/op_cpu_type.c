@@ -265,6 +265,11 @@ static op_cpu _get_tile_cpu_type(void)
 }
 
 #if defined(__x86_64__) || defined(__i386__)
+int op_is_cpu_vendor(char * vendor)
+{
+	return cpuid_vendor(vendor);
+}
+
 static unsigned cpuid_eax(unsigned func)
 {
 	cpuid_data d;

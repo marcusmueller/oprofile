@@ -21,6 +21,7 @@
 
 
 #define OP_MAX_EVT_NAME_LEN 64
+#define OP_MAX_UM_NAME_LEN 64
 #define OP_MAX_NUM_EVENTS 512
 
 struct ip_event {
@@ -110,12 +111,16 @@ struct sample_data {
 typedef struct operf_event {
 	char name[OP_MAX_EVT_NAME_LEN];
 	// code for perf_events
-	u32 evt_code;
-	// code for oprofile sample file management; usually the same as evt_code, but
-	// different for certain architectures (e.g., ppc64)
-	u32 op_evt_code;
+	u64 evt_code;
+	/* Base event code for oprofile sample file management; may be the same as evt_code,
+	 * but different for certain architectures (e.g., ppc64).  Also, when unit masks
+	 * are used, the evt_code to be passed to perf_events includes both the
+	 * base code from op_evt_code and the left-shifted unit mask bits.
+	 */
+	u64 op_evt_code;
 	// Make the evt_um and count fields unsigned long to match op_default_event_descr
 	unsigned long evt_um;
+	char um_name[OP_MAX_UM_NAME_LEN];
 	unsigned long count;
 	u32 counter;
 	bool no_kernel;

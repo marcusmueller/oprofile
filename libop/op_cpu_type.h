@@ -151,6 +151,10 @@ char const * op_get_cpu_type_str(op_cpu cpu_type);
  */
 char const * op_get_cpu_name(op_cpu cpu_type);
 
+#if defined(__i386__) || defined(__x86_64__)
+int op_is_cpu_vendor(char * vendor);
+#endif
+
 /**
  * compute the number of counters available
  * @param cpu_type numeric processor type

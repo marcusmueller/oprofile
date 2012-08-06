@@ -1041,30 +1041,86 @@ int validate_app_name(void)
 	out: return rc;
 }
 
-static u32 _get_event_code(char name[])
+static void _get_event_code(operf_event_t * event)
 {
 	FILE * fp;
 	char oprof_event_code[9];
 	string command;
+	u64 base_code, config;
+	base_code = config = 0ULL;
+
 	command = OP_BINDIR;
-	command += "/ophelp ";
-	command += name;
+	command += "ophelp ";
+	command += event->name;
 
 	fp = popen(command.c_str(), "r");
 	if (fp == NULL) {
 		cerr << "Unable to execute ophelp to get info for event "
-		     << name << endl;
+		     << event->name << endl;
 		exit(EXIT_FAILURE);
 	}
 	if (fgets(oprof_event_code, sizeof(oprof_event_code), fp) == NULL) {
 		pclose(fp);
 		cerr << "Unable to find info for event "
-		     << name << endl;
+		     << event->name << endl;
 		exit(EXIT_FAILURE);
 	}
 
 	pclose(fp);
-	return atoi(oprof_event_code);
+
+	base_code = strtoull(oprof_event_code, (char **) NULL, 10);
+
+
+#if defined(__i386__) || defined(__x86_64__)
+	// Setup EventSelct[11:8] field for AMD
+	const char * vendor_AMD = "AuthenticAMD";
+	if (op_is_cpu_vendor((char *)vendor_AMD)) {
+		config = base_code & 0xF00ULL;
+		config = config << 32;
+	}
+
+	// Setup EventSelct[7:0] field
+	config |= base_code & 0xFFULL;
+
+	// Setup unitmask field
+	if (event->um_name[0]) {
+		char mask[12];
+		char buf[20];
+		if ((snprintf(buf, 20, "%lu", event->count)) == -1) {
+			cerr << "Error parsing event count of " << event->count << endl;
+			exit(EXIT_FAILURE);
+		}
+		command = OP_BINDIR;
+		command += "ophelp ";
+		command += "--extra-mask ";
+		command += event->name;
+		command += ":";
+		command += buf;
+		command += ":";
+		command += event->um_name;
+		fp = popen(command.c_str(), "r");
+		if (fp == NULL) {
+			cerr << "Unable to execute ophelp to get info for event "
+			     << event->name << endl;
+			exit(EXIT_FAILURE);
+		}
+		if (fgets(mask, sizeof(mask), fp) == NULL) {
+			pclose(fp);
+			cerr << "Unable to find unit mask info for " << event->um_name << " for event "
+			     << event->name << endl;
+			exit(EXIT_FAILURE);
+		}
+		pclose(fp);
+		config |= strtoull(mask, (char **) NULL, 10);
+	} else {
+		config |= ((event->evt_um & 0xFFULL) << 8);
+	}
+#else
+	config = base_code;
+#endif
+
+	event->op_evt_code = base_code;
+	event->evt_code = config;
 }
 
 static void _process_events_list(void)
@@ -1109,13 +1165,21 @@ static void _process_events_list(void)
 #define	_OP_KERNEL 2
 #define	_OP_USER 3
 		int place =  _OP_UM;
-		event.evt_um = 0;
+		char * endptr = NULL;
+		event.evt_um = 0ULL;
 		event.no_kernel = 0;
 		event.no_user = 0;
+		memset(event.um_name, '\0', OP_MAX_UM_NAME_LEN);
 		while ((info = strtok(NULL, ":"))) {
 			switch (place) {
 			case _OP_UM:
-				event.evt_um = strtoul(info, NULL, 0);
+				event.evt_um = strtoul(info, &endptr, 0);
+				// If any of the UM part is not a number, then we
+				// consider the entire part a string.
+				if (*endptr) {
+					event.evt_um = 0;
+					strncpy(event.um_name, info, OP_MAX_UM_NAME_LEN);
+				}
 				break;
 			case _OP_KERNEL:
 				if (atoi(info) == 0)
@@ -1129,8 +1193,7 @@ static void _process_events_list(void)
 			place++;
 		}
 		free(event_str);
-		event.op_evt_code = _get_event_code(event.name);
-		event.evt_code = event.op_evt_code;
+		_get_event_code(&event);
 		events.push_back(event);
 	}
 #if (defined(__powerpc__) || defined(__powerpc64__))
@@ -1177,8 +1240,7 @@ static void get_default_event(void)
 	}
 	dft_evt.evt_um = descr.um;
 	strncpy(dft_evt.name, descr.name, OP_MAX_EVT_NAME_LEN - 1);
-	dft_evt.op_evt_code = _get_event_code(dft_evt.name);
-	dft_evt.evt_code = dft_evt.op_evt_code;
+	_get_event_code(&dft_evt);
 	events.push_back(dft_evt);
 
 #if (defined(__powerpc__) || defined(__powerpc64__))
