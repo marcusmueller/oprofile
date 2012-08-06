@@ -69,7 +69,21 @@ Only include symbols in the given comma-separated list.
 .br
 .TP
 .BI "--objdump-params [params]"
-Pass the given parameters as extra values when calling objdump.
+Pass the given parameters as extra values when calling objdump.  If more then
+one option is to be passed to objdump, the parameters must be enclosed in a
+quoted string.
+
+An example of where this option is useful is when your toolchain does not
+automatically recognize instructions that are specific to your processor.
+For example, on IBM POWER7/RHEL 6, objdump must be told that a binary file may have
+POWER7-specific instructions. The opannotate option to show the POWER7-specific
+instructions is:
+   --objdump-params=-Mpower7
+
+The opannotate option to show the POWER7-specific instructions,
+the source code (--source) and the line numbers (-l) would be:
+   --objdump-params="-Mpower7 -l --source"
+
 .br
 .TP
 .BI "--output-dir / -o [dir]"

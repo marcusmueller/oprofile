@@ -90,6 +90,28 @@ popt::option options_array[] = {
 void handle_options(options::spec const & spec)
 {
 	using namespace options;
+	vector<string> tmp_objdump_parms;
+
+	/* When passing a quoted string of options from opannotate for the
+	 * objdump command, objdump_parms consists of a single string.  Need
+	 * to break the string into a series of individual options otherwise
+	 * the call to exec_comand fails when it sees the space between the
+	 * options.
+	 */
+	for (unsigned int i = 0; i < objdump_params.size(); i++) {
+		string s;
+		s = objdump_params[i];
+		stringstream ss(s);
+		istream_iterator<string> begin(ss);
+		istream_iterator<string> end;
+		vector<string> vstrings(begin, end);
+
+		for (unsigned int j = 0; j < vstrings.size(); j++)
+			tmp_objdump_parms.push_back(vstrings[j]);
+	}
+
+	// update objdump_parms.
+	objdump_params.assign(tmp_objdump_parms.begin(), tmp_objdump_parms.end());
 
 	if (spec.first.size()) {
 		cerr << "differential profiles not allowed" << endl;
