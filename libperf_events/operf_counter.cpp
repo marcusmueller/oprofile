@@ -391,7 +391,9 @@ int operf_record::prepareToRecord(int cpu, int fd)
 	if (md.base == MAP_FAILED) {
 		if (errno == EPERM) {
 			cerr << "Failed to mmap kernel profile data." << endl;
-			cerr << "Increasing the value of /proc/sys/kernel/perf_event_mlock_kb might resolve the problem." << endl;
+			cerr << "This issue may be caused by a non-root user running multiple operf" << endl;
+			cerr << "sessions simultaneously. Try running as root or increasing the value of" << endl;
+			cerr << "/proc/sys/kernel/perf_event_mlock_kb to resolve the problem." << endl << endl;
 			return OP_PERF_HANDLED_ERROR;
 		} else {
 			perror("failed to mmap");
