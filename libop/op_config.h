@@ -45,7 +45,7 @@ extern char op_dump_status[];
 #endif
 
 #define OPD_MAGIC "DAE\n"
-#define OPD_VERSION 0x11
+#define OPD_VERSION 0x12
 
 #define OP_MIN_CPU_BUF_SIZE 2048
 #define OP_MAX_CPU_BUF_SIZE 131072
