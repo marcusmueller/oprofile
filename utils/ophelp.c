@@ -790,7 +790,7 @@ int main(int argc, char const * argv[])
 	else {
 		printf("%s%s", title, event_doc);
 		printf("For architectures using unit masks, you may be able to specify\n"
-		       "unit masks by name.  See 'opcontrol' man page for more details.\n\n");
+		       "unit masks by name.  See 'opcontrol' or 'operf' man page for more details.\n\n");
 	}
 
 	list_for_each(pos, events) {
