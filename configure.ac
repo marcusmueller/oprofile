@@ -206,7 +206,7 @@ if test "x$enable_gui"  = "xqt4"; then
 	exit
 	])
 	MOC=$(pkg-config --variable=moc_location QtCore)
-	UIC=$(pkg-config --variable=uic_location QtCore)3
+	UIC=$(dirname $(pkg-config --variable=uic_location QtCore))/uic3
 	QT_VERSION=$(pkg-config --modversion QtCore)
 
 dnl following are some sanity tests and workarounds for buggy QtCore.pc files
