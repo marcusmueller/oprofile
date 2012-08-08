@@ -69,7 +69,7 @@ Only include symbols in the given comma-separated list.
 .br
 .TP
 .BI "--objdump-params [params]"
-Pass the given parameters as extra values when calling objdump.  If more then
+Pass the given parameters as extra values when calling objdump.  If more than
 one option is to be passed to objdump, the parameters must be enclosed in a
 quoted string.
 

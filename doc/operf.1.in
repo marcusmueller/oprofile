@@ -37,18 +37,16 @@ and lost samples, are written to the operf.log file that can be found in the
 
 .SH OPTIONS
 .TP
-.BI command
+.BI command [args]
 The command or application to be profiled.
 .I args
-are the input arguments that the command or application requires.  Either
+are the input arguments that the command or application requires.  One (and only one) of either
 .I command
 ,
 .I --pid
 or
 .I --system-wide
-is required, but
-.B cannot
-be used simultaneously.
+is required.
 .br
 .TP
 .BI "--pid / -p " PID
@@ -94,27 +92,6 @@ A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
 Kernel samples will be attributed to this binary, allowing post-processing tools
 (like opreport) to attribute samples to the appropriate kernel symbols.
 .TP
-.BI "--callgraph / -g"
-This option enables the callgraph to be saved during profiling. NOTE: The
-full callchain is recorded, so there is no depth limit.
-.br
-.TP
-.BI "--append / -a"
-By default,
-.I operf
-moves old profile data from <session_dir>/samples/current to
-<session_dir>/samples/previous.  If a 'previous' profile already existed,
-it will be replaced.  If the
-.I --append
-option is passed, old profile data is left in place and new profile data will
-be added to it, and the 'previous' profile (if one existed) will remain untouched.
-To access the 'previous' profile, simply add a session specification to the normal
-invocation of oprofile post-processing tools.  For example:
-.br
-.BI "   opreport"
-.BI session:previous
-.br
-.TP
 .BI "--events / -e " event1[,event2[,...]]
 This option is for passing a comma-separated list of event specifications
 for profiling. Each event spec is of the form:
@@ -129,7 +106,8 @@ for unit masks having "extra:" parameters, as shown by the output of
 .B ophelp.
 Unit masks with "extra:" parameters
 .I must
-be specified using the symbolic name.
+be specified using the symbolic name.  If no unit mask is specified, 0x0 will be
+used as the default.
 .P
 .RS
 When no event specification is given, the default event for the running
@@ -138,6 +116,11 @@ Use
 .BI ophelp
 to list the available events for your processor type.
 .RE
+.br
+.TP
+.BI "--callgraph / -g"
+This option enables the callgraph to be saved during profiling. NOTE: The
+full callchain is recorded, so there is no depth limit.
 .br
 .TP
 .BI "--separate-thread / -t"
@@ -173,6 +156,22 @@ particularly on busy multi-processor systems. The
 option directs
 .BI operf
 to wait until profiling is completed to do the conversion of profile data.
+.br
+.TP
+.BI "--append / -a"
+By default,
+.I operf
+moves old profile data from <session_dir>/samples/current to
+<session_dir>/samples/previous.  If a 'previous' profile already existed,
+it will be replaced.  If the
+.I --append
+option is passed, old profile data is left in place and new profile data will
+be added to it, and the 'previous' profile (if one existed) will remain untouched.
+To access the 'previous' profile, simply add a session specification to the normal
+invocation of oprofile post-processing tools.  For example:
+.br
+.BI "   opreport"
+.BI session:previous
 .br
 .TP
 .BI "--verbose / -V " level

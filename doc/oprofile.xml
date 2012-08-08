@@ -215,7 +215,7 @@ OProfile on such guest systems, you can use timer mode (see <xref linkend="timer
 			account is not found.  If you intend to profile JITed code, you must create
 			a group account named 'oprofile' and then create the 'oprofile' user account,
 			setting the default group to 'oprofile'.  A runtime error message is printed to
-			the oprofile daemon log when processing JIT samples if this special user
+			the oprofile log when processing JIT samples if this special user
 			account cannot be found.
 		</para></listitem>
 	</varlistentry>
@@ -363,7 +363,7 @@ is often all you need, but note these arguments to <command>./configure</command
 		</para></listitem>
 	</varlistentry>
 	<varlistentry id="with-kernel">
-		<term><option>--with-kernel></option></term>
+		<term><option>--with-kernel</option></term>
 		<listitem><para>
 			This option is used to specify the location of the kernel headers <filename>include</filename> directory
 			needed to build the perf_events-enabled <command>operf</command> program. By default, the OProfile
@@ -1971,23 +1971,27 @@ If we had specified <option>--symbols</option> in the previous command, we would
 gotten a symbol summary of all the images across the entire system. We can restrict this to only
 part of the system profile; for example,
 below is a symbol summary of the OProfile daemon. Note that as we used
-<command>opcontrol --separate=kernel</command>, symbols from images that <command>oprofiled</command>
+<command>opcontrol --separate=lib,kernel</command>, symbols from images that <command>oprofiled</command>
 has used are also shown.
 </para>
 <screen>
-$ opreport -l `which oprofiled` 2>/dev/null | more
-CPU: PIII, speed 863.195 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
-vma      samples  %           image name               symbol name
-0804be10 14971    28.1993     oprofiled                odb_insert
-0804afdc 7144     13.4564     oprofiled                pop_buffer_value
-c01daea0 6113     11.5144     vmlinux                  __copy_to_user_ll
-0804b060 2816      5.3042     oprofiled                opd_put_sample
-0804b4a0 2147      4.0441     oprofiled                opd_process_samples
-0804acf4 1855      3.4941     oprofiled                opd_put_image_sample
-0804ad84 1766      3.3264     oprofiled                opd_find_image
-0804a5ec 1084      2.0418     oprofiled                opd_find_module
-0804ba5c 741       1.3957     oprofiled                odb_hash_add_node
+$ opreport -l -p /lib/modules/`uname -r` `which oprofiled` 2>/dev/null | more
+CPU: Core 2, speed 2.534e+06 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 100000
+samples  %        image name               symbol name
+1353     24.9447  vmlinux                  sidtab_context_to_sid
+500       9.2183  vmlinux                  avtab_hash_eval
+154       2.8392  vmlinux                  __link_path_walk
+152       2.8024  vmlinux                  d_prune_aliases
+120       2.2124  vmlinux                  avtab_search_node
+104       1.9174  vmlinux                  find_next_bit
+85        1.5671  vmlinux                  selinux_file_fcntl
+82        1.5118  vmlinux                  avtab_write
+81        1.4934  oprofiled                odb_update_node_with_offset
+73        1.3459  oprofiled                opd_process_samples
+72        1.3274  vmlinux                  avc_has_perm_noaudit
+61        1.1246  libc-2.12.so             _IO_vfscanf
+59        1.0878  ext4.ko                  ext4_mark_iloc_dirty
 ...
 </screen>
 
@@ -2272,7 +2276,7 @@ JITed code, see <xref linkend="getting-jit-reports" />.
 <sect2 id="opreport-xml">
 <title>XML formatted output</title>
 <para>
-The -xml option can be used to generate XML instead of the usual
+The --xml option can be used to generate XML instead of the usual
 text format.  This allows opreport to eliminate some of the constraints
 dictated by the two dimensional text format.  For example, it is possible
 to separate the sample data across multiple events, cpus and threads.  The XML
@@ -2525,6 +2529,25 @@ Only include symbols in the given comma-separated list.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--objdump-params [params]</option></term><listitem><para>
 Pass the given parameters as extra values when calling objdump.
+If more than one option is to be passed to objdump, the parameters must be enclosed in a
+quoted string.
+</para>
+<para>
+An example of where this option is useful is when your toolchain does not
+automatically recognize instructions that are specific to your processor.
+For example, on IBM POWER7/RHEL 6, objdump must be told that a binary file may have
+POWER7-specific instructions. The <command>opannotate</command> option to show the POWER7-specific
+instructions is:
+<screen>
+   --objdump-params=-Mpower7
+</screen>
+</para>
+<para>
+The <command>opannotate</command> option to show the POWER7-specific instructions,
+the source code (--source) and the line numbers (-l) would be:
+<screen>
+   --objdump-params="-Mpower7 -l --source"
+</screen>
 </para></listitem></varlistentry>
 <varlistentry><term><option>--output-dir / -o [dir]</option></term><listitem><para>
 Output directory. This makes opannotate output one annotated file for each
@@ -2731,22 +2754,54 @@ Show version.
 <title>Converting sample database files (<command>opimport</command>)</title>
 <para>
 	This utility converts sample database files from a foreign binary format (abi) to
-	the native format. This is useful only when moving sample files between hosts,
-	for analysis on platforms other than the one used for collection. The abi format
-	of the file to be imported is described in a text file located in <filename>$SESSION_DIR/abi</filename>.
+	the native format. This is useful only when moving sample files between systems
+	for analysis on platforms other than the one used for collection. The <command>
+	oparchive</command> should be used on the machine where the profile was taken (target)
+	in order to collect sample files and all other necessary information. The archive
+	directory that is the output from <command>oparchive</command> should be copied
+	to the system where you wish to perform your performance analysis (host). If the
+	When the architecture of your target and host systems differ, then you'll need to
+	use the <command>opimport</command> command. The abi format of the sample files
+	to be imported is described in a text file located in <filename>$SESSION_DIR/abi</filename>.
 </para>
 
 <para>
-	The following command would convert the input samples files to the
-	output samples files using the given abi file as a binary description
+	The following command converts an input sample file to the specified
+	output sample file using the given abi file as a binary description
 	of the input file and the curent platform abi as a binary description
-	of the output file.
+	of the output file. (NOTE: The ellipses are used to make the example more
+	compact and cannot be used in an actual command line.)
 </para>
 
 <screen>
-# opimport -a /var/lib/oprofile/abi -o /tmp/current/.../GLOBAL_POWER_EVENTS.200000.1.all.all.all /var/lib/.../mprime/GLOBAL_POWER_EVENTS.200000.1.all.all.all
+# opimport -a /tmp/foreign-abi -o /tmp/imported/.../GLOBAL_POWER_EVENTS.200000.1.all.all.all /tmp/archived/var/lib/.../mprime/GLOBAL_POWER_EVENTS.200000.1.all.all.all
 </screen>
+<para>
+    Since opimport converts just one file at a time, an example shell script is provided below
+    that will perform an import/conversion of all sample files in a samples directory collected
+    from the target system.
+<screen>
+#!/bin/bash
+Usage: my-import.sh &lt;input-abi-pathname&gt;
 
+# NOTE: Start from the "samples" directory containing the "current" directory
+# to be imported
+
+mkdir current-imported
+cd current-imported; (cd ../current; find . -type d ! -name .) |xargs mkdir
+cd ../current; mv stats ../StatsSave; find . -type f | while read line; do opimport  -a $1 -o ../current-imported/$line $line; done; mv ../StatsSave stats;
+</screen>
+</para>
+<para>
+Example usage:  Assume that on the target system, a profile was collected using a session-dir of
+<filename>/var/lib/oprofile</filename>, and then <command>oparchive -o profile1</command> was run.
+Then the <filename>profile1</filename> directory is copied to the host system for analysis.  To import
+the sample data in <filename>profile1</filename>, you would perform the following steps:
+<screen>
+$cd profile1/var/lib/oprofile/samples
+$my-import.sh `pwd`/../abi
+</screen>
+</para>
 <sect2 id="opimport-details">
 <title>Usage of <command>opimport</command></title>
 
