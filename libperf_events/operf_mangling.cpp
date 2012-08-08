@@ -52,7 +52,7 @@ static char *
 mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int counter, int cg)
 {
 	char * mangled;
-	struct mangle_values values;
+	struct mangle_values values = {0, NULL, NULL, NULL, NULL, NULL, 0, 0, -1, -1, -1};
 	const struct operf_event * event = operfRead.get_event_by_counter(counter);
 
 	values.anon_name = NULL;

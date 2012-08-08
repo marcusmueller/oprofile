@@ -154,7 +154,7 @@ try_again:
 
 }  // end anonymous namespace
 
-operf_counter::operf_counter(operf_event_t evt,  bool enable_on_exec, bool do_cg,
+operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_cg,
                              bool separate_cpu)
 {
 	memset(&attr, 0, sizeof(attr));
@@ -325,6 +325,7 @@ int operf_record::_write_header_to_file(void)
 	lseek(output_fd, 0, SEEK_SET);
 	total += op_write_output(output_fd, &f_header, sizeof(f_header));
 	lseek(output_fd, opHeader.data_offset + opHeader.data_size, SEEK_SET);
+	return total;
 }
 
 int operf_record::_write_header_to_pipe(void)
@@ -619,36 +620,47 @@ operf_read::~operf_read()
 }
 
 
-void operf_read::_read_header_info_with_ifstream(void)
+int operf_read::_read_header_info_with_ifstream(void)
 {
 	struct OP_file_header fheader;
+	int num_fattrs, ret = 0;
+	size_t fattr_size;
 	istrm.seekg(0, ios_base::beg);
 
 	if (op_read_from_stream(istrm, (char *)&fheader, sizeof(fheader)) != sizeof(fheader)) {
-		throw runtime_error("Error: input file " + inputFname + " does not have enough data for header");
+		cerr << "Error: input file " << inputFname << " does not have enough data for header" << endl;
+		ret = OP_PERF_HANDLED_ERROR;
+		goto out;
 	}
 
-	if (memcmp(&fheader.magic, __op_magic, sizeof(fheader.magic)))
-		throw runtime_error("Error: input file " + inputFname + " does not have expected header data");
+	if (memcmp(&fheader.magic, __op_magic, sizeof(fheader.magic))) {
+		cerr << "Error: input file " << inputFname << " does not have expected header data" << endl;
+		ret = OP_PERF_HANDLED_ERROR;
+		goto out;
+	}
 
 	cverb << vconvert << "operf magic number " << (char *)&fheader.magic << " matches expected __op_magic " << __op_magic << endl;
 	opHeader.attr_offset = fheader.attrs.offset;
 	opHeader.data_offset = fheader.data.offset;
 	opHeader.data_size = fheader.data.size;
-	size_t fattr_size = sizeof(struct op_file_attr);
+	fattr_size = sizeof(struct op_file_attr);
 	if (fattr_size != fheader.attr_size) {
-		string msg = "Error: perf_events binary incompatibility. Event data collection was apparently "
-				"performed under a different kernel version than current.";
-		throw runtime_error(msg);
+		cerr << "Error: perf_events binary incompatibility. Event data collection was apparently "
+		     << endl << "performed under a different kernel version than current." << endl;
+		ret = OP_PERF_HANDLED_ERROR;
+		goto out;
 	}
-	int num_fattrs = fheader.attrs.size/fheader.attr_size;
+	num_fattrs = fheader.attrs.size/fheader.attr_size;
 	cverb << vconvert << "num_fattrs  is " << num_fattrs << endl;
 	istrm.seekg(opHeader.attr_offset, ios_base::beg);
 	for (int i = 0; i < num_fattrs; i++) {
 		struct op_file_attr f_attr;
 		streamsize fattr_size = sizeof(f_attr);
-		if (op_read_from_stream(istrm, (char *)&f_attr, fattr_size) != fattr_size)
-			throw runtime_error("Error: Unexpected end of input file " + inputFname + ".");
+		if (op_read_from_stream(istrm, (char *)&f_attr, fattr_size) != fattr_size) {
+			cerr << "Error: Unexpected end of input file " << inputFname << "." << endl;
+			ret = OP_PERF_HANDLED_ERROR;
+			goto out;
+		}
 		opHeader.h_attrs[i].attr = f_attr.attr;
 		streampos next_f_attr = istrm.tellg();
 		int num_ids = f_attr.ids.size/sizeof(u64);
@@ -656,14 +668,19 @@ void operf_read::_read_header_info_with_ifstream(void)
 		for (int id = 0; id < num_ids; id++) {
 			u64 perf_id;
 			streamsize perfid_size = sizeof(perf_id);
-			if (op_read_from_stream(istrm, (char *)& perf_id, perfid_size) != perfid_size)
-				throw runtime_error("Error: Unexpected end of input file " + inputFname + ".");
+			if (op_read_from_stream(istrm, (char *)& perf_id, perfid_size) != perfid_size) {
+				cerr << "Error: Unexpected end of input file " << inputFname << "." << endl;
+				ret = OP_PERF_HANDLED_ERROR;
+				goto out;
+			}
 			cverb << vconvert << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
 			opHeader.h_attrs[i].ids.push_back(perf_id);
 		}
 		istrm.seekg(next_f_attr, ios_base::beg);
 	}
+out:
 	istrm.close();
+	return ret;
 }
 
 int operf_read::_read_perf_header_from_file(void)
@@ -673,19 +690,26 @@ int operf_read::_read_perf_header_from_file(void)
 	opHeader.data_size = 0;
 	istrm.open(inputFname.c_str(), ios_base::in);
 	if (!istrm.good()) {
-		return -1;
+		valid = false;
+		cerr << "Input stream bad for " << inputFname << endl;
+		ret = OP_PERF_HANDLED_ERROR;
+		goto out;
 	}
 	istrm.peek();
 	if (istrm.eof()) {
 		cverb << vconvert << "operf_read::readPerfHeader:  Empty profile data file." << endl;
 		valid = false;
-		return OP_PERF_HANDLED_ERROR;
+		ret = OP_PERF_HANDLED_ERROR;
+		goto out;
 	}
 	cverb << vconvert << "operf_read: successfully opened input file " << inputFname << endl;
-	_read_header_info_with_ifstream();
-	valid = true;
-	cverb << vconvert << "Successfully read perf header" << endl;
-
+	if ((ret = _read_header_info_with_ifstream()) == 0) {
+		valid = true;
+		cverb << vconvert << "Successfully read perf header" << endl;
+	} else {
+		valid = false;
+	}
+out:
 	return ret;
 }
 
@@ -750,15 +774,15 @@ int operf_read::_read_perf_header_from_pipe(void)
 
 fail:
 	cerr << errmsg;
-	return -1;
+	return OP_PERF_HANDLED_ERROR;
 }
 
 int operf_read::readPerfHeader(void)
 {
 	if (!inputFname.empty())
-		_read_perf_header_from_file();
+		return _read_perf_header_from_file();
 	else
-		_read_perf_header_from_pipe();
+		return _read_perf_header_from_pipe();
 }
 
 int operf_read::get_eventnum_by_perf_event_id(u64 id) const

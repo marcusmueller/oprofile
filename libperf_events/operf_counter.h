@@ -55,7 +55,7 @@ op_perf_event_open(struct perf_event_attr * attr,
 
 class operf_counter {
 public:
-	operf_counter(operf_event_t evt, bool enable_on_exec, bool callgraph,
+	operf_counter(operf_event_t & evt, bool enable_on_exec, bool callgraph,
 	              bool separate_by_cpu);
 	~operf_counter();
 	int perf_event_open(pid_t ppid, int cpu, unsigned counter, operf_record * pr);
@@ -118,7 +118,7 @@ private:
 
 class operf_read {
 public:
-	operf_read(void) : sample_data_fd(-1), inputFname(""), cpu_type(CPU_NO_GOOD) { valid = false; }
+	operf_read(void) : sample_data_fd(-1), inputFname(""), cpu_type(CPU_NO_GOOD) { valid = syswide = false;}
 	void init(int sample_data_pipe_fd, std::string input_filename, std::string samples_dir, op_cpu cputype,
 	          std::vector<operf_event_t> & evts, bool systemwide);
 	~operf_read();
@@ -139,7 +139,7 @@ private:
 	bool syswide;
 	op_cpu cpu_type;
 	int _get_one_perf_event(event_t *);
-	void _read_header_info_with_ifstream(void);
+	int _read_header_info_with_ifstream(void);
 	int _read_perf_header_from_file(void);
 	int _read_perf_header_from_pipe(void);
 };

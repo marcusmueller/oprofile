@@ -739,7 +739,8 @@ static void cleanup(void)
 	verbose_string.clear();
 	if (operf_options::post_conversion) {
 		string cmd = "rm -f " + outputfile;
-		system(cmd.c_str());
+		if (system(cmd.c_str()) != 0)
+			cerr << "Unable to remove " << outputfile << endl;
 	}
 }
 
