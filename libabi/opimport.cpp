@@ -124,7 +124,7 @@ void import_from_abi(abi const & abi, void const * srcv,
 	ext.extract(head->is_kernel, src, "sizeof_u32", "offsetof_header_is_kernel");
 	// "double" extraction is unlikely to work
 	head->cpu_speed = 0.0;
-	ext.extract(head->mtime, src, "sizeof_time_t", "offsetof_header_mtime");
+	ext.extract(head->mtime, src, "sizeof_u64", "offsetof_header_mtime");
 	ext.extract(head->cg_to_is_kernel, src, "sizeof_u32",
 		"offsetof_header_cg_to_is_kernel");
 	ext.extract(head->anon_start, src, "sizeof_u32",

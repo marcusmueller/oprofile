@@ -21,7 +21,7 @@
 
 static struct op_abi_entry const abi_entries[] = {
 	{ "sizeof_double", sizeof(double) },
-	{ "sizeof_time_t", sizeof(time_t) },
+	{ "sizeof_u64", sizeof(u64) },
 	{ "sizeof_u8", sizeof(u8) },
 	{ "sizeof_u32", sizeof(u32) },
 	{ "sizeof_int", sizeof(int) },
