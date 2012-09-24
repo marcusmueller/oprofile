@@ -688,7 +688,8 @@ summarize_binaries(extra_images const & extra_found_images)
 	}
 
 	// close out last binary and module
-	current_binary->close_binary(symbols_end);
+	if (current_binary)
+		current_binary->close_binary(symbols_end);
 }
 
 
