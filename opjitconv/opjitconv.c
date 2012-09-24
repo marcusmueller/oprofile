@@ -150,8 +150,12 @@ static char const * find_anon_dir_match(struct list_head * anon_dirs,
 					char const * proc_id)
 {
 	struct list_head * pos;
-	char match_filter[10];
-	snprintf(match_filter, 10, "*/%s.*", proc_id);
+	/* Current PID_MAX_LIMIT (as defined in include/linux/threads.h) is
+	 *         4 x 4 x 1024 * 1024 (for 64-bit kernels)
+	 * So need to have space for 7 chars for proc_id.
+	 */
+	char match_filter[12];
+	snprintf(match_filter, 12, "*/%s.*", proc_id);
 	list_for_each(pos, anon_dirs) {
 		struct pathname * anon_dir =
 			list_entry(pos, struct pathname, neighbor);
