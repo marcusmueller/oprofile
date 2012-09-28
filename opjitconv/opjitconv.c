@@ -671,7 +671,7 @@ rm_tmp:
 	/* Delete temporary working directory with all its files
 	 * (i.e. dump and ELF file).
 	 */
-	sprintf(sys_cmd_buffer, "/bin/rm -rf %s", tmp_conv_dir);
+	sprintf(sys_cmd_buffer, "/bin/rm -rf '%s'", tmp_conv_dir);
 	if (system(sys_cmd_buffer) != 0) {
 		printf("opjitconv: Removing temporary working directory failed.\n");
 		rc = OP_JIT_CONV_TMPDIR_NOT_REMOVED;
