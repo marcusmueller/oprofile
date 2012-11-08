@@ -100,7 +100,6 @@ typedef enum {
 	CPU_ARM_V7_CA5, /**< ARM Cortex-A5 */
 	CPU_ARM_V7_CA7, /**< ARM Cortex-A7 */
 	CPU_ARM_V7_CA15, /**< ARM Cortex-A15 */
-	CPU_HASWELL, /** < Intel Haswell microarchitecture */
 	MAX_CPU_TYPE
 } op_cpu;
 

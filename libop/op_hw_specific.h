@@ -143,10 +143,6 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 			return CPU_SANDYBRIDGE;
 		case 0x3a:
 			return CPU_IVYBRIDGE;
-		case 0x3c:
-		case 0x46:
-		case 0x47:
-			return CPU_HASWELL;
 		}
 	}
 	return cpu_type;

@@ -130,9 +130,6 @@ unsigned parse_extra(const char *s)
 		} else if (strisprefix(s, "any")) {
 			v |= EXTRA_ANY;
 			s += 3;
-		} else if (strisprefix(s, "pebs")) {
-			v |= EXTRA_PEBS;
-			s += 4;
 		} else {
 			parse_error("Illegal extra field modifier");
 		}
@@ -1081,7 +1078,6 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
  		case CPU_ATOM:
  		case CPU_CORE_I7:
 		case CPU_NEHALEM:
-		case CPU_HASWELL:
 		case CPU_WESTMERE:
 		case CPU_SANDYBRIDGE:
 		case CPU_IVYBRIDGE:

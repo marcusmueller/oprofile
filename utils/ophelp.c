@@ -158,10 +158,6 @@ static void help_for_event(struct op_event * event)
 						 (extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK);
 					word_wrap(14, &column, buf);
 				}
-				if (extra & EXTRA_ANY)
-					word_wrap(14, &column, " any");
-				if (extra & EXTRA_PEBS)
-					word_wrap(14, &column, " pebs");
 				word_wrap(14, &column, ")");
 			}
 			putchar('\n');
@@ -541,7 +537,6 @@ int main(int argc, char const * argv[])
 	case CPU_CORE_2:
 	case CPU_CORE_I7:
 	case CPU_NEHALEM:
-	case CPU_HASWELL:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
 	case CPU_IVYBRIDGE:
