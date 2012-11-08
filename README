@@ -30,6 +30,7 @@ Building
 
 Please read the installation instructions in doc/oprofile.html or
 http://oprofile.sourceforge.net/doc/install.html.
+Only 2.6 kernels are supported.
 
 Quick start :
 
@@ -37,10 +38,7 @@ Quick start :
 can specify a different version, e.g.
 ACLOCAL=aclocal-1.5 AUTOMAKE=automake-1.5 AUTOCONF=autoconf-2.13 AUTOHEADER=autoheader-2.13 ./autogen.sh)
 
-2.4 kernels
+Then run the following commands
+	./configure [options]  (use './configure --help' to see options)
+	make
 
-	./configure --with-linux=/path/to/kernel/source
-
-2.6 kernels
-
-	./configure --with-kernel-support
