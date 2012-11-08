@@ -107,6 +107,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A5", "arm/armv7-ca5", CPU_ARM_V7_CA5, 3 },
 	{ "ARM Cortex-A7", "arm/armv7-ca7", CPU_ARM_V7_CA7, 5 },
 	{ "ARM Cortex-A15", "arm/armv7-ca15", CPU_ARM_V7_CA15, 7 },
+	{ "Intel Haswell microarchitecture", "i386/haswell", CPU_HASWELL, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -501,6 +502,7 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 	case CPU_CORE_I7:
 	case CPU_ATOM:
 	case CPU_NEHALEM:
+	case CPU_HASWELL:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
 	case CPU_IVYBRIDGE:

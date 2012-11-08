@@ -1,0 +1,60 @@
+#
+# Intel "Haswell" microarchitecture core events.
+#
+# See http://ark.intel.com/ for help in identifying Haswell based CPUs
+#
+# Note the minimum counts are not discovered experimentally and could be likely
+# lowered in many cases without ill effect.
+#
+include:i386/arch_perfmon
+event:0x03 counters:cpuid um:x02 minimum:100003 name:ld_blocks_store_forward : Cases when loads get true Block-on-Store blocking code preventing store forwarding
+event:0x05 counters:cpuid um:misalign_mem_ref minimum:2000003 name:misalign_mem_ref : misalign_mem_ref
+event:0x07 counters:cpuid um:one minimum:100003 name:ld_blocks_partial_address_alias : False dependencies in MOB due to partial address comparison
+event:0x08 counters:cpuid um:dtlb_load_misses minimum:2000003 name:dtlb_load_misses : dtlb_load_misses
+event:0x0d counters:cpuid um:x03 minimum:2000003 name:int_misc_recovery_cycles : Number of cycles waiting for the checkpoints in Resource Allocation Table (RAT) to be recovered after Nuke due to all other cases except JEClear (e.g. whenever a ucode assist is needed like SSE exception, memory disambiguation, etc...)
+event:0x0e counters:cpuid um:uops_issued minimum:2000003 name:uops_issued : uops_issued
+event:0x24 counters:cpuid um:l2_rqsts minimum:200003 name:l2_rqsts : l2_rqsts
+event:0x27 counters:cpuid um:x50 minimum:200003 name:l2_demand_rqsts_wb_hit : Not rejected writebacks that hit L2 cache
+event:0x48 counters:2 um:l1d_pend_miss minimum:2000003 name:l1d_pend_miss : l1d_pend_miss
+event:0x49 counters:cpuid um:dtlb_store_misses minimum:100003 name:dtlb_store_misses : dtlb_store_misses
+event:0x4c counters:cpuid um:load_hit_pre minimum:100003 name:load_hit_pre : load_hit_pre
+event:0x51 counters:cpuid um:one minimum:2000003 name:l1d_replacement : L1D data line replacements
+event:0x54 counters:cpuid um:tx_mem minimum:2000003 name:tx_mem : tx_mem
+event:0x58 counters:cpuid um:move_elimination minimum:1000003 name:move_elimination : move_elimination
+event:0x5c counters:cpuid um:cpl_cycles minimum:2000003 name:cpl_cycles : cpl_cycles
+event:0x5d counters:cpuid um:tx_exec minimum:2000003 name:tx_exec : tx_exec
+event:0x5e counters:cpuid um:one minimum:2000003 name:rs_events_empty_cycles : Cycles when Reservation Station (RS) is empty for the thread
+event:0x63 counters:cpuid um:lock_cycles minimum:2000003 name:lock_cycles : lock_cycles
+event:0x79 counters:0,1,2,3 um:idq minimum:2000003 name:idq : idq
+event:0x80 counters:cpuid um:x02 minimum:200003 name:icache_misses : Number of Instruction Cache, Streaming Buffer and Victim Cache Misses. Includes Uncacheable accesses.
+event:0x85 counters:cpuid um:itlb_misses minimum:100003 name:itlb_misses : itlb_misses
+event:0x87 counters:cpuid um:ild_stall minimum:2000003 name:ild_stall : ild_stall
+event:0x88 counters:cpuid um:br_inst_exec minimum:200003 name:br_inst_exec : br_inst_exec
+event:0x89 counters:cpuid um:br_misp_exec minimum:200003 name:br_misp_exec : br_misp_exec
+event:0x9c counters:0,1,2,3 um:idq_uops_not_delivered minimum:2000003 name:idq_uops_not_delivered : idq_uops_not_delivered
+event:0xa1 counters:cpuid um:uops_executed_port minimum:2000003 name:uops_executed_port : uops_executed_port
+event:0xa2 counters:cpuid um:resource_stalls minimum:2000003 name:resource_stalls : resource_stalls
+event:0xa3 counters:2 um:cycle_activity minimum:2000003 name:cycle_activity : cycle_activity
+event:0xae counters:cpuid um:one minimum:100007 name:itlb_itlb_flush : Flushing of the Instruction TLB (ITLB) pages, includes 4k/2M/4M pages.
+event:0xb0 counters:cpuid um:offcore_requests minimum:100003 name:offcore_requests : offcore_requests
+event:0xb1 counters:cpuid um:uops_executed minimum:2000003 name:uops_executed : uops_executed
+event:0xbc counters:0,1,2,3 um:page_walker_loads minimum:2000003 name:page_walker_loads : page_walker_loads
+event:0xbd counters:cpuid um:tlb_flush minimum:100007 name:tlb_flush : tlb_flush
+event:0xc0 counters:1 um:one minimum:2000003 name:inst_retired_prec_dist : Precise instruction retired event with HW to reduce effect of PEBS shadow in IP distribution
+event:0xc1 counters:cpuid um:other_assists minimum:100003 name:other_assists : other_assists
+event:0xc2 counters:cpuid um:uops_retired minimum:2000003 name:uops_retired : uops_retired
+event:0xc3 counters:cpuid um:machine_clears minimum:100003 name:machine_clears : machine_clears
+event:0xc4 counters:cpuid um:br_inst_retired minimum:400009 name:br_inst_retired : br_inst_retired
+event:0xc5 counters:cpuid um:br_misp_retired minimum:400009 name:br_misp_retired : br_misp_retired
+event:0xc8 counters:cpuid um:hle_retired minimum:2000003 name:hle_retired : hle_retired
+event:0xc9 counters:cpuid um:rtm_retired minimum:2000003 name:rtm_retired : rtm_retired
+event:0xca counters:cpuid um:fp_assist minimum:100003 name:fp_assist : fp_assist
+event:0xcc counters:cpuid um:x20 minimum:2000003 name:rob_misc_events_lbr_inserts : Count cases of saving new LBR
+event:0xd0 counters:0,1,2,3 um:mem_uops_retired minimum:2000003 name:mem_uops_retired : mem_uops_retired
+event:0xd1 counters:0,1,2,3 um:mem_load_uops_retired minimum:2000003 name:mem_load_uops_retired : mem_load_uops_retired
+event:0xd2 counters:0,1,2,3 um:mem_load_uops_l3_hit_retired minimum:100003 name:mem_load_uops_l3_hit_retired : mem_load_uops_l3_hit_retired
+event:0xd3 counters:0,1,2,3 um:one minimum:100007 name:mem_load_uops_l3_miss_retired_local_dram : Data from local DRAM either Snoop not needed or Snoop Miss (RspI)
+event:0xe6 counters:cpuid um:x1f minimum:100003 name:baclears_any : Counts the total number when the front end is resteered, mainly when the BPU cannot provide a correct prediction and this is corrected by other branch handling mechanisms at the front end.
+event:0xf0 counters:cpuid um:l2_trans minimum:200003 name:l2_trans : l2_trans
+event:0xf1 counters:cpuid um:l2_lines_in minimum:100003 name:l2_lines_in : l2_lines_in
+event:0xf2 counters:cpuid um:l2_lines_out minimum:100003 name:l2_lines_out : l2_lines_out

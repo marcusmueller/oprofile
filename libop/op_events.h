@@ -25,6 +25,7 @@ extern "C" {
 #define EXTRA_INV  (1U << 23)
 #define EXTRA_CMASK_SHIFT 24
 #define EXTRA_CMASK_MASK 0xff
+#define EXTRA_PEBS (1U << 19) /* fake, mapped to pin control, but mapped back for perf */
 
 /*
  * For timer based sampling some targets (e.g. s390) use a virtual
@@ -45,8 +46,7 @@ enum unit_mask_type {
 	utm_bitmask		/**< bitmask */
 };
 
-/** up to thirty two allowed unit masks */
-#define MAX_UNIT_MASK 32
+#define MAX_UNIT_MASK 64
 
 
 /** Describe an unit mask. */
