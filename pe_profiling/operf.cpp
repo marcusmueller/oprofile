@@ -77,7 +77,7 @@ char * start_time_human_readable;
 
 static char full_pathname[PATH_MAX];
 static char * app_name_SAVE = NULL;
-static char * app_args = NULL;
+static char ** app_args = NULL;
 static 	pid_t jitconv_pid = -1;
 static bool app_started;
 static pid_t operf_record_pid;
@@ -204,6 +204,18 @@ void set_signals(void)
 
 static int app_ready_pipe[2], start_app_pipe[2], operf_record_ready_pipe[2];
 
+static string args_to_string(void)
+{
+	string ret;
+	char * const * ptr = app_args + 1;
+	while (*ptr != NULL) {
+		ret.append(*ptr);
+		ret += ' ';
+		ptr++;
+	}
+	return ret;
+}
+
 void run_app(void)
 {
 	char * app_fname = rindex(app_name, '/') + 1;
@@ -213,38 +225,12 @@ void run_app(void)
 		__print_usage_and_exit(msg.c_str());
 	}
 
-	vector<string> exec_args_str;
-	if (app_args) {
-		size_t end_pos;
-		string app_args_str = app_args;
-		// Since the strings returned from substr would otherwise be ephemeral, we
-		// need to store them into the exec_args_str vector so we can reference
-		// them later when we call execvp.
-		do {
-			end_pos = app_args_str.find_first_of(' ', 0);
-			if (end_pos != string::npos) {
-				exec_args_str.push_back(app_args_str.substr(0, end_pos));
-				app_args_str = app_args_str.substr(end_pos + 1);
-			} else {
-				exec_args_str.push_back(app_args_str);
-			}
-		} while (end_pos != string::npos);
-	}
+	app_args[0] = app_fname;
 
-	vector<const char *> exec_args;
-	exec_args.push_back(app_fname);
-	vector<string>::iterator it;
-	cverb << vdebug << "Exec args are: " << app_fname << " ";
-	// Now transfer the args from the intermediate exec_args_str container to the
-	// exec_args container that can be passed to execvp.
-	for (it = exec_args_str.begin(); it != exec_args_str.end(); it++) {
-		exec_args.push_back((*it).c_str());
-		cverb << vdebug << (*it).c_str() << " ";
-	}
-	exec_args.push_back((char *) NULL);
-	cverb << vdebug << endl;
+	string arg_str = args_to_string();
+	cverb << vdebug << "Exec args are: " << app_fname << " " << arg_str << endl;
 	// Fake an exec to warm-up the resolver
-	execvp("", ((char * const *)&exec_args[0]));
+	execvp("", app_args);
 	// signal to the parent that we're ready to exec
 	int startup = 1;
 	if (write(app_ready_pipe[1], &startup, sizeof(startup)) < 0) {
@@ -263,8 +249,8 @@ void run_app(void)
 
 	cverb << vdebug << "parent says start app " << app_name << endl;
 	app_started = true;
-	execvp(app_name, ((char * const *)&exec_args[0]));
-	cerr <<  "Failed to exec " << exec_args[0] << ": " << strerror(errno) << endl;
+	execvp(app_name, app_args);
+	cerr <<  "Failed to exec " << app_fname << " " << arg_str << ": " << strerror(errno) << endl;
 	/* We don't want any cleanup in the child */
 	_exit(EXIT_FAILURE);
 
@@ -1535,21 +1521,18 @@ static void process_args(int argc, char * const argv[])
 
 		app_name = (char *) xmalloc(strlen(argv[non_options_idx]) + 1);
 		strcpy(app_name, argv[non_options_idx]);
+		// Note 1: app_args[0] is placeholder for app_fname (filled in later).
+		// Note 2: app_args[<end>] is set to NULL (required by execvp)
 		if (non_options_idx < (argc -1)) {
-			size_t length_all_app_args = 0;
-			non_options_idx++;
-			for(int i = non_options_idx; i < argc; i++)
-				length_all_app_args += strlen(argv[i]) + 1;
-			if (length_all_app_args) {
-				app_args = (char *) xmalloc(length_all_app_args);
-				strcpy(app_args, argv[non_options_idx]);
-				non_options_idx++;
-				while (non_options_idx < argc) {
-					strcat(app_args, " ");
-					strcat(app_args, argv[non_options_idx]);
-					non_options_idx++;
-				}
+			app_args = (char **) xmalloc((sizeof *app_args) *
+			                             (argc - non_options_idx + 1));
+			for(int i = non_options_idx + 1; i < argc; i++) {
+				app_args[i - non_options_idx] = argv[i];
 			}
+			app_args[argc - non_options_idx] = NULL;
+		} else {
+			app_args = (char **) xmalloc((sizeof *app_args) * 2);
+			app_args[1] = NULL;
 		}
 		if (validate_app_name() < 0) {
 			__print_usage_and_exit(NULL);
