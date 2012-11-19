@@ -732,12 +732,14 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 			case PERF_RECORD_MISC_HYPERVISOR:
 				domain = "hypervisor";
 				break;
+#if HAVE_PERF_GUEST_MACROS
 			case PERF_RECORD_MISC_GUEST_KERNEL:
 				domain = "guest OS";
 				break;
 			case PERF_RECORD_MISC_GUEST_USER:
 				domain = "guest user";
 				break;
+#endif
 			default:
 				domain = "unknown";
 				break;

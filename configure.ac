@@ -60,12 +60,12 @@ test "$LD" || AC_ERROR(ld not found)
 
 # --with-kernel for cross compilation
 AC_ARG_WITH(kernel,
-[AS_HELP_STRING([--with-kernel=dir], [Path to kernel include directory (...include/linux/perf_event.h) to use.
+[AS_HELP_STRING([--with-kernel=dir], [Path to kernel include directory (e.g. /tmp/linux-xyz) to use.
 If this option is not specified, configure will look for kernel header files in the usual installation location
-for a kernel-headers package -- /usr/include. Use this option in cross-compile enviroments
+for a kernel-headers package -- /usr. Use this option in cross-compile enviroments
 or in situations where the host system does not support perf_events but you wish to build binaries
-for a target system that does support perf_events. Because of OProfile's use of syscalls, be sure that the
-kernel headers used match the architecture of the intended target system.])],
+for a target system that does support perf_events. Because of OProfile's use of syscalls,
+kernel headers used during build must match the architecture of the intended target system.])],
 KERNELDIR=$withval)
 
 
@@ -92,10 +92,29 @@ AC_CHECK_HEADER($PERF_EVENT_H,PERF_EVENT_H_EXISTS="yes")
 AM_CONDITIONAL(BUILD_FOR_PERF_EVENT, test -n "$PERF_EVENT_H_EXISTS")
 if test "$PERF_EVENT_H_EXISTS" = "yes"; then
 	HAVE_PERF_EVENTS='1'
+
 	if test "$KERNELDIR" != ""; then
 		PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
 		AC_SUBST(PERF_EVENT_FLAGS)
 	fi
+
+	AC_MSG_CHECKING([whether PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
+	rm -f test-for-PERF_GUEST
+	AC_LANG_CONFTEST(
+		[AC_LANG_PROGRAM([[#include <linux/perf_event.h>]],
+			[[unsigned int pr_guest_kern = PERF_RECORD_MISC_GUEST_KERNEL;
+			unsigned int pr_guest_user = PERF_RECORD_MISC_GUEST_USER;]])
+		])
+	$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-PERF_GUEST  > /dev/null 2>&1
+	if test -f test-for-PERF_GUEST; then
+		echo "yes"
+		HAVE_PERF_GUEST_MACROS='1'
+	else
+		echo "no"
+		HAVE_PERF_GUEST_MACROS='0'
+	fi
+	AC_DEFINE_UNQUOTED(HAVE_PERF_GUEST_MACROS, $HAVE_PERF_GUEST_MACROS, [PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
+	rm -f test-for-PERF_GUEST*
 else
 	HAVE_PERF_EVENTS='0'
 fi
@@ -416,7 +435,8 @@ elif test "`getent passwd oprofile 2>/dev/null`" == "" || \
 fi
 
 if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_has_perf_events_support" = "yes"; then
-	echo "Warning: perf_event.h not found.  Please install the kernel headers package if you"
-	echo "         want non-root support built into OProfile."
+	echo "Warning: perf_event.h not found.  Either install the kernel headers package or"
+	echo "use the --with-kernel option if you want the non-root, single application"
+	echo "profiling support provided by operf."
 fi
 
