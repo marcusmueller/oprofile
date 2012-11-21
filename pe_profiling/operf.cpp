@@ -942,8 +942,11 @@ static int get_PATH_based_pathname(char * path_holder, size_t n)
 		struct dirent ** namelist;
 		int rc = scandir(segment, &namelist, find_app_file_in_dir, NULL);
 		if (rc < 0) {
-			cerr << app_name << " cannot be found in your PATH." << endl;
-			break;
+			if (errno != ENOENT) {
+				cerr << strerror(errno) << endl;
+				cerr << app_name << " cannot be found in your PATH." << endl;
+				break;
+			}
 		} else if (rc == 1) {
 			size_t applen = strlen(app_name);
 			size_t dirlen = strlen(segment);
