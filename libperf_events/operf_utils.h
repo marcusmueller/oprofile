@@ -166,4 +166,10 @@ void op_release_resources(void);
 #define cpu_relax()	({__insn_mfspr(SPR_PASS); barrier();})
 #endif
 
+#ifdef __arc__
+#include <asm/unistd.h>
+#define rmb()          asm volatile("" ::: "memory")
+#define cpu_relax()    rmb()
+#endif
+
 #endif // OPERF_H_
