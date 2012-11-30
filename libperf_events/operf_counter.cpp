@@ -871,7 +871,7 @@ int operf_read::convertPerfData(void)
 	strcat(cbuf, "/abi");
 	op_write_abi_to_file(cbuf);
 	free(cbuf);
-	if (inputFname.empty())
+	if (!inputFname.empty())
 		close(info.traceFD);
 	else
 		free(event);
