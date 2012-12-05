@@ -15,13 +15,10 @@ to read doc/CodingStyle
 Source organisation
 -------------------
 
-module/
-
-	The 2.4 module code. Sub-directories contain architecture-specific code.
 
 daemon/
 
-	The daemon. liblegacy/ contains the daemon core for 2.4
+	The daemon.
 
 utils/
 

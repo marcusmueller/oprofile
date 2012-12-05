@@ -10,7 +10,6 @@
  */
 
 #include "op_config.h"
-#include "op_config_24.h"
 
 #include <limits.h>
 #include <stdlib.h>
@@ -65,13 +64,4 @@ init_op_config_dirs(char const * session_dir)
 
 	strcpy(op_dump_status, op_session_dir);
 	strcat(op_dump_status, "/complete_dump");
-
-	strcpy(op_device, op_session_dir);
-	strcat(op_device, "/opdev");
-
-	strcpy(op_note_device, op_session_dir);
-	strcat(op_note_device, "/opnotedev");
-
-	strcpy(op_hash_device, op_session_dir);
-	strcat(op_hash_device, "/ophashmapdev");
 }

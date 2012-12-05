@@ -77,7 +77,6 @@ static char * events;
 static char * ext_feature;
 static int showvers;
 static struct oprofiled_ops * opd_ops;
-extern struct oprofiled_ops opd_24_ops;
 extern struct oprofiled_ops opd_26_ops;
 
 #define OPD_IMAGE_FILTER_HASH_SIZE 32
@@ -476,10 +475,11 @@ static void opd_options(int argc, char const * argv[])
  */
 static struct oprofiled_ops * get_ops(void)
 {
+	/* Support for 2.4 kernel was removed in oprofile 0.9.8, so
+	 * only "2.6" interface is supported. Later kernels also
+	 * comply with the 2.6 interface.
+	 */
 	switch (op_get_interface()) {
-		case OP_INTERFACE_24:
-			printf("Using 2.4 OProfile kernel interface.\n");
-			return &opd_24_ops;
 		case OP_INTERFACE_26:
 			printf("Using 2.6+ OProfile kernel interface.\n");
 			return &opd_26_ops;

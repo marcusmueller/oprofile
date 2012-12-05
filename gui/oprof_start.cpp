@@ -53,7 +53,6 @@
 
 #include "oprof_start.h"
 #include "op_config.h"
-#include "op_config_24.h"
 #include "string_manip.h"
 #include "op_cpufreq.h"
 #include "op_alloc_counter.h"
@@ -192,7 +191,6 @@ oprof_start::oprof_start()
 	QIntValidator * iv;
 	iv = new QIntValidator(OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE, buffer_size_edit);
 	buffer_size_edit->setValidator(iv);
-	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
 	note_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(0, INT_MAX, callgraph_depth_edit);
 	callgraph_depth_edit->setValidator(iv);
@@ -680,19 +678,11 @@ bool oprof_start::record_config()
 	}
 	config.cpu_buffer_size = temp;
 
-	temp = note_table_size_edit->text().toUInt();
-	if (temp < OP_MIN_NOTE_TABLE_SIZE || temp > OP_MAX_NOTE_TABLE_SIZE) {
-		ostringstream error;
-
-		error << "note table size out of range: " << temp
-		      << " valid range is [" << OP_MIN_NOTE_TABLE_SIZE << ", "
-		      << OP_MAX_NOTE_TABLE_SIZE << "]";
-
-		QMessageBox::warning(this, 0, error.str().c_str());
-
-		return false;
-	}
-	config.note_table_size = temp;
+	// Note table size is a 2.4 kernel thingy.  We'll just set it to
+	// zero here since it's not used.
+	// FIXME: Some day we should do a proper cleanup of the GUI to remove
+	//        all leftover junk having anything to do with 2.4 kernels.
+	config.note_table_size = 0;
 
 	temp = callgraph_depth_edit->text().toUInt();
 	if (temp > INT_MAX) {
@@ -994,20 +984,15 @@ bool oprof_start::save_config()
 	}
 
 	args.push_back("--buffer-size=" +
-	       op_lexical_cast<string>(config.buffer_size));
+	               op_lexical_cast<string>(config.buffer_size));
 
-	if (op_get_interface() == OP_INTERFACE_24) {
-		args.push_back("--note-table-size=" +
-		       op_lexical_cast<string>(config.note_table_size));
-	} else {
-		args.push_back("--buffer-watershed=" +
-		       op_lexical_cast<string>(config.buffer_watershed));
-		args.push_back("--cpu-buffer-size=" +
-		       op_lexical_cast<string>(config.cpu_buffer_size));
-		if (op_file_readable("/dev/oprofile/backtrace_depth")) {
-			args.push_back("--callgraph=" +
-		              op_lexical_cast<string>(config.callgraph_depth));
-		}
+	args.push_back("--buffer-watershed=" +
+	               op_lexical_cast<string>(config.buffer_watershed));
+	args.push_back("--cpu-buffer-size=" +
+	               op_lexical_cast<string>(config.cpu_buffer_size));
+	if (op_file_readable("/dev/oprofile/backtrace_depth")) {
+		args.push_back("--callgraph=" +
+		               op_lexical_cast<string>(config.callgraph_depth));
 	}
 
 	string sep = "--separate=";

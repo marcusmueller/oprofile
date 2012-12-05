@@ -278,33 +278,11 @@ load_module_26()
 }
 
 
-load_module_24()
-{
-	grep oprof /proc/devices >/dev/null
-	if test "$?" -ne 0; then
-		modprobe oprofile
-		if test "$?" != "0"; then
-			# couldn't load a module
-			return
-		fi
-		grep oprofile /proc/modules >/dev/null
-		if test "$?" != "0"; then
-			# didn't find module
-			return
-		fi
-	fi
-	KERNEL_SUPPORT=no
-	OPROFILE_AVAILABLE=yes
-}
-
 
 load_module()
 {
 	OPROFILE_AVAILABLE=no
 	load_module_26
-	if test "$OPROFILE_AVAILABLE" != "yes"; then
-		load_module_24
-	fi
 	if test "$OPROFILE_AVAILABLE" != "yes"; then
 		echo "Kernel doesn't support oprofile" >&2
 		exit 1
@@ -1159,23 +1137,6 @@ do_kill_daemon()
 }
 
 
-rm_devices_24()
-{
-	rm_device "$DEVICE_FILE"
-	rm_device "$NOTE_DEVICE_FILE"
-	rm_device "$HASH_MAP_DEVICE_FILE"
-}
-
-
-create_devices_24()
-{
-	MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
-
-	create_device $DEVICE_FILE $MAJOR_NR 0
-	create_device $NOTE_DEVICE_FILE $MAJOR_NR 2
-	create_device $HASH_MAP_DEVICE_FILE $MAJOR_NR 1
-}
-
 # create jitdump directory and remove any old files from
 # a previous run
 prep_jitdump() {
@@ -1202,11 +1163,6 @@ prep_jitdump() {
 do_setup()
 {
 	create_dir "$SESSION_DIR"
-
-	if test "$KERNEL_SUPPORT" != "yes"; then
-		rm_devices_24
-		create_devices_24
-	fi
 
 	create_dir "$CURRENT_SAMPLES_DIR"
 

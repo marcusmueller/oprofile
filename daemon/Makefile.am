@@ -1,5 +1,3 @@
-SUBDIRS = liblegacy .
-
 oprofiled_SOURCES = \
 	init.c \
 	oprofiled.c \
@@ -51,7 +49,6 @@ AM_LDFLAGS = @OP_LDFLAGS@
 bin_PROGRAMS = oprofiled
 
 oprofiled_LDADD = \
-	liblegacy/liblegacy.a \
 	../libabi/libabi.a \
 	../libdb/libodb.a \
 	../libop/libop.a \

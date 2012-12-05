@@ -19,7 +19,6 @@
 #include "string_manip.h"
 #include "oprof_start_config.h"
 #include "op_config.h"
-#include "op_config_24.h"
 
 using namespace std;
 
@@ -35,8 +34,6 @@ event_setting::event_setting()
 
 config_setting::config_setting()
 	:
-	buffer_size(OP_DEFAULT_BUF_SIZE),
-	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	no_kernel(false),
 	verbose(false),
 	separate_lib(false),
@@ -63,9 +60,6 @@ config_setting::config_setting()
 
 void config_setting::load(istream & in)
 {
-	buffer_size = OP_DEFAULT_BUF_SIZE;
-	note_table_size = OP_DEFAULT_NOTE_SIZE;
-
 	string str;
 
 	while (getline(in, str)) {
@@ -74,10 +68,6 @@ void config_setting::load(istream & in)
 			buffer_size = op_lexical_cast<unsigned int>(val);
 			if (buffer_size < OP_DEFAULT_BUF_SIZE)
 				buffer_size = OP_DEFAULT_BUF_SIZE;
-		} else if (str == "NOTE_SIZE") {
-			note_table_size = op_lexical_cast<unsigned int>(val);
-			if (note_table_size < OP_DEFAULT_NOTE_SIZE)
-				note_table_size = OP_DEFAULT_NOTE_SIZE;
 		} else if (str == "VMLINUX") {
 			if (val == "none") {
 				kernel_filename = "";
