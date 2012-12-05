@@ -70,34 +70,66 @@ KERNELDIR=$withval)
 
 
 dnl Check kernel version for perf_events supported
-AC_MSG_CHECKING([kernel version supports perf_events])
 if test "$KERNELDIR" != ""; then
 	KINC="$KERNELDIR/include"
+	PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
+	AC_SUBST(PERF_EVENT_FLAGS)
+	PERF_EVENT_H="$KERNELDIR/include/linux/perf_event.h"
+else
+	PERF_EVENT_H="/usr/include/linux/perf_event.h"
 fi
-AX_KERNEL_VERSION(2, 6, 31, <=, kernel_has_perf_events_support="yes",
+
+PERF_EVENT_H_EXISTS="no"
+kernel_may_have_perf_events_support="no"
+AX_KERNEL_VERSION(2, 6, 31, <=, kernel_may_have_perf_events_support="yes",
 kernel_has_perf_events_support="no")
 
-if test "$kernel_has_perf_events_support" = "no"; then
-	AC_MSG_RESULT([This kernel does not have perf_events support; falling back to legacy oprofile])
-else
-	AC_MSG_RESULT([This kernel has perf_events support])
-fi
+dnl The AX_KERNEL_VERSION macro may return kernel_may_have_perf_events_support="yes",
+dnl indicating a partial answer.  Some architectures do not implement the Performance
+dnl Events Kernel Subsystem even with kernel versions > 2.6.31 -- i.e., not even
+dnl implementing the perf_event_open syscall to return ENOSYS.  So the check below
+dnl will identify and handle such situations.
 
-if test "$KERNELDIR" == ""; then
-	PERF_EVENT_H="/usr/include/linux/perf_event.h"
-else
-	PERF_EVENT_H="$KERNELDIR/include/linux/perf_event.h"
-fi
-AC_CHECK_HEADER($PERF_EVENT_H,PERF_EVENT_H_EXISTS="yes")
-AM_CONDITIONAL(BUILD_FOR_PERF_EVENT, test -n "$PERF_EVENT_H_EXISTS")
-if test "$PERF_EVENT_H_EXISTS" = "yes"; then
-	HAVE_PERF_EVENTS='1'
-
-	if test "$KERNELDIR" != ""; then
-		PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
-		AC_SUBST(PERF_EVENT_FLAGS)
+if test "$kernel_may_have_perf_events_support" = "yes"; then
+	AC_CHECK_HEADER($PERF_EVENT_H,PERF_EVENT_H_EXISTS="yes")
+	AC_MSG_CHECKING([kernel supports perf_events])
+	if test "$PERF_EVENT_H_EXISTS" = "yes"; then
+		rm -f test-for-PERF_EVENT_OPEN
+		AC_LANG_CONFTEST(
+			[AC_LANG_PROGRAM([[#include <linux/perf_event.h>
+				#include <asm/unistd.h>
+				#include <sys/types.h>
+				#include <string.h>
+			]],
+			[[struct perf_event_attr attr;
+				pid_t pid;
+				memset(&attr, 0, sizeof(attr));
+				attr.size = sizeof(attr);
+				attr.sample_type = PERF_SAMPLE_IP;
+				pid = getpid();
+				syscall(__NR_perf_event_open, &attr, pid, 0, -1, 0);
+				]])
+		])
+		$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-PERF_EVENT_OPEN  > /dev/null 2>&1
+		if test -f test-for-PERF_EVENT_OPEN; then
+			kernel_has_perf_events_support="yes"
+			AC_MSG_RESULT(yes)
+		else
+			AC_MSG_RESULT(no)
+			kernel_has_perf_events_support="no"
+		fi
+	else
+		AC_MSG_RESULT(unknown -- perf_event.h not found)
 	fi
+else
+	AC_MSG_RESULT(kernel supports perf_events... no)
+	kernel_has_perf_events_support="no"
+fi
 
+AM_CONDITIONAL(BUILD_FOR_PERF_EVENT, test "$kernel_has_perf_events_support" = "yes")
+
+if test "$kernel_has_perf_events_support" = "yes"; then
+	HAVE_PERF_EVENTS='1'
 	AC_MSG_CHECKING([whether PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
 	rm -f test-for-PERF_GUEST
 	AC_LANG_CONFTEST(
@@ -117,7 +149,9 @@ if test "$PERF_EVENT_H_EXISTS" = "yes"; then
 	rm -f test-for-PERF_GUEST*
 else
 	HAVE_PERF_EVENTS='0'
+	AC_MSG_RESULT([No perf_events support available; falling back to legacy oprofile])
 fi
+
 AC_DEFINE_UNQUOTED(HAVE_PERF_EVENTS, $HAVE_PERF_EVENTS, [Kernel support for perf_events exists])
 
 if test "$HAVE_PERF_EVENTS" = "1"; then
@@ -433,7 +467,7 @@ elif test "`getent passwd oprofile 2>/dev/null`" == "" || \
 	fi
 fi
 
-if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_has_perf_events_support" = "yes"; then
+if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_may_have_perf_events_support" = "yes"; then
 	echo "Warning: perf_event.h not found.  Either install the kernel headers package or"
 	echo "use the --with-kernel option if you want the non-root, single application"
 	echo "profiling support provided by operf."

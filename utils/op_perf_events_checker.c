@@ -49,8 +49,10 @@ int main(int argc, char **argv)
 	}
 
 #if HAVE_PERF_EVENTS
-	/* If perf_events syscall is not implemented, the syscall below will fail
-	 * with ENOSYS (38).  If implemented, but the processor type on which this
+	/* Even if the perf_event_open syscall is implemented, the architecture may still
+	 * not provide a full implementation of the perf_events subsystem, in which case,
+	 * the syscall below will fail with ENOSYS (38).  If the perf_events subsystem is
+	 * implemented for the architecture, but the processor type on which this
 	 * program is running is not supported by perf_events, the syscall returns
 	 * ENOENT (2).
 	 */
