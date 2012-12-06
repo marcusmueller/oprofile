@@ -92,7 +92,6 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 	unsigned int num_events = evt_vec->size();
 	int tmp_code, ret;
 	char evt_name[OP_MAX_EVT_NAME_LEN];
-	char * grp_name;
 	unsigned int events_converted = 0;
 	for (unsigned int i = 0; i < num_events; i++) {
 		operf_event_t event = (*evt_vec)[i];
@@ -103,8 +102,9 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 		memset(evt_name, 0, OP_MAX_EVT_NAME_LEN);
 		if (!strcmp(event.name, "CYCLES")) {
 			strcpy(evt_name ,"PM_CYC") ;
-		} else if ((grp_name = strstr(event.name, "_GRP"))) {
-			strncpy(evt_name, event.name, grp_name - event.name);
+		} else if (strstr(event.name, "_GRP")) {
+			string str = event.name;
+			strncpy(evt_name, event.name, str.rfind("_GRP"));
 		} else {
 			strncpy(evt_name, event.name, strlen(event.name));
 		}
@@ -131,7 +131,6 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 	int ret, i;
 	unsigned int num_events = evt_vec->size();
 	char evt_name[OP_MAX_EVT_NAME_LEN];
-	char * grp_name;
 	unsigned int events_converted = 0;
 	uint64_t code[1];
 
@@ -156,8 +155,9 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 		memset(evt_name, 0, OP_MAX_EVT_NAME_LEN);
 		if (!strcmp(event.name, "CYCLES")) {
 			strcpy(evt_name ,"PM_CYC") ;
-		} else if ((grp_name = strstr(event.name, "_GRP"))) {
-			strncpy(evt_name, event.name, grp_name - event.name);
+		} else if (strstr(event.name, "_GRP")) {
+			string str = event.name;
+			strncpy(evt_name, event.name, str.rfind("_GRP"));
 		} else {
 			strncpy(evt_name, event.name, strlen(event.name));
 		}
