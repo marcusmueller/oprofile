@@ -17,7 +17,10 @@
 #include "file_manip.h"
 #include "cverb.h"
 #include "locate_images.h"
+#include "op_libiberty.h"
 
+#include <unistd.h>
+#include <limits.h>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
@@ -33,6 +36,11 @@ using namespace std;
 extern verbose vbfd;
 
 namespace {
+
+#define BUILD_ID_SIZE 20
+#ifndef NT_GNU_BUILD_ID
+#define NT_GNU_BUILD_ID 3
+#endif
 
 
 void check_format(string const & file, bfd ** ibfd)
@@ -75,6 +83,95 @@ bool separate_debug_file_exists(string & name, unsigned long const crc,
 	return crc == file_crc;
 }
 
+static bool find_debuginfo_file_by_buildid(unsigned char * buildid, string & debug_filename)
+{
+	size_t build_id_fname_size = strlen (DEBUGDIR) + (sizeof "/.build-id/" - 1) + 1
+			+ (2 * BUILD_ID_SIZE) + (sizeof ".debug" - 1) + 1;
+	char * buildid_symlink = (char *) xmalloc(build_id_fname_size);
+	char * sptr = buildid_symlink;
+	unsigned char * bptr = buildid;
+	bool retval = false;
+	size_t build_id_segment_len = strlen("/.build-id/");
+
+
+	memcpy(sptr, DEBUGDIR, strlen(DEBUGDIR));
+	sptr += strlen(DEBUGDIR);
+	memcpy(sptr, "/.build-id/", build_id_segment_len);
+	sptr += build_id_segment_len;
+	sptr += sprintf(sptr, "%02x", (unsigned) *bptr++);
+	*sptr++ = '/';
+	for (int i = BUILD_ID_SIZE - 1; i > 0; i--)
+		sptr += sprintf(sptr, "%02x", (unsigned) *bptr++);
+
+	strcpy(sptr, ".debug");
+
+	if (access (buildid_symlink, F_OK) == 0) {
+		debug_filename = op_realpath (buildid_symlink);
+		if (debug_filename.compare(buildid_symlink)) {
+			retval = true;
+			cverb << vbfd << "Using build-id symlink" << endl;
+		}
+	}
+	free(buildid_symlink);
+	if (!retval)
+		cverb << vbfd << "build-id file not found; falling back to CRC method." << endl;
+
+	return retval;
+}
+
+static bool get_build_id(bfd * ibfd, unsigned char * build_id)
+{
+	struct op_elf_Note_hdr {
+		unsigned int op_note_namesz;
+		unsigned int op_note_descsz;
+		unsigned int op_note_type;
+	} op_note_hdr;
+	asection * sect;
+	char * ptr;
+	bool retval = false;
+
+	cverb << vbfd << "fetching build-id from runtime binary ...";
+	if (!(sect = bfd_get_section_by_name(ibfd, ".note.gnu.build-id"))) {
+		if (!(sect = bfd_get_section_by_name(ibfd, ".notes"))) {
+			cverb << vbfd << " No build-id section found" << endl;
+			return false;
+		}
+	}
+
+	bfd_size_type buildid_sect_size = bfd_section_size(ibfd, sect);
+	char contents[buildid_sect_size];
+
+	if (!bfd_get_section_contents(ibfd, sect,
+				 reinterpret_cast<unsigned char *>(contents),
+				 static_cast<file_ptr>(0), buildid_sect_size)) {
+		bfd_perror("bfd_get_section_contents:get_debug:");
+		exit(2);
+	}
+
+	ptr = contents;
+	while (ptr < (contents + buildid_sect_size)) {
+		op_note_hdr.op_note_namesz = bfd_get_32(ibfd,
+		                                        reinterpret_cast<bfd_byte *>(contents));
+		op_note_hdr.op_note_descsz = bfd_get_32(ibfd,
+		                                        reinterpret_cast<bfd_byte *>(contents + 4));
+		op_note_hdr.op_note_type = bfd_get_32(ibfd,
+		                                      reinterpret_cast<bfd_byte *>(contents + 8));
+		ptr += sizeof(op_note_hdr);
+		if ((op_note_hdr.op_note_type == NT_GNU_BUILD_ID) &&
+				(op_note_hdr.op_note_namesz == sizeof("GNU")) &&
+				(strcmp("GNU", ptr ) == 0)) {
+			memcpy(build_id, ptr + op_note_hdr.op_note_namesz, BUILD_ID_SIZE);
+			retval = true;
+			cverb << vbfd << "Found build-id" << endl;
+			break;
+		}
+		ptr += op_note_hdr.op_note_namesz + op_note_hdr.op_note_descsz;
+	}
+	if (!retval)
+		cverb << vbfd << " No build-id found" << endl;
+
+	return retval;
+}
 
 bool get_debug_link_info(bfd * ibfd, string & filename, unsigned long & crc32)
 {
@@ -298,10 +395,24 @@ bool find_separate_debug_file(bfd * ibfd, string const & filepath_in,
 {
 	string filepath(filepath_in);
 	string basename;
-	unsigned long crc32;
+	bool use_build_id = true;
+	unsigned long crc32 = 0;
+	unsigned char buildid[BUILD_ID_SIZE];
 	
-	if (!get_debug_link_info(ibfd, basename, crc32))
-		return false;
+	if (!(use_build_id = get_build_id(ibfd, buildid)))
+		if (!get_debug_link_info(ibfd, basename, crc32))
+			return false;
+
+	if (use_build_id && find_debuginfo_file_by_buildid(buildid, debug_filename))
+		return true;
+
+	/* Use old method of finding debuginfo file by comparing runtime binary's
+	 * CRC with the CRC we calculate from the debuginfo file's contents.
+	 * NOTE:  This method breaks on systems where "MiniDebugInfo" is used
+	 * since the CRC stored in the runtime binary won't match the compressed
+	 * debuginfo file's CRC.  But in practice, we shouldn't ever run into such
+	 * a scenario since the build-id should always be available.
+	 */
 
 	// Work out the image file's directory prefix
 	string filedir = op_dirname(filepath);
