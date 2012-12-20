@@ -18,9 +18,11 @@
 #include "cverb.h"
 #include "locate_images.h"
 #include "op_libiberty.h"
+#include "op_exception.h"
 
 #include <unistd.h>
-#include <limits.h>
+#include <errno.h>
+#include <elf.h>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
@@ -37,10 +39,10 @@ extern verbose vbfd;
 
 namespace {
 
-#define BUILD_ID_SIZE 20
 #ifndef NT_GNU_BUILD_ID
 #define NT_GNU_BUILD_ID 3
 #endif
+static size_t build_id_size;
 
 
 void check_format(string const & file, bfd ** ibfd)
@@ -86,7 +88,7 @@ bool separate_debug_file_exists(string & name, unsigned long const crc,
 static bool find_debuginfo_file_by_buildid(unsigned char * buildid, string & debug_filename)
 {
 	size_t build_id_fname_size = strlen (DEBUGDIR) + (sizeof "/.build-id/" - 1) + 1
-			+ (2 * BUILD_ID_SIZE) + (sizeof ".debug" - 1) + 1;
+			+ (2 * build_id_size) + (sizeof ".debug" - 1) + 1;
 	char * buildid_symlink = (char *) xmalloc(build_id_fname_size);
 	char * sptr = buildid_symlink;
 	unsigned char * bptr = buildid;
@@ -100,7 +102,7 @@ static bool find_debuginfo_file_by_buildid(unsigned char * buildid, string & deb
 	sptr += build_id_segment_len;
 	sptr += sprintf(sptr, "%02x", (unsigned) *bptr++);
 	*sptr++ = '/';
-	for (int i = BUILD_ID_SIZE - 1; i > 0; i--)
+	for (int i = build_id_size - 1; i > 0; i--)
 		sptr += sprintf(sptr, "%02x", (unsigned) *bptr++);
 
 	strcpy(sptr, ".debug");
@@ -121,11 +123,7 @@ static bool find_debuginfo_file_by_buildid(unsigned char * buildid, string & deb
 
 static bool get_build_id(bfd * ibfd, unsigned char * build_id)
 {
-	struct op_elf_Note_hdr {
-		unsigned int op_note_namesz;
-		unsigned int op_note_descsz;
-		unsigned int op_note_type;
-	} op_note_hdr;
+	Elf32_Nhdr op_note_hdr;
 	asection * sect;
 	char * ptr;
 	bool retval = false;
@@ -139,36 +137,42 @@ static bool get_build_id(bfd * ibfd, unsigned char * build_id)
 	}
 
 	bfd_size_type buildid_sect_size = bfd_section_size(ibfd, sect);
-	char contents[buildid_sect_size];
-
+	char * contents = (char *) xmalloc(buildid_sect_size);
+	errno = 0;
 	if (!bfd_get_section_contents(ibfd, sect,
 				 reinterpret_cast<unsigned char *>(contents),
 				 static_cast<file_ptr>(0), buildid_sect_size)) {
-		bfd_perror("bfd_get_section_contents:get_debug:");
-		exit(2);
+		string msg = "bfd_get_section_contents:get_build_id";
+		if (errno) {
+			msg += ": ";
+			msg += strerror(errno);
+		}
+		throw op_fatal_error(msg);
 	}
 
 	ptr = contents;
 	while (ptr < (contents + buildid_sect_size)) {
-		op_note_hdr.op_note_namesz = bfd_get_32(ibfd,
-		                                        reinterpret_cast<bfd_byte *>(contents));
-		op_note_hdr.op_note_descsz = bfd_get_32(ibfd,
-		                                        reinterpret_cast<bfd_byte *>(contents + 4));
-		op_note_hdr.op_note_type = bfd_get_32(ibfd,
-		                                      reinterpret_cast<bfd_byte *>(contents + 8));
+		op_note_hdr.n_namesz = bfd_get_32(ibfd,
+		                                  reinterpret_cast<bfd_byte *>(contents));
+		op_note_hdr.n_descsz = bfd_get_32(ibfd,
+		                                  reinterpret_cast<bfd_byte *>(contents + 4));
+		op_note_hdr.n_type = bfd_get_32(ibfd,
+		                                reinterpret_cast<bfd_byte *>(contents + 8));
 		ptr += sizeof(op_note_hdr);
-		if ((op_note_hdr.op_note_type == NT_GNU_BUILD_ID) &&
-				(op_note_hdr.op_note_namesz == sizeof("GNU")) &&
+		if ((op_note_hdr.n_type == NT_GNU_BUILD_ID) &&
+				(op_note_hdr.n_namesz == sizeof("GNU")) &&
 				(strcmp("GNU", ptr ) == 0)) {
-			memcpy(build_id, ptr + op_note_hdr.op_note_namesz, BUILD_ID_SIZE);
+			build_id_size = op_note_hdr.n_descsz;
+			memcpy(build_id, ptr + op_note_hdr.n_namesz, build_id_size);
 			retval = true;
 			cverb << vbfd << "Found build-id" << endl;
 			break;
 		}
-		ptr += op_note_hdr.op_note_namesz + op_note_hdr.op_note_descsz;
+		ptr += op_note_hdr.n_namesz + op_note_hdr.n_descsz;
 	}
 	if (!retval)
 		cverb << vbfd << " No build-id found" << endl;
+	free(contents);
 
 	return retval;
 }
@@ -184,15 +188,19 @@ bool get_debug_link_info(bfd * ibfd, string & filename, unsigned long & crc32)
 		return false;
 	
 	bfd_size_type debuglink_size = bfd_section_size(ibfd, sect);  
-	char contents[debuglink_size];
+	char * contents = (char *) xmalloc(debuglink_size);
 	cverb << vbfd
 	      << ".gnu_debuglink section has size " << debuglink_size << endl;
 	
 	if (!bfd_get_section_contents(ibfd, sect, 
 				 reinterpret_cast<unsigned char *>(contents), 
 				 static_cast<file_ptr>(0), debuglink_size)) {
-		bfd_perror("bfd_get_section_contents:get_debug:");
-		exit(2);
+		string msg = "bfd_get_section_contents:get_debug";
+		if (errno) {
+			msg += ": ";
+			msg += strerror(errno);
+		}
+		throw op_fatal_error(msg);
 	}
 	
 	/* CRC value is stored after the filename, aligned up to 4 bytes. */
@@ -204,6 +212,7 @@ bool get_debug_link_info(bfd * ibfd, string & filename, unsigned long & crc32)
 			       reinterpret_cast<bfd_byte *>(contents + crc_offset));
 	filename = string(contents, filename_len);
 	cverb << vbfd << ".gnu_debuglink filename is " << filename << endl;
+	free(contents);
 	return true;
 }
 
@@ -395,16 +404,17 @@ bool find_separate_debug_file(bfd * ibfd, string const & filepath_in,
 {
 	string filepath(filepath_in);
 	string basename;
-	bool use_build_id = true;
 	unsigned long crc32 = 0;
-	unsigned char buildid[BUILD_ID_SIZE];
+	// The readelf program uses a char [64], so that's what we'll use.
+	// To my knowledge, the build-id should not be bigger than 20 chars.
+	unsigned char buildid[64];
 	
-	if (!(use_build_id = get_build_id(ibfd, buildid)))
-		if (!get_debug_link_info(ibfd, basename, crc32))
-			return false;
-
-	if (use_build_id && find_debuginfo_file_by_buildid(buildid, debug_filename))
+	if (get_build_id(ibfd, buildid) &&
+	   find_debuginfo_file_by_buildid(buildid, debug_filename))
 		return true;
+
+	if (!get_debug_link_info(ibfd, basename, crc32))
+		return false;
 
 	/* Use old method of finding debuginfo file by comparing runtime binary's
 	 * CRC with the CRC we calculate from the debuginfo file's contents.
