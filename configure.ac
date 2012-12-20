@@ -118,6 +118,7 @@ if test "$kernel_may_have_perf_events_support" = "yes"; then
 			AC_MSG_RESULT(no)
 			kernel_has_perf_events_support="no"
 		fi
+		rm -f test-for-PERF_EVENT_OPEN
 	else
 		AC_MSG_RESULT(unknown -- perf_event.h not found)
 	fi
