@@ -958,12 +958,23 @@ static int get_PATH_based_pathname(char * path_holder, size_t n)
 				retval = -1;
 				break;
 			}
-			strncpy(path_holder, segment, dirlen);
+
+			if (!strcmp(segment, ".")) {
+				if (getcwd(path_holder, PATH_MAX) == NULL) {
+					retval = -1;
+					cerr << "getcwd [3] failed when processing <cur-dir>/" << app_name << " found via PATH. Aborting."
+							<< endl;
+					break;
+				}
+			} else {
+				strncpy(path_holder, segment, dirlen);
+			}
 			strcat(path_holder, "/");
 			strncat(path_holder, app_name, applen);
 			retval = 0;
 			free(namelist[0]);
 			free(namelist);
+
 			break;
 		}
 		segment = strtok(NULL, ":");
@@ -1009,7 +1020,7 @@ int validate_app_name(void)
 		strcat(full_pathname, "/");
 		strcat(full_pathname, app_name);
 	} else {
-		// Pass app name, at this point, MUST be found in PATH
+		// Passed app name, at this point, MUST be found in PATH
 		rc = get_PATH_based_pathname(full_pathname, PATH_MAX);
 	}
 
