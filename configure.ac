@@ -160,8 +160,8 @@ if test "$HAVE_PERF_EVENTS" = "1"; then
 	arch="`uname -m`"
 	if test "$arch" = "ppc64" || test "$arch" = "ppc"; then
 		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
-		AC_CHECK_LIB(pfm,pfm_get_event_name, HAVE_LIBPFM3='1'; HAVE_LIBPFM='1', [
-			AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1',
+		AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1', [
+			AC_CHECK_LIB(pfm, pfm_get_event_name, HAVE_LIBPFM3='1'; HAVE_LIBPFM='1',
 			[AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])])
 		PFM_LIB="-lpfm"
 		AC_DEFINE_UNQUOTED(HAVE_LIBPFM3, $HAVE_LIBPFM3, [Define to 1 if using libpfm3; 0 if using newer libpfm])
