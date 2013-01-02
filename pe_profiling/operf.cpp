@@ -1048,6 +1048,13 @@ static void _get_event_code(operf_event_t * event)
 	char oprof_event_code[9];
 	string command;
 	u64 base_code, config;
+	char mask[12];
+	char buf[20];
+	if ((snprintf(buf, 20, "%lu", event->count)) < 0) {
+		cerr << "Error parsing event count of " << event->count << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	base_code = config = 0ULL;
 
 	command = OP_BINDIR;
@@ -1085,12 +1092,6 @@ static void _get_event_code(operf_event_t * event)
 
 	// Setup unitmask field
 	if (event->um_name[0]) {
-		char mask[12];
-		char buf[20];
-		if ((snprintf(buf, 20, "%lu", event->count)) == -1) {
-			cerr << "Error parsing event count of " << event->count << endl;
-			exit(EXIT_FAILURE);
-		}
 		command = OP_BINDIR;
 		command += "ophelp ";
 		command += "--extra-mask ";
@@ -1113,6 +1114,27 @@ static void _get_event_code(operf_event_t * event)
 		}
 		pclose(fp);
 		config |= strtoull(mask, (char **) NULL, 10);
+	} else if (!event->evt_um) {
+		command.clear();
+		command = OP_BINDIR;
+		command += "ophelp ";
+		command += "--unit-mask ";
+		command += event->name;
+		command += ":";
+		command += buf;
+		fp = popen(command.c_str(), "r");
+		if (fp == NULL) {
+			cerr << "Unable to execute ophelp to get unit mask for event "
+			     << event->name << endl;
+			exit(EXIT_FAILURE);
+		}
+		if (fgets(mask, sizeof(mask), fp) == NULL) {
+			pclose(fp);
+			cerr << "Unable to find unit mask info for event " << event->name << endl;
+			exit(EXIT_FAILURE);
+		}
+		pclose(fp);
+		config |= ((strtoull(mask, (char **) NULL, 10) & 0xFFULL) << 8);
 	} else {
 		config |= ((event->evt_um & 0xFFULL) << 8);
 	}
