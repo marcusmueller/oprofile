@@ -1094,7 +1094,7 @@ given by the first word of the description (only valid for unit masks having an 
 </informaltable>
 <para>
 The last three values are optional, if you omit them (e.g. <option>--event=DATA_MEM_REFS:30000</option>),
-they will be set to the default values (a unit mask of 0, and profiling both kernel and
+they will be set to the default values (the default unit mask value for the given event, and profiling both kernel and
 userspace code). Note that some events require a unit mask.
 </para>
 <para>
