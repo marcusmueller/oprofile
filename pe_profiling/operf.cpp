@@ -1048,7 +1048,6 @@ static void _get_event_code(operf_event_t * event)
 	char oprof_event_code[9];
 	string command;
 	u64 base_code, config;
-	char mask[12];
 	char buf[20];
 	if ((snprintf(buf, 20, "%lu", event->count)) < 0) {
 		cerr << "Error parsing event count of " << event->count << endl;
@@ -1081,6 +1080,7 @@ static void _get_event_code(operf_event_t * event)
 
 #if defined(__i386__) || defined(__x86_64__)
 	// Setup EventSelct[11:8] field for AMD
+	char mask[12];
 	const char * vendor_AMD = "AuthenticAMD";
 	if (op_is_cpu_vendor((char *)vendor_AMD)) {
 		config = base_code & 0xF00ULL;
