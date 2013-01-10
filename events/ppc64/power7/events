@@ -5,7 +5,11 @@
 # Contributed by Maynard Johnson <maynardj@us.ibm.com>.
 #
 #
-#  Only events within the same group can be selected simultaneously.
+#  Only events within the same group can be selected simultaneously when
+#  using legacy opcontrol to do profiling.  When profiling with operf,
+#  events from different groups may be specified, and the Linux Performance
+#  Events Kernel Subsystem code will handle the necessary multiplexing.
+#
 #  Each event is given a unique event number.  The event number is used by the
 #  OProfile code to resolve event names for the post-processing.  This is done
 #  to preserve compatibility with the rest of the OProfile code.  The event
@@ -13,10 +17,6 @@
 
 #Group Default
 event:0X001 counters:0 um:zero minimum:10000 name:CYCLES : Processor Cycles
-
-#Group 0 with random sampling
-event:0X002 counters:3 um:zero minimum:10000 name:CYCLES_RND_SMPL : Processor Cycles with random sampling
-
 
 #Group 1 pm_utilization, CPI and utilization data
 event:0X0010 counters:0 um:zero minimum:10000 name:PM_CYC_GRP1 : (Group 1 pm_utilization) Processor Cycles

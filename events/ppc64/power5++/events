@@ -9,7 +9,11 @@
 #  assigned to a unique counter.  The groups are from the groups defined in the
 #  Performance Monitor Unit user guide for this processor.
 #
-#  Only events within the same group can be selected simultaneously.
+#  Only events within the same group can be selected simultaneously when
+#  using legacy opcontrol to do profiling.  When profiling with operf,
+#  events from different groups may be specified, and the Linux Performance
+#  Events Kernel Subsystem code will handle the necessary multiplexing.
+#
 #  Each event is given a unique event number.  The event number is used by the
 #  OProfile code to resolve event names for the post-processing.  This is done
 #  to preserve compatibility with the rest of the OProfile code.  The event
@@ -17,10 +21,6 @@
 
 #Group Default
 event:0X001 counters:1 um:zero minimum:10000 name:CYCLES : Processor Cycles
-
-#Group 0 with random sampling
-event:0X002 counters:2 um:zero minimum:10000 name:CYCLES_RND_SMPL : Processor Cycles with random sampling
-
 
 #Group 1 pm_utilization, CPI and utilization data
 event:0X0010 counters:0 um:zero minimum:10000 name:PM_RUN_CYC_GRP1 : (Group 1 pm_utilization) Run cycles
