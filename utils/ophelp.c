@@ -652,8 +652,9 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_POWER7:
 	case CPU_PPC64_IBM_COMPAT_V1:
 		event_doc =
-			"Obtain PowerPC64 processor documentation at:\n"
-			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n";
+			"Documentation for IBM POWER7 can be obtained at:\n"
+			"http://www.power.org/events/Power7/\n"
+			"No public performance monitoring doc available for older processors.\n";
 		break;
 
 	case CPU_PPC64_CELL:
