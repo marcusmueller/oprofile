@@ -1189,8 +1189,10 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC_E300:
 			descr->name = "CPU_CLK";
 			break;
-  	        case CPU_S390_Z10:
-  	        case CPU_S390_Z196:
+
+		case CPU_S390_Z10:
+		case CPU_S390_Z196:
+		case CPU_S390_ZEC12:
  			if (op_get_nr_counters(cpu_type) > 1) {
  				descr->name = "HWSAMPLING";
  				descr->count = 4127518;

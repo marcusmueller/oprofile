@@ -108,6 +108,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A7", "arm/armv7-ca7", CPU_ARM_V7_CA7, 5 },
 	{ "ARM Cortex-A15", "arm/armv7-ca15", CPU_ARM_V7_CA15, 7 },
 	{ "Intel Haswell microarchitecture", "i386/haswell", CPU_HASWELL, 4 },
+	{ "IBM zEnterprise EC12", "s390/zEC12", CPU_S390_ZEC12, 1 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
