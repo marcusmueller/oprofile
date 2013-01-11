@@ -110,6 +110,12 @@ be specified using the symbolic name.  If no unit mask is specified, 0x0 will be
 used as the default.
 .P
 .RS
+On IBM PowerPC systems, events may be specified with or without the
+.I _GRP<n>
+suffix.  If no group number suffix is given, one will be automatically
+assigned; thus, OProfile post-processing tools will always show real event
+names that include the group number suffix.
+.P
 When no event specification is given, the default event for the running
 processor type will be used for profiling.
 Use

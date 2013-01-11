@@ -652,6 +652,10 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_POWER7:
 	case CPU_PPC64_IBM_COMPAT_V1:
 		event_doc =
+			"When using operf, events may be specified without a '_GRP<n>' suffix.\n"
+			"If _GRP<n> (i.e., group number) is not specified, one will be automatically\n"
+			"selected for use by the profiler.  OProfile post-processing tools will\n"
+			"always show real event names that include the group number suffix.\n\n"
 			"Documentation for IBM POWER7 can be obtained at:\n"
 			"http://www.power.org/events/Power7/\n"
 			"No public performance monitoring doc available for older processors.\n";

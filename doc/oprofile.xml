@@ -1106,10 +1106,18 @@ shown by the output of <command>ophelp</command>.  Unit masks with "extra:" para
 specified using the symbolic name.
 </para>
 <note><para>
-When using legacy mode <command>opcontrol</command> on PowerPC platforms, all events specified must be in the same group;
+When using legacy mode <command>opcontrol</command> on IBM PowerPC platforms, all events specified must be in the same group;
 i.e., the group number appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9
 </constant>) must be the same.
-</para></note>
+</para>
+<para>
+When profiling with <command>operf</command> on IBM PowerPC platforms, the above restriction
+regarding the same group number does not apply, and events may be
+specified with or without the group number suffix.   If no group number suffix is given, one will be automatically
+assigned; thus, OProfile post-processing tools will always show real event
+names that include the group number suffix.
+</para>
+</note>
 <para>
 If OProfile is using timer-interrupt mode, there is no event configuration possible.
 </para>

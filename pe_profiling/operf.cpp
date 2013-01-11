@@ -1146,6 +1146,108 @@ static void _get_event_code(operf_event_t * event)
 	event->evt_code = config;
 }
 
+#if (defined(__powerpc__) || defined(__powerpc64__))
+/* All ppc64 events (except CYCLES) have a _GRP<n> suffix.  This is
+ * because the legacy opcontrol profiler can only profile events in
+ * the same group (i.e., having the same _GRP<n> suffix).  But operf
+ * can multiplex events, so we should allow the user to pass event
+ * names without the _GRP<n> suffix.
+ *
+ * If event name is not CYCLES or does not have a _GRP<n> suffix,
+ * we'll call ophelp and scan the list of events, searching for one
+ * that matches up to the _GRP<n> suffix.  If we don't find a match,
+ * then we'll exit with the expected error message for invalid event name.
+ */
+static string _handle_powerpc_event_spec(string event_spec)
+{
+	FILE * fp;
+	char line[MAX_INPUT];
+	size_t grp_pos;
+	string evt, retval, err_msg;
+	size_t evt_name_len;
+	bool first_non_cyc_evt_found = false;
+	bool event_found = false;
+	char event_name[OP_MAX_EVT_NAME_LEN], event_spec_str[OP_MAX_EVT_NAME_LEN + 20], * count_str;
+	string cmd = OP_BINDIR;
+	cmd += "/ophelp";
+
+	strncpy(event_spec_str, event_spec.c_str(), event_spec.length() + 1);
+
+	strncpy(event_name, strtok(event_spec_str, ":"), OP_MAX_EVT_NAME_LEN);
+	count_str = strtok(NULL, ":");
+	if (!count_str) {
+		err_msg = "Invalid count for event ";
+		goto out;
+	}
+
+	if (!strcmp("CYCLES", event_name)) {
+		event_found = true;
+		goto out;
+	}
+
+	evt = event_name;
+	// Need to make sure the event name truly has a _GRP<n> suffix.
+	grp_pos = evt.rfind("_GRP");
+	if ((grp_pos != string::npos) && ((evt = evt.substr(grp_pos, string::npos))).length() > 4) {
+		unsigned long value;
+		char * end;
+		value = strtoul(evt.substr(4, string::npos).c_str(), &end, 0);
+		if (end && (*end == '\0')) {
+		// Valid group number found after _GRP, so we can skip to the end.
+			event_found = true;
+			goto out;
+		}
+	}
+
+	// If we get here, it implies the user passed a non-CYCLES event without a GRP suffix.
+	// Lets try to find a valid suffix for it.
+	fp = popen(cmd.c_str(), "r");
+	if (fp == NULL) {
+		cerr << "Unable to execute ophelp to get info for event "
+		     << event_spec << endl;
+		exit(EXIT_FAILURE);
+	}
+	evt_name_len = strlen(event_name);
+	err_msg = "Cannot find event ";
+	while (fgets(line, MAX_INPUT, fp)) {
+		if (!first_non_cyc_evt_found) {
+			if (!strncmp(line, "PM_", 3))
+				first_non_cyc_evt_found = true;
+			else
+				continue;
+		}
+		if (line[0] == ' ' || line[0] == '\t')
+			continue;
+		if (!strncmp(line, event_name, evt_name_len)) {
+			// Found a potential match.  Check if it's a perfect match.
+			string save_event_name = event_name;
+			size_t full_evt_len = index(line, ':') - line;
+			memset(event_name, '\0', OP_MAX_EVT_NAME_LEN);
+			strncpy(event_name, line, full_evt_len);
+			string candidate = event_name;
+			if (candidate.rfind("_GRP") == evt_name_len) {
+				event_found = true;
+				break;
+			} else {
+				memset(event_name, '\0', OP_MAX_EVT_NAME_LEN);
+				strncpy(event_name, save_event_name.c_str(), evt_name_len);
+			}
+		}
+	}
+	pclose(fp);
+
+out:
+	if (!event_found) {
+		cerr << err_msg << event_name << endl;
+		cerr << "Error retrieving info for event "
+				<< event_spec << endl;
+		exit(EXIT_FAILURE);
+	}
+	retval = event_name;
+	return retval + ":" + count_str;
+}
+#endif
+
 static void _process_events_list(void)
 {
 	string cmd = OP_BINDIR;
@@ -1154,6 +1256,11 @@ static void _process_events_list(void)
 		FILE * fp;
 		string full_cmd = cmd;
 		string event_spec = operf_options::evts[i];
+
+#if (defined(__powerpc__) || defined(__powerpc64__))
+		event_spec = _handle_powerpc_event_spec(event_spec);
+#endif
+
 		if (operf_options::callgraph) {
 			full_cmd += " --callgraph=1 ";
 		}
