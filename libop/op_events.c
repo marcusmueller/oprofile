@@ -1015,7 +1015,7 @@ int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 {
 	int ret = OP_INVALID_EVENT;
 	size_t i;
-	u32 ctr_mask = 1 << ctr;
+	u32 masked_val, ctr_mask = 1 << ctr;
 	struct list_head * pos;
 
 	load_events(cpu_type);
@@ -1031,21 +1031,20 @@ int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 			ret |= OP_INVALID_COUNTER;
 
 		if (event->unit->unit_type_mask == utm_bitmask) {
-			for (i = 0; i < event->unit->num; ++i)
-				um &= ~(event->unit->um[i].value);			
-			
-			if (um)
+			masked_val = 0;
+			for (i = 0; i < event->unit->num; i++) {
+				if ((event->unit->um[i].value & um) == event->unit->um[i].value)
+					masked_val |= event->unit->um[i].value;
+			}
+			if (!(masked_val == um && um != 0))
 				ret |= OP_INVALID_UM;
-			
 		} else {
 			for (i = 0; i < event->unit->num; ++i) {
 				if (event->unit->um[i].value == um)
 					break;
 			}
-			
 			if (i == event->unit->num)
 				ret |= OP_INVALID_UM;
-
 		}
 
 		if (ret == OP_OK_EVENT)
