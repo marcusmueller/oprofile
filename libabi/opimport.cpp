@@ -209,10 +209,11 @@ int main(int argc, char const ** argv)
 	odb_t dest;
 	int rc;
 
-	assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
+	in_fd = open(inputs[0].c_str(), O_RDONLY);
+	assert(in_fd > 0);
 	assert(fstat(in_fd, &statb) == 0);
-	assert((in = mmap(0, statb.st_size, PROT_READ,
-			  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
+	in = mmap(0, statb.st_size, PROT_READ, MAP_PRIVATE, in_fd, 0);
+	assert(in != (void *)-1);
 
 	rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR,
 		      sizeof(struct opd_header));
