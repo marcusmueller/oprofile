@@ -386,7 +386,7 @@ static struct op_unit_mask * merge_um(char * value)
 	if (type == -1U)
 		parse_error("Empty unit mask");
 	new->unit_type_mask = type;
-	return new;		
+	return new;
 }
 
 /* parse either a "tag:value" or a ": trailing description string" */
@@ -500,7 +500,7 @@ static void read_events(char const * file)
 		event = new_event();
 		event->filter = -1;
 		event->ext = NULL;
-		
+
 		c = line;
 		while (next_token(&c, &name, &value)) {
 			if (strcmp(name, "name") == 0) {
@@ -642,7 +642,7 @@ static void load_events_name(const char *cpu_name)
 
 	read_unit_masks(um_file);
 	read_events(event_file);
-	
+
 	free(um_file);
 	free(event_file);
 }
@@ -931,7 +931,7 @@ char const * find_mapping_for_event(u32 nr, op_cpu cpu_type)
 			} else {
 				map = get_mapping(nr, fp);
 			}
-			break;			
+			break;
 		default:
 			break;
 	}
@@ -1216,33 +1216,16 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 	}
 }
 
-static void extra_check(struct op_event *e, u32 unit_mask)
-{
-	unsigned i;
-	int found = 0;
-
-	for (i = 0; i < e->unit->num; i++)
-		if (e->unit->um[i].value == unit_mask)
-			found++;
-	if (found > 1) {
-		fprintf(stderr,
-"Named unit masks not allowed for events without 'extra:' values.\n"
-"Please specify the numerical value for the unit mask. See 'opcontrol'"
-" man page for more info.\n");
-		exit(EXIT_FAILURE);
-	}
-}
-
-static void another_extra_check(struct op_event *e, char *name, unsigned w)
+static void extra_check(struct op_event *e, char *name, unsigned w)
 {
 	int found;
 	unsigned i;
 
 	if (!e->unit->um[w].extra) {
 		fprintf(stderr,
-"Named unit mask (%s) not allowed for event without 'extra:' values.\n"
-"Please specify the numerical value for the unit mask. See 'opcontrol'"
-" man page for more info.\n", name);
+			"Named unit mask (%s) not allowed for event without 'extra:' values.\n"
+			"Please specify the numerical value for the unit mask. See 'opcontrol'\n"
+			"or 'operf' man page for more info.\n", name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -1253,69 +1236,73 @@ static void another_extra_check(struct op_event *e, char *name, unsigned w)
 		    name[len] == '\0')
 			found++;
 	}
+
 	if (found > 1) {
 		fprintf(stderr,
-	"Unit mask name `%s' not unique. Sorry please use a numerical unit mask\n", name);
+			"Unit mask name `%s' not unique. Please use a numerical unit mask\n", name);
 		exit(EXIT_FAILURE);
 	}
 }
 
-static void do_resolve_unit_mask(struct op_event *e, struct parsed_event *pe,
-				 u32 *extra)
+static void do_resolve_unit_mask(struct op_event *e, struct parsed_event *pe, u32 *extra)
 {
 	unsigned i;
-	int found;
 
 	for (;;) {
 		if (pe->unit_mask_name == NULL) {
-			int had_unit_mask = pe->unit_mask_valid;
+			/* For numerical unit mask */
+			int found = 0;
 
-			found = 0;
-			for (i = 0; i < e->unit->num; i++) {
-				if (!pe->unit_mask_valid &&
-				e->unit->um[i].value == e->unit->default_mask) {
-					pe->unit_mask_valid = 1;
-					pe->unit_mask = e->unit->default_mask;
-					break;
-				}
+			/* Use default unitmask if not specified */
+			if (!pe->unit_mask_valid) {
+				pe->unit_mask_valid = 1;
+				pe->unit_mask = e->unit->default_mask;
 			}
-			if (found > 1 && had_unit_mask) {
-				fprintf(stderr,
-	"Non unique numerical unit mask.\n"
-	"Please specify the unit mask using the first word of the description\n");
+
+			/* Checking to see there are any duplicate numerical unit mask
+			 * in which case it should be using named unit mask instead.
+			 */
+			for (i = 0; i < e->unit->num; i++) {
+				if (e->unit->um[i].value == (unsigned int)pe->unit_mask)
+					found++;
+			}
+			if (found > 1) {
+				fprintf(stderr, "Unit mask (0x%x) is non unique.\n"
+				        "Please specify the unit mask using the first "
+					"word of the description\n",
+					pe->unit_mask);
 				exit(EXIT_FAILURE);
 			}
-			extra_check(e, pe->unit_mask);
+
 			if (i == e->unit->num) {
 				e = find_next_event(e);
 				if (e != NULL)
 					continue;
-			} else {
-				if (extra)
-					*extra = e->unit->um[i].extra;
 			}
 			return;
+		} else {
+			/* For named unit mask */
+			for (i = 0; i < e->unit->num; i++) {
+				int len = strcspn(e->unit->um[i].desc, " \t");
+				if (!strncmp(pe->unit_mask_name, e->unit->um[i].desc,
+					    len) && pe->unit_mask_name[len] == '\0')
+					break;
+			}
+			if (i == e->unit->num) {
+				e = find_next_event(e);
+				if (e != NULL)
+					continue;
+				fprintf(stderr, "Cannot find unit mask %s for %s\n",
+					pe->unit_mask_name, pe->name);
+				exit(EXIT_FAILURE);
+			}
+			extra_check(e, pe->unit_mask_name, i);
+			pe->unit_mask_valid = 1;
+			pe->unit_mask = e->unit->um[i].value;
+			if (extra)
+				*extra = e->unit->um[i].extra;
+			return;
 		}
-		for (i = 0; i < e->unit->num; i++) {
-			int len = strcspn(e->unit->um[i].desc, " \t");
-			if (!strncmp(pe->unit_mask_name, e->unit->um[i].desc,
-				    len) && pe->unit_mask_name[len] == '\0')
-				break;
-		}
-		if (i == e->unit->num) {
-			e = find_next_event(e);
-			if (e != NULL)
-				continue;
-			fprintf(stderr, "Cannot find unit mask %s for %s\n",
-				pe->unit_mask_name, pe->name);
-			exit(EXIT_FAILURE);
-		}
-		another_extra_check(e, pe->unit_mask_name, i);
-		pe->unit_mask_valid = 1;
-		pe->unit_mask = e->unit->um[i].value;
-		if (extra)
-			*extra = e->unit->um[i].extra;
-		return;
 	}
 }
 
