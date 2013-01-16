@@ -148,6 +148,11 @@ void op_release_resources(void);
 #define cpu_relax()	asm volatile("":::"memory")
 #endif
 
+#ifdef __aarch64__
+#define rmb()		asm volatile("dmb ld" ::: "memory")
+#define cpu_relax()	asm volatile("yield" ::: "memory")
+#endif
+
 #ifdef __mips__
 #include <asm/unistd.h>
 #define rmb()		asm volatile(					\
