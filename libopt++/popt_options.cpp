@@ -251,7 +251,7 @@ option_base::option_base(char const * name, char short_name,
                          void * data, unsigned int popt_flags)
 	: option_name(name)
 {
-	poptOption const opt = { name, short_name, popt_flags,
+	poptOption const opt = { name, short_name, (typeof(opt.argInfo))popt_flags,
 	                         data, 0, help, arg_help };
 
 	popt_options().push_back(opt);

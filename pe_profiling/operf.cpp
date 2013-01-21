@@ -1189,9 +1189,8 @@ static string _handle_powerpc_event_spec(string event_spec)
 	// Need to make sure the event name truly has a _GRP<n> suffix.
 	grp_pos = evt.rfind("_GRP");
 	if ((grp_pos != string::npos) && ((evt = evt.substr(grp_pos, string::npos))).length() > 4) {
-		unsigned long value;
 		char * end;
-		value = strtoul(evt.substr(4, string::npos).c_str(), &end, 0);
+		strtoul(evt.substr(4, string::npos).c_str(), &end, 0);
 		if (end && (*end == '\0')) {
 		// Valid group number found after _GRP, so we can skip to the end.
 			event_found = true;
