@@ -1098,12 +1098,12 @@ they will be set to the default values (the default unit mask value for the give
 userspace code). Note that some events require a unit mask.
 </para>
 <para>
-When specifying a unit mask value, it may be either a hexadecimal value (which
+When specifying a unit mask value, it may be either a numerical value (hex values
 <emphasis>must</emphasis> begin with "0x") or a string (i.e, symbolic name) which matches
 the first word in the unit mask description. Specifying a symbolic name for
 the unit mask is valid only for unit masks having "extra:" parameters, as
-shown by the output of <command>ophelp</command>.  Unit masks with "extra:" parameters must be
-specified using the symbolic name.
+shown by the output of <command>ophelp</command>.  Unit masks with "extra:" parameters <emphasis>must</emphasis>
+be specified using the symbolic name, thus it is not possible to include them in bitmask values.
 </para>
 <note><para>
 When using legacy mode <command>opcontrol</command> on IBM PowerPC platforms, all events specified must be in the same group;

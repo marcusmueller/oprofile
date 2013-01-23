@@ -98,7 +98,7 @@ for profiling. Each event spec is of the form:
 .br
 .I "   name:count[:unitmask[:kernel[:user]]]"
 .br
-When specifying a unit mask value, it may be either a hexadecimal value (which
+When specifying a unit mask value, it may be either a numerical value (hex values
 .I must
 begin with "0x") or a string (i.e, symbolic name) which matches the first word in
 the unit mask description. Specifying a symbolic name for the unit mask is valid only
@@ -106,8 +106,8 @@ for unit masks having "extra:" parameters, as shown by the output of
 .B ophelp.
 Unit masks with "extra:" parameters
 .I must
-be specified using the symbolic name.  If no unit mask is specified, 0x0 will be
-used as the default.
+be specified using the symbolic name, thus it is not possible to include them in bitmask values.
+If no unit mask is specified, the default unit mask value for the event is used.
 .P
 .RS
 On IBM PowerPC systems, events may be specified with or without the

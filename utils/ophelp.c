@@ -190,7 +190,12 @@ static void check_event(struct parsed_event * pev,
 
 	op_resolve_unit_mask(pev, NULL);
 
-	ret = op_check_events(0, event->val, pev->unit_mask, cpu_type);
+	// If a named UM is passed, op_resolve_unit_mask will resolve that into a
+	// valid unit mask, so we don't need to call op_check_events.
+	if (pev->unit_mask_name)
+		ret = 0;
+	else
+		ret = op_check_events(0, event->val, pev->unit_mask, cpu_type);
 
 	if (ret & OP_INVALID_UM) {
 		fprintf(stderr, "Invalid unit mask 0x%x for event %s\n",

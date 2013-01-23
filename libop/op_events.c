@@ -1011,11 +1011,94 @@ struct op_event * op_find_event_any(op_cpu cpu_type, u32 nr)
 	return find_event_any(nr);
 }
 
+static int _is_um_valid_bitmask(struct op_event * event, u32 passed_um)
+{
+	int duped_um[MAX_UNIT_MASK];
+	int retval = 0;
+	u32 masked_val = 0;
+	u32 i, k;
+	int dup_value_used = 0;
+
+	struct op_event evt;
+	struct op_unit_mask * tmp_um = xmalloc(sizeof(struct op_unit_mask));
+	struct op_unit_mask * tmp_um_no_dups = xmalloc(sizeof(struct op_unit_mask));
+	memset(tmp_um, '\0', sizeof(struct op_unit_mask));;
+	memset(tmp_um_no_dups, '\0', sizeof(struct op_unit_mask));
+	memset(duped_um, '\0', sizeof(int) * MAX_UNIT_MASK);
+
+	// First, we make a copy of the event, with just its unit mask values.
+	evt.unit = tmp_um;
+	evt.unit->num = event->unit->num;
+	for (i = 0; i < event->unit->num; i++)
+		evt.unit->um[i].value = event->unit->um[i].value;
+
+	// Next, we sort the unit mask values in ascending order.
+	for (i = 1; i < evt.unit->num; i++) {
+		int j = i - 1;
+		u32 tmp = evt.unit->um[i].value;
+		while (tmp < evt.unit->um[j].value && j >= 0) {
+			evt.unit->um[j + 1].value = evt.unit->um[j].value;
+			j -= 1;
+		}
+		evt.unit->um[j + 1].value = tmp;
+	}
+
+	/* Now we remove duplicates. Duplicate unit mask values were not
+	 * allowed until the "named unit mask" support was added in
+	 * release 0.9.7.  The down side to this is that if the user passed
+	 * a unit mask value that includes one of the duplicated values,
+	 * we have no way of differentiating between the duplicates, so
+	 * the meaning of the bitmask would be ambiguous if we were to
+	 * allow it.  Thus, we must prevent the user from specifying such
+	 * bitmasks.
+	 */
+	for (i = 0, k = 0; k < evt.unit->num; i++) {
+		tmp_um_no_dups->um[i].value = evt.unit->um[k].value;
+		tmp_um_no_dups->num++;
+		k++;
+		while ((evt.unit->um[i].value == evt.unit->um[k].value) && i < evt.unit->num) {
+			k++;
+			duped_um[i] = 1;
+		}
+	}
+	evt.unit = tmp_um_no_dups;
+
+	/* Finally, we'll see if the passed unit mask value can be matched with a
+	 * mask of available unit mask values. We check for this by determining
+	 * whether the exact bits set in the current um are also set in the
+	 * passed um; if so, we OR those bits into a cumulative masked_val variable.
+	 * Simultaneously, we check if the passed um contains a non-unique unit
+	 * mask value, in which case, it's invalid..
+	 */
+	for (i = 0; i < evt.unit->num; i++) {
+		if ((evt.unit->um[i].value & passed_um) == evt.unit->um[i].value) {
+			masked_val |= evt.unit->um[i].value;
+			if (duped_um[i]) {
+				dup_value_used = 1;
+				break;
+			}
+		}
+	}
+
+	free(tmp_um);
+	free(tmp_um_no_dups);
+	if (dup_value_used) {
+		fprintf(stderr, "Ambiguous bitmask: Unit mask values"
+		        " cannot include non-unique numerical values (i.e., 0x%x).\n",
+		        evt.unit->um[i].value);
+		fprintf(stderr, "Use ophelp to see the unit mask values for event %s.\n",
+		        event->name);
+	} else if (masked_val == passed_um && passed_um != 0) {
+		retval = 1;
+	}
+	return retval;
+}
+
 int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 {
 	int ret = OP_INVALID_EVENT;
 	size_t i;
-	u32 masked_val, ctr_mask = 1 << ctr;
+	u32 ctr_mask = 1 << ctr;
 	struct list_head * pos;
 
 	load_events(cpu_type);
@@ -1031,12 +1114,7 @@ int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 			ret |= OP_INVALID_COUNTER;
 
 		if (event->unit->unit_type_mask == utm_bitmask) {
-			masked_val = 0;
-			for (i = 0; i < event->unit->num; i++) {
-				if ((event->unit->um[i].value & um) == event->unit->um[i].value)
-					masked_val |= event->unit->um[i].value;
-			}
-			if (!(masked_val == um && um != 0))
+			if (!_is_um_valid_bitmask(event, um))
 				ret |= OP_INVALID_UM;
 		} else {
 			for (i = 0; i < event->unit->num; ++i) {
