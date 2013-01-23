@@ -1137,15 +1137,9 @@ do_kill_daemon()
 }
 
 
-# create jitdump directory and remove any old files from
-# a previous run
+# remove any old files from a previous run
 prep_jitdump() {
-	local dumpdir=$SESSION_DIR/jitdump
-	test -d $dumpdir || {
-		mkdir -p $dumpdir;
-		chmod 777 $dumpdir;
-		return;
-	}
+	local dumpdir=/tmp/.oprofile/jitdump
 	# VMs may already be running when profiling is started, so
 	# remove only dump files that are not in use
 	for I in $dumpdir/*; do

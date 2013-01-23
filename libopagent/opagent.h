@@ -45,7 +45,7 @@ typedef void * op_agent_t;
 
 /**
  * This function must be called by agents before any other function.
- * Creates and opens a JIT dump file in /var/lib/oprofile/jitdump
+ * Creates and opens a JIT dump file in /tmp/.oprofile/jitdump
  * using the naming convention <process_id>.dump.
  *
  * Returns a valid op_agent_t handle or NULL.  If NULL is returned, errno

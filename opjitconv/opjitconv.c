@@ -540,7 +540,7 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	int rc = OP_JIT_CONV_OK;
 	char jitdumpfile[PATH_MAX + 1];
 	char oprofile_tmp_template[PATH_MAX + 1];
-	char const * jitdump_dir = "/var/lib/oprofile/jitdump/";
+	char const * jitdump_dir = "/tmp/.oprofile/jitdump/";
 
 	LIST_HEAD(jd_fnames);
 	char const * anon_dir_filter = "*/{dep}/{anon:anon}/[0-9]*.*";
@@ -684,7 +684,7 @@ out:
 static void _cleanup_jitdumps(void)
 {
 	struct list_head * pos1, *pos2;
-	char const * jitdump_dir = "/var/lib/oprofile/jitdump/";
+	char const * jitdump_dir = "/tmp/.oprofile/jitdump/";
 	size_t dir_len = strlen(jitdump_dir);
 	char dmpfile_pathname[dir_len + 20];
 	char proc_fd_dir[PATH_MAX];

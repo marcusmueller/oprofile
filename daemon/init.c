@@ -154,7 +154,7 @@ static void opd_do_jitdumps(void)
 	struct timeval tv;
 	char end_time_str[32];
 	char opjitconv_path[PATH_MAX + 1];
-	char * exec_args[6];
+	char * exec_args[7];
 
 	if (jit_conversion_running)
 		return;
@@ -174,6 +174,7 @@ static void opd_do_jitdumps(void)
 			exec_args[arg_num++] = "opjitconv";
 			if (vmisc)
 				exec_args[arg_num++] = "-d";
+			exec_args[arg_num++] = "--delete-jitdumps";
 			exec_args[arg_num++] = session_dir;
 			exec_args[arg_num++] = start_time_str;
 			exec_args[arg_num++] = end_time_str;

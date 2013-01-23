@@ -118,7 +118,8 @@ static int define_bfd_vars(void)
 #define OP_MAJOR_VERSION 1
 #define OP_MINOR_VERSION 0
 
-#define AGENT_DIR OP_SESSION_DIR_DEFAULT "jitdump"
+#define TMP_OPROFILE_DIR "/tmp/.oprofile"
+#define JITDUMP_DIR TMP_OPROFILE_DIR "/jitdump"
 
 #define MSG_MAXLEN 20
 
@@ -135,17 +136,28 @@ op_agent_t op_open_agent(void)
 	struct timeval tv;
 	FILE * dumpfile = NULL;
 
-	rc = stat(AGENT_DIR, &dirstat);
-	if (rc || !S_ISDIR(dirstat.st_mode)) {
-		if (!rc)
-			errno = ENOTDIR;
-		fprintf(stderr,"libopagent: Jitdump agent directory %s "
-			"missing\n", AGENT_DIR);
-		fprintf(stderr,"libopagent: do opcontrol --setup or "
-			"opcontrol --reset, first\n");
+	if (0 == stat(TMP_OPROFILE_DIR, &dirstat) && !S_ISDIR(dirstat.st_mode)) {
+		fprintf(stderr, "Error: Creation of directory %s failed.\n", TMP_OPROFILE_DIR);
+		errno = EEXIST;
 		return NULL;
+	} else {
+		rc = mkdir(TMP_OPROFILE_DIR, S_IRWXU | S_IRWXG | S_IRWXO);
+		if (rc && (errno != EEXIST)) {
+			fprintf(stderr, "Error trying to create %s dir.\n", TMP_OPROFILE_DIR);
+			return NULL;
+		}
 	}
-	snprintf(dump_path, PATH_MAX, "%s/%i.dump", AGENT_DIR, getpid());
+	if (0 == stat(JITDUMP_DIR, &dirstat) && !S_ISDIR(dirstat.st_mode)) {
+		fprintf(stderr, "Error: Creation of directory %s failed.\n", JITDUMP_DIR);
+		return NULL;
+	} else {
+		rc = mkdir(JITDUMP_DIR, S_IRWXU | S_IRWXG | S_IRWXO);
+		if (rc && (errno != EEXIST)) {
+			fprintf(stderr, "Error trying to create %s dir.\n", JITDUMP_DIR);
+			return NULL;
+		}
+	}
+	snprintf(dump_path, PATH_MAX, "%s/%i.dump", JITDUMP_DIR, getpid());
 	snprintf(err_msg, PATH_MAX + 16, "Error opening %s\n", dump_path);
 	// make the dump file only accessible for the user for security reason.
 	fd = creat(dump_path, S_IRUSR|S_IWUSR);
