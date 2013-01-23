@@ -180,7 +180,8 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 	attr.exclude_idle = 0;
 	attr.exclude_kernel = evt.no_kernel;
 	attr.exclude_hv = evt.no_hv;
-	attr.read_format = PERF_FORMAT_ID;
+	attr.read_format = PERF_FORMAT_ID | PERF_FORMAT_TOTAL_TIME_RUNNING |
+		PERF_FORMAT_TOTAL_TIME_ENABLED;
 	event_name = evt.name;
 	fd = id = -1;
 }
@@ -193,6 +194,8 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 {
 	struct {
 		u64 count;
+		u64 time_enabled;
+		u64 time_running;
 		u64 id;
 	} read_data;
 
@@ -590,6 +593,13 @@ void operf_record::recordPerfData(void)
 			cverb << vrecord << "operf_record::recordPerfData received signal to quit." << endl;
 		}
 	}
+
+	for (unsigned int evt = 0; evt < evts.size(); evt++)
+               operf_stats_recorder::check_for_multiplexing(perfCounters,
+							    num_cpus,
+							    system_wide,
+							    evt);
+
 	cverb << vdebug << "operf recording finished." << endl;
 }
 

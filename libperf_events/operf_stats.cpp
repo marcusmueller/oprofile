@@ -11,9 +11,12 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <iostream>
+#include <errno.h>
 
 #include "operf_stats.h"
 #include "op_get_time.h"
@@ -82,4 +85,204 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 
 	fflush(fp);
 	fclose(fp);
+};
+
+void operf_stats_recorder::write_throttled_event_files(std::vector< operf_event_t> const & events,
+						       std::string const & stats_dir)
+{
+	string outputfile;
+	ofstream outfile;
+	string event_name;
+	string throttled_dir;
+	bool throttled_dir_created = false;
+	int rc;
+
+	throttled_dir =  stats_dir + "/throttled";
+
+	for (unsigned index = 0; index < events.size(); index++) {
+		if (events[index].throttled == true) {
+
+			if (!throttled_dir_created) {
+				rc = mkdir(throttled_dir.c_str(),
+					   S_IRWXU | S_IRWXG
+					   | S_IROTH | S_IXOTH);
+				if (rc && (errno != EEXIST)) {
+					cerr << "Error trying to create " << throttled_dir
+					     << endl;
+					perror("mkdir failed with");
+					return;
+				}
+				throttled_dir_created = true;
+			}
+
+			/* Write file entry to indicate if the data sample was
+			 * throttled.
+			 */
+			outputfile = throttled_dir + "/"
+				+ events[index].name;
+
+			outfile.open(outputfile.c_str());
+
+			if (!outfile.is_open()) {
+				cerr << "Internal error: Could not create " << outputfile
+				     <<  strerror(errno) << endl;
+			} else {
+				outfile.close();
+			}
+		}
+	  }
+};
+
+void operf_stats_recorder::mv_multiplexed_data_dir(std::string const & sessiondir,
+						   std::string const & statsdir)
+{
+	string old_dir = sessiondir + "/multiplexed/";
+	string new_dir = statsdir + "/multiplexed";
+
+	/* The multiplexed data directory was created under the session
+	 * directory by another process.  Once the process that calls the
+	 * function convert_sample_data() to set up the current data directory
+	 * is done and the other process has finished writing to the
+	 * multiplexed data directory, the multiplexed data directory can
+	 * be moved from sessiondir/multiplexed to statsdir/multiplexed.
+	 */
+	if (rename(old_dir.c_str(), new_dir.c_str()) < 0) {
+		if (errno && (errno != ENOENT)) {
+			cerr << "Unable to move multiplexed data dir to "
+				<< new_dir << endl;
+			cerr << strerror(errno) << endl;
+		}
+	}
 }
+
+
+std::string  operf_stats_recorder::create_stats_dir(std::string const & cur_sampledir)
+{
+	int rc;
+	int errno;
+	std::string stats_dir;
+
+	/* Assumption: cur_sampledir ends in slash */
+	stats_dir =  cur_sampledir + "stats";
+	rc = mkdir(stats_dir.c_str(),
+		   S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	if (rc && (errno != EEXIST)) {
+		cerr << "Error trying to create stats dir. " << endl;
+		perror("mkdir failed with");
+		return NULL;
+	}
+	return stats_dir;
+}
+
+
+void operf_stats_recorder::check_for_multiplexing(std::vector< std::vector<operf_counter> > const & perfCounters,
+						  int num_cpus,
+						  int system_wide, int evt)
+{
+  /* In system-wide-mode, all events are enabled and running on CPUs if
+   * there are counters available.  Hence on each CPU the running and enabled
+   * time should be equal if the event was not multiplexed.
+   *
+   * In non system-wide-mode, there is a specified pid or process that is
+   * being monitored.  In this case, the running time across all CPUs that
+   * the process ran should be equal to the enabled time if the event was not
+   * multiplexed.  Note, we need to account for the fact that the enabled time
+   * might vary slightly across CPUs.
+   */
+	struct {
+		u64 count;
+		u64 time_enabled; // PERF_FORMAT_TOTAL_TIME_ENABLED is set in attr
+		u64 time_running; // PERF_FORMAT_TOTAL_TIME_RUNNING is set in attr
+		u64 id; // PERF_FORMAT_ID is set in attr
+	} read_data;
+
+	u64 cumulative_time_running = 0;
+	u64 max_enabled_time = 0, min_enabled_time = 0xFFFFFFFFFFFFFFFF;
+	int fd;
+	bool event_multiplexed = false;
+
+	for (int cpu = 0; cpu < num_cpus; cpu++) {
+	    fd = perfCounters[cpu][evt].get_fd();
+
+		if (read(fd, &read_data, sizeof(read_data)) == -1) {
+			return;
+		}
+
+		cumulative_time_running += read_data.time_running;
+
+		if (min_enabled_time > read_data.time_enabled)
+			min_enabled_time = read_data.time_enabled;
+
+		if (max_enabled_time < read_data.time_enabled)
+			max_enabled_time = read_data.time_enabled;
+
+		if (system_wide &&
+		    (read_data.time_enabled != read_data.time_running)) {
+			event_multiplexed = true;
+			break;
+		}
+	}
+
+	if (!system_wide) {
+		/* Check that the cumulative running time and the enabled
+		 * time from the last CPU match.  If they don't match, then
+		 * the event was multiplexed on one or more of the CPUs.
+		 */
+		if ((cumulative_time_running < min_enabled_time) ||
+		    (cumulative_time_running > max_enabled_time))
+			event_multiplexed = true;
+	}
+
+	if (event_multiplexed) {
+		/* Create a file with the name of the event in the multiplexed
+		 * directory to indicate the event was multiplexed.  Currently
+		 * no information is recorded in the file.
+		 */
+		string event_name;
+		string multiplexed_dir, samples_dir;
+		string outputfile;
+		ofstream outfile;
+		int rc;
+
+		/* Have a multiplexed event, create a directory to store the
+		 * multiplexed file names in.  The directory will temporarily
+		 * be right under the session dir.  The issue is there are two
+		 * processes running.  The other process handles moving the
+		 * sample data files, outputting the profile data and writing
+		 * the throttled data.  This process is independent of it.
+		 * This process has access to the session_dir as it was setup
+		 * before the fork.  However, we do not have access to the
+		 * path where the data will be stored nor do we know when the
+		 * previous data will get copied to the previous data
+		 * directory. So, we write the multiplexed event data under the
+		 * session dir and let the other process move it to the current
+		 * sample directory later.
+		 */
+		multiplexed_dir = operf_options::session_dir + "/multiplexed";
+
+		rc = mkdir(multiplexed_dir.c_str(), S_IRWXU | S_IRWXG
+			   | S_IROTH | S_IXOTH);
+		if (rc && (errno != EEXIST)) {
+			cerr << "Error trying to create multiplexed "
+			     << "dir: " << multiplexed_dir << "." << endl;
+			perror("mkdir failed with");
+			return;
+		}
+
+		/* The event is listed in all of the CPUs, just use CPU 0
+		 * to get the name of the event.
+		 */
+		event_name = perfCounters[0][evt].get_event_name();
+		outputfile = multiplexed_dir + "/" + event_name;
+
+		outfile.open(outputfile.c_str());
+
+		if (!outfile.is_open()) {
+			cerr << "Internal error: Could not create " << outputfile
+			     << strerror(errno) << endl;
+		} else {
+			outfile.close();
+		}
+	}
+};

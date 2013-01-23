@@ -73,6 +73,13 @@ struct sample_event {
 	u64 array[];
 };
 
+struct throttle_event {
+	struct perf_event_header header;
+	u64 time;
+	u64 id;
+	u64 stream_id;
+};
+
 typedef union event_union {
 	struct perf_event_header header;
 	struct ip_event	ip;
@@ -81,7 +88,8 @@ typedef union event_union {
 	struct fork_event fork;
 	struct lost_event lost;
 	struct read_event read;
-	struct sample_event	sample;
+	struct sample_event sample;
+	struct throttle_event throttle;
 } event_t;
 
 struct mmap_data {
@@ -126,6 +134,7 @@ typedef struct operf_event {
 	bool no_kernel;
 	bool no_user;
 	bool no_hv;
+	bool throttled;  /* set to true if the event is ever throttled */
 } operf_event_t;
 
 struct mmap_info {

@@ -47,6 +47,7 @@ extern char * app_name;
 extern pid_t app_PID;
 extern verbose vrecord;
 extern verbose vconvert;
+extern void __set_event_throttled(int index);
 
 using namespace std;
 
@@ -671,6 +672,13 @@ static void __map_hypervisor_sample(u64 ip, u32 pid)
 	proc->process_hypervisor_mapping(ip);
 }
 
+static void __handle_throttle_event(event_t * event, u64 sample_type)
+{
+	trans.event = operfRead.get_eventnum_by_perf_event_id(event->throttle.id);
+
+	__set_event_throttled(trans.event);
+}
+
 static void __handle_sample_event(event_t * event, u64 sample_type)
 {
 	struct sample_data data;
@@ -894,7 +902,7 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 		__handle_fork_event(event);
 		return;
 	case PERF_RECORD_THROTTLE:
-		throttled = true;
+		__handle_throttle_event(event, sample_type);
 		return;
 	case PERF_RECORD_LOST:
 		operf_stats[OPERF_RECORD_LOST_SAMPLE] += event->lost.lost;

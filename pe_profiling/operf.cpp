@@ -46,6 +46,7 @@
 #include "operf_kernel.h"
 #include "child_reader.h"
 #include "op_get_time.h"
+#include "operf_stats.h"
 
 using namespace std;
 
@@ -132,6 +133,16 @@ struct option long_options [] =
 const char * short_options = "V:d:k:gsap:e:ctlhuv";
 
 vector<string> verbose_string;
+
+void __set_event_throttled(int index)
+{
+	if (index < 0) {
+		cerr << "Unable to determine if throttling occurred for ";
+		cerr << "event " << events[index].name << endl;
+	} else {
+		events[index].throttled = true;
+	}
+}
 
 static void __print_usage_and_exit(const char * extra_msg)
 {
@@ -848,6 +859,7 @@ static void convert_sample_data(void)
 	int keep_waiting = 0;
 	string current_sampledir = samples_dir + "/current/";
 	string previous_sampledir = samples_dir + "/previous";
+	string stats_dir = "";
 	current_sampledir.copy(op_samples_current_dir, current_sampledir.length(), 0);
 
 	if (!app_started && !operf_options::system_wide)
@@ -907,6 +919,18 @@ static void convert_sample_data(void)
 			goto out;
 		}
 	}
+
+	stats_dir = operf_stats_recorder::create_stats_dir(current_sampledir);
+	if (strcmp(stats_dir.c_str(), "") != 0) {
+		// If there are throttled or multiplexed events print them
+		operf_stats_recorder::
+			write_throttled_event_files(events, stats_dir);
+
+		operf_stats_recorder::
+			mv_multiplexed_data_dir(operf_options::session_dir,
+						stats_dir);
+	}
+
 	_set_signals_for_convert();
 	cverb << vdebug << "Calling _do_jitdump_convert" << endl;
 	_do_jitdump_convert();
@@ -1298,6 +1322,7 @@ static void _process_events_list(void)
 		event.evt_um = 0ULL;
 		event.no_kernel = 0;
 		event.no_user = 0;
+		event.throttled = false;
 		memset(event.um_name, '\0', OP_MAX_UM_NAME_LEN);
 		while ((info = strtok(NULL, ":"))) {
 			switch (place) {
@@ -1432,6 +1457,14 @@ static void _process_session_dir(void)
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	/* Make sure there isn't a temporary multiplexed data directory
+	 * left behind from a previous run that exited abnormally.
+	 */
+	string multiplexed_dir = operf_options::session_dir + "/multiplexed/";
+	nftw(multiplexed_dir.c_str(), __delete_old_previous_sample_data, 2,
+	     FTW_DEPTH | FTW_ACTIONRETVAL);
+
 	cverb << vdebug << "Using samples dir " << samples_dir << endl;
 }
 
