@@ -198,7 +198,7 @@ void operf_stats_recorder::check_for_multiplexing(std::vector< std::vector<operf
 	} read_data;
 
 	u64 cumulative_time_running = 0;
-	u64 max_enabled_time = 0, min_enabled_time = 0xFFFFFFFFFFFFFFFF;
+	u64 max_enabled_time = 0, min_enabled_time = 0xFFFFFFFFFFFFFFFFULL;
 	int fd;
 	bool event_multiplexed = false;
 
