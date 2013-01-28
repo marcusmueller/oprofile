@@ -1137,7 +1137,12 @@ static void _get_event_code(operf_event_t * event)
 			exit(EXIT_FAILURE);
 		}
 		pclose(fp);
-		config |= strtoull(mask, (char **) NULL, 10);
+		// FIXME:  The mask value here is the extra bits from the named unit mask.  It's not
+		// ideal to put that value into the UM's mask, since that's what will show up in
+		// opreport.  It would be better if we could somehow have the unit mask name that the
+		// user passed to us show up in opreort.
+		event->evt_um = strtoull(mask, (char **) NULL, 10);
+		config |= event->evt_um;
 	} else if (!event->evt_um) {
 		command.clear();
 		command = OP_BINDIR;
@@ -1158,7 +1163,8 @@ static void _get_event_code(operf_event_t * event)
 			exit(EXIT_FAILURE);
 		}
 		pclose(fp);
-		config |= ((strtoull(mask, (char **) NULL, 10) & 0xFFULL) << 8);
+		event->evt_um = strtoull(mask, (char **) NULL, 10);
+		config |= ((event->evt_um & 0xFFULL) << 8);
 	} else {
 		config |= ((event->evt_um & 0xFFULL) << 8);
 	}
