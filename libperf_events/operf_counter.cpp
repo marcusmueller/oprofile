@@ -48,6 +48,7 @@ extern bool first_time_processing;
 extern bool throttled;
 extern size_t mmap_size;
 extern size_t pg_sz;
+extern bool try_cpu_minus_one;
 
 namespace {
 
@@ -424,7 +425,7 @@ void operf_record::setup()
 	struct dirent *entry = NULL;
 	DIR *dir = NULL;
 	string err_msg;
-	char cpus_online[129];
+	char cpus_online[257];
 	bool need_IOC_enable = (system_wide || pid_started);
 
 
@@ -452,7 +453,7 @@ void operf_record::setup()
 	}
 	pagesize = sysconf(_SC_PAGE_SIZE);
 	num_mmap_pages = (512 * 1024)/pagesize;
-	num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+	num_cpus = try_cpu_minus_one ? 1 : sysconf(_SC_NPROCESSORS_ONLN);
 	if (!num_cpus)
 		throw runtime_error("Number of online CPUs is zero; cannot continue");;
 
@@ -475,7 +476,7 @@ void operf_record::setup()
 		goto error;
 
 	}
-	if (index(cpus_online, ',')) {
+	if (index(cpus_online, ',') || cpus_online[0] != '0') {
 		all_cpus_avail = false;
 		if ((dir = opendir("/sys/devices/system/cpu")) == NULL) {
 			fclose(online_cpus);
@@ -490,7 +491,9 @@ void operf_record::setup()
 		int real_cpu;
 		int mmap_fd;
 		bool mmap_done_for_cpu = false;
-		if (all_cpus_avail) {
+		if (try_cpu_minus_one) {
+			real_cpu = -1;
+		} else if (all_cpus_avail) {
 			real_cpu = cpu;
 		} else {
 			real_cpu = op_get_next_online_cpu(dir, entry);

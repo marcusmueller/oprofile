@@ -11,7 +11,7 @@
  * (C) Copyright IBM Corp. 2011
  *
  * Modified by Maynard Johnson <maynardj@us.ibm.com>
- * (C) Copyright IBM Corporation 2012
+ * (C) Copyright IBM Corporation 2012, 2013
  *
  */
 
@@ -60,6 +60,7 @@ typedef enum END_CODE {
 
 // Globals
 char * app_name = NULL;
+bool try_cpu_minus_one = false;
 pid_t app_PID = -1;
 uint64_t kernel_start, kernel_end;
 operf_read operfRead;
@@ -1763,7 +1764,60 @@ static void process_args(int argc, char * const argv[])
 	return;
 }
 
-static int _check_perf_events_cap(void)
+static int _get_cpu_for_perf_events_cap(void)
+{
+	int retval;
+	string err_msg;
+	char cpus_online[257];
+	FILE * online_cpus;
+	DIR *dir = NULL;
+
+	int total_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+	if (!total_cpus) {
+		err_msg = "Internal Error (1): Number of online cpus cannot be determined.";
+		retval = -1;
+		goto error;
+	}
+
+	online_cpus = fopen("/sys/devices/system/cpu/online", "r");
+	if (!online_cpus) {
+		err_msg = "Internal Error (2): Number of online cpus cannot be determined.";
+		retval = -1;
+		goto error;
+	}
+	memset(cpus_online, 0, sizeof(cpus_online));
+	fgets(cpus_online, sizeof(cpus_online), online_cpus);
+	if (!cpus_online[0]) {
+		fclose(online_cpus);
+		err_msg = "Internal Error (3): Number of online cpus cannot be determined.";
+		retval = -1;
+		goto error;
+
+	}
+	if (index(cpus_online, ',') || cpus_online[0] != '0') {
+		// A comma in cpus_online implies a gap, which in turn implies that not all
+		// CPUs are online.
+		if ((dir = opendir("/sys/devices/system/cpu")) == NULL) {
+			fclose(online_cpus);
+			err_msg = "Internal Error (4): Number of online cpus cannot be determined.";
+			retval = -1;
+			goto error;
+		} else {
+			struct dirent *entry = NULL;
+			retval = OP_perf_utils::op_get_next_online_cpu(dir, entry);
+			closedir(dir);
+		}
+	} else {
+		// All CPUs are available, so we just arbitrarily choose CPU 0.
+		retval = 0;
+	}
+	fclose(online_cpus);
+error:
+	return retval;
+}
+
+
+static int _check_perf_events_cap(bool try_cpu_minus_one)
 {
 	/* If perf_events syscall is not implemented, the syscall below will fail
 	 * with ENOSYS (38).  If implemented, but the processor type on which this
@@ -1772,12 +1826,14 @@ static int _check_perf_events_cap(void)
 	 */
 	struct perf_event_attr attr;
 	pid_t pid ;
+	int cpu_to_try = try_cpu_minus_one ? -1 : _get_cpu_for_perf_events_cap();
+	errno = 0;
         memset(&attr, 0, sizeof(attr));
         attr.size = sizeof(attr);
         attr.sample_type = PERF_SAMPLE_IP;
 
 	pid = getpid();
-	syscall(__NR_perf_event_open, &attr, pid, 0, -1, 0);
+	syscall(__NR_perf_event_open, &attr, pid, cpu_to_try, -1, 0);
 	return errno;
 
 }
@@ -1829,21 +1885,43 @@ static int _get_sys_value(const char * filename)
 int main(int argc, char * const argv[])
 {
 	int rc;
+	int perf_event_paranoid = _get_sys_value("/proc/sys/kernel/perf_event_paranoid");
+
+	my_uid = geteuid();
 	throttled = false;
-	if ((rc = _check_perf_events_cap())) {
-		if (rc == EBUSY) {
-			cerr << "Performance monitor unit is busy.  Do 'opcontrol --deinit' and try again." << endl;
-			exit(1);
+	rc = _check_perf_events_cap(try_cpu_minus_one);
+	if (rc == EACCES) {
+		/* Early perf_events kernels required the cpu argument to perf_event_open
+		 * to be '-1' when setting up to profile a single process if 1) the user is
+		 * not root; and 2) perf_event_paranoid is > 0.  An EACCES error would be
+		 * returned if passing '0' or greater for the cpu arg and the above criteria
+		 * was not met.  Unfortunately, later kernels turned this requirement around
+		 * such that the passed cpu arg must be '0' or greater when the user is not
+		 * root.
+		 *
+		 * We don't really have a good way to check whether we're running on such an
+		 * early kernel except to try the perf_event_open with different values to see
+		 * what works.
+		 */
+		if (my_uid != 0 && perf_event_paranoid > 0) {
+			try_cpu_minus_one = true;
+			rc = _check_perf_events_cap(try_cpu_minus_one);
 		}
-		if (rc == ENOSYS) {
-			cerr << "Your kernel does not implement a required syscall"
-			     << "  for the operf program." << endl;
-		} else if (rc == ENOENT) {
-			cerr << "Your kernel's Performance Events Subsystem does not support"
-			     << " your processor type." << endl;
-		} else {
-			cerr << "Unexpected error running operf: " << strerror(rc) << endl;
-		}
+	}
+	if (rc == EBUSY) {
+		cerr << "Performance monitor unit is busy.  Do 'opcontrol --deinit' and try again." << endl;
+		exit(1);
+	}
+	if (rc == ENOSYS) {
+		cerr << "Your kernel does not implement a required syscall"
+		     << " for the operf program." << endl;
+	} else if (rc == ENOENT) {
+		cerr << "Your kernel's Performance Events Subsystem does not support"
+		     << " your processor type." << endl;
+	} else if (rc) {
+		cerr << "Unexpected error running operf: " << strerror(rc) << endl;
+	}
+	if (rc) {
 		cerr << "Please use the opcontrol command instead of operf." << endl;
 		exit(1);
 	}
@@ -1852,8 +1930,6 @@ int main(int argc, char * const argv[])
 	cpu_speed = op_cpu_frequency();
 	process_args(argc, argv);
 
-	int perf_event_paranoid = _get_sys_value("/proc/sys/kernel/perf_event_paranoid");
-	my_uid = geteuid();
 	if (operf_options::system_wide && ((my_uid != 0) && (perf_event_paranoid > 0))) {
 		cerr << "To do system-wide profiling, either you must be root or" << endl;
 		cerr << "/proc/sys/kernel/perf_event_paranoid must be set to 0 or -1." << endl;
