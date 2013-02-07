@@ -109,6 +109,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A15", "arm/armv7-ca15", CPU_ARM_V7_CA15, 7 },
 	{ "Intel Haswell microarchitecture", "i386/haswell", CPU_HASWELL, 4 },
 	{ "IBM zEnterprise EC12", "s390/zEC12", CPU_S390_ZEC12, 1 },
+	{ "AMD64 generic", "x86-64/generic", CPU_AMD64_GENERIC, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -345,12 +346,16 @@ static op_cpu _get_intel_cpu_type(void)
 
 static op_cpu _get_amd_cpu_type(void)
 {
-	unsigned eax, family, model;
+	unsigned eax, family;
 	op_cpu ret = CPU_NO_GOOD;
+	char buf[20] = {'\0'};
 
 	eax = cpuid_signature();
 	family = cpu_family(eax);
-	model = cpu_model(eax);
+
+	/* These family does not exist in the past.*/
+	if (family < 0x0f || family == 0x13)
+		return ret;
 
 	switch (family) {
 	case 0x0f:
@@ -360,24 +365,17 @@ static op_cpu _get_amd_cpu_type(void)
 		ret = op_get_cpu_number("x86-64/family10");
 		break;
 	case 0x11:
-		ret = op_get_cpu_number("x86-64/family11h");
-		break;
 	case 0x12:
-		ret = op_get_cpu_number("x86-64/family12h");
-		break;
 	case 0x14:
-		ret = op_get_cpu_number("x86-64/family14h");
-		break;
 	case 0x15:
-		switch (model) {
-		case 0x00 ... 0x0f:
-			ret = op_get_cpu_number("x86-64/family15h");
-			break;		
-		default:
-			break;
-		}
+		/* From family11h and forward, we use the same naming scheme */
+		snprintf(buf, 20, "x86-64/family%xh", family);
+		ret = op_get_cpu_number(buf);
 		break;
 	default:
+		/* Future processors */
+		snprintf(buf, 20, "x86-64/generic");
+		ret = op_get_cpu_number(buf);
 		break;
 	}
 

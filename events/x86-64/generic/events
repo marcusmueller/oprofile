@@ -1,0 +1,40 @@
+# AMD Generic processor performance events
+#
+# Copyright OProfile authors
+# Copyright (c) 2006-2013 Advanced Micro Devices
+# Contributed by Ray Bryant <raybry at amd.com>,
+#		Jason Yeh <jason.yeh at amd.com>
+#		Suravee Suthikulpanit <suravee.suthikulpanit at amd.com>
+#		Paul Drongowski <paul.drongowski at amd.com>
+#
+# Sources: BIOS and Kernel Developer's Guide for AMD processors,
+#
+# Revision: 1.0
+#
+# ChangeLog:
+#	1.0: 07 Feb 2013
+# 	- Preliminary version
+
+# L1 DATA CACHE
+event:0x040 counters:0,1,2,3 um:zero minimum:500 name:DATA_CACHE_ACCESSES : Data Cache Accesses
+event:0x041 counters:0,1,2,3 um:dcache_misses minimum:500 name:DATA_CACHE_MISSES : Data Cache Misses
+event:0x042 counters:0,1,2,3 um:dcache_refills minimum:500 name:DATA_CACHE_REFILLS_FROM_L2_OR_NORTHBRIDGE : Data Cache Refills from L2 or System
+event:0x043 counters:0,1,2,3  um:zero minimum:500 name:DATA_CACHE_REFILLS_FROM_NORTHBRIDGE : Data Cache Refills from System
+
+# CYCLE
+event:0x076 counters:0,1,2,3 um:zero minimum:50000 name:CPU_CLK_UNHALTED : CPU Clocks not Halted
+
+# INSTRUCTION CACHE
+event:0x080 counters:0,1,2,3 um:zero minimum:500 name:INSTRUCTION_CACHE_FETCHES : Instruction Cache Fetches
+event:0x081 counters:0,1,2,3 um:zero minimum:500 name:INSTRUCTION_CACHE_MISSES : Instruction Cache Misses
+event:0x082 counters:0,1,2,3 um:zero minimum:500 name:INSTRUCTION_CACHE_REFILLS_FROM_L2 : Instruction Cache Refills from L2
+event:0x083 counters:0,1,2,3 um:zero minimum:500 name:INSTRUCTION_CACHE_REFILLS_FROM_SYSTEM : Instruction Cache Refills from System
+
+# INSTRUCTIONS
+event:0x0c0 counters:0,1,2,3 um:zero minimum:50000 name:RETIRED_INSTRUCTIONS : Retired Instructions
+event:0x0c1 counters:0,1,2,3 um:zero minimum:50000 name:RETIRED_UOPS : Retired uops
+event:0x0c2 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_BRANCH_INSTRUCTIONS : Retired Branch Instructions
+event:0x0c3 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_MISPREDICTED_BRANCH_INSTRUCTIONS : Retired Mispredicted Branch Instructions
+event:0x0c4 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_TAKEN_BRANCH_INSTRUCTIONS : Retired Taken Branch Instructions
+event:0x0c5 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_TAKEN_BRANCH_INSTRUCTIONS_MISPREDICTED : Retired Taken Branch Instructions Mispredicted
+event:0x0ca counters:0,1,2,3 um:zero minimum:500 name:RETIRED_INDIRECT_BRANCHES_MISPREDICTED : Retired Indirect Branches Mispredicted

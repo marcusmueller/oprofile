@@ -531,6 +531,10 @@ int main(int argc, char const * argv[])
 		event_doc =
 			"See BIOS and Kernel Developer's Guide for AMD Family 15h Processors\n";
 		break;
+	case CPU_AMD64_GENERIC:
+		event_doc =
+			"See BIOS and Kernel Developer's Guide for AMD Processors\n";
+		break;
 	case CPU_ATHLON:
 		event_doc =
 			"See AMD Athlon Processor x86 Code Optimization Guide\n"

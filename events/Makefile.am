@@ -42,6 +42,7 @@ event_files = \
 	x86-64/family12h/events x86-64/family12h/unit_masks \
 	x86-64/family14h/events x86-64/family14h/unit_masks \
 	x86-64/family15h/events x86-64/family15h/unit_masks \
+	x86-64/generic/events x86-64/generic/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
 	arm/armv6/events arm/armv6/unit_masks \

@@ -1,0 +1,26 @@
+# AMD Generic processor performance events
+#
+# Copyright OProfile authors
+# Copyright (c) 2006-2013 Advanced Micro Devices
+# Contributed by Ray Bryant <raybry at amd.com>,
+#		Jason Yeh <jason.yeh at amd.com>
+#		Suravee Suthikulpanit <suravee.suthikulpanit at amd.com>
+#		Paul Drongowski <paul.drongowski at amd.com>
+#
+# Sources: BIOS and Kernel Developer's Guide for AMD processors,
+#
+# Revision: 1.0
+#
+# ChangeLog:
+#	1.0: 07 Feb 2013
+# 	- Preliminary version
+
+name:zero type:mandatory default:0x00
+	0x00 No unit mask
+name:dcache_misses type:bitmask default:0x01
+	0x01 First data cache miss or streaming store to a 64B cache line
+	0x02 First streaming store to a 64B cache line
+name:dcache_refills type:bitmask default:0x0b
+	0x01 Fill with good data. (Final valid status is valid)
+	0x02 Early valid status turned out to be invalid
+	0x08 Fill with read data error

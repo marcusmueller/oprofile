@@ -1166,6 +1166,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_FAMILY12H:
 		case CPU_FAMILY14H:
 		case CPU_FAMILY15H:
+		case CPU_AMD64_GENERIC:
 			descr->name = "CPU_CLK_UNHALTED";
 			break;
 
