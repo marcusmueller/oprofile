@@ -1786,10 +1786,16 @@ static int _get_cpu_for_perf_events_cap(void)
 		goto error;
 	}
 	memset(cpus_online, 0, sizeof(cpus_online));
-	fgets(cpus_online, sizeof(cpus_online), online_cpus);
+
+	if ( fgets(cpus_online, sizeof(cpus_online), online_cpus) == NULL) {
+		err_msg = "Internal Error (3): Number of online cpus cannot be determined.";
+		retval = -1;
+		goto error;
+	}
+
 	if (!cpus_online[0]) {
 		fclose(online_cpus);
-		err_msg = "Internal Error (3): Number of online cpus cannot be determined.";
+		err_msg = "Internal Error (4): Number of online cpus cannot be determined.";
 		retval = -1;
 		goto error;
 
@@ -1799,7 +1805,7 @@ static int _get_cpu_for_perf_events_cap(void)
 		// CPUs are online.
 		if ((dir = opendir("/sys/devices/system/cpu")) == NULL) {
 			fclose(online_cpus);
-			err_msg = "Internal Error (4): Number of online cpus cannot be determined.";
+			err_msg = "Internal Error (5): Number of online cpus cannot be determined.";
 			retval = -1;
 			goto error;
 		} else {
