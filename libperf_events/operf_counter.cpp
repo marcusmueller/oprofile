@@ -37,7 +37,6 @@ using namespace OP_perf_utils;
 
 
 volatile bool quit;
-volatile bool read_quit;
 int sample_reads;
 int num_mmap_pages;
 unsigned int pagesize;
@@ -609,29 +608,12 @@ void operf_record::recordPerfData(void)
 void operf_read::init(int sample_data_pipe_fd, string input_filename, string samples_loc, op_cpu cputype,
                       vector<operf_event_t> & events, bool systemwide)
 {
-	struct sigaction sa;
-	sigset_t ss;
 	sample_data_fd = sample_data_pipe_fd;
 	inputFname = input_filename;
 	sampledir = samples_loc;
 	evts = events;
 	cpu_type = cputype;
 	syswide = systemwide;
-	memset(&sa, 0, sizeof(struct sigaction));
-	sa.sa_sigaction = op_perfread_sigusr1_handler;
-	sigemptyset(&sa.sa_mask);
-	sigemptyset(&ss);
-	sigaddset(&ss, SIGUSR1);
-	sigprocmask(SIG_UNBLOCK, &ss, NULL);
-	sa.sa_mask = ss;
-	sa.sa_flags = SA_NOCLDSTOP | SA_SIGINFO;
-	cverb << vconvert << "operf-read calling sigaction" << endl;
-	if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-		cverb << vconvert << "operf-read init: sigaction failed; errno is: "
-		      << strerror(errno) << endl;
-		_exit(EXIT_FAILURE);
-	}
-
 }
 
 operf_read::~operf_read()

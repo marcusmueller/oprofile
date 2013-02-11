@@ -65,9 +65,6 @@ void op_get_kernel_event_data(struct mmap_data *md, operf_record * pr);
 void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 		siginfo_t * siginfo __attribute__((unused)),
 		void *u_context __attribute__((unused)));
-void op_perfread_sigusr1_handler(int sig __attribute__((unused)),
-		siginfo_t * siginfo __attribute__((unused)),
-		void *u_context __attribute__((unused)));
 int op_record_process_info(bool system_wide, pid_t pid, operf_record * pr, int output_fd);
 int op_write_output(int output, void *buf, size_t size);
 void op_write_event(event_t * event, u64 sample_type);

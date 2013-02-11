@@ -154,7 +154,7 @@ static void __print_usage_and_exit(const char * extra_msg)
 	exit(EXIT_FAILURE);
 }
 
-
+// Signal handler for main (parent) process.
 static void op_sig_stop(int val __attribute__((unused)))
 {
 	// Received a signal to quit, so we need to stop the
@@ -167,9 +167,14 @@ static void op_sig_stop(int val __attribute__((unused)))
 		kill(app_PID, SIGKILL);
 }
 
+// For child processes to manage a controlled stop after Ctl-C is done
 static void _handle_sigint(int val __attribute__((unused)))
 {
 	size_t dummy __attribute__ ((__unused__));
+	/* Each process (parent and each forked child) will have their own copy of
+	 * the ctl_c variable, so this can be used by each process in managing their
+	 * shutdown procedure.
+	 */
 	ctl_c = true;
 	if (cverb << vdebug)
 		dummy = write(1, "in _handle_sigint\n", 19);
@@ -177,7 +182,7 @@ static void _handle_sigint(int val __attribute__((unused)))
 }
 
 
-void _set_signals_for_record(void)
+void _set_basic_SIGINT_handler_for_child(void)
 {
 	struct sigaction act;
 	sigset_t ss;
@@ -195,7 +200,7 @@ void _set_signals_for_record(void)
 	}
 }
 
-void set_signals(void)
+void set_signals_for_parent(void)
 {
 	struct sigaction act;
 	sigset_t ss;
@@ -310,7 +315,7 @@ int start_profiling(void)
 	} else if (operf_record_pid == 0) { // operf-record process
 		int ready = 0;
 		int exit_code = EXIT_SUCCESS;
-		_set_signals_for_record();
+		_set_basic_SIGINT_handler_for_child();
 		close(operf_record_ready_pipe[0]);
 		if (!operf_options::post_conversion)
 			close(sample_data_pipe[0]);
@@ -598,6 +603,7 @@ static end_code_t _run(void)
 				_exit(EXIT_FAILURE);
 			} else if (operf_read_pid == 0) { // child process
 				close(sample_data_pipe[1]);
+				_set_basic_SIGINT_handler_for_child();
 				convert_sample_data();
 			}
 			// parent
@@ -606,7 +612,7 @@ static end_code_t _run(void)
 		}
 	}
 
-	set_signals();
+	set_signals_for_parent();
 	cerr << "operf: Profiler started" << endl;
 	if (startApp) {
 		/* The user passed in a command or program name to start, so we'll need to do waitpid on that
@@ -617,7 +623,7 @@ static end_code_t _run(void)
 		 * process, checking their status.  The profiled app may end normally, abnormally, or by way
 		 * of ctrl-C.  The operf-record process should not end here, except abnormally.  The normal
 		 * flow is:
-		 *    1. profiled app ends or is stopped vi ctrl-C
+		 *    1. profiled app ends or is stopped via ctrl-C
 		 *    2. keep_trying is set to false, so we drop out of while loop and proceed to end of function
 		 *    3. call _kill_operf_record_pid and _kill_operf_read_pid
 		 */
@@ -777,14 +783,6 @@ static void _set_signals_for_convert(void)
 		perror("operf: install of SIGCHLD handler failed: ");
 		exit(EXIT_FAILURE);
 	}
-
-	act.sa_handler = _handle_sigint;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SIGINT);
-	if (sigaction(SIGINT, &act, NULL)) {
-		perror("operf: install of SIGINT handler failed: ");
-		exit(EXIT_FAILURE);
-	}
 }
 
 static void _do_jitdump_convert()
@@ -848,9 +846,22 @@ static int __delete_old_previous_sample_data(const char *fpath,
 	}
 }
 
-/* Read perf_events sample data written by the operf-record process
- * through the sample_data_pipe and convert this to oprofile format
- * sample files.
+/* Read perf_events sample data written by the operf-record process through
+ * the sample_data_pipe or file (dependent on 'lazy-conversion' option)
+ * and convert the perf format sample data to to oprofile format sample files.
+ *
+ * If not invoked with --lazy-conversion option, this function is executed by
+ * the "operf-read" child process.  If user does a ctrl-C, the parent will
+ * execute _kill_operf_read_pid which will try to allow the conversion process
+ * to complete, waiting 5 seconds before it forcefully kills the operf-read
+ * process via 'kill SIGUSR1'.
+ *
+ * But if --lazy-conversion option is used, then it's the parent process that's
+ * running convert_sample_data.  If the user does a ctrl-C during this procedure,
+ * the ctrl-C is handled via op_sig_stop which essentially does nothing to stop
+ * the conversion procedure, which in general is fine.  On the very rare chance
+ * that the procedure gets stuck (hung) somehow, the user will have to do a
+ * 'kill -KILL'.
  */
 static void convert_sample_data(void)
 {

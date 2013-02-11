@@ -956,13 +956,6 @@ void OP_perf_utils::op_perfrecord_sigusr1_handler(int sig __attribute__((unused)
 	quit = true;
 }
 
-void OP_perf_utils::op_perfread_sigusr1_handler(int sig __attribute__((unused)),
-		siginfo_t * siginfo __attribute__((unused)),
-		void *u_context __attribute__((unused)))
-{
-	read_quit = true;
-}
-
 int OP_perf_utils::op_read_from_stream(ifstream & is, char * buf, streamsize sz)
 {
 	int rc = 0;
