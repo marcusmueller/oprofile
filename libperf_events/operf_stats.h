@@ -64,7 +64,7 @@ public:
 	 */
 	static void mv_multiplexed_data_dir(std::string const & session_dir,
 					    std::string const & sample_dir);
-	static void check_for_multiplexing(std::vector< std::vector<operf_counter> > const & perfCounters,
+	static void check_for_multiplexing(std::vector<operf_counter> const & perfCounters,
 					   int num_cpus, int system_wide,
 					   int evt);
 

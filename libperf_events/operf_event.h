@@ -130,7 +130,6 @@ typedef struct operf_event {
 	unsigned long evt_um;
 	char um_name[OP_MAX_UM_NAME_LEN];
 	unsigned long count;
-	u32 counter;
 	bool no_kernel;
 	bool no_user;
 	bool no_hv;

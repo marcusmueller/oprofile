@@ -60,7 +60,7 @@ typedef enum END_CODE {
 
 // Globals
 char * app_name = NULL;
-bool try_cpu_minus_one = false;
+bool use_cpu_minus_one = false;
 pid_t app_PID = -1;
 uint64_t kernel_start, kernel_end;
 operf_read operfRead;
@@ -613,7 +613,6 @@ static end_code_t _run(void)
 	}
 
 	set_signals_for_parent();
-	cerr << "operf: Profiler started" << endl;
 	if (startApp) {
 		/* The user passed in a command or program name to start, so we'll need to do waitpid on that
 		 * process.  However, while that user-requested process is running, it's possible we
@@ -1834,7 +1833,7 @@ error:
 }
 
 
-static int _check_perf_events_cap(bool try_cpu_minus_one)
+static int _check_perf_events_cap(bool use_cpu_minus_one)
 {
 	/* If perf_events syscall is not implemented, the syscall below will fail
 	 * with ENOSYS (38).  If implemented, but the processor type on which this
@@ -1843,7 +1842,7 @@ static int _check_perf_events_cap(bool try_cpu_minus_one)
 	 */
 	struct perf_event_attr attr;
 	pid_t pid ;
-	int cpu_to_try = try_cpu_minus_one ? -1 : _get_cpu_for_perf_events_cap();
+	int cpu_to_try = use_cpu_minus_one ? -1 : _get_cpu_for_perf_events_cap();
 	errno = 0;
         memset(&attr, 0, sizeof(attr));
         attr.size = sizeof(attr);
@@ -1906,7 +1905,7 @@ int main(int argc, char * const argv[])
 
 	my_uid = geteuid();
 	throttled = false;
-	rc = _check_perf_events_cap(try_cpu_minus_one);
+	rc = _check_perf_events_cap(use_cpu_minus_one);
 	if (rc == EACCES) {
 		/* Early perf_events kernels required the cpu argument to perf_event_open
 		 * to be '-1' when setting up to profile a single process if 1) the user is
@@ -1921,8 +1920,8 @@ int main(int argc, char * const argv[])
 		 * what works.
 		 */
 		if (my_uid != 0 && perf_event_paranoid > 0) {
-			try_cpu_minus_one = true;
-			rc = _check_perf_events_cap(try_cpu_minus_one);
+			use_cpu_minus_one = true;
+			rc = _check_perf_events_cap(use_cpu_minus_one);
 		}
 	}
 	if (rc == EBUSY) {

@@ -1033,7 +1033,7 @@ int OP_perf_utils::op_write_output(int output, void *buf, size_t size)
 }
 
 
-static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, operf_record * pr)
+void OP_perf_utils::op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, operf_record * pr)
 {
 	char fname[PATH_MAX];
 	FILE *fp;
@@ -1051,6 +1051,8 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 		char line_buffer[BUFSIZ];
 		char perms[5], pathname[PATH_MAX], dev[16];
 		unsigned long long start_addr, end_addr, offset;
+		const char * anon_mem = "//anon";
+
 		u_int32_t inode;
 
 		memset(pathname, '\0', sizeof(pathname));
@@ -1071,6 +1073,9 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 
 			if (imagename == NULL)
 				imagename = strstr(pathname, "[vdso]");
+
+			if ((imagename == NULL) && !strstr(pathname, "["))
+				imagename = (char *)anon_mem;
 
 			if (imagename == NULL)
 				continue;
@@ -1095,8 +1100,7 @@ static void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, o
 	return;
 }
 
-static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
-                                    int output_fd)
+static int _get_one_process_info(bool sys_wide, pid_t pid, operf_record * pr)
 {
 	struct comm_event comm;
 	char fname[PATH_MAX];
@@ -1119,7 +1123,7 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 		if (!sys_wide) {
 			cerr << "Unable to find process information for process " << pid << "." << endl;
 			cverb << vrecord << "couldn't open " << fname << endl;
-			return -1;
+			return OP_PERF_HANDLED_ERROR;
 		} else {
 			return 0;
 		}
@@ -1154,10 +1158,10 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 	size = align_64bit(size);
 	comm.header.size = sizeof(comm) - (sizeof(comm.comm) - size);
 	if (tgid != pid) {
-		// passed pid must have been a secondary thread
+		// passed pid must have been a secondary thread, and we
+		// don't go looking at the /proc/<pid>/task of such processes.
 		comm.tid = pid;
-		int num = OP_perf_utils::op_write_output(output_fd, &comm, comm.header.size);
-		pr->add_to_total(num);
+		pr->add_process(comm);
 		goto out;
 	}
 
@@ -1166,7 +1170,8 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 	if (tids == NULL) {
 		// process must have exited
 		ret = -1;
-		cverb << vrecord << "opendir returned NULL" << endl;
+		cverb << vrecord << "Process " << pid << " apparently exited while "
+		      << "process info was being collected"<< endl;
 		goto out;
 	}
 
@@ -1177,39 +1182,30 @@ static int _record_one_process_info(pid_t pid, bool sys_wide, operf_record * pr,
 			continue;
 
 		comm.tid = pid;
-
-		int num = OP_perf_utils::op_write_output(output_fd, &comm, comm.header.size);
-		pr->add_to_total(num);
+		pr->add_process(comm);
 	}
 	closedir(tids);
-	if (cverb << vrecord)
-		cout << "Created COMM event for " << comm.comm << endl;
 
 out:
-	op_record_process_exec_mmaps(pid, tgid, output_fd, pr);
-
 	fclose(fp);
 	if (ret) {
 		cverb << vrecord << "couldn't get app name and tgid for pid "
 		      << dec << pid << " from /proc fs." << endl;
 	}
 	return ret;
-
 }
 
 /* Obtain process information for an active process (where the user has
  * passed in a process ID via the --pid option) or all active processes
- * (where system_wide==true).  Then generate the necessary PERF_RECORD_COMM
- * and PERF_RECORD_MMAP entries into the profile data stream.
+ * (where system_wide==true).
  */
-int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_record * pr,
-                                          int output_fd)
+int OP_perf_utils::op_get_process_info(bool system_wide, pid_t pid, operf_record * pr)
 {
 	int ret = 0;
 	if (cverb << vrecord)
-		cout << "op_record_process_info" << endl;
+		cout << "op_get_process_info" << endl;
 	if (!system_wide) {
-		ret = _record_one_process_info(pid, system_wide, pr, output_fd);
+		ret = _get_one_process_info(system_wide, pid, pr);
 	} else {
 		char buff[BUFSIZ];
 		pid_t tgid = 0;
@@ -1231,7 +1227,7 @@ int OP_perf_utils::op_record_process_info(bool system_wide, pid_t pid, operf_rec
 				cverb << vmisc << "/proc entry " << dirent.d_name << " is not a PID" << endl;
 				continue;
 			}
-			if ((ret = _record_one_process_info(pid, system_wide, pr, output_fd)) < 0)
+			if ((ret = _get_one_process_info(system_wide, pid, pr)) < 0)
 				break;
 		}
 		closedir(pids);

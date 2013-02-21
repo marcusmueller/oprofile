@@ -47,7 +47,7 @@ extern bool first_time_processing;
 extern bool throttled;
 extern size_t mmap_size;
 extern size_t pg_sz;
-extern bool try_cpu_minus_one;
+extern bool use_cpu_minus_one;
 
 namespace {
 
@@ -155,7 +155,7 @@ try_again:
 }  // end anonymous namespace
 
 operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_cg,
-                             bool separate_cpu)
+                             bool separate_cpu, bool inherit, int event_number)
 {
 	memset(&attr, 0, sizeof(attr));
 	attr.size = sizeof(attr);
@@ -174,7 +174,7 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 	
 	attr.config = evt.evt_code;
 	attr.sample_period = evt.count;
-	attr.inherit = 1;
+	attr.inherit = inherit ? 1 : 0;
 	attr.enable_on_exec = enable_on_exec ? 1 : 0;
 	attr.disabled  = 1;
 	attr.exclude_idle = 0;
@@ -184,13 +184,14 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 		PERF_FORMAT_TOTAL_TIME_ENABLED;
 	event_name = evt.name;
 	fd = id = -1;
+	evt_num = event_number;
 }
 
 operf_counter::~operf_counter() {
 }
 
 
-int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_record * rec)
+int operf_counter::perf_event_open(pid_t pid, int cpu, operf_record * rec)
 {
 	struct {
 		u64 count;
@@ -199,11 +200,11 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 		u64 id;
 	} read_data;
 
-	if (event == 0) {
+	if (evt_num == 0) {
 		attr.mmap = 1;
 		attr.comm = 1;
 	}
-	fd = op_perf_event_open(&attr, ppid, cpu, -1, 0);
+	fd = op_perf_event_open(&attr, pid, cpu, -1, 0);
 	if (fd < 0) {
 		int ret = -1;
 		cverb << vrecord << "perf_event_open failed: " << strerror(errno) << endl;
@@ -225,7 +226,7 @@ int operf_counter::perf_event_open(pid_t ppid, int cpu, unsigned event, operf_re
 		perror("Error reading perf_event fd");
 		return -1;
 	}
-	rec->register_perf_event_id(event, read_data.id, attr);
+	rec->register_perf_event_id(evt_num, read_data.id, attr);
 
 	cverb << vrecord << "perf_event_open returning fd " << fd << endl;
 	return fd;
@@ -260,7 +261,7 @@ bool separate_by_cpu, bool out_fd_is_file)
 	vmlinux_file = vi.image_name;
 	kernel_start = vi.start;
 	kernel_end = vi.end;
-	pid = the_pid;
+	pid_to_profile = the_pid;
 	pid_started = pid_running;
 	system_wide = sys_wide;
 	callgraph = do_cg;
@@ -275,7 +276,7 @@ bool separate_by_cpu, bool out_fd_is_file)
 	opHeader.data_size = 0;
 	num_cpus = -1;
 
-	if (system_wide && (pid != -1 || pid_started))
+	if (system_wide && (pid_to_profile != -1 || pid_started))
 		return;  // object is not valid
 
 	cverb << vrecord << "operf_record ctor using output fd " << output_fd << endl;
@@ -385,16 +386,16 @@ void operf_record::write_op_header_info()
 		add_to_total(_write_header_to_pipe());
 }
 
-int operf_record::prepareToRecord(int cpu, int fd)
+int operf_record::_prepare_to_record_one_fd(int idx, int fd)
 {
-	struct mmap_data md;;
+	struct mmap_data md;
 	md.prev = 0;
 	md.mask = num_mmap_pages * pagesize - 1;
 
 	fcntl(fd, F_SETFL, O_NONBLOCK);
 
-	poll_data[cpu].fd = fd;
-	poll_data[cpu].events = POLLIN;
+	poll_data[idx].fd = fd;
+	poll_data[idx].events = POLLIN;
 	poll_count++;
 
 	md.base = mmap(NULL, (num_mmap_pages + 1) * pagesize,
@@ -417,6 +418,88 @@ int operf_record::prepareToRecord(int cpu, int fd)
 }
 
 
+int operf_record::prepareToRecord(void)
+{
+	int op_ctr_idx = 0;
+	int rc = 0;
+	errno = 0;
+	if (pid_started && (procs.size() > 1)) {
+		/* Implies we're profiling a thread group, where we call perf_event_open
+		 * on each thread (process) in the group, passing cpu=-1.  So we'll do
+		 * one mmap per thread (by way of the _prepare_to_record_one_fd function).
+		 * If more than one event has been specified to profile on, we just do an
+		 * ioctl PERF_EVENT_IOC_SET_OUTPUT to tie that perf_event fd with the fd
+		 * of the first event of the thread.
+		 */
+
+		// Sanity check
+		if ((procs.size() * evts.size()) != perfCounters.size()) {
+			cerr << "Internal error: Number of fds[] (" << perfCounters.size()
+			     << ") != number of processes x number of events ("
+			     << procs.size() << " x " << evts.size() << ")." << endl;
+			return -1;
+		}
+		for (unsigned int proc_idx = 0; proc_idx < procs.size(); proc_idx++) {
+			int fd_for_set_output = perfCounters[op_ctr_idx].get_fd();
+			for (unsigned event = 0; event < evts.size(); event++) {
+				int fd =  perfCounters[op_ctr_idx].get_fd();
+				if (event == 0) {
+					rc = _prepare_to_record_one_fd(proc_idx, fd);
+				} else {
+					if ((rc = ioctl(fd, PERF_EVENT_IOC_SET_OUTPUT,
+					                fd_for_set_output)) < 0)
+						perror("prepareToRecord: ioctl #1 failed");
+				}
+
+				if (rc < 0)
+					return rc;
+
+				if ((rc = ioctl(fd, PERF_EVENT_IOC_ENABLE)) < 0) {
+					perror("prepareToRecord: ioctl #2 failed");
+					return rc;
+				}
+				op_ctr_idx++;
+			}
+		}
+	} else {
+		/* We're either doing a system-wide profile or a profile of a single process.
+		 * We'll do one mmap per cpu.  If more than one event has been specified
+		 * to profile on, we just do an ioctl PERF_EVENT_IOC_SET_OUTPUT to tie
+		 * that perf_event fd with the fd of the first event of the cpu.
+		 */
+		if ((num_cpus * evts.size()) != perfCounters.size()) {
+			cerr << "Internal error: Number of fds[] (" << perfCounters.size()
+			     << ") != number of cpus x number of events ("
+			     << num_cpus << " x " << evts.size() << ")." << endl;
+			return -1;
+		}
+		for (unsigned int cpu = 0; cpu < num_cpus; cpu++) {
+			int fd_for_set_output = perfCounters[op_ctr_idx].get_fd();
+			for (unsigned event = 0; event < evts.size(); event++) {
+				int fd = perfCounters[op_ctr_idx].get_fd();
+				if (event == 0) {
+					rc = _prepare_to_record_one_fd(cpu, fd);
+				} else {
+					if ((rc = ioctl(fd, PERF_EVENT_IOC_SET_OUTPUT,
+					                fd_for_set_output)) < 0)
+						perror("prepareToRecord: ioctl #3 failed");
+				}
+
+				if (rc < 0)
+					return rc;
+
+				if ((rc = ioctl(fd, PERF_EVENT_IOC_ENABLE)) < 0) {
+					perror("prepareToRecord: ioctl #4 failed");
+					return rc;
+				}
+				op_ctr_idx++;
+			}
+		}
+	}
+	return rc;
+}
+
+
 void operf_record::setup()
 {
 	bool all_cpus_avail = true;
@@ -425,7 +508,7 @@ void operf_record::setup()
 	DIR *dir = NULL;
 	string err_msg;
 	char cpus_online[257];
-	bool need_IOC_enable = (system_wide || pid_started);
+	bool profile_process_group = false;
 
 
 	if (system_wide)
@@ -433,32 +516,31 @@ void operf_record::setup()
 	else
 		cverb << vrecord << "operf_record::setup() with pid_started = " << pid_started << endl;
 
-	if (!system_wide && pid_started) {
-		/* We need to verify the existence of the passed PID before trying
-		 * perf_event_open or all hell will break loose.
-		 */
-		char fname[PATH_MAX];
-		FILE *fp;
-		snprintf(fname, sizeof(fname), "/proc/%d/status", pid);
-		fp = fopen(fname, "r");
-		if (fp == NULL) {
-			// Process must have finished or invalid PID passed into us.
-			// We'll bail out now.
-			cerr << "Unable to find process information for PID " << pid << "." << endl;
-			cverb << vrecord << "couldn't open " << fname << endl;
-			return;
+	if (pid_started || system_wide) {
+		if ((rc = op_get_process_info(system_wide, pid_to_profile, this)) < 0) {
+			if (rc == OP_PERF_HANDLED_ERROR)
+				return;
+			else
+				throw runtime_error("Unexpected error in operf_record setup");
 		}
-		fclose(fp);
+		// 'pid_started && (procs.size() > 1)' implies the process that the user
+		// has requested us to profile has cloned one or more children.
+		profile_process_group = pid_started && (procs.size() > 1);
 	}
+
 	pagesize = sysconf(_SC_PAGE_SIZE);
-	num_mmap_pages = (512 * 1024)/pagesize;
-	num_cpus = try_cpu_minus_one ? 1 : sysconf(_SC_NPROCESSORS_ONLN);
+	// If profiling a process group, use a smaller mmap length to avoid EINVAL.
+	num_mmap_pages = profile_process_group ? 1 : (512 * 1024)/pagesize;
+
+	/* To set up to profile an existing thread group, we need call perf_event_open
+	 * for each thread, and we need to pass cpu=-1 on the syscall.
+	 */
+	use_cpu_minus_one = use_cpu_minus_one ? true : profile_process_group;
+	num_cpus = use_cpu_minus_one ? 1 : sysconf(_SC_NPROCESSORS_ONLN);
 	if (!num_cpus)
 		throw runtime_error("Number of online CPUs is zero; cannot continue");;
 
-	poll_data = new struct pollfd [num_cpus];
-
-	cverb << vrecord << "calling perf_event_open for pid " << pid << " on "
+	cverb << vrecord << "calling perf_event_open for pid " << pid_to_profile << " on "
 	      << num_cpus << " cpus" << endl;
 	FILE * online_cpus = fopen("/sys/devices/system/cpu/online", "r");
 	if (!online_cpus) {
@@ -489,8 +571,7 @@ void operf_record::setup()
 	for (int cpu = 0; cpu < num_cpus; cpu++) {
 		int real_cpu;
 		int mmap_fd;
-		bool mmap_done_for_cpu = false;
-		if (try_cpu_minus_one) {
+		if (use_cpu_minus_one) {
 			real_cpu = -1;
 		} else if (all_cpus_avail) {
 			real_cpu = cpu;
@@ -502,40 +583,47 @@ void operf_record::setup()
 				goto error;
 			}
 		}
-
-		// Create new row to hold operf_counter objects since we need one
-		// row for each cpu. Do the same for samples_array.
-		vector<operf_counter> tmp_pcvec;
-
-		perfCounters.push_back(tmp_pcvec);
-		for (unsigned event = 0; event < evts.size(); event++) {
-			evts[event].counter = event;
-			perfCounters[cpu].push_back(operf_counter(evts[event],
-			                                          (!pid_started && !system_wide),
-			                                          callgraph, separate_cpu));
-			if ((rc = perfCounters[cpu][event].perf_event_open(pid, real_cpu, event, this)) < 0) {
-				err_msg = "Internal Error.  Perf event setup failed.";
-				goto error;
-			}
-			if (!mmap_done_for_cpu) {
-				if (((rc = prepareToRecord(cpu, perfCounters[cpu][event].get_fd()))) < 0) {
+		size_t num_procs = profile_process_group ? procs.size() : 1;
+		/* To profile a parent and its children, the perf_events kernel subsystem
+		 * requires us to use cpu=-1 on the perf_event_open call for each of the
+		 * processes in the group.  But perf_events also prevents us from specifying
+		 * "inherit" on the perf_event_attr we pass to perf_event_open when cpu is '-1'.
+		 */
+		bool inherit = !profile_process_group;
+		for (unsigned proc_idx = 0; proc_idx < num_procs; proc_idx++) {
+			for (unsigned event = 0; event < evts.size(); event++) {
+				/* For a parent process, comm.tid==comm.pid, but for child
+				 * processes in a process group, comm.pid is the parent, so
+				 * we must use comm.tid for the perf_event_open call.  So
+				 * we can use comm.tid for all cases.
+				 */
+				pid_t pid_for_open = profile_process_group ? procs[proc_idx].tid
+				                                           : pid_to_profile;
+				operf_counter op_ctr(operf_counter(evts[event],
+				                                   (!pid_started && !system_wide),
+				                                   callgraph, separate_cpu,
+				                                   inherit, event));
+				if ((rc = op_ctr.perf_event_open(pid_for_open,
+				                                 real_cpu, this)) < 0) {
 					err_msg = "Internal Error.  Perf event setup failed.";
 					goto error;
 				}
-				mmap_fd = perfCounters[cpu][event].get_fd();
-				mmap_done_for_cpu = true;
-			} else {
-				if (ioctl(perfCounters[cpu][event].get_fd(),
-				          PERF_EVENT_IOC_SET_OUTPUT, mmap_fd) < 0)
-					goto error;
+				perfCounters.push_back(op_ctr);
 			}
-			if (need_IOC_enable)
-				if (ioctl(perfCounters[cpu][event].get_fd(), PERF_EVENT_IOC_ENABLE) < 0)
-					goto error;
 		}
 	}
 	if (dir)
 		closedir(dir);
+	int num_mmaps;
+	if (pid_started && (procs.size() > 1))
+		num_mmaps = procs.size();
+	else
+		num_mmaps = num_cpus;
+	poll_data = new struct pollfd [num_mmaps];
+	if ((rc = prepareToRecord()) < 0) {
+		err_msg = "Internal Error.  Perf event setup failed.";
+		goto error;
+	}
 	write_op_header_info();
 
 	// Set bit to indicate we're set to go.
@@ -557,20 +645,36 @@ error:
 		throw runtime_error(err_msg);
 }
 
+void operf_record::record_process_info(void)
+{
+	map<unsigned int, unsigned int> pids_mapped;
+	pid_t last_tgid = -1;
+	for (unsigned int proc_idx = 0; proc_idx < procs.size(); proc_idx++)
+	{
+		int num = OP_perf_utils::op_write_output(output_fd, &procs[proc_idx],
+		                                         procs[proc_idx].header.size);
+		add_to_total(num);
+		if (cverb << vrecord)
+			cout << "Created COMM event for " << procs[proc_idx].comm << endl;
+
+		if ((procs[proc_idx].pid == last_tgid) ||
+				(pids_mapped.find(procs[proc_idx].pid) != pids_mapped.end()))
+			continue;
+		OP_perf_utils::op_record_process_exec_mmaps(procs[proc_idx].tid,
+		                                            procs[proc_idx].pid,
+		                                            output_fd, this);
+		pids_mapped[procs[proc_idx].pid] = last_tgid = procs[proc_idx].pid;
+	}
+}
+
 void operf_record::recordPerfData(void)
 {
 	bool disabled = false;
-	if (pid_started || system_wide) {
-		if (op_record_process_info(system_wide, pid, this, output_fd) < 0) {
-			for (int i = 0; i < num_cpus; i++) {
-				for (unsigned int evt = 0; evt < evts.size(); evt++)
-					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
-			}
-			throw runtime_error("operf_record: error recording process info");
-		}
-	}
-	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, output_fd, this);
+	if (pid_started || system_wide)
+		record_process_info();
 
+	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, output_fd, this);
+	cerr << "operf: Profiler started" << endl;
 	while (1) {
 		int prev = sample_reads;
 
@@ -587,10 +691,8 @@ void operf_record::recordPerfData(void)
 		}
 
 		if (quit) {
-			for (int i = 0; i < num_cpus; i++) {
-				for (unsigned int evt = 0; evt < evts.size(); evt++)
-					ioctl(perfCounters[i][evt].get_fd(), PERF_EVENT_IOC_DISABLE);
-			}
+			for (unsigned int i = 0; i < perfCounters.size(); i++)
+				ioctl(perfCounters[i].get_fd(), PERF_EVENT_IOC_DISABLE);
 			disabled = true;
 			cverb << vrecord << "operf_record::recordPerfData received signal to quit." << endl;
 		}

@@ -176,7 +176,7 @@ std::string  operf_stats_recorder::create_stats_dir(std::string const & cur_samp
 }
 
 
-void operf_stats_recorder::check_for_multiplexing(std::vector< std::vector<operf_counter> > const & perfCounters,
+void operf_stats_recorder::check_for_multiplexing(std::vector<operf_counter> const & perfCounters,
 						  int num_cpus,
 						  int system_wide, int evt)
 {
@@ -199,11 +199,15 @@ void operf_stats_recorder::check_for_multiplexing(std::vector< std::vector<operf
 
 	u64 cumulative_time_running = 0;
 	u64 max_enabled_time = 0, min_enabled_time = 0xFFFFFFFFFFFFFFFFULL;
-	int fd;
+	int fd, idx_for_event_name;
 	bool event_multiplexed = false;
 
-	for (int cpu = 0; cpu < num_cpus; cpu++) {
-	    fd = perfCounters[cpu][evt].get_fd();
+	for (unsigned int i = 0; i < perfCounters.size(); i++) {
+		if (perfCounters[i].get_evt_num() != evt)
+			continue;
+		// Any index can be used, since event name is the same
+		idx_for_event_name = i;
+		fd = perfCounters[i].get_fd();
 
 		if (read(fd, &read_data, sizeof(read_data)) == -1) {
 			return;
@@ -270,10 +274,7 @@ void operf_stats_recorder::check_for_multiplexing(std::vector< std::vector<operf
 			return;
 		}
 
-		/* The event is listed in all of the CPUs, just use CPU 0
-		 * to get the name of the event.
-		 */
-		event_name = perfCounters[0][evt].get_event_name();
+		event_name = perfCounters[idx_for_event_name].get_event_name();
 		outputfile = multiplexed_dir + "/" + event_name;
 
 		outfile.open(outputfile.c_str());
