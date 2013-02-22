@@ -11,9 +11,10 @@
 
 AC_PREREQ(2.13)
 
-AC_INIT(libop/op_config.h)
-AM_INIT_AUTOMAKE(oprofile, 0.9.9git)
-AM_CONFIG_HEADER(config.h)
+AC_INIT([OProfile], [0.9.9git])
+AC_CONFIG_SRCDIR([libop/op_config.h])
+AM_INIT_AUTOMAKE
+AC_CONFIG_HEADERS(config.h)
 
 AC_CHECK_DECLS([basename], [], [], [[#include <libgen.h>]])
 AC_PROG_RANLIB
