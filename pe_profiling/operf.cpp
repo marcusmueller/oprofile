@@ -1187,7 +1187,7 @@ static void _get_event_code(operf_event_t * event)
 	event->evt_code = config;
 }
 
-#if (defined(__powerpc__) || defined(__powerpc64__))
+#if PPC64_ARCH
 /* All ppc64 events (except CYCLES) have a _GRP<n> suffix.  This is
  * because the legacy opcontrol profiler can only profile events in
  * the same group (i.e., having the same _GRP<n> suffix).  But operf
@@ -1297,7 +1297,7 @@ static void _process_events_list(void)
 		string full_cmd = cmd;
 		string event_spec = operf_options::evts[i];
 
-#if (defined(__powerpc__) || defined(__powerpc64__))
+#if PPC64_ARCH
 		event_spec = _handle_powerpc_event_spec(event_spec);
 #endif
 
@@ -1367,9 +1367,9 @@ static void _process_events_list(void)
 		_get_event_code(&event);
 		events.push_back(event);
 	}
-#if (defined(__powerpc__) || defined(__powerpc64__))
+#if PPC64_ARCH
 	{
-		/* This section of code is for architectures such as ppc[64] for which
+		/* This section of code is soley for the ppc64 architecture for which
 		 * the oprofile event code needs to be converted to the appropriate event
 		 * code to pass to the perf_event_open syscall.
 		 */
@@ -1414,7 +1414,7 @@ static void get_default_event(void)
 	_get_event_code(&dft_evt);
 	events.push_back(dft_evt);
 
-#if (defined(__powerpc__) || defined(__powerpc64__))
+#if PPC64_ARCH
 	{
 		/* This section of code is for architectures such as ppc[64] for which
 		 * the oprofile event code needs to be converted to the appropriate event

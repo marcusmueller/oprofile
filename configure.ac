@@ -155,11 +155,10 @@ else
 fi
 
 AC_DEFINE_UNQUOTED(HAVE_PERF_EVENTS, $HAVE_PERF_EVENTS, [Kernel support for perf_events exists])
-
+AC_CANONICAL_HOST
 if test "$HAVE_PERF_EVENTS" = "1"; then
 	PFM_LIB=
-	arch="`uname -m`"
-	if test "$arch" = "ppc64" || test "$arch" = "ppc"; then
+	if test "$host_cpu" = "powerpc64"; then
 		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
 		AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1', [
 			AC_CHECK_LIB(pfm, pfm_get_event_name, HAVE_LIBPFM3='1'; HAVE_LIBPFM='1',

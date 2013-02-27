@@ -83,7 +83,7 @@ static event_t comm_event;
  * the following method is to map the operf-record event value to a value that
  * opreport can understand.
  */
-#if (defined(__powerpc__) || defined(__powerpc64__))
+#if PPC64_ARCH
 #define NIL_CODE ~0U
 
 #if HAVE_LIBPFM3
@@ -716,7 +716,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	} else if (event->header.misc == PERF_RECORD_MISC_USER) {
 		in_kernel = false;
 	}
-#if (defined(__powerpc__) || defined(__powerpc64__))
+#if PPC64_ARCH
 	else if (event->header.misc == PERF_RECORD_MISC_HYPERVISOR) {
 #define MAX_HYPERVISOR_ADDRESS 0xfffffffULL
 		if (data.ip > MAX_HYPERVISOR_ADDRESS) {
