@@ -88,7 +88,7 @@ public:
 	int out_fd(void) const { return output_fd; }
 	void add_to_total(int n) { total_bytes_recorded += n; }
 	void add_process(struct comm_event proc) { procs.push_back(proc); }
-	int get_total_bytes_recorded(void) const { return total_bytes_recorded; }
+	unsigned int get_total_bytes_recorded(void) const { return total_bytes_recorded; }
 	void register_perf_event_id(unsigned counter, u64 id, perf_event_attr evt_attr);
 	bool get_valid(void) { return valid; }
 
@@ -119,7 +119,7 @@ private:
 	bool callgraph;
 	bool separate_cpu;
 	std::vector<operf_counter> perfCounters;
-	int total_bytes_recorded;
+	unsigned int total_bytes_recorded;
 	int poll_count;
 	struct OP_header opHeader;
 	std::vector<operf_event_t> evts;
@@ -135,7 +135,7 @@ public:
 	          std::vector<operf_event_t> & evts, bool systemwide);
 	~operf_read();
 	int readPerfHeader(void);
-	int convertPerfData(void);
+	unsigned int convertPerfData(void);
 	bool is_valid(void) {return valid; }
 	int get_eventnum_by_perf_event_id(u64 id) const;
 	inline const operf_event_t * get_event_by_counter(u32 counter) { return &evts[counter]; }
@@ -150,7 +150,6 @@ private:
 	bool valid;
 	bool syswide;
 	op_cpu cpu_type;
-	int _get_one_perf_event(event_t *);
 	int _read_header_info_with_ifstream(void);
 	int _read_perf_header_from_file(void);
 	int _read_perf_header_from_pipe(void);

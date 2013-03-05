@@ -57,13 +57,22 @@ static const char *__op_magic = "OPFILE";
 
 #define OP_MAGIC	(*(u64 *)__op_magic)
 
-
-int _get_perf_event_from_pipe(event_t * event, int sample_data_fd)
+/* This function for reading an event from the sample data pipe must
+ * be robust enough to handle the situation where the operf_record process
+ * writes an event record to the pipe in multiple chunks.
+ */
+#define OP_PIPE_READ_OK 0
+#define OP_PIPE_CLOSED -1
+static int _get_perf_event_from_pipe(event_t * event, int sample_data_fd)
 {
 	static size_t pe_header_size = sizeof(perf_event_header);
+	size_t read_size = pe_header_size;
+	int rc = OP_PIPE_READ_OK;
 	char * evt = (char *)event;
 	ssize_t num_read;
 	perf_event_header * header = (perf_event_header *)event;
+
+	memset(header, '\0', pe_header_size);
 
 	/* A signal handler was setup for the operf_read process to handle interrupts
 	 * (i.e., from ctrl-C), so the read syscalls below may get interrupted.  But the
@@ -74,52 +83,87 @@ int _get_perf_event_from_pipe(event_t * event, int sample_data_fd)
 	 */
 again:
 	errno = 0;
-	if ((num_read = read(sample_data_fd, header, pe_header_size)) < 0) {
+	if ((num_read = read(sample_data_fd, header, read_size)) < 0) {
 		cverb << vdebug << "Read 1 of sample data pipe returned with " << strerror(errno) << endl;
-		if (errno == EINTR)
+		if (errno == EINTR) {
 			goto again;
-		else
-			return -1;
+		} else {
+			rc = OP_PIPE_CLOSED;
+			goto out;
+		}
 	} else if (num_read == 0) {
-		return -1;
+		// Implies pipe has been closed on the write end, so return -1 to quit reading
+		rc = OP_PIPE_CLOSED;
+		goto out;
+	} else if (num_read != read_size) {
+		header += num_read;
+		read_size -= num_read;
+		goto again;
 	}
+
+	read_size = header->size - pe_header_size;
+	if (read_size == 0)
+		/* This is technically a valid record -- it's just empty. I'm not
+		 * sure if this can happen (i.e., if the kernel ever creates empty
+		 * records), but we'll handle it just in case.
+		 */
+		goto again;
+
+	if (!header->size || (header->size < pe_header_size))
+		/* Bogus header size detected. In this case, we don't set rc to -1,
+		 * because the caller will catch this error when it calls is_header_valid().
+		 * I've seen such bogus stuff occur when profiling lots of processes at
+		 * a very high sampling frequency. This issue is still being investigated,
+		 * so for now, we'll just do our best to detect and handle gracefully.
+		 */
+		goto out;
+
 	evt += pe_header_size;
-	if (!header->size)
-		return -1;
 
 again2:
-	if ((num_read = read(sample_data_fd, evt, header->size - pe_header_size)) < 0) {
+	if ((num_read = read(sample_data_fd, evt, read_size)) < 0) {
 		cverb << vdebug << "Read 2 of sample data pipe returned with " << strerror(errno) << endl;
-		if (errno == EINTR)
+		if (errno == EINTR) {
 			goto again2;
-		else
-			return -1;
+		} else {
+			rc = OP_PIPE_CLOSED;
+			if (errno == EFAULT)
+				cerr << "Size of event record: " << header->size << endl;
+			goto out;
+		}
 	} else if (num_read == 0) {
-		return -1;
+		// Implies pipe has been closed on the write end, so return -1 to quit reading
+		rc = OP_PIPE_CLOSED;
+		goto out;
+	} else if (num_read != read_size) {
+		evt += num_read;
+		read_size -= num_read;
+		goto again;
 	}
-	return 0;
+
+out:
+	return rc;
 }
 
-event_t * _get_perf_event_from_file(struct mmap_info & info)
+static event_t * _get_perf_event_from_file(struct mmap_info & info)
 {
 	uint32_t size;
+	static int num_remaps = 0;
 	event_t * event;
-
-	if (info.offset + info.head >= info.file_data_offset + info.file_data_size)
-		return NULL;
-
-	if (!pg_sz)
-		pg_sz = sysconf(_SC_PAGESIZE);
+	size_t pe_header_size = sizeof(struct perf_event_header);
 
 try_again:
-	event = (event_t *)(info.buf + info.head);
+	event = NULL;
+	if (info.offset + info.head + pe_header_size > info.file_data_size)
+		goto out;
 
-	if ((mmap_size != info.file_data_size) &&
-			(((info.head + sizeof(event->header)) > mmap_size) ||
-					(info.head + event->header.size > mmap_size))) {
+	if (info.head + pe_header_size <= mmap_size)
+		event = (event_t *)(info.buf + info.head);
+
+	if (unlikely(!event || (info.head + event->header.size > mmap_size))) {
 		int ret;
 		u64 shift = pg_sz * (info.head / pg_sz);
-		cverb << vconvert << "Remapping perf data file" << endl;
+		cverb << vdebug << "Remapping perf data file: " << dec << ++num_remaps << endl;
 		ret = munmap(info.buf, mmap_size);
 		if (ret) {
 			string errmsg = "Internal error:  munmap of perf data file failed with errno: ";
@@ -139,16 +183,13 @@ try_again:
 	}
 
 	size = event->header.size;
-
-	// The tail end of the operf data file may be zero'ed out, so we assume if we
-	// find size==0, we're now in that area of the file, so we're done.
-	if (size == 0)
-		return NULL;
-
 	info.head += size;
-	if (info.offset + info.head >= info.file_data_offset + info.file_data_size)
-		return NULL;
-
+out:
+	if (unlikely(!event)) {
+		cverb << vdebug << "No more event records in file.  info.offset: " << dec << info.offset
+		      << "; info.head: " << info.head << "; info.file_data_size: " << info.file_data_size
+		      << endl << "; mmap_size: " << mmap_size  << "; current record size: " << size << endl;
+	}
 	return event;
 }
 
@@ -236,12 +277,13 @@ operf_record::~operf_record()
 {
 	cverb << vrecord << "operf_record::~operf_record()" << endl;
 	opHeader.data_size = total_bytes_recorded;
-	if (total_bytes_recorded)
+	// If recording to a file, we re-write the op_header info
+	// in order to update the data_size field.
+	if (total_bytes_recorded && write_to_file)
 		write_op_header_info();
 
 	if (poll_data)
 		delete[] poll_data;
-	close(output_fd);
 	for (int i = 0; i < samples_array.size(); i++) {
 		struct mmap_data *md = &samples_array[i];
 		munmap(md->base, (num_mmap_pages + 1) * pagesize);
@@ -249,11 +291,16 @@ operf_record::~operf_record()
 	samples_array.clear();
 	evts.clear();
 	perfCounters.clear();
+	/* Close output_fd last. If sample data was being written to a pipe, we want
+	 * to give the pipe reader (i.e., operf_read::convertPerfData) as much time
+	 * as possible in order to drain the pipe of any remaining data.
+	 */
+	close(output_fd);
 }
 
 operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_running,
                            vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg,
-bool separate_by_cpu, bool out_fd_is_file)
+                           bool separate_by_cpu, bool out_fd_is_file)
 {
 	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
@@ -678,7 +725,6 @@ void operf_record::recordPerfData(void)
 	while (1) {
 		int prev = sample_reads;
 
-
 		for (int i = 0; i < samples_array.size(); i++) {
 			if (samples_array[i].base)
 				op_get_kernel_event_data(&samples_array[i], this);
@@ -699,10 +745,10 @@ void operf_record::recordPerfData(void)
 	}
 
 	for (unsigned int evt = 0; evt < evts.size(); evt++)
-               operf_stats_recorder::check_for_multiplexing(perfCounters,
-							    num_cpus,
-							    system_wide,
-							    evt);
+		operf_stats_recorder::check_for_multiplexing(perfCounters,
+		                                             num_cpus,
+		                                             system_wide,
+		                                             evt);
 
 	cverb << vdebug << "operf recording finished." << endl;
 }
@@ -901,21 +947,27 @@ int operf_read::get_eventnum_by_perf_event_id(u64 id) const
 	return -1;
 }
 
-int operf_read::convertPerfData(void)
+
+unsigned int operf_read::convertPerfData(void)
 {
-	int num_bytes = 0;
+	unsigned int num_bytes = 0;
 	struct mmap_info info;
+	bool error = false;
 	event_t * event;
 
 	if (!inputFname.empty()) {
 		info.file_data_offset = opHeader.data_offset;
 		info.file_data_size = opHeader.data_size;
+		cverb << vdebug << "Expecting to read approximately " << dec
+		      << info.file_data_size - info.file_data_offset
+		      << " bytes from operf sample data file." << endl;
 		info.traceFD = open(inputFname.c_str(), O_RDONLY);
 		if (info.traceFD == -1) {
 			cerr << "Error: open failed with errno:\n\t" << strerror(errno) << endl;
 			throw runtime_error("Error: Unable to open operf data file");
 		}
 		cverb << vdebug << "operf_read opened " << inputFname << endl;
+		pg_sz = sysconf(_SC_PAGESIZE);
 		if (op_mmap_trace_file(info, true) < 0) {
 			close(info.traceFD);
 			throw runtime_error("Error: Unable to mmap operf data file");
@@ -933,6 +985,7 @@ int operf_read::convertPerfData(void)
 	cverb << vdebug << "sample type is " << hex <<  opHeader.h_attrs[0].attr.sample_type << endl;
 	first_time_processing = true;
 	int num_recs = 0;
+	struct perf_event_header last_header;
 	bool print_progress = !inputFname.empty() && syswide;
 	if (print_progress)
 		cerr << "Converting profile data to OProfile format" << endl;
@@ -947,17 +1000,38 @@ int operf_read::convertPerfData(void)
 				break;
 		}
 		rec_size = event->header.size;
-		op_write_event(event, opHeader.h_attrs[0].attr.sample_type);
+
+		if ((!is_header_valid(event->header)) ||
+				((op_write_event(event, opHeader.h_attrs[0].attr.sample_type)) < 0)) {
+			error = true;
+			last_header = event->header;
+			break;
+		}
 		num_bytes += rec_size;
 		num_recs++;
 		if ((num_recs % 1000000 == 0) && print_progress)
 			cerr << ".";
 	}
+
+	if (unlikely(error)) {
+		if (!inputFname.empty()) {
+			cerr << "ERROR: operf_read::convertPerfData quitting. Bad data read from file." << endl;
+		} else {
+			cerr << "ERROR: operf_read::convertPerfData quitting. Bad data read from pipe." << endl;
+			cerr << "Closing read end of data pipe. operf-record process will stop with SIGPIPE (13)."
+			     << endl;
+		}
+		cerr << "Try lowering the sample frequency to avoid this error; e.g., double the 'count'"
+		     << endl << "value in your event specification." << endl;
+		cverb << vdebug << "Event header type: " << last_header.type << "; size: " << last_header.size << endl;
+	}
+
 	if (print_progress)
 		cerr << endl;
 
 	first_time_processing = false;
-	op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
+	if (!error)
+		op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
 
 	op_release_resources();
 	operf_print_stats(operf_options::session_dir, start_time_human_readable, throttled);

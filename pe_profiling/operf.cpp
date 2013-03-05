@@ -92,7 +92,8 @@ static vector<operf_event_t> events;
 static bool jit_conversion_running;
 static void convert_sample_data(void);
 static int sample_data_pipe[2];
-static bool ctl_c = false;
+bool ctl_c = false;
+bool pipe_closed = false;
 
 
 namespace operf_options {
@@ -370,7 +371,7 @@ int start_profiling(void)
 
 			// start recording
 			operfRecord.recordPerfData();
-			cverb << vmisc << "Total bytes recorded from perf events: " << dec
+			cverb << vdebug << "Total bytes recorded from perf events: " << dec
 					<< operfRecord.get_total_bytes_recorded() << endl;
 		} catch (runtime_error re) {
 			/* If the user does ctl-c, the operf-record process may get interrupted
@@ -496,7 +497,7 @@ static end_code_t _kill_operf_read_pid(end_code_t rc)
 				if (!WEXITSTATUS(waitpid_status)) {
 					cverb << vdebug << "operf-read process returned OK" << endl;
 				} else if (WIFEXITED(waitpid_status)) {
-					/* If user did ctl-c, operf-record may get spurious errors, like
+					/* If user did ctl-c, operf-read may get spurious errors, like
 					 * broken pipe, etc.  We ignore these unless the user asks for
 					 * debug output.
 					 */
@@ -508,7 +509,7 @@ static end_code_t _kill_operf_read_pid(end_code_t rc)
 				}
 			}  else if (WIFSIGNALED(waitpid_status)) {
 				keep_trying = false;
-				/* If user did ctl-c, operf-record may get spurious errors, like
+				/* If user did ctl-c, operf-read may get spurious errors, like
 				 * broken pipe, etc.  We ignore these unless the user asks for
 				 * debug output.
 				 */
@@ -529,9 +530,13 @@ static end_code_t _kill_operf_record_pid(void)
 	end_code_t rc = ALL_OK;
 
 	// stop operf-record process
+	errno = 0;
 	if (kill(operf_record_pid, SIGUSR1) < 0) {
-		perror("Attempt to stop operf-record process failed");
-		rc = PERF_RECORD_ERROR;
+		// If operf-record process is already ended, don't consider this an error.
+		if (errno != ESRCH) {
+			perror("Attempt to stop operf-record process failed");
+			rc = PERF_RECORD_ERROR;
+		}
 	} else {
 		if (waitpid(operf_record_pid, &waitpid_status, 0) < 0) {
 			perror("waitpid for operf-record process failed");
@@ -590,7 +595,7 @@ static end_code_t _run(void)
 	/* If we're not doing system wide profiling and no app is started, then
 	 * there's no profile data to convert. So if this condition is NOT true,
 	 * then we'll do the convert.
-	 * Note that if --lazy-connversion is passed, then operf_options::post_conversion
+	 * Note that if --lazy-conversion is passed, then operf_options::post_conversion
 	 * will be set, and we will defer conversion until after the operf-record
 	 * process is done.
 	 */
@@ -605,6 +610,7 @@ static end_code_t _run(void)
 				close(sample_data_pipe[1]);
 				_set_basic_SIGINT_handler_for_child();
 				convert_sample_data();
+				_exit(EXIT_SUCCESS);
 			}
 			// parent
 			close(sample_data_pipe[0]);
@@ -921,7 +927,7 @@ static void convert_sample_data(void)
 	cverb << vdebug << "Successfully read header info for sample data " << endl;
 	if (operfRead.is_valid()) {
 		try {
-			int num = operfRead.convertPerfData();
+			unsigned int num = operfRead.convertPerfData();
 			cverb << vdebug << "operf_read: Total bytes received from operf_record process: " << dec << num << endl;
 		} catch (runtime_error e) {
 			cerr << "Caught runtime error from operf_read::convertPerfData" << endl;

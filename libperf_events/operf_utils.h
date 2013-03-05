@@ -51,6 +51,14 @@ extern bool throttled;
  */
 #define PPC64_ARCH (HAVE_LIBPFM) && ((defined(__powerpc__) || defined(__powerpc64__)))
 
+# define likely(x)	__builtin_expect(!!(x), 1)
+# define unlikely(x)	__builtin_expect(!!(x), 0)
+
+#define is_header_valid(hdr)			\
+	((hdr.size > sizeof(hdr)) &&		\
+	(hdr.type) && (hdr.size))
+
+
 extern unsigned int op_nr_counters;
 
 static inline size_t align_64bit(u64 x)
@@ -74,7 +82,7 @@ void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 int op_get_process_info(bool system_wide, pid_t pid, operf_record * pr);
 void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, operf_record * pr);
 int op_write_output(int output, void *buf, size_t size);
-void op_write_event(event_t * event, u64 sample_type);
+int op_write_event(event_t * event, u64 sample_type);
 int op_read_from_stream(std::ifstream & is, char * buf, std::streamsize sz);
 int op_mmap_trace_file(struct mmap_info & info, bool init);
 int op_get_next_online_cpu(DIR * dir, struct dirent *entry);

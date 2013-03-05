@@ -346,7 +346,7 @@ static void __handle_comm_event(event_t * event)
 				 * calling disassociate_from_parent().
 				 */
 				if (cverb << vconvert)
-					cout << "Disassociating forked proc " << event->comm.pid
+					cout << "Dis-associating forked proc " << event->comm.pid
 					     << " from parent" << endl;
 				it->second->disassociate_from_parent(event->comm.comm);
 			} else {
@@ -672,25 +672,38 @@ static void __map_hypervisor_sample(u64 ip, u32 pid)
 	proc->process_hypervisor_mapping(ip);
 }
 
-static void __handle_throttle_event(event_t * event, u64 sample_type)
+static int __handle_throttle_event(event_t * event, u64 sample_type)
 {
+	int rc = 0;
 	trans.event = operfRead.get_eventnum_by_perf_event_id(event->throttle.id);
-
-	__set_event_throttled(trans.event);
+	if (trans.event >= 0)
+		__set_event_throttled(trans.event);
+	else
+		rc = -1;
+	return rc;
 }
 
-static void __handle_sample_event(event_t * event, u64 sample_type)
+static int __handle_sample_event(event_t * event, u64 sample_type)
 {
 	struct sample_data data;
 	bool found_trans = false;
 	bool in_kernel;
+	int rc = 0;
 	const struct operf_mmap * op_mmap = NULL;
 	bool hypervisor = (event->header.misc == PERF_RECORD_MISC_HYPERVISOR);
 	u64 *array = event->sample.array;
 
+	/* As we extract the various pieces of information from the sample data array,
+	 * if we find that the sample type does not match up with an expected mandatory
+	 * perf_event_sample_format, we consider this as corruption of the sample data
+	 * stream.  Since it wouldn't make sense to continue with suspect data, we quit.
+	 */
 	if (sample_type & PERF_SAMPLE_IP) {
 		data.ip = event->ip.ip;
 		array++;
+	} else {
+		rc = -1;
+		goto done;
 	}
 
 	if (sample_type & PERF_SAMPLE_TID) {
@@ -698,14 +711,21 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 		data.pid = p[0];
 		data.tid = p[1];
 		array++;
+	} else {
+		rc = -1;
+		goto done;
 	}
 
 	data.id = ~0ULL;
 	if (sample_type & PERF_SAMPLE_ID) {
 		data.id = *array;
 		array++;
+	} else {
+		rc = -1;
+		goto done;
 	}
 
+	// PERF_SAMPLE_CPU is optional (see --separate-cpu).
 	if (sample_type & PERF_SAMPLE_CPU) {
 		u_int32_t *p = (u_int32_t *)array;
 		data.cpu = *p;
@@ -778,7 +798,8 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 	trans.event = operfRead.get_eventnum_by_perf_event_id(data.id);
 	if (trans.event < 0) {
 		cerr << "Event num " << trans.event << " for id " << data.id
-		     << " is invalid. Skipping sample." << endl;
+		     << " is invalid. Sample data appears to be corrupted." << endl;
+		rc = -1;
 		goto out;
 	}
 
@@ -863,7 +884,7 @@ static void __handle_sample_event(event_t * event, u64 sample_type)
 out:
 	clear_trans(&trans);
 done:
-	return;
+	return rc;
 }
 
 
@@ -875,8 +896,11 @@ done:
  * when profiling began.  Additional PERF_RECORD_MMAP records may appear later in the data
  * stream (e.g., dlopen for single-process profiling or new process startup for system-wide
  * profiling.
+ *
+ * This function returns '0' on success and '-1' on failure.  A failure implies the sample
+ * data is probably corrupt and the calling function should handle appropriately.
  */
-void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
+int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 {
 #if 0
 	if (event->header.type < PERF_RECORD_MAX) {
@@ -886,33 +910,38 @@ void OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 
 	switch (event->header.type) {
 	case PERF_RECORD_SAMPLE:
-		__handle_sample_event(event, sample_type);
-		return;
+		return __handle_sample_event(event, sample_type);
 	case PERF_RECORD_MMAP:
 		__handle_mmap_event(event);
-		return;
+		return 0;
 	case PERF_RECORD_COMM:
 		if (!sfile_init_done) {
 			operf_sfile_init();
 			sfile_init_done = true;
 		}
 		__handle_comm_event(event);
-		return;
+		return 0;
 	case PERF_RECORD_FORK:
 		__handle_fork_event(event);
-		return;
+		return 0;
 	case PERF_RECORD_THROTTLE:
-		__handle_throttle_event(event, sample_type);
-		return;
+		return __handle_throttle_event(event, sample_type);
 	case PERF_RECORD_LOST:
 		operf_stats[OPERF_RECORD_LOST_SAMPLE] += event->lost.lost;
-		return;
+		return 0;
 	case PERF_RECORD_EXIT:
-		return;
+		return 0;
 	default:
-		// OK, ignore all other header types.
-		cverb << vconvert << "No matching event type for " << hex << event->header.type << endl;
-		return;
+		if (event->header.type > PERF_RECORD_MAX) {
+			// Bad header
+			cerr << "Invalid event type " << hex << event->header.type << endl;
+			cerr << "Sample data is probably corrupted." << endl;
+			return -1;
+		} else {
+			cverb << vconvert << "Event type "<< hex << event->header.type
+			      << " is ignored." << endl;
+			return 0;
+		}
 	}
 }
 
@@ -979,6 +1008,7 @@ static int __mmap_trace_file(struct mmap_info & info)
 	                         mmap_flags, info.traceFD, info.offset);
 	if (info.buf == MAP_FAILED) {
 		cerr << "Error: mmap failed with errno:\n\t" << strerror(errno) << endl;
+		cerr << "\tmmap_size: 0x" << hex << mmap_size << "; offset: 0x" << info.offset << endl;
 		return -1;
 	}
 	else {
@@ -994,8 +1024,6 @@ int OP_perf_utils::op_mmap_trace_file(struct mmap_info & info, bool init)
 {
 	u64 shift;
 	if (init) {
-		if (!pg_sz)
-			pg_sz = sysconf(_SC_PAGESIZE);
 		if (!mmap_size) {
 			if (MMAP_WINDOW_SZ > info.file_data_size) {
 				mmap_size = info.file_data_size;
@@ -1020,7 +1048,10 @@ int OP_perf_utils::op_write_output(int output, void *buf, size_t size)
 		int ret = write(output, buf, size);
 
 		if (ret < 0) {
-			string errmsg = "Internal error:  Failed to write sample data to pipe. errno is ";
+			if (errno == EINTR)
+				continue;
+
+			string errmsg = "Internal error:  Failed to write sample data to output fd. errno is ";
 			errmsg += strerror(errno);
 			throw runtime_error(errmsg);
 		}
@@ -1358,6 +1389,9 @@ void OP_perf_utils::op_get_kernel_event_data(struct mmap_data *md, operf_record 
 	uint64_t size;
 	void *buf;
 	int64_t diff;
+
+	if (old == head)
+		return;
 
 	diff = head - old;
 	if (diff < 0) {
