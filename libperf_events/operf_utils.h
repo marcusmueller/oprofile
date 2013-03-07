@@ -45,6 +45,8 @@ extern bool throttled;
 #define MMAP_WINDOW_SZ (32 * 1024 * 1024ULL)
 #endif
 
+#define OP_MAX_EVENTS 24
+
 /* A macro to be used for ppc64 architecture-specific code.  The '__powerpc__' macro
  * is defined for both ppc64 and ppc32 architectures, so we must further qualify by
  * including the 'HAVE_LIBPFM' macro, since that macro will be defined only for ppc64.
@@ -59,7 +61,7 @@ extern bool throttled;
 	(hdr.type) && (hdr.size))
 
 
-extern unsigned int op_nr_counters;
+extern unsigned int op_nr_events;
 
 static inline size_t align_64bit(u64 x)
 {

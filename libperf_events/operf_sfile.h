@@ -29,6 +29,7 @@ struct operf_kernel_image;
 #define INVALID_IMAGE "INVALID IMAGE"
 
 #define VMA_SHIFT 13
+
 /**
  * Each set of sample files (where a set is over the physical counter
  * types) will have one of these for it. We match against the
@@ -61,7 +62,7 @@ struct operf_sfile {
 	/** true if this file should be ignored in profiles */
 	int ignored;
 	/** opened sample files */
-	odb_t files[OP_MAX_COUNTERS];
+	odb_t files[OP_MAX_EVENTS];
 	/** extended sample files */
 	odb_t * ext_files;
 	/** hash table of opened cg sample files */

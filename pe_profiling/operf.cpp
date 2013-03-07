@@ -67,7 +67,7 @@ operf_read operfRead;
 op_cpu cpu_type;
 double cpu_speed;
 char op_samples_current_dir[PATH_MAX];
-uint op_nr_counters;
+uint op_nr_events;
 verbose vmisc("misc");
 uid_t my_uid;
 bool no_vmlinux;
@@ -1297,6 +1297,11 @@ out:
 static void _process_events_list(void)
 {
 	string cmd = OP_BINDIR;
+	if (operf_options::evts.size() > OP_MAX_EVENTS) {
+		cerr << "Number of events specified is greater than allowed maximum of "
+		     << OP_MAX_EVENTS << "." << endl;
+		exit(EXIT_FAILURE);
+	}
 	cmd += "/ophelp --check-events ";
 	for (unsigned int i = 0; i <  operf_options::evts.size(); i++) {
 		FILE * fp;
@@ -1767,7 +1772,7 @@ static void process_args(int argc, char * const argv[])
 	} else  {
 		_process_events_list();
 	}
-	op_nr_counters = events.size();
+	op_nr_events = events.size();
 
 	if (operf_options::vmlinux.empty()) {
 		no_vmlinux = true;

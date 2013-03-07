@@ -151,7 +151,7 @@ create_sfile(unsigned long hash, struct operf_transient const * trans,
 	sf->start_addr = trans->start_addr;
 	sf->end_addr = trans->end_addr;
 
-	for (i = 0 ; i < op_nr_counters ; ++i)
+	for (i = 0 ; i < op_nr_events ; ++i)
 		odb_init(&sf->files[i]);
 
 	// TODO:  handle extended
@@ -218,7 +218,7 @@ void operf_sfile_dup(struct operf_sfile * to, struct operf_sfile * from)
 
 	memcpy(to, from, sizeof (struct operf_sfile));
 
-	for (i = 0 ; i < op_nr_counters ; ++i)
+	for (i = 0 ; i < op_nr_events ; ++i)
 		odb_init(&to->files[i]);
 
 	// TODO: handle extended
@@ -246,7 +246,7 @@ static odb_t * get_file(struct operf_transient const * trans, int is_cg)
 		return opd_ext_operf_sfile_get(trans, is_cg);
 	 */
 
-	if (trans->event >= (int)op_nr_counters) {
+	if (trans->event >= (int)op_nr_events) {
 		fprintf(stderr, "%s: Invalid counter %d\n", __FUNCTION__,
 			trans->event);
 		abort();
@@ -410,7 +410,7 @@ static int close_sfile(struct operf_sfile * sf, void * data __attribute__((unuse
 	size_t i;
 
 	/* it's OK to close a non-open odb file */
-	for (i = 0; i < op_nr_counters; ++i)
+	for (i = 0; i < op_nr_events; ++i)
 		odb_close(&sf->files[i]);
 
 	// TODO: handle extended
@@ -432,7 +432,7 @@ static int sync_sfile(struct operf_sfile * sf, void * data __attribute__((unused
 {
 	size_t i;
 
-	for (i = 0; i < op_nr_counters; ++i)
+	for (i = 0; i < op_nr_events; ++i)
 		odb_sync(&sf->files[i]);
 
 	// TODO: handle extended
