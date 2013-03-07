@@ -29,6 +29,8 @@
 #define _LIB_OPAGENT_H
 
 #include <sys/types.h>
+#include <stdint.h>
+
 
 #if defined(__cplusplus)
 extern "C" {
