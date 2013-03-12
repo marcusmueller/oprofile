@@ -938,15 +938,10 @@ static void convert_sample_data(void)
 	}
 
 	stats_dir = operf_stats_recorder::create_stats_dir(current_sampledir);
-	if (strcmp(stats_dir.c_str(), "") != 0) {
-		// If there are throttled or multiplexed events print them
+	if (strcmp(stats_dir.c_str(), "") != 0)
+		// If there are throttled events print them
 		operf_stats_recorder::
 			write_throttled_event_files(events, stats_dir);
-
-		operf_stats_recorder::
-			mv_multiplexed_data_dir(operf_options::session_dir,
-						stats_dir);
-	}
 
 	_set_signals_for_convert();
 	cverb << vdebug << "Calling _do_jitdump_convert" << endl;
@@ -1485,13 +1480,6 @@ static void _process_session_dir(void)
 			exit(EXIT_FAILURE);
 		}
 	}
-
-	/* Make sure there isn't a temporary multiplexed data directory
-	 * left behind from a previous run that exited abnormally.
-	 */
-	string multiplexed_dir = operf_options::session_dir + "/multiplexed/";
-	nftw(multiplexed_dir.c_str(), __delete_old_previous_sample_data, 2,
-	     FTW_DEPTH | FTW_ACTIONRETVAL);
 
 	cverb << vdebug << "Using samples dir " << samples_dir << endl;
 }

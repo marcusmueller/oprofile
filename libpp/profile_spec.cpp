@@ -494,31 +494,6 @@ void warn_if_kern_buffs_overflow(string const & session_samples_dir)
 	}
 }
 
-void warn_if_kern_multiplexing(string const & session_samples_dir)
-{
-	DIR * dir;
-	string stats_path;
-
-	/* check for multiplexing */
-	stats_path = session_samples_dir + "stats/multiplexed";
-	dir = opendir(stats_path.c_str());
-	if (dir != NULL) {
-		cerr << "\nWARNING! Some events were multiplexed. "
-		     << "Events are multiplexed\n";
-		cerr << "when the performance monitor hardware cannot "
-		     << "monitor all of the\n";
-		cerr << "specified events simultaneously.  "
-		     << "Multiplexing results in fewer\n";
-		cerr << "samples for each event being collected. "
-		     << "You may want to increase the\n";
-		cerr << "sampling frequency to compensate. Check the ";
-		cerr << "directory:\n"
-		     << stats_path << "\n";
-		cerr << "for the multiplexed event names.\n\n";
-		closedir(dir);
-	}
-}
-
 void warn_if_kern_throttling(string const & session_samples_dir)
 {
 	DIR * dir;
@@ -587,7 +562,6 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 		if (!files.empty()) {
 			found_file = true;
 			warn_if_kern_buffs_overflow(base_dir + "/");
-			warn_if_kern_multiplexing(base_dir + "/");
 			warn_if_kern_throttling(base_dir + "/");
 		}
 

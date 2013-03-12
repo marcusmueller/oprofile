@@ -47,27 +47,12 @@ class operf_stats_recorder {
 
 public:
 	static std::string create_stats_dir(std::string const & sample_dir);
-	/* The checking and writing of the throttled and multiplexing
-	 * stats is done by two different processes: 1) 'operf_record_pid'
-	 * process, which retrieves sample data from the kernel and
-	 * writes it either to a pipe or (with --lazy-conversion) to a file;
-	 * and 2) the 'sample data conversion' process, which reads the data
-	 * written by operf_record_pid.  The operf_record_pid process checks
-	 * for multiplexing and writes the multiplexed event names. The
-	 * sample data conversion process processes the data read from the pipe
-	 * or file and checks for throttling of the event by the kernel and
-	 * prints the throttled data.  The check_for_multiplexing() function
-	 * writes its data to a temporary directory.  When the sample data
-	 * conversion process has setup the directory "current" to store all
-	 * of the data, the multiplexed data is moved from its temporary
-	 * location to the "current" directory.
+	/* The checking and writing of the throttled event flag is done by the
+	 * 'sample data conversion' process, which reads the data written
+	 * by operf_record_pid.  The sample data conversion process processes
+	 * the data read from the pipe or file and checks for throttling of
+	 * the event by the kernel and prints the throttled data.
 	 */
-	static void mv_multiplexed_data_dir(std::string const & session_dir,
-					    std::string const & sample_dir);
-	static void check_for_multiplexing(std::vector<operf_counter> const & perfCounters,
-					   int num_cpus, int system_wide,
-					   int evt);
-
 	static void write_throttled_event_files(std::vector< operf_event_t> const & events,
 						std::string const & current_sampledir);
 };
