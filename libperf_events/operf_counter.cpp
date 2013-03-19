@@ -1017,12 +1017,12 @@ unsigned int operf_read::convertPerfData(void)
 		cverb << vdebug << "Event header type: " << last_header.type << "; size: " << last_header.size << endl;
 	}
 
-	if (print_progress)
-		cerr << endl;
-
 	first_time_processing = false;
 	if (!error)
-		op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type);
+		op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type, print_progress);
+
+	if (print_progress)
+		cerr << endl;
 
 	op_release_resources();
 	operf_print_stats(operf_options::session_dir, start_time_human_readable, throttled);

@@ -795,12 +795,14 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 		      << endl << "\tdata ID: " << data.id << endl;
 
 	// Verify the sample.
-	trans.event = operfRead.get_eventnum_by_perf_event_id(data.id);
-	if (trans.event < 0) {
-		cerr << "Event num " << trans.event << " for id " << data.id
-		     << " is invalid. Sample data appears to be corrupted." << endl;
-		rc = -1;
-		goto out;
+	if (data.id != trans.sample_id) {
+		trans.event = operfRead.get_eventnum_by_perf_event_id(data.id);
+		if (trans.event < 0) {
+			cerr << "Event num " << trans.event << " for id " << data.id
+					<< " is invalid. Sample data appears to be corrupted." << endl;
+			rc = -1;
+			goto out;
+		}
 	}
 
 	/* Only need to check for "no_user" since "no_kernel" is done by
@@ -876,7 +878,7 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 	}
 
 	if (first_time_processing) {
-		event_t * ev = (event_t *)xmalloc(event->header.size);
+		event_t * ev = (event_t *)malloc(event->header.size);
 		memcpy(ev, event, event->header.size);
 		unresolved_events.push_back(ev);
 	}
@@ -945,8 +947,10 @@ int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 	}
 }
 
-void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type)
+void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type, bool print_progress)
 {
+	int num_recs = 0;
+
 	cverb << vconvert << "Reprocessing samples" << endl;
 	list<event_t *>::const_iterator it = unresolved_events.begin();
 	for (; it != unresolved_events.end(); it++) {
@@ -956,6 +960,9 @@ void OP_perf_utils::op_reprocess_unresolved_events(u64 sample_type)
 		if (evt->header.type == PERF_RECORD_SAMPLE) {
 			__handle_sample_event(evt, sample_type);
 			free(evt);
+			num_recs++;
+			if ((num_recs % 1000000 == 0) && print_progress)
+				cerr << ".";
 		}
 	}
 }
