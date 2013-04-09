@@ -66,16 +66,23 @@ If this option is not specified, configure will look for kernel header files in 
 for a kernel-headers package -- /usr. Use this option in cross-compile enviroments
 or in situations where the host system does not support perf_events but you wish to build binaries
 for a target system that does support perf_events. Because of OProfile's use of syscalls,
-kernel headers used during build must match the architecture of the intended target system.])],
+kernel headers used during build must match the architecture of the intended target system.
+NOTE:  Run the command 'make headers_install INSTALL_HDR_PATH=<kernel-hdrs-install-dir>'
+from the root directory of your kernel source tree, and use <kernel-hdrs-install-dir> for
+oprofile's '--with-kernel' configure option.])],
 KERNELDIR=$withval)
 
 
 dnl Check kernel version for perf_events supported
 if test "$KERNELDIR" != ""; then
-	KINC="$KERNELDIR/include"
-	PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
-	AC_SUBST(PERF_EVENT_FLAGS)
-	PERF_EVENT_H="$KERNELDIR/include/linux/perf_event.h"
+	if test -d $KERNELDIR; then
+		KINC="$KERNELDIR/include"
+		PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
+		AC_SUBST(PERF_EVENT_FLAGS)
+		PERF_EVENT_H="$KERNELDIR/include/linux/perf_event.h"
+	else
+		echo "$KERNELDIR does not exist."
+	fi
 else
 	PERF_EVENT_H="/usr/include/linux/perf_event.h"
 fi
@@ -472,5 +479,21 @@ if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_may_have_perf_events_s
 	echo "Warning: perf_event.h not found.  Either install the kernel headers package or"
 	echo "use the --with-kernel option if you want the non-root, single application"
 	echo "profiling support provided by operf."
+	echo ""
+	echo "If you run 'make' now, only the legacy ocontrol-based profiler will be built."
 fi
 
+if test "$KERNELDIR" != "" && test "$kernel_has_perf_events_support" != "yes"; then
+	if ! test -d $KERNELDIR; then
+		echo "WARNING: You passed '--with-kernel=$KERNELDIR', but $KERNELDIR"
+		echo "does not exist."
+	else
+		echo "Warning: You requested to build with the '--with-kernel' option, but your kernel"
+		echo "headers were not accessible at the given location. Be sure you have run the following"
+		echo "command from within your kernel source tree:"
+		echo "     make headers_install INSTALL_HDR_PATH=<kernel-hdrs-install-dir>"
+		echo "Then pass <kernel-hdrs-install-dir> to oprofile's '--with-kernel' configure option."
+	fi
+	echo ""
+	echo "If you run 'make' now, only the legacy ocontrol-based profiler will be built."
+fi
