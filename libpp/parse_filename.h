@@ -41,6 +41,12 @@ struct parsed_filename
 	 */
 	std::string filename;
 	bool jit_dumpfile_exists;
+
+	/* Provide default constructor to initialize jit_dumpfile_exists,
+	 * otherwise it can contain garbage when its containing object is
+	 * instantiated on the stack.
+	 */
+	parsed_filename() : jit_dumpfile_exists(false) {}
 };
 
 
