@@ -2702,24 +2702,77 @@ Show version.
 </sect1> <!-- opgprof -->
 
 <sect1 id="oparchive">
-<title>Archiving measurements (<command>oparchive</command>)</title>
+<title>Analyzing profile data on another system (<command>oparchive</command>)</title>
 <para>
 	The <command>oparchive</command> utility generates a directory populated
 	with executable, debug, and oprofile sample files. This directory can be
-	moved to another machine via <command>tar</command> and analyzed without
-	further use of the data collection machine.
+	copied to another (host) machine and analyzed offline, with no further need to
+	access the data collection machine (target).
 </para>
 
 <para>
-	The following command would collect the sample files, the executables
-	associated with the sample files, and the debuginfo files associated
-	with the executables and copy them into
+	The following command, executed on the target system, will collect the
+	sample files, the executables associated with the sample files, and the
+	debuginfo files associated with the executables and copy them into
 	<filename>/tmp/current_data</filename>:
 </para>
 
 <screen>
 # oparchive -o /tmp/current_data
 </screen>
+
+<para>
+	When transferring archived profile data to a host machine for offline analysis,
+	you need to determine if the oprofile ABI format is compatible between the
+	target system and the host system; if it isn't, you must run the <command>opimport</command>
+	command to convert the target's sample data files to the format of your host system.
+	See <xref linkend="opimport"/> for more details.
+</para>
+
+<para>
+	After your profile data is transferred to the host system and (if necessary)
+	you have run the <command>opimport</command> command to convert the file
+	format, you can now run the <command>opreport</command> and
+	<command>opannotate</command> commands.  However, you must provide an
+	"archive specification" to let these post-processing tools know where to find
+	of the profile data (sample files, executables, etc.); for example:
+</para>
+
+<screen>
+# opreport archive:/home/user1/my_oprofile_archive --symbols
+</screen>
+
+<para>
+	Furthermore, if your profile was collected on your target system into a session-dir
+	other than <filename>/var/lib/oprofile</filename>, the <command>oparchive</command>
+	command will display a message similar to the following:
+</para>
+
+<screen>
+# NOTE: The sample data in this archive is located at /home/user1/test-stuff/oprofile_data
+instead of the standard location of /var/lib/oprofile.  Hence, when using opreport
+and other post-processing tools on this archive, you must pass the following option:
+        --session-dir=/home/user1/test-stuff/oprofile_data
+</screen>
+
+<para>
+	Then the above <command>opreport</command> example would have to include that
+	<option>--session-dir</option> option.
+</para>
+
+<para>
+<note>
+	 In some host/target development environments, all target executables, libraries, and
+	 debuginfo files are stored in a root directory on the host to facilitate offline
+	 analysis.  In such cases, the <command>oparchive</command> command collects more data
+	 than is necessary; so, when copying the resulting output of <command>oparchive</command>,
+	 you can skip all of the executables, etc, and just archive the <filename>$SESSION_DIR</filename>
+	 tree located within the output directory you specified in your <command>oparchive</command>
+	 command. Then, when running the <command>opreport</command> or	<command>opannotate</command>
+	 commands on your host system, pass the <option>--root</option> option to point to the
+	 location of your target's executables, etc.
+</note>
+</para>
 
 <sect2 id="oparchive-details">
 <title>Usage of <command>oparchive</command></title>
@@ -2762,15 +2815,21 @@ Show version.
 <title>Converting sample database files (<command>opimport</command>)</title>
 <para>
 	This utility converts sample database files from a foreign binary format (abi) to
-	the native format. This is useful only when moving sample files between systems
-	for analysis on platforms other than the one used for collection. The <command>
-	oparchive</command> should be used on the machine where the profile was taken (target)
-	in order to collect sample files and all other necessary information. The archive
-	directory that is the output from <command>oparchive</command> should be copied
-	to the system where you wish to perform your performance analysis (host). If the
-	When the architecture of your target and host systems differ, then you'll need to
-	use the <command>opimport</command> command. The abi format of the sample files
-	to be imported is described in a text file located in <filename>$SESSION_DIR/abi</filename>.
+	the native format. This is required when moving sample files to a (host) system
+	other than the one used for collection (target system), and the host and target systems are different
+	architectures. The abi format of the sample files to be imported is described in a
+	text file located in <filename>$SESSION_DIR/abi</filename>.  If you are unsure if
+	your target and host systems have compatible architectures (in regard to the OProfile
+	ABI), simply diff a <filename>$SESSION_DIR/abi</filename> file from the target system
+	with one from the host system.  If any differences show up at all, you must run the
+	<command>opimport</command> command.
+</para>
+
+<para>
+	The <command>oparchive</command> command should be used on the machine where
+	the profile was taken (target) in order to collect sample files and all other necessary
+	information. The archive directory that is the output from <command>oparchive</command>
+	should be copied to the system where you wish to perform your performance analysis (host).
 </para>
 
 <para>
