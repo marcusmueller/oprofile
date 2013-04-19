@@ -404,6 +404,9 @@ chk_proc_id:
 		}
 		/* Convert the dump file as the special user 'oprofile'. */
 		rc = op_jit_convert(dmp_info, tmp_elffile, start_time, end_time);
+		if (rc < 0)
+			goto free_res3;
+
 		/* Set eUID back to the original user. */
 		if (!non_root && seteuid(getuid()) != 0) {
 			perror("opjitconv: seteuid to original user failed");
