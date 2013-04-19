@@ -261,7 +261,7 @@ bfd * open_elf(char const * filename)
 		goto error;
 	}
 	if (bfd_set_arch_mach(abfd, dump_bfd_arch, dump_bfd_mach) == FALSE) {
-		bfd_perror("bfd_set_format");
+		bfd_perror("bfd_set_arch_mach");
 		goto error;
 	}
 	return abfd;
