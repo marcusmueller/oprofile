@@ -31,6 +31,21 @@ char op_device[PATH_MAX];
 char op_note_device[PATH_MAX];
 char op_hash_device[PATH_MAX];
 
+char * stats_filenames[OPERF_MAX_STATS] = {
+                                           "total_samples",
+                                           "",
+                                           "",
+                                           "lost_invalid_domain",
+                                           "lost_kernel",
+                                           "lost_samplefile",
+                                           "lost_no_mapping",
+                                           "lost_no_app_for_kernel_sample",
+                                           "lost_no_app_for_user_sample",
+                                           "lost_bt_no_mapping",
+                                           "lost_invalid_hypervisor_addr",
+                                           "lost_records_by_kernel",
+};
+
 void
 init_op_config_dirs(char const * session_dir)
 {

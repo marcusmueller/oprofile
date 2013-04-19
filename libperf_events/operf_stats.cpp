@@ -27,10 +27,37 @@ unsigned long operf_stats[OPERF_MAX_STATS];
  * operf_print_stats - print out latest statistics to operf.log
  */
 using namespace std;
-void operf_print_stats(string sessiondir, char * starttime, bool throttled)
+
+static string create_stats_dir(string const & cur_sampledir);
+static void write_throttled_event_files(vector< operf_event_t> const & events,
+                                        string const & stats_dir);
+
+static void _write_stats_file(string const & stats_filename, unsigned long lost_sample_count)
+{
+	ofstream stats_file(stats_filename.c_str(), ios_base::out);
+	if (stats_file.good()) {
+		stats_file << lost_sample_count;
+		stats_file.close();
+	} else {
+		cerr << "Unable to write to stats file " << stats_filename << endl;
+	}
+}
+
+void operf_print_stats(string sessiondir, char * starttime, bool throttled,
+                       vector< operf_event_t> const & events)
 {
 	string operf_log (sessiondir);
-	int total_lost_samples = 0;
+	unsigned long total_lost_samples = 0;
+	bool stats_dir_valid = true;
+
+	string stats_dir = create_stats_dir(sessiondir + "/" + "samples/current/");
+	if (strcmp(stats_dir.c_str(), "") != 0) {
+		// If there are throttled events print them
+		write_throttled_event_files(events, stats_dir);
+	} else {
+		stats_dir_valid = false;
+		perror("Unable to create stats dir");
+	}
 
 	operf_log.append("/samples/operf.log");
 	FILE * fp = fopen(operf_log.c_str(), "a");
@@ -73,22 +100,25 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled)
 		fprintf(stderr, "best option if you want to avoid throttling.\n");
 	}
 
-	// TODO: handle extended stats
-	//operf_ext_print_stats();
-
-	for (int i = OPERF_INDEX_OF_FIRST_LOST_STAT; i < OPERF_MAX_STATS; i++)
+	for (int i = OPERF_INDEX_OF_FIRST_LOST_STAT; i < OPERF_MAX_STATS; i++) {
+		if (stats_dir_valid && operf_stats[i])
+			_write_stats_file(stats_dir + "/" + stats_filenames[i], operf_stats[i]);
 		total_lost_samples += operf_stats[i];
+	}
+	// Write total_samples into stats file if we see any indication of lost samples
+	if (total_lost_samples)
+		_write_stats_file(stats_dir + "/" + stats_filenames[OPERF_SAMPLES], operf_stats[OPERF_SAMPLES]);
 
 	if (total_lost_samples > (int)(OPERF_WARN_LOST_SAMPLES_THRESHOLD
 				       * operf_stats[OPERF_SAMPLES]))
-		fprintf(stderr, "\nSee the %s file for statistics about lost samples.\n", operf_log.c_str());
+		fprintf(stderr, "\nWARNING: Lost samples detected! See %s for details.\n", operf_log.c_str());
 
 	fflush(fp);
 	fclose(fp);
 };
 
-void operf_stats_recorder::write_throttled_event_files(std::vector< operf_event_t> const & events,
-						       std::string const & stats_dir)
+static void write_throttled_event_files(vector< operf_event_t> const & events,
+                                        string const & stats_dir)
 {
 	string outputfile;
 	ofstream outfile;
@@ -131,13 +161,22 @@ void operf_stats_recorder::write_throttled_event_files(std::vector< operf_event_
 			}
 		}
 	  }
+	if (throttled_dir_created) {
+		cerr << "\nWARNING! Some of the events were throttled. "
+		     << "Throttling occurs when\n";
+		cerr << "the initial sample rate is too high, causing an "
+		     << "excessive number of\n";
+		cerr << "interrupts.  Decrease the sampling frequency. "
+		     << "Check the directory\n";
+		cerr << throttled_dir << "\n"
+		     << "for the throttled event names.\n\n";
+	}
 };
 
 
-std::string  operf_stats_recorder::create_stats_dir(std::string const & cur_sampledir)
+static string create_stats_dir(string const & cur_sampledir)
 {
 	int rc;
-	int errno;
 	std::string stats_dir;
 
 	/* Assumption: cur_sampledir ends in slash */

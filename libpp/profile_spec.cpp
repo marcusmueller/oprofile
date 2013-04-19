@@ -453,7 +453,7 @@ bool valid_candidate(string const & base_dir, string const & filename,
  * Print a warning message if we detect any sample buffer overflows
  * occurred in the kernel driver. 
  */
-void warn_if_kern_buffs_overflow(string const & session_samples_dir)
+static void warn_if_kern_buffs_overflow(string const & session_samples_dir)
 {
 	DIR * dir;
 	struct dirent * dirent;
@@ -494,7 +494,7 @@ void warn_if_kern_buffs_overflow(string const & session_samples_dir)
 	}
 }
 
-void warn_if_kern_throttling(string const & session_samples_dir)
+static void warn_if_kern_throttling(string const & session_samples_dir)
 {
 	DIR * dir;
 	string stats_path;
@@ -513,6 +513,40 @@ void warn_if_kern_throttling(string const & session_samples_dir)
 		     << "for the throttled event names.\n\n";
 		closedir(dir);
 	}
+}
+
+static void warn_if_lost_samples(string const & session_samples_dir)
+{
+	string stats_path;
+	string operf_log(op_session_dir);
+	unsigned long total_samples;
+	unsigned long total_lost_samples = 0;
+
+	stats_path = session_samples_dir + "stats/";
+	total_samples = op_read_long_from_file((stats_path + "total_samples").
+	                             c_str(), 0);
+	if (total_samples == ((unsigned long)-1))
+		return;
+
+	for (int i = OPERF_INDEX_OF_FIRST_LOST_STAT; i < OPERF_MAX_STATS; i++) {
+		unsigned long lost_samples_count = op_read_long_from_file((stats_path + stats_filenames[i]).c_str(), 0);
+		if (!(lost_samples_count == ((unsigned long)-1)))
+			total_lost_samples += lost_samples_count;
+	}
+
+	if (total_lost_samples > (int)(OPERF_WARN_LOST_SAMPLES_THRESHOLD
+				       * total_samples)) {
+		operf_log.append("/samples/operf.log");
+		cerr << "\nWARNING: Lost samples detected! See " <<  operf_log
+		     << " for details." << endl;
+	}
+}
+
+static void warn_if_sampling_problems(string const & session_samples_dir)
+{
+	warn_if_kern_buffs_overflow(session_samples_dir);
+	warn_if_kern_throttling(session_samples_dir);
+	warn_if_lost_samples(session_samples_dir);
 }
 
 
@@ -561,8 +595,7 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 
 		if (!files.empty()) {
 			found_file = true;
-			warn_if_kern_buffs_overflow(base_dir + "/");
-			warn_if_kern_throttling(base_dir + "/");
+			warn_if_sampling_problems(base_dir + "/");
 		}
 
 		list<string>::const_iterator it = files.begin();

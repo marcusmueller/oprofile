@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
-
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -54,30 +54,62 @@ void copy_one_file(image_error err, string const & source, string const & dest)
 	}
 }
 
-void copy_stats(string const & session_samples_dir,
-		string const & archive_path)
+static void _copy_operf_stats(string const & archive_stats,
+                              string const & stats_path)
 {
-	DIR * dir;
 	struct dirent * dirent;
-	string stats_path;
-	
-	stats_path = session_samples_dir + "stats/";
-
-	if (!(dir = opendir(stats_path.c_str()))) {
-		return;
+	string throttled_path;
+	throttled_path = stats_path + "/throttled";
+	DIR * dir =  opendir(throttled_path.c_str());
+	while (dir && (dirent = readdir(dir))) {
+		if ((!strcmp(dirent->d_name, ".")) || (!strcmp(dirent->d_name, "..")))
+			continue;
+		string archive_stats_path;
+		string throttled_event = throttled_path + "/" + dirent->d_name;
+		archive_stats_path = archive_stats + "throttled/" + dirent->d_name;
+		if (!options::list_files &&
+		    create_path(archive_stats_path.c_str())) {
+			cerr << "Unable to create directory for "
+			     <<	archive_stats_path << "." << endl;
+			exit (EXIT_FAILURE);
+		}
+		copy_one_file(image_ok, throttled_event, archive_stats_path);
 	}
+	if (dir)
+		closedir(dir);
 
-	string sample_base_dir = session_samples_dir.substr(archive_path.size());
-	string archive_stats = options::outdirectory + sample_base_dir + "stats/";
+	for (int i = 0; i < OPERF_MAX_STATS; i++) {
+		if (i > 0 && i < OPERF_INDEX_OF_FIRST_LOST_STAT)
+			continue;
+		string fname = stats_path + "/" + stats_filenames[i];
+		int fd = open(fname.c_str(), O_RDONLY);
+		if (fd != -1) {
+			string archive_stats_path = archive_stats + stats_filenames[i];
+			if (!options::list_files &&
+			    create_path(archive_stats_path.c_str())) {
+				cerr << "Unable to create directory for "
+				     <<	archive_stats_path << "." << endl;
+				exit (EXIT_FAILURE);
+			}
+			copy_one_file(image_ok, fname, archive_stats_path);
+			close(fd);
+		}
+	}
+}
+
+static void _copy_legacy_stats(DIR * dir, string const & archive_stats,
+                               string const & stats_path)
+{
+	struct dirent * dirent;
 	string archive_stats_path = archive_stats + "event_lost_overflow";
+
 	if (!options::list_files &&
 	    create_path(archive_stats_path.c_str())) {
 		cerr << "Unable to create directory for "
-		     <<	archive_stats << "." << endl;
+		     <<	archive_stats_path << "." << endl;
 		exit (EXIT_FAILURE);
 	}
-
-	copy_one_file(image_ok, stats_path + "/event_lost_overflow", archive_stats_path);
+	copy_one_file(image_ok, stats_path + "event_lost_overflow", archive_stats_path);
 
 	while ((dirent = readdir(dir))) {
 		int cpu_nr;
@@ -93,10 +125,26 @@ void copy_stats(string const & session_samples_dir,
 			exit (EXIT_FAILURE);
 		}
 		copy_one_file(image_ok, stats_path + path, archive_stats_path);
-
 	}
-	closedir(dir);
+}
 
+void copy_stats(string const & session_samples_dir,
+		string const & archive_path)
+{
+	DIR * dir;
+	string stats_path;
+
+	stats_path = session_samples_dir + "stats/";
+
+	if (!(dir = opendir(stats_path.c_str()))) {
+		return;
+	}
+
+	string sample_base_dir = session_samples_dir.substr(archive_path.size());
+	string archive_stats = options::outdirectory + sample_base_dir + "stats/";
+	_copy_legacy_stats(dir, archive_stats, stats_path);
+	closedir(dir);
+	_copy_operf_stats(archive_stats, stats_path);
 }
 
 int oparchive(options::spec const & spec)

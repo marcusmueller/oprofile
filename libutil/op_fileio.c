@@ -91,6 +91,36 @@ void op_write_u64(FILE * fp, u64 val)
 	op_write_file(fp, &val, sizeof(val));
 }
 
+unsigned long op_read_long_from_file(char const * filename, int fatal)
+{
+	FILE * fp;
+	unsigned long value;
+
+	fp = fopen(filename, "r");
+	if (fp == NULL) {
+		if (!fatal)
+			return (unsigned long)-1;
+		fprintf(stderr,
+			"op_read_long_from_file: Failed to open %s, reason %s\n",
+			filename, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (fscanf(fp, "%lu", &value) != 1) {
+		fclose(fp);
+		if (!fatal)
+			return (unsigned long)-1;
+		fprintf(stderr,
+			"op_read_long_from_file: Failed to convert contents of file %s to unsigned long\n",
+			filename);
+		exit(EXIT_FAILURE);
+	}
+
+	fclose(fp);
+
+	return value;
+}
+
 
 u32 op_read_int_from_file(char const * filename, int fatal)
 {

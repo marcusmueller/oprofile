@@ -66,7 +66,6 @@ uint64_t kernel_start, kernel_end;
 operf_read operfRead;
 op_cpu cpu_type;
 double cpu_speed;
-char op_samples_current_dir[PATH_MAX];
 uint op_nr_events;
 verbose vmisc("misc");
 uid_t my_uid;
@@ -936,12 +935,6 @@ static void convert_sample_data(void)
 			goto out;
 		}
 	}
-
-	stats_dir = operf_stats_recorder::create_stats_dir(current_sampledir);
-	if (strcmp(stats_dir.c_str(), "") != 0)
-		// If there are throttled events print them
-		operf_stats_recorder::
-			write_throttled_event_files(events, stats_dir);
 
 	_set_signals_for_convert();
 	cverb << vdebug << "Calling _do_jitdump_convert" << endl;

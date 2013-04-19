@@ -1025,7 +1025,7 @@ unsigned int operf_read::convertPerfData(void)
 		cerr << endl;
 
 	op_release_resources();
-	operf_print_stats(operf_options::session_dir, start_time_human_readable, throttled);
+	operf_print_stats(operf_options::session_dir, start_time_human_readable, throttled, evts);
 
 	char * cbuf;
 	cbuf = (char *)xmalloc(operf_options::session_dir.length() + 5);

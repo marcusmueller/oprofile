@@ -51,6 +51,17 @@ FILE * op_open_file(char const * name, char const * mode);
 u32 op_read_int_from_file(char const * filename, int fatal);
 
 /**
+ * op_read_long_from_file - parse an ASCII value from a file into an unsigned long
+ * @param filename  name of file to parse value from
+ * @param fatal  non-zero if any error must be fatal
+ *
+ * Reads an ASCII unsigned long number from the given file. If an error occurs,and
+ * the passed 'fatal' arg is zero, then (unsigned long)-1 is returned; else the
+ * value read in is returned.
+ */
+unsigned long op_read_long_from_file(char const * filename, int fatal);
+
+/**
  * op_close_file - close a file
  * @param fp  file pointer
  *
