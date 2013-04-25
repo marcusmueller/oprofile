@@ -9,12 +9,18 @@
  * Created on: Dec 13, 2011
  * @author Maynard Johnson
  * (C) Copyright IBM Corp. 2011
+ *
+ * Modified by Maynard Johnson <maynardj@us.ibm.com>
+ * (C) Copyright IBM Corporation 2013
+ *
  */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <iostream>
 #include <map>
 #include <string.h>
+#include <errno.h>
 #include "operf_process_info.h"
 #include "file_manip.h"
 #include "operf_utils.h"
@@ -22,23 +28,13 @@
 using namespace std;
 using namespace OP_perf_utils;
 
-operf_process_info::operf_process_info(pid_t tgid, const char * appname, bool app_arg_is_fullname, bool is_valid)
-: pid(tgid), _appname(appname ? appname : ""), valid(is_valid)
+operf_process_info::operf_process_info(pid_t tgid, const char * appname,
+                                       bool app_arg_is_fullname, bool is_valid)
+: pid(tgid), valid(is_valid), appname_valid(false), forked(false), look_for_appname_match(false),
+  appname_is_fullname(NOT_FULLNAME), num_app_chars_matched(-1)
 {
-	if (app_arg_is_fullname && appname) {
-		appname_is_fullname = YES_FULLNAME;
-		app_basename = op_basename(appname);
-		num_app_chars_matched = (int)app_basename.length();
-	} else if (appname) {
-		appname_is_fullname = MAYBE_FULLNAME;
-		num_app_chars_matched = -1;
-		app_basename = appname;
-	} else {
-		appname_is_fullname = NOT_FULLNAME;
-		num_app_chars_matched = -1;
-		app_basename = "";
-	}
-	forked = false;
+	_appname = "";
+	set_appname(appname, app_arg_is_fullname);
 	parent_of_fork = NULL;
 }
 
@@ -50,64 +46,96 @@ operf_process_info::~operf_process_info()
 	if (valid) {
 		it = mmappings.begin();
 		end = mmappings.end();
-	} else {
-		it = deferred_mmappings.begin();
-		end = deferred_mmappings.end();
 	}
 	mmappings.clear();
-	deferred_mmappings.clear();
 }
 
-void operf_process_info::process_new_mapping(struct operf_mmap * mapping)
+void operf_process_info::set_appname(const char * appname, bool app_arg_is_fullname)
 {
-	// If we do not know the full pathname of our app yet,
-	// let's try to determine if the passed filename is a good
-	// candidate appname.
+	char exe_symlink[64];
+	char exe_realpath[PATH_MAX];
+	/* A combination of non-null appname and app_arg_is_fullname==true may be passed
+	 * from various locations.  But a non-null appname and app_arg_is_fullname==false
+	 * may only be passed as a result of a PERF_RECORD_COMM event.
+	 */
+	bool from_COMM_event = (appname && !app_arg_is_fullname);
 
-	if (!mapping->is_anon_mapping && (appname_is_fullname < YES_FULLNAME) && (num_app_chars_matched < (int)app_basename.length())) {
-		string basename;
-		int num_matched_chars = get_num_matching_chars(mapping->filename, basename);
-		if (num_matched_chars > num_app_chars_matched) {
-			appname_is_fullname = MAYBE_FULLNAME;
-			_appname = mapping->filename;
-			app_basename = basename;
-			num_app_chars_matched = num_matched_chars;
-			cverb << vmisc << "Best appname match is " << _appname << endl;
+	if (appname_valid)
+		return;
+	/* If stored _appname is not empty, it implies we've been through this function before
+	 * (and would have tried the readlink method or, perhaps, fallen back to some other
+	 * method to set the stored _appname).  If we're here because of something other than
+	 * a COMM event (e.g. MMAP event), then we should compare our stored _appname with our
+	 * collection of mmapping basenames to see if we can find an appname match; otherwise,
+	 * if the passed appname is NULL, we just return, since a NULL appname won't help us here.
+	 */
+	if (_appname.length()) {
+		if (look_for_appname_match && !from_COMM_event)
+			return find_best_match_appname_all_mappings();
+		else if (!appname)
+			return;
+	}
+
+	snprintf(exe_symlink, 64, "/proc/%d/exe", pid);
+	memset(exe_realpath, '\0', PATH_MAX);
+
+	/* If the user is running a command via taskset, the kernel will send us a PERF_RECORD_COMM
+	 * for both comm=taskset and comm=<user_command> for the same process ID !!
+	 * The user will not be interested in taskset samples; thus, we ignore such COMM events.
+	 * This is a hack, but there doesn't seem to be a better way around the possibility of having
+	 * application samples attributed to "taskset" instead of the application.
+	 */
+	if (readlink(exe_symlink, exe_realpath, sizeof(exe_realpath)-1) > 0) {
+		_appname = exe_realpath;
+		app_basename = op_basename(_appname);
+		if (!strncmp(app_basename.c_str(), "taskset", strlen("taskset"))) {
+			_appname = "unknown";
+			app_basename = "unknown";
+		} else {
+			appname_valid = true;
 		}
+	} else {
+		/* Most likely that the process has ended already, so we'll need to determine
+		 * the appname through different means.
+		 */
+		if (cverb << vmisc)
+			cerr  << "PID: " << hex << pid << " Unable to obtain appname from " << exe_symlink << endl
+			<<  "\t" << strerror(errno) << endl;
+		if (appname && strcmp(appname, "taskset")) {
+			_appname = appname;
+			if (app_arg_is_fullname) {
+				appname_valid = true;
+			} else {
+				look_for_appname_match = true;
+			}
+		} else {
+			_appname = "unknown";
+		}
+		app_basename = _appname;
 	}
-	mmappings[mapping->start_addr] = mapping;
-	vector<operf_process_info *>::iterator it = forked_processes.begin();
-	while (it != forked_processes.end()) {
-		operf_process_info * p = *it;
-		p->copy_new_parent_mapping(mapping);
-		cverb << vmisc << "Copied new parent mapping for " << mapping->filename
-		      << " for forked process " << p->pid << endl;
-		it++;
-	}
-
+	cverb << vmisc << "PID: " << hex << pid << " appname is set to "
+	      << _appname << endl;
+	if (look_for_appname_match)
+		find_best_match_appname_all_mappings();
 }
 
-/* This method should only be invoked when a "delayed" COMM event is processed.
- * By "delayed", I mean that we have already received MMAP events for the associated
- * process, for which we've had to create a partial operf_process_info object -- one
- * that has no _appname yet and is marked invalid.
- *
- * Given the above statement, the passed app_shortname "must" come from a comm.comm
- * field, which is 16 chars in length (thus the name of the arg).
+/* This operf_process_info object may be a parent to processes that it has forked.
+ * If the forked process has not done an 'exec' yet (i.e., we've not received a
+ * COMM event for it), then it's still a dependent process of its parent.
+ * If so, it will be in the parent's collection of forked processes.  So,
+ * when adding a new mapping, we should copy that mapping to each forked
+ * child's operf_process_info object.  Then, if samples are taken for that
+ * mapping for that forked process, the samples can be correctly attributed.
  */
-void operf_process_info::process_deferred_mappings(string app_shortname)
+void operf_process_info::process_mapping(struct operf_mmap * mapping, bool do_self)
 {
-	_appname = app_shortname;
-	app_basename = app_shortname;
-	valid = true;
-	map<u64, struct operf_mmap *>::iterator it = deferred_mmappings.begin();
-	while (it != deferred_mmappings.end()) {
-		process_new_mapping(it->second);
-		cverb << vmisc << "Processed deferred mapping for " << it->second->filename << endl;
-		it++;
+	if (!appname_valid && !is_forked()) {
+		if (look_for_appname_match)
+			check_mapping_for_appname(mapping);
+		else
+			set_appname(NULL, false);
 	}
-	deferred_mmappings.clear();
-	process_deferred_forked_processes();
+	set_new_mapping_recursive(mapping, do_self);
 }
 
 int operf_process_info::get_num_matching_chars(string mapped_filename, string & basename)
@@ -139,6 +167,48 @@ int operf_process_info::get_num_matching_chars(string mapped_filename, string & 
 			break;
 	}
 	return num_matched_chars ? num_matched_chars : -1;
+}
+
+/* If we do not know the full pathname of our app yet,
+ * let's try to determine if the passed filename is a good
+ * candidate appname.
+ * ASSUMPTION: This function is called only when look_for_appname_match==true.
+ */
+void operf_process_info::check_mapping_for_appname(struct operf_mmap * mapping)
+{
+	if (!mapping->is_anon_mapping) {
+		string basename;
+		int num_matched_chars = get_num_matching_chars(mapping->filename, basename);
+		if (num_matched_chars > num_app_chars_matched) {
+			if (num_matched_chars == app_basename.length()) {
+				appname_is_fullname = YES_FULLNAME;
+				look_for_appname_match = false;
+				appname_valid = true;
+			} else {
+				appname_is_fullname = MAYBE_FULLNAME;
+			}
+			_appname = mapping->filename;
+			app_basename = basename;
+			num_app_chars_matched = num_matched_chars;
+			cverb << vmisc << "Best appname match is " << _appname << endl;
+		}
+	}
+}
+
+void operf_process_info::find_best_match_appname_all_mappings(void)
+{
+	map<u64, struct operf_mmap *>::iterator it;
+
+	// We may not even have a candidate shortname (from a COMM event) for the app yet
+	if (_appname == "unknown")
+		return;
+
+	it = mmappings.begin();
+	while (it != mmappings.end()) {
+		check_mapping_for_appname(it->second);
+		it++;
+	}
+
 }
 
 const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample_addr)
@@ -178,23 +248,15 @@ void operf_process_info::process_hypervisor_mapping(u64 ip)
 	map<u64, struct operf_mmap *>::iterator end;
 
 	curr_end = curr_start = ~0ULL;
-	if (valid) {
-		it = mmappings.begin();
-		end = mmappings.end();
-	} else {
-		it = deferred_mmappings.begin();
-		end = deferred_mmappings.end();
-	}
+	it = mmappings.begin();
+	end = mmappings.end();
 	while (it != end) {
 		if (it->second->is_hypervisor) {
 			struct operf_mmap * _mmap = it->second;
 			curr_start = _mmap->start_addr;
 			curr_end = _mmap->end_addr;
 			if (curr_start > ip) {
-				if (valid)
-					mmappings.erase(it);
-				else
-					deferred_mmappings.erase(it);
+				mmappings.erase(it);
 				delete _mmap;
 			} else {
 				create_new_hyperv_mmap = false;
@@ -220,10 +282,7 @@ void operf_process_info::process_hypervisor_mapping(u64 ip)
 			cout << "\tstart_addr: " << hex << hypervisor_mmap->start_addr;
 			cout << "; end addr: " << hypervisor_mmap->end_addr << endl;
 		}
-		if (valid)
-			process_new_mapping(hypervisor_mmap);
-		else
-			add_deferred_mapping(hypervisor_mmap);
+		process_mapping(hypervisor_mmap, false);
 	}
 }
 
@@ -236,51 +295,40 @@ void operf_process_info::copy_mappings_to_forked_process(operf_process_info * fo
 		 * original object is created in operf_utils:__handle_mmap_event and
 		 * is saved in the global all_images_map.
 		 */
-	        forked_pid->process_new_mapping(mapping);
+	        forked_pid->process_mapping(mapping, true);
 	        it++;
 	}
 }
 
-void operf_process_info::connect_forked_process_to_parent(operf_process_info * parent)
+void operf_process_info::set_fork_info(operf_process_info * parent)
 {
 	forked = true;
 	parent_of_fork = parent;
-	if (parent->is_valid()) {
-		valid = true;
-		_appname = parent->get_app_name();
-		if (parent->is_appname_valid() && !_appname.empty()) {
-			appname_is_fullname = YES_FULLNAME;
-			app_basename = op_basename(_appname);
-			num_app_chars_matched = (int)app_basename.length();
-		} else if (!_appname.empty()) {
-			appname_is_fullname = MAYBE_FULLNAME;
-			num_app_chars_matched = -1;
-			app_basename = _appname;
-		} else {
-			appname_is_fullname = NOT_FULLNAME;
-			num_app_chars_matched = -1;
-			app_basename = "";
-		}
-		parent->copy_mappings_to_forked_process(this);
-	}
+	parent_of_fork->add_forked_pid_association(this);
+	parent_of_fork->copy_mappings_to_forked_process(this);
 }
 
-void operf_process_info::process_deferred_forked_processes(void)
+/* ASSUMPTION: This function should only be called during reprocessing phase
+ * since we blindly set the _appname to that of the parent.  If this function
+ * were called from elsewhere, the parent's _appname might not yet be fully baked.
+ */
+void operf_process_info::connect_forked_process_to_parent(void)
 {
-	vector<operf_process_info *>::iterator it = forked_processes.begin();
-	while (it != forked_processes.end()) {
-		operf_process_info * p = *it;
-		p->connect_forked_process_to_parent(this);
-		cverb << vmisc << "Processed deferred forked process " << p->pid << endl;
-		it++;
-	}
+	if (cverb << vmisc)
+		cout << "Connecting forked proc " << pid << " to parent " << parent_of_fork << endl;
+	valid = true;
+	_appname = parent_of_fork->get_app_name();
+	app_basename = op_basename(_appname);
+	appname_valid = true;
 }
+
 
 void operf_process_info::remove_forked_process(pid_t forked_pid)
 {
 	std::vector<operf_process_info *>::iterator it = forked_processes.begin();
 	while (it != forked_processes.end()) {
-		if ((*it)->pid == forked_pid) {
+		operf_process_info * p = *it;
+		if (p->pid == forked_pid) {
 			forked_processes.erase(it);
 			break;
 		}
@@ -288,29 +336,75 @@ void operf_process_info::remove_forked_process(pid_t forked_pid)
 	}
 }
 
-/* This function is called as a result of the following scenario:
- *   1. An operf_process_info was created for a FORK event
- *   2. The forked process was connected to (associated with) its parent,
- *      adding the parent's mmappings to the forked process's operf_process_info.
- *   3. Then the forked process does an exec, which results in a COMM
- *      event. The forked process is now considered completely separate
- *      from its parent, so we need to disassociate it from the parent.
+/* See comment in operf_utils::__handle_comm_event for conditions under
+ * which this function is called.
  */
-void operf_process_info::disassociate_from_parent(char * app_shortname)
+void operf_process_info::try_disassociate_from_parent(char * app_shortname)
 {
-	_appname = app_shortname;
-	app_basename = app_shortname;
-	appname_is_fullname = NOT_FULLNAME;
+	if (parent_of_fork && (parent_of_fork->pid == this->pid))
+		return;
+
+	if (cverb << vmisc && parent_of_fork)
+		cout << "Dis-associating forked proc " << pid
+		     << " from parent " << parent_of_fork->pid << endl;
+
 	valid = true;
-	/* Now that we have a valid app shortname (from the COMM event data),
-	 * let's spin through our mmappings and process them -- see if we can
-	 * find one that has a good appname candidate.
-	 */
-	num_app_chars_matched = 0;
+	set_appname(app_shortname, false);
+
 	map<u64, struct operf_mmap *>::iterator it = mmappings.begin();
 	while (it != mmappings.end()) {
-		process_new_mapping(it->second);
+		operf_mmap * cur = it->second;
+		/* mmappings from the parent may have been added to this proc info prior
+		 * to this proc info becoming valid since we could not know at the time if
+		 * this proc would ever be valid. But now we know it's valid (which is why
+		 * we're dis-associating from the parent), so we remove these unnecessary
+		 * parent mmappings.
+		 */
+		if (mmappings_from_parent[cur->start_addr]) {
+			mmappings_from_parent[cur->start_addr] = false;
+			mmappings.erase(it);
+		} else {
+			process_mapping(cur, false);
+		}
 		it++;
 	}
-	parent_of_fork->remove_forked_process(this->pid);
+	if (parent_of_fork) {
+		parent_of_fork->remove_forked_process(this->pid);
+		parent_of_fork = NULL;
+	}
+	forked = false;
+}
+
+/* This function adds a new mapping to the current operf_process_info
+ * and then calls the same function on each of its forked children.
+ * If do_self==true, it means this function is being called by a parent
+ * on a forked child's operf_process_info.  Then, if the mapping already
+ * exists, we do not set the corresponding mmappings_from_parent since we
+ * want to retain the knowledge that the mapping had already been added for
+ * this process versus from the parent. If do_self==false, it means this
+ * operf_process_info is the top-level parent and should set the corresponding
+ * mmappings_from_parent to false. The mmappings_from_parent map allows us to
+ * know whether to keep or discard the mapping if/when we dis-associate from
+ * the parent,
+ */
+void operf_process_info::set_new_mapping_recursive(struct operf_mmap * mapping, bool do_self)
+{
+	if (do_self) {
+		map<u64, struct operf_mmap *>::iterator it = mmappings.find(mapping->start_addr);
+		if (it == mmappings.end())
+			mmappings_from_parent[mapping->start_addr] = true;
+		else
+			mmappings_from_parent[mapping->start_addr] = false;
+	} else {
+		mmappings_from_parent[mapping->start_addr] = false;
+	}
+	mmappings[mapping->start_addr] = mapping;
+	std::vector<operf_process_info *>::iterator it = forked_processes.begin();
+	while (it != forked_processes.end()) {
+		operf_process_info * fp = *it;
+		fp->set_new_mapping_recursive(mapping, true);
+		cverb << vmisc << "Copied new parent mapping for " << mapping->filename
+		      << " for forked process " << fp->pid << endl;
+		it++;
+	}
 }
