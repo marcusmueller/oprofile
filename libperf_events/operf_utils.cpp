@@ -71,6 +71,7 @@ static bool sfile_init_done;
  * opreport can understand.
  */
 #if PPC64_ARCH
+extern op_cpu cpu_type;
 #define NIL_CODE ~0U
 
 #if HAVE_LIBPFM3
@@ -140,6 +141,10 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 
 	for (unsigned int i = 0; i < num_events; i++) {
 		operf_event_t event = (*evt_vec)[i];
+		if (event.evt_code != NIL_CODE) {
+			events_converted++;
+			continue;
+		}
 		memset(evt_name, 0, OP_MAX_EVT_NAME_LEN);
 		if (!strcmp(event.name, "CYCLES")) {
 			strcpy(evt_name ,"PM_CYC") ;
@@ -176,7 +181,17 @@ bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 	int ret;
 	for (unsigned int i = 0; i < evt_vec->size(); i++) {
 		operf_event_t event = (*evt_vec)[i];
-		event.evt_code = NIL_CODE;
+		if (cpu_type == CPU_PPC64_POWER7) {
+			if (!strncmp(event.name, "PM_RUN_CYC", strlen("PM_RUN_CYC"))) {
+				event.evt_code = 0x600f4;
+			} else if (!strncmp(event.name, "PM_RUN_INST_CMPL", strlen("PM_RUN_INST_CMPL"))) {
+				event.evt_code = 0x500fa;
+			} else {
+				event.evt_code = NIL_CODE;
+			}
+		} else {
+			event.evt_code = NIL_CODE;
+		}
 		(*evt_vec)[i] = event;
 	}
 
@@ -201,7 +216,7 @@ bool OP_perf_utils::op_convert_event_vals(vector<operf_event_t> * evt_vec)
 #endif
 }
 
-#endif
+#endif // PPC64_ARCH
 
 
 static inline void update_trans_last(struct operf_transient * trans)
