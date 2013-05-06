@@ -534,7 +534,7 @@ static void warn_if_lost_samples(string const & session_samples_dir)
 			total_lost_samples += lost_samples_count;
 	}
 
-	if (total_lost_samples > (int)(OPERF_WARN_LOST_SAMPLES_THRESHOLD
+	if (total_lost_samples > (unsigned int)(OPERF_WARN_LOST_SAMPLES_THRESHOLD
 				       * total_samples)) {
 		operf_log.append("/samples/operf.log");
 		cerr << "\nWARNING: Lost samples detected! See " <<  operf_log
