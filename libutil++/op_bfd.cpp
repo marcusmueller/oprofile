@@ -17,6 +17,7 @@
 #include <cstring>
 
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include <cstdlib>
 
@@ -81,7 +82,7 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 	: bfd_symbol(0), symb_value(vma),
 	  section_filepos(0), section_vma(0),
 	  symb_size(size), symb_name(name),
-	  symb_artificial(true)
+	  symb_hidden(false), symb_weak(false), symb_artificial(true)
 {
 }
 
@@ -104,13 +105,14 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	archive_path(extra_images.get_archive_path()),
 	extra_found_images(extra_images),
 	file_size(-1),
-	anon_obj(false)
+	anon_obj(false),
+	vma_adj(0)
 {
-	int fd;
+	int fd =  -1;
 	struct stat st;
 	// after creating all symbol it's convenient for user code to access
 	// symbols through a vector. We use an intermediate list to avoid a
-	// O(N²) behavior when we will filter vector element below
+	// O(Nï¿½) behavior when we will filter vector element below
 	symbols_found_t symbols;
 	asection const * sect;
 	string suf = ".jo";
@@ -143,7 +145,6 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	file_size = st.st_size;
 
 	ibfd.abfd = fdopen_bfd(image_path, fd);
-
 	if (!ibfd.valid()) {
 		cverb << vbfd << "fdopen_bfd failed for " << image_path << endl;
 		ok = false;
@@ -177,6 +178,8 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 out:
 	add_symbols(symbols, symbol_filter);
+	if (fd != -1)
+		close(fd);
 	return;
 out_fail:
 	ibfd.close();
@@ -220,7 +223,7 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	if (dbfd.valid() && !ibfd.nr_syms)
 		vma_adj = ibfd.abfd->start_address - dbfd.abfd->start_address;
 	else
-	vma_adj= 0;
+		vma_adj= 0;
 
 	size_t i;
 	for (i = 0; i < ibfd.nr_syms; ++i) {

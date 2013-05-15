@@ -98,6 +98,7 @@ formatter::formatter(extra_images const & extra)
 	vma_64(false),
 	long_filenames(false),
 	need_header(true),
+	global_percent(false),
 	extra_found_images(extra)
 {
 	format_map[ff_vma] = field_description(9, "vma", &formatter::format_vma);
@@ -511,6 +512,9 @@ void cg_formatter::output(ostream & out, symbol_collection const & syms)
 
 	for (it = syms.begin(); it < end; ++it) {
 		cg_symbol const * sym = dynamic_cast<cg_symbol const *>(*it);
+		// To silence coverity (since dynamic cast can theoretically return NULL)
+		if (!sym)
+			continue;
 
 		cg_symbol::children::const_iterator cit;
 		cg_symbol::children::const_iterator cend = sym->callers.end();
@@ -610,6 +614,7 @@ xml_formatter(profile_container const * p,
 	profile(p),
 	symbols(s),
 	need_details(false),
+	detail_count(0),
 	symbol_filter(sf)
 {
 	if (profile)

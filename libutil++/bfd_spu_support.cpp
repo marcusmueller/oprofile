@@ -69,8 +69,9 @@ spu_bfd_iovec_pread(bfd * abfd, void * stream, void * buf,
 		    file_ptr nbytes, file_ptr offset)
 {
 	spu_elf * my_stream = (spu_elf *) stream;
-	fseek(my_stream->stream, my_stream->spu_offset + offset,
-	      SEEK_SET);
+	if (fseek(my_stream->stream, my_stream->spu_offset + offset,
+	          SEEK_SET) < 0)
+		return 0;
 	nbytes = fread(buf, sizeof(char), nbytes, my_stream->stream);
 	/* Checking abfd isn't really necessary, except to silence
 	 * compile warning.  In fact, abfd will always be non-NULL.

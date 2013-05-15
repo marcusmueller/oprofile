@@ -270,7 +270,7 @@ static void emit_lne_define_filename(struct growable_buffer * b,
 static void emit_lne_set_address(struct growable_buffer * b,
 				 void const * address)
 {
-	emit_extended_opcode(b, DW_LNE_set_address, &address, sizeof(address));
+	emit_extended_opcode(b, DW_LNE_set_address, &address, sizeof(unsigned long));
 }
 
 

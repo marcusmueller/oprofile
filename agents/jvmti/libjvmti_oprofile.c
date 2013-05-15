@@ -147,11 +147,11 @@ static void JNICALL cb_compiled_method_load(jvmtiEnv * jvmti,
 						entry_count, table_ptr,
 						source_filename);
 			} else if (err != JVMTI_ERROR_ABSENT_INFORMATION) {
-				handle_error(err, "GetSourceFileName()", 1);
+				(void)handle_error(err, "GetSourceFileName()", 1);
 			}
 		} else if (err != JVMTI_ERROR_NATIVE_METHOD &&
 			   err != JVMTI_ERROR_ABSENT_INFORMATION) {
-			handle_error(err, "GetLineNumberTable()", 1);
+			(void)handle_error(err, "GetLineNumberTable()", 1);
 		}
 	}
 

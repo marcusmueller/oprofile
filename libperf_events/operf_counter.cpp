@@ -349,15 +349,21 @@ int operf_record::_write_header_to_file(void)
 	struct op_file_attr f_attr;
 	int total = 0;
 
-	lseek(output_fd, sizeof(f_header), SEEK_SET);
+	if (lseek(output_fd, sizeof(f_header), SEEK_SET) == (off_t)-1)
+		goto err_out;
+
 
 	for (unsigned i = 0; i < evts.size(); i++) {
 		opHeader.h_attrs[i].id_offset = lseek(output_fd, 0, SEEK_CUR);
+		if (opHeader.h_attrs[i].id_offset == (off_t)-1)
+			goto err_out;
 		total += op_write_output(output_fd, &opHeader.h_attrs[i].ids[0],
 		                         opHeader.h_attrs[i].ids.size() * sizeof(u64));
 	}
 
 	opHeader.attr_offset = lseek(output_fd, 0, SEEK_CUR);
+	if (opHeader.attr_offset == (off_t)-1)
+		goto err_out;
 
 	for (unsigned i = 0; i < evts.size(); i++) {
 		struct op_header_evt_info attr = opHeader.h_attrs[i];
@@ -368,6 +374,9 @@ int operf_record::_write_header_to_file(void)
 	}
 
 	opHeader.data_offset = lseek(output_fd, 0, SEEK_CUR);
+	if (opHeader.data_offset == (off_t)-1)
+		goto err_out;
+
 
 	f_header.magic = OP_MAGIC;
 	f_header.size = sizeof(f_header);
@@ -377,10 +386,17 @@ int operf_record::_write_header_to_file(void)
 	f_header.data.offset = opHeader.data_offset;
 	f_header.data.size = opHeader.data_size;
 
-	lseek(output_fd, 0, SEEK_SET);
+	if (lseek(output_fd, 0, SEEK_SET) == (off_t)-1)
+		goto err_out;
 	total += op_write_output(output_fd, &f_header, sizeof(f_header));
-	lseek(output_fd, opHeader.data_offset + opHeader.data_size, SEEK_SET);
+	if (lseek(output_fd, opHeader.data_offset + opHeader.data_size, SEEK_SET) == (off_t)-1)
+		goto err_out;
 	return total;
+
+err_out:
+	string errmsg = "Internal error doing lseek: ";
+	errmsg += strerror(errno);
+	throw runtime_error(errmsg);
 }
 
 int operf_record::_write_header_to_pipe(void)
@@ -436,7 +452,10 @@ int operf_record::_prepare_to_record_one_fd(int idx, int fd)
 	md.prev = 0;
 	md.mask = num_mmap_pages * pagesize - 1;
 
-	fcntl(fd, F_SETFL, O_NONBLOCK);
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+		perror("fcntl failed");
+		return -1;
+	}
 
 	poll_data[idx].fd = fd;
 	poll_data[idx].events = POLLIN;
@@ -730,7 +749,7 @@ void operf_record::recordPerfData(void)
 			break;
 
 		if (prev == sample_reads) {
-			poll(poll_data, poll_count, -1);
+			(void)poll(poll_data, poll_count, -1);
 		}
 
 		if (quit) {

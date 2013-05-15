@@ -683,8 +683,9 @@ summarize_binaries(extra_images const & extra_found_images)
 			current_binary = binaries_root.add_binary(binary, it);
 			current_binary_name = binary;
 		}
-
-		current_binary->add_module_symbol(module, binary, it);
+		// To silence coverity, check current_binary !=NULL
+		if (current_binary)
+			current_binary->add_module_symbol(module, binary, it);
 	}
 
 	// close out last binary and module

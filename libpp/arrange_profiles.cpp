@@ -351,7 +351,9 @@ void name_classes(profile_classes & classes, merge_option const & merge_by)
 			it->name += it->ptemplate.cpu;
 			it->longname = "Samples on CPU " + it->ptemplate.cpu;
 			break;
-		case AXIS_MAX:;
+		case AXIS_MAX:
+			cerr << "Internal error - no equivalence class axis" << endl;
+			abort();
 		}
 	}
 }
@@ -676,6 +678,11 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by,
 	copy(temp_classes.begin(), temp_classes.end(),
 	     back_inserter(classes.v));
 
+	/* Coverity complains about classes.axis not being initialized upon
+	 * returning a copy of the classes object, so we'll silence it by
+	 * initializing axis to the max value.
+	 */
+	classes.axis = AXIS_MAX;
 	if (classes.v.empty())
 		return classes;
 

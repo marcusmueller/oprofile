@@ -90,7 +90,7 @@ struct operf_transient {
 	operf_process_info * cur_procinfo;
 	vma_t pc;
 	const char * image_name;
-	const char * app_filename;
+	char app_filename[PATH_MAX];
 	size_t image_len, app_len;
 	vma_t last_pc;
 	int event;

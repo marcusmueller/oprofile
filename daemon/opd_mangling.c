@@ -74,6 +74,9 @@ mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int c
 
 	values.flags = 0;
 
+	// To silence Coverity
+	values.anon_name = NULL;
+	values.cg_image_name = NULL;
 	if (sf->kernel) {
 		values.image_name = sf->kernel->name;
 		values.flags |= MANGLE_KERNEL;

@@ -235,13 +235,8 @@ static string args_to_string(void)
 
 void run_app(void)
 {
+	// ASSUMPTION: app_name is a fully-qualified pathname
 	char * app_fname = rindex(app_name, '/') + 1;
-	if (!app_fname) {
-		string msg = "Error trying to parse app name ";
-		msg += app_name;
-		__print_usage_and_exit(msg.c_str());
-	}
-
 	app_args[0] = app_fname;
 
 	string arg_str = args_to_string();
@@ -1037,6 +1032,13 @@ int validate_app_name(void)
 			goto out;
 		}
 		strcat(full_pathname, "/");
+		if ((strlen(full_pathname) + strlen(app_name + 2) + 1) > PATH_MAX) {
+			rc = -1;
+			cerr << "Length of current dir (" << full_pathname << ") and app name ("
+			     << (app_name + 2) << ") exceeds max allowed (" << PATH_MAX << "). Aborting."
+			     << endl;
+			goto out;
+		}
 		strcat(full_pathname, (app_name + 2));
 	} else if (index(app_name, '/')) {
 		// Passed app is in a subdirectory of cur dir; e.g., "test-stuff/myApp"
@@ -1322,7 +1324,7 @@ static void _process_events_list(void)
 		fclose(fp);
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
-		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN);
+		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
 		event.count = atoi(strtok(NULL, ":"));
 		/* Name and count are required in the event spec in order for
 		 * 'ophelp --check-events' to pass.  But since unit mask and domain
@@ -1348,7 +1350,7 @@ static void _process_events_list(void)
 				// consider the entire part a string.
 				if (*endptr) {
 					event.evt_um = 0;
-					strncpy(event.um_name, info, OP_MAX_UM_NAME_LEN);
+					strncpy(event.um_name, info, OP_MAX_UM_NAME_LEN - 1);
 				}
 				break;
 			case _OP_KERNEL:

@@ -10,14 +10,24 @@
  */
 
 #include <qapplication.h>
+#include <stdlib.h>
+#include <exception>
+#include <iostream>
 
 #include "oprof_start.h"
 
+using namespace std;
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
+	oprof_start* dlg;
 
-	oprof_start* dlg = new oprof_start();
+	try {
+		dlg = new oprof_start();
+	} catch (exception e) {
+		cerr << "Initialization error: " << e.what() << endl;
+		exit(EXIT_FAILURE);
+	}
 
 	a.setMainWidget(dlg);
 

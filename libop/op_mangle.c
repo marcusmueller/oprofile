@@ -23,7 +23,7 @@ static void append_image(char * dest, int flags, int anon, char const * name, ch
 {
 	if ((flags & MANGLE_KERNEL) && !strchr(name, '/')) {
 		strcat(dest, "{kern}/");
-	} else if (anon) {
+	} else if (anon && anon_name) {
 		strcat(dest, "{anon:");
 		strcat(dest, anon_name);
 		strcat(dest,"}/");
@@ -53,10 +53,11 @@ char * op_mangle_filename(struct mangle_values const * values)
 	len = strlen(op_samples_current_dir) + strlen(dep_name) + 1
 		+ strlen(values->event_name) + 1 + strlen(image_name) + 1;
 
-	if (values->flags & MANGLE_CALLGRAPH)
+	// Just to silence Coverity, check cg_image_name and anon_name below for !=NULL.
+	if (cg_image_name && (values->flags & MANGLE_CALLGRAPH))
 		len += strlen(cg_image_name) + 1;
 
-	if (anon || cg_anon)
+	if (anon_name && (anon || cg_anon))
 		len += strlen(anon_name);
 
 	/* provision for tgid, tid, unit_mask, cpu and some {root}, {dep},

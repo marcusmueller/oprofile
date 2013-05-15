@@ -62,7 +62,7 @@ struct sample_entry {
 /// associate a symbol with a file location, samples count and vma address
 class symbol_entry {
 public:
-	symbol_entry() : size(0) {}
+	symbol_entry() :  sym_index(0), size(0), spu_offset(0), vma_adj(0) {}
 	virtual ~symbol_entry() {}
 
 	/// which image this symbol belongs to

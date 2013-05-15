@@ -107,6 +107,8 @@ static char const * red_xpm[] = {
 
 static QPixmap * green_pixmap;
 static QPixmap * red_pixmap;
+static op_event_descr null_evt;
+
 
 
 op_event_descr::op_event_descr()
@@ -780,6 +782,7 @@ void oprof_start::hide_masks()
 
 void oprof_start::setup_unit_masks(op_event_descr const & descr)
 {
+#define OP_MAX_HANDLED_UMS 16
 	op_unit_mask const * um = descr.unit;
 
 	hide_masks();
@@ -787,11 +790,21 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;
 
+	if (um->num > OP_MAX_HANDLED_UMS) {
+		ostringstream error;
+
+		error << "Number of unit masks (" << um->num << ") is greater than max allowed ("
+		      << OP_MAX_HANDLED_UMS << ").";
+		QMessageBox::warning(this, 0, error.str().c_str());
+		return;
+	}
+
+
 	event_setting & cfg = event_cfgs[descr.name];
 
 	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);
 
-	for (size_t i = 0; i < um->num ; ++i) {
+	for (size_t i = 0; i < OP_MAX_HANDLED_UMS; ++i) {
 		QCheckBox * check = 0;
 		switch (i) {
 			case 0: check = check0; break;
@@ -1068,5 +1081,15 @@ public:
 // helper to retrieve an event descr through its name.
 op_event_descr const & oprof_start::locate_event(string const & name) const
 {
-	return *(find_if(v_events.begin(), v_events.end(), event_name_eq(name)));
+	vector<op_event_descr>::const_iterator it = find_if(v_events.begin(), v_events.end(),
+	                                                    event_name_eq(name));
+
+	// Failure to find the event should NEVER happen; I had to put this here to silence Coverity.
+	if (it != v_events.end())
+		return *it;
+
+	QMessageBox::warning((oprof_start *)this, 0, "Could not locate event. Returning null event.");
+	null_evt.help_str = "";
+	null_evt.name = "";
+	return null_evt;
 }

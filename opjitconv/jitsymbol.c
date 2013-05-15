@@ -389,6 +389,11 @@ static int handle_overlap_region(int start_idx, int end_idx)
 		}
 	}
 	idx = select_one(start_idx, end_idx);
+	// This can't happen, but we check anyway, just to silence Coverity
+	if (idx == OP_JIT_CONV_FAIL) {
+		rc = OP_JIT_CONV_FAIL;
+		goto out;
+	}
 	totaltime = eliminate_overlaps(start_idx, end_idx, idx);
 	if (totaltime == ULONG_MAX) {
 		rc = OP_JIT_CONV_FAIL;

@@ -839,8 +839,8 @@ int opannotate(options::spec const & spec)
 	}
 
 	if (!debug_info && !options::assembly) {
-		cerr << "opannotate (warning): no debug information available for binary "
-		     << it->image << ", and --assembly not requested\n";
+		cerr << "opannotate (warning): no debug information available for any binary "
+		     << "selected, and --assembly not requested.\n";
 	}
 
 	annotate_source(images);

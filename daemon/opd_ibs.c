@@ -445,7 +445,12 @@ static int ibs_parse_counts(char * str, unsigned long int * count)
 
 	tmp = op_xstrndup(str, strlen(str));
 	tok1 = strtok_r(tmp, ":", &tok2);
-	*count = strtoul(tok1, &end, 10);
+	if (tok1) {
+		*count = strtoul(tok1, &end, 10);
+	} else {
+		fprintf(stderr, "Invalid count specification in %s\n", str);
+		return -1;
+	}
 	if ((end && *end) || *count == 0
 	    || errno == EINVAL || errno == ERANGE) {
 		fprintf(stderr,"Invalid count (%s)\n", str);

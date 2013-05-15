@@ -119,7 +119,8 @@ protected:
  
 	/// decribe one field of the colummned output.
 	struct field_description {
-		field_description() {}
+		field_description()
+			: width(0), header_name(""), formatter(NULL) {}
 		field_description(std::size_t w, std::string h,
 				  fct_format f)
 			: width(w), header_name(h), formatter(f) {}

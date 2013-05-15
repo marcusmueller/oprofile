@@ -20,7 +20,7 @@ template <class T>
 class cached_value
 {
 public:
-	cached_value() : set(false) {}
+	cached_value() : set(false) { value = T(); }
 
 	typedef T value_type;
 

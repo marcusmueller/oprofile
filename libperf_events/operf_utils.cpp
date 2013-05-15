@@ -566,9 +566,10 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 			cout << "Found mmap for sample; image_name is " << op_mmap->filename <<
 			" and app name is " << proc->get_app_name() << endl;
 		trans.image_name = op_mmap->filename;
-		trans.app_filename = proc->get_app_name().c_str();
+		trans.app_len = proc->get_app_name().size();
+		strncpy(trans.app_filename, proc->get_app_name().c_str(), trans.app_len);
+		trans.app_filename[trans.app_len] = '\0';
 		trans.image_len = strlen(trans.image_name);
-		trans.app_len = strlen(trans.app_filename);
 		trans.start_addr = op_mmap->start_addr;
 		trans.end_addr = op_mmap->end_addr;
 		trans.tgid = data->pid;

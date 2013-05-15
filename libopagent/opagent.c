@@ -168,10 +168,13 @@ op_agent_t op_open_agent(void)
 	dumpfile = fdopen(fd, "w");
 	if (!dumpfile) {
 		fprintf(stderr, "%s\n", err_msg);
+		close(fd);
 		return NULL;
 	}
-	if (define_bfd_vars())
+	if (define_bfd_vars()) {
+		fclose(dumpfile);
 		return NULL;
+	}
 	header.magic = JITHEADER_MAGIC;
 	header.version = JITHEADER_VERSION;
 	header.totalsize = sizeof(header) + strlen(_bfd_target_name) + 1;
@@ -181,6 +184,7 @@ op_agent_t op_open_agent(void)
 	header.bfd_arch = _bfd_arch;
 	header.bfd_mach = _bfd_mach;
 	if (gettimeofday(&tv, NULL)) {
+		fclose(dumpfile);
 		fprintf(stderr, "gettimeofday failed\n");
 		return NULL;
 	}
@@ -188,16 +192,19 @@ op_agent_t op_open_agent(void)
 	header.timestamp = tv.tv_sec;
 	snprintf(err_msg, PATH_MAX + 16, "Error writing to %s", dump_path);
 	if (!fwrite(&header, sizeof(header), 1, dumpfile)) {
+		fclose(dumpfile);
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
 	if (!fwrite(_bfd_target_name, strlen(_bfd_target_name) + 1, 1,
 		    dumpfile)) {
+		fclose(dumpfile);
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
 	/* write padding '\0' if necessary */
 	if (pad_cnt && !fwrite(pad_bytes, pad_cnt, 1, dumpfile)) {
+		fclose(dumpfile);
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}

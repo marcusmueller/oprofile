@@ -12,6 +12,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <cstring>
 
@@ -46,9 +47,10 @@ op_bfd::op_bfd(uint64_t spu_offset, string const & fname,
 	extra_found_images(extra_images),
 	file_size(-1),
 	embedding_filename(fname),
-	anon_obj(false)
+	anon_obj(false),
+	vma_adj(0)
 {
-	int fd;
+	int fd = -1;
 	struct stat st;
 	int notes_remaining;
 	bool spu_note_found = false;
@@ -82,7 +84,6 @@ op_bfd::op_bfd(uint64_t spu_offset, string const & fname,
 
 	file_size = st.st_size;
 	ibfd.abfd = spu_open_bfd(image_path, fd, spu_offset);
-
 	if (!ibfd.valid()) {
 		cverb << vbfd << "fdopen_bfd failed for " << image_path << endl;
 		ok = false;
@@ -179,6 +180,8 @@ out:
 out_fail:
 	ibfd.close();
 	dbfd.close();
+	if (fd != -1)
+		close(fd);
 	file_size = -1;
 	goto out;
 }

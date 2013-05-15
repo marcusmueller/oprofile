@@ -223,7 +223,7 @@ int child_reader::terminate_process()
 	// we must protect against multiple call
 	if (!is_terminated) {
 		int ret;
-		waitpid(pid, &ret, 0);
+		(void)waitpid(pid, &ret, 0);
 
 		is_terminated = true;
 

@@ -27,7 +27,7 @@ filename_spec::filename_spec(string const & filename,
 
 
 filename_spec::filename_spec()
-	: image("*"), lib_image("*")
+	: image("*"), lib_image("*"), count(0), unitmask(0)
 {
 }
 

@@ -128,8 +128,8 @@ public:
 	call_data(profile_container const & p, profile_t const & pr,
 	          op_bfd const & bfd, u32 boff, image_name_id iid,
 	          image_name_id aid, bool debug_info)
-		: pc(p), profile(pr), b(bfd), boffset(boff), image(iid),
-		  app(aid), debug(debug_info) {}
+		: callee_end(0), pc(p), profile(pr), b(bfd), boffset(boff),
+		  image(iid), app(aid), debug(debug_info) {}
 
 	/// point to a caller symbol
 	void caller_sym(symbol_index_t i) {

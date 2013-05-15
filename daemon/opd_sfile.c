@@ -102,7 +102,7 @@ sfile_hash(struct transient const * trans, struct kernel_image * ki)
 		val ^= trans->cpu;
 
 	/* cookie meaningless for kernel, shouldn't hash */
-	if (trans->in_kernel) {
+	if (trans->in_kernel && ki) {
 		val ^= ki->start >> 14;
 		val ^= ki->end >> 7;
 		return val & HASH_BITS;
@@ -345,6 +345,7 @@ struct sfile * sfile_find(struct transient const * trans)
 						opd_stats[OPD_NO_APP_KERNEL_SAMPLE]++;
 						dropped = 1;
 					}
+					close(fd);
 				}
 				list_add(&kcmd->hash, &kernel_cmdlines[hash]);
 				if (dropped)
