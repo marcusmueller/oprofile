@@ -11,11 +11,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/utsname.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fnmatch.h>
+#include <elf.h>
+#include <link.h>
 
 #include "op_cpu_type.h"
 #include "op_hw_specific.h"
@@ -110,6 +116,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Intel Haswell microarchitecture", "i386/haswell", CPU_HASWELL, 4 },
 	{ "IBM zEnterprise EC12", "s390/zEC12", CPU_S390_ZEC12, 1 },
 	{ "AMD64 generic", "x86-64/generic", CPU_AMD64_GENERIC, 4 },
+	{ "IBM Power Architected Events V1", "ppc64/architected_events_v1", CPU_PPC64_ARCH_V1, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -168,11 +175,101 @@ static char * _get_cpuinfo_cpu_type(char * buf, int len, const char * prefix)
 	return _get_cpuinfo_cpu_type_line(buf, len, prefix, 1);
 }
 
+// The aux vector stuff below is currently only used by ppc64 arch
+static ElfW(auxv_t) * auxv_buf = NULL;
+
+static ElfW(auxv_t) * _auxv_fetch()
+{
+	ElfW(auxv_t) * auxv_temp = (ElfW(auxv_t) *)auxv_buf;
+	int auxv_f;
+	size_t page_size = getpagesize();
+	ssize_t bytes;
+
+
+	if(auxv_temp == NULL) {
+		auxv_f = open("/proc/self/auxv", O_RDONLY);
+
+		if(auxv_f == -1) {
+			perror("Cannot open /proc/self/auxv");
+			fprintf(stderr, "Assuming native platform profiling is supported.\n");
+			return NULL;
+		}
+		else {
+			auxv_temp = (ElfW(auxv_t) *)malloc(page_size);
+			if (!auxv_temp) {
+				perror("Allocation of space for auxv failed.");
+				return NULL;
+			}
+			bytes = read(auxv_f, (void *)auxv_temp, page_size);
+
+			if (bytes <= 0) {
+				free(auxv_temp);
+				close(auxv_f);
+				perror("Error /proc/self/auxv read failed");
+				return NULL;
+			}
+
+			if (close(auxv_f)) {
+				perror("Error close failed");
+				fprintf(stderr, "Recoverable error. Continuing.\n");
+			}
+		}
+	}
+	return (ElfW(auxv_t) *)auxv_temp;
+}
+
+
+static const char * fetch_at_hw_platform(ElfW(Addr) type)
+{
+	int i = 0;
+	const char * platform = NULL;
+	ElfW(auxv_t) * my_auxv = NULL;
+
+	if ((my_auxv = (ElfW(auxv_t)*) _auxv_fetch()) == NULL)
+		return NULL;
+
+	do {
+		if(my_auxv[i].a_type == type) {
+			platform = (const char *)my_auxv[i].a_un.a_val;
+			break;
+		}
+		i++;
+	} while (my_auxv[i].a_type != AT_NULL);
+
+	return platform;
+}
+
+static op_cpu _try_ppc64_arch_generic_cpu(void)
+{
+	const char * platform, * base_platform;
+	op_cpu cpu_type = CPU_NO_GOOD;
+
+	platform = fetch_at_hw_platform(AT_PLATFORM);
+	base_platform = fetch_at_hw_platform(AT_BASE_PLATFORM);
+	if (!platform || !base_platform) {
+		fprintf(stderr, "NULL returned for one or both of AT_PLATFORM/AT_BASE_PLATFORM\n");
+		fprintf(stderr, "AT_PLATFORM: %s; \tAT_BASE_PLATFORM: %s\n", platform, base_platform);
+		return cpu_type;
+	}
+	// FIXME whenever a new IBM Power processor is added -- need to ensure
+	// we're returning the correct version of the architected events file.
+	if (strcmp(platform, base_platform)) {
+		if (strcmp(platform, "power7") == 0)
+			cpu_type = CPU_PPC64_ARCH_V1;
+	}
+	return cpu_type;
+}
+
 static op_cpu _get_ppc64_cpu_type(void)
 {
 	int i;
 	size_t len;
 	char line[100], cpu_type_str[64], cpu_name_lowercase[64], * cpu_name;
+	op_cpu cpu_type = CPU_NO_GOOD;
+
+	cpu_type = _try_ppc64_arch_generic_cpu();
+	if (cpu_type != CPU_NO_GOOD)
+		return cpu_type;
 
 	cpu_name = _get_cpuinfo_cpu_type(line, 100, "cpu");
 	if (!cpu_name)
@@ -185,7 +282,8 @@ static op_cpu _get_ppc64_cpu_type(void)
 	cpu_type_str[0] = '\0';
 	strcat(cpu_type_str, "ppc64/");
 	strncat(cpu_type_str, cpu_name_lowercase, len);
-	return op_get_cpu_number(cpu_type_str);
+	cpu_type = op_get_cpu_number(cpu_type_str);
+	return cpu_type;
 }
 
 static op_cpu _get_arm_cpu_type(void)

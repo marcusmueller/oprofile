@@ -670,6 +670,11 @@ int main(int argc, char const * argv[])
 			"No public performance monitoring doc available for older processors.\n";
 		break;
 
+	case CPU_PPC64_ARCH_V1:
+		event_doc =
+			"See Power ISA 2.07 at https://www.power.org/\n";
+		break;
+
 	case CPU_PPC64_CELL:
 		event_doc =
 			"Obtain Cell Broadband Engine documentation at:\n"

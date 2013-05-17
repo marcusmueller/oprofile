@@ -1,0 +1,62 @@
+#
+#  Copyright OProfile authors
+#  Copyright (c) International Business Machines, 2013.
+#  Contributed by Maynard Johnson <maynardj@us.ibm.com>.
+#
+#  IBM Power Architected Events -- Version 1: Power ISA 2.07
+
+# Manually add CYCLES for backward compatibility for default event
+event:0x100f0 counters:0 um:zero minimum:100000 name:CYCLES : Cycles
+
+event:0x100f2 counters:0 um:zero minimum:100000 name:PM_1PLUS_PPC_CMPL : one or more ppc  instructions finished
+event:0x400f2 counters:3 um:zero minimum:100000 name:PM_1PLUS_PPC_DISP : Cycles at least one Instr Dispatched
+event:0x100fa counters:0 um:zero minimum:100000 name:PM_ANY_THRD_RUN_CYC : One of threads in run_cycles
+event:0x400f6 counters:3 um:zero minimum:10000 name:PM_BR_MPRED_CMPL : Number of Branch Mispredicts
+event:0x200fa counters:1 um:zero minimum:10000 name:PM_BR_TAKEN_CMPL : New  event for Branch Taken
+event:0x100f0 counters:0 um:zero minimum:100000 name:PM_CYC : Cycles
+event:0x200fe counters:1 um:zero minimum:10000 name:PM_DATA_FROM_L2MISS : Demand LD - L2 Miss (not L2 hit)
+event:0x300fe counters:2 um:zero minimum:10000 name:PM_DATA_FROM_L3MISS : Demand LD - L3 Miss (not L2 hit and not L3 hit)
+event:0x400fe counters:3 um:zero minimum:10000 name:PM_DATA_FROM_MEM : data from Memory
+event:0x300fc counters:2 um:zero minimum:10000 name:PM_DTLB_MISS : Data PTEG reload
+event:0x200f8 counters:1 um:zero minimum:10000 name:PM_EXT_INT : external interrupt
+event:0x100f4 counters:0 um:zero minimum:10000 name:PM_FLOP : Floating Point Operations Finished
+event:0x400f8 counters:3 um:zero minimum:10000 name:PM_FLUSH : Flush (any type)
+event:0x100f8 counters:0 um:zero minimum:10000 name:PM_GCT_NOSLOT_CYC : No itags assigned
+event:0x100f6 counters:0 um:zero minimum:10000 name:PM_IERAT_MISS : Cycles Instruction ERAT was reloaded
+event:0x200f2 counters:1 um:zero minimum:100000 name:PM_INST_DISP : Number of PPC Dispatched
+event:0x300fa counters:2 um:zero minimum:10000 name:PM_INST_FROM_L3MISS : A Instruction cacheline request resolved from a location that was beyond the local L3 cache
+event:0x400fc counters:3 um:zero minimum:10000 name:PM_ITLB_MISS : ITLB Reloaded (always zero on POWER6)
+event:0x300f6 counters:2 um:zero minimum:10000 name:PM_L1_DCACHE_RELOAD_VALID : DL1  reloaded due to Demand Load
+event:0x200fc counters:1 um:zero minimum:10000 name:PM_L1_ICACHE_MISS : Demand iCache Miss
+event:0x400f0 counters:3 um:zero minimum:10000 name:PM_LD_MISS_L1 : Load Missed L1
+event:0x200f6 counters:1 um:zero minimum:10000 name:PM_LSU_DERAT_MISS : DERAT Reloaded due to a DERAT miss
+event:0x300e4 counters:2 um:zero minimum:1000 name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted
+event:0x100e2 counters:0 um:zero minimum:1000 name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken completed
+event:0x400e8 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS : sampled load resolved beyond L2
+event:0x200e4 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS : sampled load resolved beyond L3
+event:0x200e0 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM : sampled load resolved from memory
+event:0x300e6 counters:2 um:zero minimum:1000 name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes
+event:0x400e4 counters:3 um:zero minimum:1000 name:PM_MRK_DTLB_MISS : sampled Instruction dtlb miss
+event:0x400e0 counters:3 um:zero minimum:1000 name:PM_MRK_INST_CMPL : Marked group complete
+event:0x100e0 counters:0 um:zero minimum:1000 name:PM_MRK_INST_DISP : The thread has dispatched a randomly sampled marked instruction
+event:0x400e6 counters:3 um:zero minimum:1000 name:PM_MRK_INST_FROM_L3MISS : sampled instruction missed icache and came from beyond L3 A Instruction cacheline request for a marked/sampled instruction resolved from a location that was beyond the local L3 cache
+event:0x100e4 counters:0 um:zero minimum:1000 name:PM_MRK_L1_ICACHE_MISS : sampled Instruction suffered an icache Miss
+event:0x100ea counters:0 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID : Sampled Instruction had a data reload
+event:0x200e2 counters:1 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss
+event:0x300e2 counters:2 um:zero minimum:1000 name:PM_MRK_ST_CMPL : marked store completed and sent to nest
+event:0x600f4 counters:5 um:zero minimum:100000 name:PM_RUN_CYC : Run_cycles
+event:0x500fa counters:4 um:zero minimum:100000 name:PM_RUN_INST_CMPL : Run_Instructions
+event:0x400f4 counters:3 um:zero minimum:10000 name:PM_RUN_PURR : Run_PURR
+event:0x200f0 counters:1 um:zero minimum:10000 name:PM_ST_FIN : Store Instructions Finished
+event:0x300f0 counters:2 um:zero minimum:10000 name:PM_ST_MISS_L1 : Store Missed L1
+event:0x300f8 counters:2 um:zero minimum:10000 name:PM_TB_BIT_TRANS : timebase event
+event:0x300f4 counters:2 um:zero minimum:100000 name:PM_THRD_CONC_RUN_INST : PPC Instructions Finished when both threads in run_cycles
+event:0x300ea counters:2 um:zero minimum:10000 name:PM_THRESH_EXC_1024 : Threshold counter exceeded a value of 1024 Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 1024
+event:0x400ea counters:3 um:zero minimum:10000 name:PM_THRESH_EXC_128 : Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 128
+event:0x400ec counters:3 um:zero minimum:10000 name:PM_THRESH_EXC_2048 : Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 2048
+event:0x100e8 counters:0 um:zero minimum:10000 name:PM_THRESH_EXC_256 : Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 256
+event:0x200e6 counters:1 um:zero minimum:10000 name:PM_THRESH_EXC_32 : Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 32
+event:0x100e6 counters:0 um:zero minimum:10000 name:PM_THRESH_EXC_4096 : Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 4096
+event:0x200e8 counters:1 um:zero minimum:10000 name:PM_THRESH_EXC_512 : Threshold counter exceeded a value of 512 Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 512
+event:0x300e8 counters:2 um:zero minimum:10000 name:PM_THRESH_EXC_64 : Threshold counter exceeded a value of 64 Architecture provides a thresholding counter in MMCRA, it has a start and stop events to configure and a programmable threshold, this event increments when the threshold exceeded a count of 64
+event:0x100ec counters:0 um:zero minimum:10000 name:PM_THRESH_MET : Threshold exceeded

@@ -1299,7 +1299,10 @@ static void _process_events_list(void)
 		string event_spec = operf_options::evts[i];
 
 #if PPC64_ARCH
-		event_spec = _handle_powerpc_event_spec(event_spec);
+		// Starting with CPU_PPC64_ARCH_V1, ppc64 events files are formatted like
+		// other architectures, so no special handling is needed.
+		if (cpu_type < CPU_PPC64_ARCH_V1)
+			event_spec = _handle_powerpc_event_spec(event_spec);
 #endif
 
 		if (operf_options::callgraph) {
@@ -1370,13 +1373,16 @@ static void _process_events_list(void)
 	}
 #if PPC64_ARCH
 	{
-		/* This section of code is soley for the ppc64 architecture for which
-		 * the oprofile event code needs to be converted to the appropriate event
-		 * code to pass to the perf_event_open syscall.
+		/* For ppc64 architecture processors prior to the introduction of
+		 * architected_events_v1, the oprofile event code needs to be converted
+		 * to the appropriate event code to pass to the perf_event_open syscall.
+		 * But as of the introduction of architected_events_v1, the events
+		 * file contains the necessary event code information, so this conversion
+		 * step is no longer needed.
 		 */
 
 		using namespace OP_perf_utils;
-		if (!op_convert_event_vals(&events)) {
+		if ((cpu_type < CPU_PPC64_ARCH_V1) && !op_convert_event_vals(&events)) {
 			cerr << "Unable to convert all oprofile event values to perf_event values" << endl;
 			exit(EXIT_FAILURE);
 		}
@@ -1423,7 +1429,7 @@ static void get_default_event(void)
 		 */
 
 		using namespace OP_perf_utils;
-		if (!op_convert_event_vals(&events)) {
+		if ((cpu_type < CPU_PPC64_ARCH_V1) && !op_convert_event_vals(&events)) {
 			cerr << "Unable to convert all oprofile event values to perf_event values" << endl;
 			exit(EXIT_FAILURE);
 		}

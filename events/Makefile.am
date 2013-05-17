@@ -24,6 +24,7 @@ event_files = \
 	ia64/ia64/events ia64/ia64/unit_masks \
 	ia64/itanium2/events ia64/itanium2/unit_masks \
 	ia64/itanium/events ia64/itanium/unit_masks \
+	ppc64/architected_events_v1/events ppc64/architected_events_v1/unit_masks \
 	ppc64/power4/events ppc64/power4/event_mappings ppc64/power4/unit_masks \
 	ppc64/power5/events ppc64/power5/event_mappings ppc64/power5/unit_masks \
 	ppc64/power5+/events ppc64/power5+/event_mappings ppc64/power5+/unit_masks \
