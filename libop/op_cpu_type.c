@@ -254,22 +254,8 @@ static op_cpu _try_ppc64_arch_generic_cpu(void)
 	// FIXME whenever a new IBM Power processor is added -- need to ensure
 	// we're returning the correct version of the architected events file.
 	if (strcmp(platform, base_platform)) {
-		// If platform and base_platform differ by only a "+" at the end of the name, we
-		// consider these equal.
-		int platforms_are_equivalent = 0;
-		size_t p1_len, p2_len;
-		p1_len = strlen(platform);
-		p2_len = strlen(base_platform);
-		if (p2_len == (p1_len + 1)) {
-			if ((strncmp(platform, base_platform, p1_len) == 0) &&
-					(base_platform[p2_len - 1] == '+')) {
-				platforms_are_equivalent = 1;
-			}
-		}
-		if (!platforms_are_equivalent) {
-			if (strcmp(platform, "power7") == 0)
-				cpu_type = CPU_PPC64_ARCH_V1;
-		}
+		if (strcmp(platform, "power7") == 0)
+			cpu_type = CPU_PPC64_ARCH_V1;
 	}
 	return cpu_type;
 }
