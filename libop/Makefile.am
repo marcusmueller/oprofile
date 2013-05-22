@@ -25,4 +25,6 @@ libop_a_SOURCES = \
 	op_xml_events.h \
 	op_xml_out.c \
 	op_xml_out.h \
-	op_hw_specific.h
+	op_hw_specific.h \
+	op_netburst.c \
+	op_netburst.h

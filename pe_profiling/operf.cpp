@@ -47,6 +47,7 @@
 #include "child_reader.h"
 #include "op_get_time.h"
 #include "operf_stats.h"
+#include "op_netburst.h"
 
 using namespace std;
 
@@ -1180,6 +1181,12 @@ static void _get_event_code(operf_event_t * event)
 #endif
 
 	event->op_evt_code = base_code;
+	if (cpu_type == CPU_P4 || cpu_type == CPU_P4_HT2) {
+		if (op_netburst_get_perf_encoding(event->name, event->evt_um, 1, 1, &config)) {
+			cerr << "Unable to get event encoding for " << event->name << endl;
+			exit(EXIT_FAILURE);
+		}
+	}
 	event->evt_code = config;
 }
 
