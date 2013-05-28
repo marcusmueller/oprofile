@@ -1331,7 +1331,7 @@ static void _process_events_list(void)
 				     << endl << "15 times the minimum count value for the event."  << endl;
 			exit(EXIT_FAILURE);
 		}
-		fclose(fp);
+		pclose(fp);
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
 		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
@@ -1452,6 +1452,10 @@ static void _process_session_dir(void)
 		cwd = (char *) xmalloc(PATH_MAX);
 		// set default session dir
 		cwd = getcwd(cwd, PATH_MAX);
+		if (cwd == NULL) {
+			perror("Error calling getcwd");
+			exit(EXIT_FAILURE);
+		}
 		operf_options::session_dir = cwd;
 		operf_options::session_dir +="/oprofile_data";
 		samples_dir = operf_options::session_dir + "/samples";
@@ -1805,6 +1809,7 @@ static int _get_cpu_for_perf_events_cap(void)
 	memset(cpus_online, 0, sizeof(cpus_online));
 
 	if ( fgets(cpus_online, sizeof(cpus_online), online_cpus) == NULL) {
+		fclose(online_cpus);
 		err_msg = "Internal Error (3): Number of online cpus cannot be determined.";
 		retval = -1;
 		goto error;

@@ -147,7 +147,7 @@ out:
 
 static event_t * _get_perf_event_from_file(struct mmap_info & info)
 {
-	uint32_t size;
+	uint32_t size = 0;
 	static int num_remaps = 0;
 	event_t * event;
 	size_t pe_header_size = sizeof(struct perf_event_header);
@@ -600,8 +600,11 @@ void operf_record::setup()
 	 */
 	use_cpu_minus_one = use_cpu_minus_one ? true : profile_process_group;
 	num_cpus = use_cpu_minus_one ? 1 : sysconf(_SC_NPROCESSORS_ONLN);
-	if (!num_cpus)
-		throw runtime_error("Number of online CPUs is zero; cannot continue");;
+	if (num_cpus < 1) {
+		char int_str[256];
+		sprintf(int_str, "Number of online CPUs is %d; cannot continue", num_cpus);
+		throw runtime_error(int_str);
+	}
 
 	cverb << vrecord << "calling perf_event_open for pid " << pid_to_profile << " on "
 	      << num_cpus << " cpus" << endl;
@@ -675,8 +678,6 @@ void operf_record::setup()
 			}
 		}
 	}
-	if (dir)
-		closedir(dir);
 	int num_mmaps;
 	if (pid_started && (procs.size() > 1))
 		num_mmaps = procs.size();
@@ -691,6 +692,8 @@ void operf_record::setup()
 
 	// Set bit to indicate we're set to go.
 	valid = true;
+	if (dir)
+		closedir(dir);
 	return;
 
 error:

@@ -323,9 +323,10 @@ void output_summaries(summary_container const & summaries)
 
 	for (size_t i = 0; i < summaries.apps.size(); ++i) {
 		app_summary const & app = summaries.apps[i];
-
-		if ((app.counts[0] * 100.0) / summaries.total_counts[0]
-		    < options::threshold) {
+		double ratio = (!summaries.total_counts[0]) ? 0
+		                                            : (app.counts[0] * 100.0)/
+		                                              summaries.total_counts[0];
+		if (ratio < options::threshold) {
 			continue;
 		}
 

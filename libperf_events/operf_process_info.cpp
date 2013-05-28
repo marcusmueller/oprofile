@@ -362,11 +362,11 @@ void operf_process_info::try_disassociate_from_parent(char * app_shortname)
 		 */
 		if (mmappings_from_parent[cur->start_addr]) {
 			mmappings_from_parent[cur->start_addr] = false;
-			mmappings.erase(it);
+			mmappings.erase(it++);
 		} else {
 			process_mapping(cur, false);
+			it++;
 		}
-		it++;
 	}
 	if (parent_of_fork) {
 		parent_of_fork->remove_forked_process(this->pid);

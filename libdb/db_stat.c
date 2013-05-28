@@ -65,7 +65,8 @@ odb_hash_stat_t * odb_hash_stat(odb_t const * odb)
 	}
 
 	result->max_list_length = max_length;
-	result->average_list_length = total_length / nr_non_empty_list;
+	result->average_list_length = (!nr_non_empty_list) ? 0
+	                                                   : total_length / nr_non_empty_list;
 
 	return result;
 }

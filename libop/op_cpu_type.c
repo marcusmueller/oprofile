@@ -198,6 +198,7 @@ static ElfW(auxv_t) * _auxv_fetch()
 			auxv_temp = (ElfW(auxv_t) *)malloc(page_size);
 			if (!auxv_temp) {
 				perror("Allocation of space for auxv failed.");
+				close(auxv_f);
 				return NULL;
 			}
 			bytes = read(auxv_f, (void *)auxv_temp, page_size);
@@ -214,6 +215,7 @@ static ElfW(auxv_t) * _auxv_fetch()
 				fprintf(stderr, "Recoverable error. Continuing.\n");
 			}
 		}
+		auxv_buf = auxv_temp;
 	}
 	return (ElfW(auxv_t) *)auxv_temp;
 }
@@ -239,6 +241,14 @@ static const char * fetch_at_hw_platform(ElfW(Addr) type)
 	return platform;
 }
 
+static void release_at_hw_platform(void)
+{
+	ElfW(auxv_t) * my_auxv = NULL;
+
+	if ((my_auxv = (ElfW(auxv_t)*) _auxv_fetch()))
+		free(my_auxv);
+}
+
 static op_cpu _try_ppc64_arch_generic_cpu(void)
 {
 	const char * platform, * base_platform;
@@ -249,6 +259,7 @@ static op_cpu _try_ppc64_arch_generic_cpu(void)
 	if (!platform || !base_platform) {
 		fprintf(stderr, "NULL returned for one or both of AT_PLATFORM/AT_BASE_PLATFORM\n");
 		fprintf(stderr, "AT_PLATFORM: %s; \tAT_BASE_PLATFORM: %s\n", platform, base_platform);
+		release_at_hw_platform();
 		return cpu_type;
 	}
 	// FIXME whenever a new IBM Power processor is added -- need to ensure
@@ -271,6 +282,7 @@ static op_cpu _try_ppc64_arch_generic_cpu(void)
 				cpu_type = CPU_PPC64_ARCH_V1;
 		}
 	}
+	release_at_hw_platform();
 	return cpu_type;
 }
 

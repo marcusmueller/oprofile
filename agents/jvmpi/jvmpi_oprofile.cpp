@@ -106,13 +106,13 @@ void compiled_method_load(JVMPI_Event * event)
 		throw runtime_error("Error: Cannot find method name for "
 				    "compiled method\n");
 	}
-	char const * method_name = ((string)method_it->second).c_str();
+	char const * method_name = method_it->second.c_str();
 	method_it = cls_info.method_signatures.find(method);
 	if (method_it == cls_info.method_signatures.end()) {
 		throw runtime_error("Error: Cannot find method signature "
 				    "for compiled method\n");
 	}
-	char const * method_signature = ((string)method_it->second).c_str();
+	char const * method_signature = method_it->second.c_str();
 
 	string const class_signature = "L" + cls_info.name + ";";
 	pthread_mutex_unlock(&class_map_mutex);

@@ -256,6 +256,7 @@ static void free_unit_mask(struct op_unit_mask * um)
 {
 	list_del(&um->um_next);
 	free(um);
+	um = NULL;
 }
 
 /*
@@ -289,8 +290,6 @@ static void read_unit_masks(char const * file)
 		} else {
 			if (!um)
 				parse_error("no unit mask name line");
-			if (um->num >= MAX_UNIT_MASK)
-				parse_error("oprofile: maximum unit mask entries exceeded");
 
 			parse_um_entry(&um->um[um->num], line);
 			++(um->num);
@@ -561,6 +560,7 @@ static void read_events(char const * file)
 				c = skip_ws(c);
 				if (*c != '\0' && *c != '#')
 					parse_error("non whitespace after include:");
+				break;
 			} else {
 				parse_error("unknown tag");
 			}
@@ -1037,7 +1037,7 @@ static int _is_um_valid_bitmask(struct op_event * event, u32 passed_um)
 	for (i = 1; i < evt.unit->num; i++) {
 		int j = i - 1;
 		u32 tmp = evt.unit->um[i].value;
-		while (tmp < evt.unit->um[j].value && j >= 0) {
+		while (j >= 0 && tmp < evt.unit->um[j].value) {
 			evt.unit->um[j + 1].value = evt.unit->um[j].value;
 			j -= 1;
 		}
@@ -1089,8 +1089,6 @@ static int _is_um_valid_bitmask(struct op_event * event, u32 passed_um)
 		}
 	}
 
-	free(tmp_um);
-	free(tmp_um_no_dups);
 	if (dup_value_used) {
 		fprintf(stderr, "Ambiguous bitmask: Unit mask values"
 		        " cannot include non-unique numerical values (i.e., 0x%x).\n",
@@ -1100,6 +1098,8 @@ static int _is_um_valid_bitmask(struct op_event * event, u32 passed_um)
 	} else if (masked_val == passed_um && passed_um != 0) {
 		retval = 1;
 	}
+	free(tmp_um);
+	free(tmp_um_no_dups);
 	return retval;
 }
 

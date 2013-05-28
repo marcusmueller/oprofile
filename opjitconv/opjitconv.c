@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <assert.h>
 #include <pwd.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -739,6 +740,7 @@ static void _cleanup_jitdumps(void)
 					char fname[1024];
 					memset(buf, '\0', 1024);
 					memset(fname, '\0', 1024);
+					memset(buf, '\0', 1024);
 					strcpy(fname, proc_fd_dir);
 					strncat(fname, dirent->d_name, 1023 - proc_fd_dir_len);
 					if (readlink(fname, buf, 1023) > 0) {
@@ -751,6 +753,7 @@ static void _cleanup_jitdumps(void)
 					}
 				}
 			}
+			closedir(dir);
 		}
 		if (!do_not_delete) {
 			if (remove(dmpfile_pathname))
@@ -772,8 +775,9 @@ static void _cleanup_jitdumps(void)
 int main(int argc, char ** argv)
 {
 	unsigned long long start_time, end_time;
-	char const * session_dir;
+	char session_dir[PATH_MAX];
 	int rc = 0;
+	size_t sessdir_len = 0;
 	char * path_end;
 
 	debug = 0;
@@ -811,12 +815,15 @@ int main(int argc, char ** argv)
 	 * are not possible anymore.
 	 */
 	path_end = memchr(argv[1], '\0', PATH_MAX);
-	if (!path_end || ((path_end - argv[1]) > PATH_MAX - 16)) {
+	if (!path_end || ((sessdir_len = (path_end - argv[1])) >= PATH_MAX - 16)) {
 		printf("opjitconv: Path name length limit exceeded for session directory\n");
 		rc = EXIT_FAILURE;
 		goto out;
 	}
-	session_dir = argv[1];
+	memset(session_dir, '\0', PATH_MAX);
+	assert(sessdir_len < (PATH_MAX - 16 - 1));
+	strncpy(session_dir, argv[1], sessdir_len);
+	session_dir[PATH_MAX -1] = '\0';
 
 	start_time = atol(argv[2]);
 	end_time = atol(argv[3]);

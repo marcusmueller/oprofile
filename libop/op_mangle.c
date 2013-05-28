@@ -73,7 +73,7 @@ char * op_mangle_filename(struct mangle_values const * values)
 	strcat(mangled, "{dep}" "/");
 	append_image(mangled, values->flags, anon, dep_name, anon_name);
 
-	if (values->flags & MANGLE_CALLGRAPH) {
+	if (cg_image_name && (values->flags & MANGLE_CALLGRAPH)) {
 		strcat(mangled, "{cg}" "/");
 		append_image(mangled, values->flags, cg_anon,
 		             cg_image_name, anon_name);

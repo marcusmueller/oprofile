@@ -145,7 +145,11 @@ int operf_open_sample_file(odb_t *file, struct operf_sfile *last,
 
 	cverb << vsfile << "Opening \"" << mangled << "\"" << endl;
 
-	create_path(mangled);
+	err = create_path(mangled);
+	if (err) {
+		cerr << "operf: create path for " << mangled << " failed: " << strerror(err) << endl;
+		goto out;
+	}
 
 	/* locking sf will lock associated cg files too */
 	operf_sfile_get(sf);
