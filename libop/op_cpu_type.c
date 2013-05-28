@@ -243,10 +243,10 @@ static const char * fetch_at_hw_platform(ElfW(Addr) type)
 
 static void release_at_hw_platform(void)
 {
-	ElfW(auxv_t) * my_auxv = NULL;
-
-	if ((my_auxv = (ElfW(auxv_t)*) _auxv_fetch()))
-		free(my_auxv);
+	if (auxv_buf) {
+		free(auxv_buf);
+		auxv_buf = NULL;
+	}
 }
 
 static op_cpu _try_ppc64_arch_generic_cpu(void)
