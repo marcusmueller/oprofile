@@ -1064,6 +1064,14 @@ static int _is_um_valid_bitmask(struct op_event * event, u32 passed_um)
 	}
 	evt.unit = tmp_um_no_dups;
 
+	// Now check if passed um==0 and if the defined event has a UM with value '0'.
+	if (!passed_um) {
+		for (i = 0; i < evt.unit->num; i++) {
+			if (!evt.unit->um[i].value)
+				return 1;
+		}
+	}
+
 	/* Finally, we'll see if the passed unit mask value can be matched with a
 	 * mask of available unit mask values. We check for this by determining
 	 * whether the exact bits set in the current um are also set in the
