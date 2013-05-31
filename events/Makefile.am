@@ -31,6 +31,7 @@ event_files = \
 	ppc64/power5++/events ppc64/power5++/event_mappings ppc64/power5++/unit_masks \
 	ppc64/power6/events ppc64/power6/event_mappings ppc64/power6/unit_masks \
 	ppc64/power7/events ppc64/power7/event_mappings ppc64/power7/unit_masks \
+	ppc64/power8/events ppc64/power8/unit_masks \
 	ppc64/970/events ppc64/970/event_mappings ppc64/970/unit_masks \
 	ppc64/970MP/events ppc64/970MP/event_mappings ppc64/970MP/unit_masks \
 	ppc64/ibm-compat-v1/events ppc64/ibm-compat-v1/event_mappings ppc64/ibm-compat-v1/unit_masks \

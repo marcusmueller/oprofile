@@ -671,8 +671,10 @@ int main(int argc, char const * argv[])
 		break;
 
 	case CPU_PPC64_ARCH_V1:
+	case CPU_PPC64_POWER8:
 		event_doc =
-			"See Power ISA 2.07 at https://www.power.org/\n";
+			"This processor type is fully supported with operf; opcontrol timer mode may be available.\n"
+			"See Power ISA 2.07 at https://www.power.org/\n\n";
 		break;
 
 	case CPU_PPC64_CELL:

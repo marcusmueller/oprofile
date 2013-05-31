@@ -1,0 +1,97 @@
+#
+#  Copyright OProfile authors
+#  Copyright (c) International Business Machines, 2013.
+#  Contributed by Maynard Johnson <maynardj@us.ibm.com>.
+#
+#  IBM POWER8 Events
+
+include:ppc64/architected_events_v1
+
+event:0x40036 counters:3 um:zero minimum:10000 name:PM_BR_2PATH : two path branch.
+event:0x40060 counters:3 um:zero minimum:10000 name:PM_BR_CMPL : Branch Instruction completed.
+event:0x40138 counters:3 um:zero minimum:10000 name:PM_BR_MRK_2PATH : marked two path branch.
+event:0x1e054 counters:0 um:zero minimum:10000 name:PM_CMPLU_STALL : Completion stall.
+event:0x4d018 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_BRU : Completion stall due to a Branch Unit.
+event:0x2d018 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_BRU_CRU : Completion stall due to IFU.
+event:0x30026 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_COQ_FULL : Completion stall due to CO q full.
+event:0x2c012 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_DCACHE_MISS : Completion stall by Dcache miss.
+event:0x2c018 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_DMISS_L21_L31 : Completion stall by Dcache miss which resolved on chip ( excluding local L2/L3).
+event:0x2c016 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_DMISS_L2L3 : Completion stall by Dcache miss which resolved in L2/L3.
+event:0x4c016 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_DMISS_L2L3_CONFLICT : Completion stall due to cache miss resolving in core's L2/L3 with a conflict.
+event:0x4c01a counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_DMISS_L3MISS : Completion stall due to cache miss resolving missed the L3.
+event:0x4c018 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_DMISS_LMEM : Completion stall due to cache miss resolving in core's Local Memory.
+event:0x2c01c counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_DMISS_REMOTE : Completion stall by Dcache miss which resolved on chip ( excluding local L2/L3).
+event:0x4c012 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_ERAT_MISS : Completion stall due to LSU reject ERAT miss.
+event:0x30038 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_FLUSH : completion stall due to flush by own thread.
+event:0x4d016 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_FXLONG : Completion stall due to a long latency fixed point instruction.
+event:0x2d016 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_FXU : Completion stall due to FXU.
+event:0x30036 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_HWSYNC : completion stall due to hwsync.
+event:0x4d014 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_LOAD_FINISH : Completion stall due to a Load finish.
+event:0x2c010 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_LSU : Completion stall by LSU instruction.
+event:0x10036 counters:0 um:zero minimum:10000 name:PM_CMPLU_STALL_LWSYNC : completion stall due to isync/lwsync.
+event:0x30028 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_MEM_ECC_DELAY : Completion stall due to mem ECC delay.
+event:0x2e01e counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_NTCG_FLUSH : Completion stall due to reject (load hit store).
+event:0x30006 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_OTHER_CMPL : Instructions core completed while this thread was stalled.
+event:0x4c010 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_REJECT : Completion stall due to LSU reject.
+event:0x2c01a counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_REJECT_LHS : Completion stall due to reject (load hit store).
+event:0x4c014 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_REJ_LMQ_FULL : Completion stall due to LSU reject LMQ full.
+event:0x4d010 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_SCALAR : Completion stall due to VSU scalar instruction.
+event:0x2d010 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_SCALAR_LONG : Completion stall due to VSU scalar long latency instruction.
+event:0x2c014 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_STORE : Completion stall by stores.
+event:0x4c01c counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_ST_FWD : Completion stall due to store forward.
+event:0x1001c counters:0 um:zero minimum:10000 name:PM_CMPLU_STALL_THRD : Completion stall due to thread conflict.
+event:0x2d014 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_VECTOR : Completion stall due to VSU vector  instruction.
+event:0x4d012 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_VECTOR_LONG : Completion stall due to VSU vector long instruction.
+event:0x2d012 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_VSU : Completion stall due to VSU instruction.
+event:0x1c042 counters:0 um:zero minimum:10000 name:PM_DATA_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to a demand load or demand load plus prefetch controlled by MMCR1[20].
+event:0x1c040 counters:0 um:zero minimum:10000 name:PM_DATA_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to a demand load or demand load plus prefetch controlled by MMCR1[20] .
+event:0x4c042 counters:3 um:zero minimum:10000 name:PM_DATA_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to a demand load.
+event:0x4c04e counters:3 um:zero minimum:10000 name:PM_DATA_FROM_L3MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L3  due to a demand load.
+event:0x1c044 counters:0 um:zero minimum:10000 name:PM_DATA_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to a demand load or demand load plus prefetch controlled by MMCR1[20].
+event:0x2c048 counters:1 um:zero minimum:10000 name:PM_DATA_FROM_LMEM : The processor's data cache was reloaded  from the local chip's Memory due to a demand load.
+event:0x2c04c counters:1 um:zero minimum:10000 name:PM_DATA_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a demand load.
+event:0x3e050 counters:2 um:zero minimum:10000 name:PM_DC_PREF_STREAM_STRIDED_CONF : A demand load referenced a line in an active strided prefetch stream.  The stream could have been allocated through the hardware prefetch mechanism or through software..
+event:0x4d01e counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_BR_MPRED : Gct empty fo this thread due to  branch mispred.
+event:0x4d01a counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_BR_MPRED_ICMISS : Gct empty fo this thread due to Icache Miss and branch mispred.
+event:0x2d01e counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_ISSQ : Gct empty fo this thread due to dispatch hold on this thread due to Issue q full.
+event:0x2e010 counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_OTHER : Gct empty fo this thread due to dispatch hold on this thread due to sync.
+event:0x2d01c counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_SRQ : Gct empty fo this thread due to dispatch hold on this thread due to SRQ full.
+event:0x4e010 counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_IC_L3MISS : Gct empty fo this thread due to  icach l3 miss.
+event:0x2d01a counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_IC_MISS : Gct empty fo this thread due to Icache Miss.
+event:0x3000a counters:2 um:zero minimum:100000 name:PM_GRP_DISP : dispatch_success (Group Dispatched).
+event:0x10130 counters:0 um:zero minimum:10000 name:PM_GRP_MRK : Instruction marked in idu.
+event:0x2000a counters:1 um:zero minimum:10000 name:PM_HV_CYC : cycles in hypervisor mode .
+event:0x10002 counters:0 um:zero minimum:100000 name:PM_INST_CMPL :   PPC Instructions Finished (completed).
+event:0x10014 counters:0 um:zero minimum:100000 name:PM_IOPS_CMPL : IOPS Completed.
+event:0x1002e counters:0 um:zero minimum:10000 name:PM_LD_CMPL : count of Loads completed.
+event:0x10062 counters:0 um:zero minimum:10000 name:PM_LD_L3MISS_PEND_CYC : Cycles L3 miss was pending for this thread.
+event:0x1d142 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to a marked load.
+event:0x4c12e counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS_CYC : Duration in cycles to reload  from a localtion other than the local core's L2   due to a marked load.
+event:0x4c122 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_CYC : Duration in cycles to reload  from local core's L2  due to a marked load.
+event:0x1d140 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to a marked load.
+event:0x4c120 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_NO_CONFLICT_CYC : Duration in cycles to reload  from local core's L2 without conflict  due to a marked load.
+event:0x4d142 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to a marked load.
+event:0x2d12e counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS_CYC : Duration in cycles to reload  from a localtion other than the local core's L3   due to a marked load.
+event:0x2d122 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_CYC : Duration in cycles to reload  from local core's L3  due to a marked load.
+event:0x1d144 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to a marked load.
+event:0x4c124 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_NO_CONFLICT_CYC : Duration in cycles to reload  from local core's L3 without conflict  due to a marked load.
+event:0x1d14c counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LL4 : The processor's data cache was reloaded  from the local chip's L4 cache due to a marked load.
+event:0x4c12c counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LL4_CYC : Duration in cycles to reload   from the local chip's L4 cache  due to a marked load.
+event:0x2d148 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM : The processor's data cache was reloaded  from the local chip's Memory due to a marked load.
+event:0x4d128 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM_CYC : Duration in cycles to reload   from the local chip's Memory  due to a marked load.
+event:0x2d14c counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load.
+event:0x4d12c counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEMORY_CYC : Duration in cycles to reload  from a memory location including L4 from local remote or distant  due to a marked load.
+event:0x40130 counters:3 um:zero minimum:1000 name:PM_MRK_GRP_CMPL : marked instruction finished (completed).
+event:0x20130 counters:1 um:zero minimum:1000 name:PM_MRK_INST_DECODED : marked instruction decoded. Name from ISU?
+event:0x20114 counters:1 um:zero minimum:1000 name:PM_MRK_L2_RC_DISP : Marked Instruction RC dispatched in L2.
+event:0x4013e counters:3 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1_CYC : Marked ld latency.
+event:0x3013e counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC : Marked Group Completion Stall cycles (use edge detect to count  ).
+event:0x3006e counters:2 um:zero minimum:10000 name:PM_NEST_REF_CLK : Nest reference clocks.
+event:0x20010 counters:1 um:zero minimum:10000 name:PM_PMC1_OVERFLOW : Overflow from counter 1.
+event:0x30010 counters:2 um:zero minimum:10000 name:PM_PMC2_OVERFLOW : Overflow from counter 2.
+event:0x40010 counters:3 um:zero minimum:10000 name:PM_PMC3_OVERFLOW : Overflow from counter 3.
+event:0x10010 counters:0 um:zero minimum:10000 name:PM_PMC4_OVERFLOW : Overflow from counter 4.
+event:0x30024 counters:2 um:zero minimum:10000 name:PM_PMC6_OVERFLOW : Overflow from counter 6.
+event:0x40002 counters:3 um:zero minimum:10000 name:PM_PPC_CMPL :   PPC Instructions Finished (completed).
+event:0x2000c counters:1 um:zero minimum:100000 name:PM_THRD_ALL_RUN_CYC : All Threads in Run_cycles (was both threads in run_cycles).
+event:0x4016e counters:3 um:zero minimum:10000 name:PM_THRESH_NOT_MET : Threshold counter did not meet threshold.

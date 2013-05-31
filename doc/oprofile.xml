@@ -1150,7 +1150,7 @@ The table below lists the default event for various processor types:
 <row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
-<row><entry>IBM pseries</entry><entry>PowerPC 4/5/6/7/970/Cell</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>IBM pseries</entry><entry>PowerPC 4/5/6/7/8/970/Cell</entry><entry>CYCLES:100000:0:1:1</entry></row>
 <row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
 <row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
 </tbody>

@@ -110,10 +110,15 @@ be specified using the symbolic name, thus it is not possible to include them in
 If no unit mask is specified, the default unit mask value for the event is used.
 .P
 .RS
-On IBM PowerPC systems, events may be specified with or without the
+Event names for some IBM PowerPC systems include a
 .I _GRP<n>
-suffix.  If no group number suffix is given, one will be automatically
-assigned; thus, OProfile post-processing tools will always show real event
+(group number) suffix. You can pass either the full event name or the base event name
+(i.e., without the suffix) to
+.B operf.
+If the base event name is passed,
+.B operf
+will automatically choose an appropriate group number suffix
+for the event; thus, OProfile post-processing tools will always show real event
 names that include the group number suffix.
 .P
 When no event specification is given, the default event for the running
