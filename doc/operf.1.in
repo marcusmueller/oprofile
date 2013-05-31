@@ -132,7 +132,7 @@ full callchain is recorded, so there is no depth limit.
 .BI "--separate-thread / -t"
 This option categorizes samples by thread group ID (tgid) and thread ID (tid).
 The '--separate-thread' option is useful for seeing per-thread samples in
-multi-threaded applications.  When used in conjuction with the '--system-wide'
+multi-threaded applications.  When used in conjunction with the '--system-wide'
 option, the '--separate-thread' option is also useful for seeing per-process
 (i.e., per-thread group) samples for the case where multiple processes are
 executing the same program during a profiling run.
@@ -190,7 +190,7 @@ Show operf version.
 .br
 .TP
 .BI "--help / -h"
-Show a help message.
+Display brief usage message.
 .br
 .TP
 .BI "--usage / -u"
@@ -205,6 +205,3 @@ This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
 opreport(1), opannotate(1).
-
-.SH BUGS
-Some parameters are still under development.
