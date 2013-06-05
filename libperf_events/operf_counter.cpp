@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <string.h>
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include "op_events.h"
 #include "operf_counter.h"
@@ -433,8 +434,10 @@ void operf_record::register_perf_event_id(unsigned event, u64 id, perf_event_att
 	// is invoked once for each event for each cpu; but it's not worth the bother of trying
 	// to avoid it.
 	opHeader.h_attrs[event].attr = attr;
-	cverb << vrecord << "Perf header: id = " << hex << (unsigned long long)id << " for event num "
-			<< event << ", code " << attr.config <<  endl;
+	ostringstream message;
+	message  << "Perf header: id = " << hex << (unsigned long long)id << " for event num "
+	         << event << ", code " << attr.config <<  endl;
+	cverb << vrecord << message.str();
 	opHeader.h_attrs[event].ids.push_back(id);
 }
 
@@ -836,7 +839,9 @@ int operf_read::_read_header_info_with_ifstream(void)
 				ret = OP_PERF_HANDLED_ERROR;
 				goto out;
 			}
-			cverb << vconvert << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
+			ostringstream message;
+			message << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
+			cverb << vconvert << message.str();
 			opHeader.h_attrs[i].ids.push_back(perf_id);
 		}
 		istrm.seekg(next_f_attr, ios_base::beg);
@@ -926,7 +931,9 @@ int operf_read::_read_perf_header_from_pipe(void)
 				errmsg = "Error reading perf ID on sample data pipe: " + string(strerror(errno));
 				goto fail;
 			}
-			cverb << vconvert << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
+			ostringstream message;
+			message << "Perf header: id = " << hex << (unsigned long long)perf_id << endl;
+			cverb << vconvert << message.str();
 			opHeader.h_attrs[i].ids.push_back(perf_id);
 		}
 
@@ -994,8 +1001,10 @@ unsigned int operf_read::convertPerfData(void)
 	for (int i = 0; i < OPERF_MAX_STATS; i++)
 		operf_stats[i] = 0;
 
-	cverb << vdebug << "Converting operf data to oprofile sample data format" << endl;
-	cverb << vdebug << "sample type is " << hex <<  opHeader.h_attrs[0].attr.sample_type << endl;
+	ostringstream message;
+	message << "Converting operf data to oprofile sample data format" << endl;
+	message << "sample type is " << hex <<  opHeader.h_attrs[0].attr.sample_type << endl;
+	cverb << vdebug << message.str();
 	first_time_processing = true;
 	int num_recs = 0;
 	struct perf_event_header last_header;

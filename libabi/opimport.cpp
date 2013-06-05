@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <cassert>
 #include <cstring>
@@ -87,10 +88,13 @@ void extractor::extract(T & targ, void const * src_,
 	assert(src >= begin);
 	assert(src + nbytes <= end);
 	
-	if (verbose)
-		cerr << hex << "get " << sz << " = " << nbytes
-		     << " bytes @ " << off << " = " << (src - begin)
-		     << " : ";
+	if (verbose) {
+		ostringstream message;
+		message << hex << "get " << sz << " = " << nbytes
+		        << " bytes @ " << off << " = " << (src - begin)
+		        << " : ";
+		cerr << message.str();
+	}
 
 	if (little_endian)
 		while(nbytes--)

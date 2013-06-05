@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <cverb.h>
 #include <iostream>
+#include <sstream>
 #include "operf_counter.h"
 #include "operf_utils.h"
 #ifdef HAVE_LIBPFM
@@ -588,9 +589,11 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 	} else {
 		if ((cverb << vconvert) && !first_time_processing) {
 			string domain = trans.in_kernel ? "kernel" : "userspace";
-			cout << "Discarding " << domain << " sample for process " << data->pid
-			     << " where no appropriate mapping was found. (pc=0x"
-			     << hex << data->ip <<")" << endl;
+			ostringstream message;
+			message << "Discarding " << domain << " sample for process " << data->pid
+			        << " where no appropriate mapping was found. (pc=0x"
+			        << hex << data->ip <<")" << endl;
+			cout << message.str();
 			operf_stats[OPERF_LOST_NO_MAPPING]++;
 		}
 		retval = NULL;
@@ -775,8 +778,10 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 				domain = "unknown";
 				break;
 			}
-			cout << "Discarding sample from " << domain << " domain: "
-			     << hex << data.ip << endl;
+			ostringstream message;
+			message << "Discarding sample from " << domain << " domain: "
+			        << hex << data.ip << endl;
+			cout << message.str();
 		}
 		goto out;
 	}
@@ -792,10 +797,13 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 		goto out;
 	}
 
-	if (cverb << vconvert)
-		cout << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
-		      << data.tid << ": " << hex << (unsigned long long)data.ip
-		      << endl << "\tdata ID: " << data.id << endl;
+	if (cverb << vconvert) {
+		ostringstream message;
+		message << "(IP, " <<  event->header.misc << "): " << dec << data.pid << "/"
+		        << data.tid << ": " << hex << (unsigned long long)data.ip
+		        << endl << "\tdata ID: " << data.id << endl;
+		cout << message.str();
+	}
 
 	// Verify the sample.
 	if (data.id != trans.sample_id) {
@@ -939,12 +947,16 @@ int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 	default:
 		if (event->header.type > PERF_RECORD_MAX) {
 			// Bad header
-			cerr << "Invalid event type " << hex << event->header.type << endl;
-			cerr << "Sample data is probably corrupted." << endl;
+			ostringstream message;
+			message << "Invalid event type " << hex << event->header.type << endl;
+			message << "Sample data is probably corrupted." << endl;
+			cerr << message.str();
 			return -1;
 		} else {
-			cverb << vconvert << "Event type "<< hex << event->header.type
-			      << " is ignored." << endl;
+			ostringstream message;
+			message << "Event type "<< hex << event->header.type
+			        << " is ignored." << endl;
+			cverb << vconvert << message.str();
 			return 0;
 		}
 	}
@@ -1036,14 +1048,18 @@ static int __mmap_trace_file(struct mmap_info & info)
 	info.buf = (char *) mmap(NULL, mmap_size, mmap_prot,
 	                         mmap_flags, info.traceFD, info.offset);
 	if (info.buf == MAP_FAILED) {
-		cerr << "Error: mmap failed with errno:\n\t" << strerror(errno) << endl;
-		cerr << "\tmmap_size: 0x" << hex << mmap_size << "; offset: 0x" << info.offset << endl;
+		ostringstream message;
+		message << "Error: mmap failed with errno:\n\t" << strerror(errno) << endl;
+		message << "\tmmap_size: 0x" << hex << mmap_size << "; offset: 0x" << info.offset << endl;
+		cerr << message.str();
 		return -1;
 	}
 	else {
-		cverb << vconvert << hex << "mmap with the following parameters" << endl
-		      << "\tinfo.head: " << info.head << endl
-		      << "\tinfo.offset: " << info.offset << endl;
+		ostringstream message;
+		message << hex << "mmap with the following parameters" << endl
+		        << "\tinfo.head: " << info.head << endl
+		        << "\tinfo.offset: " << info.offset << endl;
+		cverb << vconvert << message.str();
 		return 0;
 	}
 }
@@ -1396,9 +1412,12 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 	mmap.header.size = (sizeof(mmap) -
 			(sizeof(mmap.filename) - size));
 	int num = op_write_output(output_fd, &mmap, mmap.header.size);
-	if (cverb << vrecord)
-		cout << "Created MMAP event of size " << mmap.header.size << " for " <<mmap.filename << ". length: "
-		     << hex << mmap.len << "; start addr: " << mmap.start << endl;
+	if (cverb << vrecord) {
+		ostringstream message;
+		message << "Created MMAP event of size " << mmap.header.size << " for " <<mmap.filename << ". length: "
+		        << hex << mmap.len << "; start addr: " << mmap.start << endl;
+		cout << message.str();
+	}
 	pr->add_to_total(num);
 	_record_module_info(output_fd, pr);
 }

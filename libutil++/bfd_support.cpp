@@ -27,6 +27,7 @@
 #include <cstring>
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -81,7 +82,9 @@ bool separate_debug_file_exists(string & name, unsigned long const crc,
 				      reinterpret_cast<unsigned char *>(&buffer[0]),
 				      file.gcount());
 	}
-	cverb << vbfd << " with crc32 = " << hex << file_crc << endl;
+	ostringstream message;
+	message << " with crc32 = " << hex << file_crc << endl;
+	cverb << vbfd << message.str();
 	return crc == file_crc;
 }
 
@@ -434,8 +437,10 @@ bool find_separate_debug_file(bfd * ibfd, string const & filepath_in,
 	string second_try(DEBUGDIR + filedir + basename);
 	string third_try(filedir + basename);
 
-	cverb << vbfd << "looking for debugging file " << basename 
-	      << " with crc32 = " << hex << crc32 << endl;
+	ostringstream message;
+	message << "looking for debugging file " << basename
+	        << " with crc32 = " << hex << crc32 << endl;
+	cverb << vbfd << message.str();
 
 	if (separate_debug_file_exists(first_try, crc32, extra)) 
 		debug_filename = first_try; 
@@ -730,8 +735,10 @@ void bfd_info::get_symbols()
 	if (bfd_get_file_flags(abfd) & HAS_SYMS)
 		nr_syms = bfd_get_symtab_upper_bound(abfd);
 
-	cverb << vbfd << "bfd_get_symtab_upper_bound: " << dec
-	      << nr_syms << hex << endl;
+	ostringstream message;
+	message << "bfd_get_symtab_upper_bound: " << dec
+	        << nr_syms << hex << endl;
+	cverb << vbfd << message.str();
 
 	nr_syms /= sizeof(asymbol *);
 
@@ -743,8 +750,10 @@ void bfd_info::get_symbols()
 	} else {
 		syms.reset(new asymbol *[nr_syms]);
 		nr_syms = bfd_canonicalize_symtab(abfd, syms.get());
-		cverb << vbfd << "bfd_canonicalize_symtab: " << dec
-		      << nr_syms << hex << endl;
+		ostringstream message;
+		message << "bfd_canonicalize_symtab: " << dec
+		        << nr_syms << hex << endl;
+		cverb << vbfd << message.str();
 	}
 }
 

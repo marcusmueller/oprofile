@@ -15,6 +15,7 @@
 #include <string.h>
 #include <assert.h>
 #include <iostream>
+#include <sstream>
 
 #include "operf_sfile.h"
 #include "operf_kernel.h"
@@ -187,8 +188,11 @@ struct operf_sfile * operf_sfile_find(struct operf_transient const * trans)
 	if (trans->in_kernel) {
 		ki = operf_find_kernel_image(trans->pc);
 		if (!ki) {
-			if (cverb << vsfile)
-				cout << "Lost kernel sample " << std::hex << trans->pc << std::endl;;
+			if (cverb << vsfile) {
+				ostringstream message;
+				message << "Lost kernel sample " << std::hex << trans->pc << std::endl;;
+				cout << message.str();
+			}
 			operf_stats[OPERF_LOST_KERNEL]++;
 			return NULL;
 		}

@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <unistd.h>
 #include <stdlib.h>
 #include "operf_kernel.h"
@@ -47,12 +48,16 @@ void operf_create_vmlinux(char const * name, char const * arg)
 
 	sscanf(arg, "%llx,%llx", &vmlinux_image.start, &vmlinux_image.end);
 
-	cverb << vmisc << "kernel_start = " << hex <<  vmlinux_image.start
-			<< "; kernel_end = " << vmlinux_image.end << endl;
+	ostringstream message;
+	message << "kernel_start = " << hex <<  vmlinux_image.start
+	        << "; kernel_end = " << vmlinux_image.end << endl;
+	cverb << vmisc << message.str();
 
 	if (!vmlinux_image.start && !vmlinux_image.end) {
-		cerr << "error: mis-parsed kernel range: " << hex << vmlinux_image.start
-				<< "; kernel_end = " << vmlinux_image.end << endl;
+		ostringstream message;
+		message << "error: mis-parsed kernel range: " << hex << vmlinux_image.start
+		        << "; kernel_end = " << vmlinux_image.end << endl;
+		cerr << message.str();
 		exit(EXIT_FAILURE);
 	}
 }

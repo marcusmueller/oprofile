@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <iostream>
+#include <sstream>
 #include <map>
 #include <string.h>
 #include <errno.h>
@@ -98,9 +99,12 @@ void operf_process_info::set_appname(const char * appname, bool app_arg_is_fulln
 		/* Most likely that the process has ended already, so we'll need to determine
 		 * the appname through different means.
 		 */
-		if (cverb << vmisc)
-			cerr  << "PID: " << hex << pid << " Unable to obtain appname from " << exe_symlink << endl
-			<<  "\t" << strerror(errno) << endl;
+		if (cverb << vmisc) {
+			ostringstream message;
+			message << "PID: " << hex << pid << " Unable to obtain appname from " << exe_symlink << endl
+			        <<  "\t" << strerror(errno) << endl;
+			cerr << message.str();
+		}
 		if (appname && strcmp(appname, "taskset")) {
 			_appname = appname;
 			if (app_arg_is_fullname) {
@@ -113,8 +117,10 @@ void operf_process_info::set_appname(const char * appname, bool app_arg_is_fulln
 		}
 		app_basename = _appname;
 	}
-	cverb << vmisc << "PID: " << hex << pid << " appname is set to "
-	      << _appname << endl;
+	ostringstream message;
+	message << "PID: " << hex << pid << " appname is set to "
+	        << _appname << endl;
+	cverb << vmisc << message.str();
 	if (look_for_appname_match)
 		find_best_match_appname_all_mappings();
 }
@@ -278,9 +284,11 @@ void operf_process_info::process_hypervisor_mapping(u64 ip)
 		hypervisor_mmap->pgoff = 0;
 		hypervisor_mmap->is_hypervisor = true;
 		if (cverb << vmisc) {
-			cout << "Synthesize mmapping for " << hypervisor_mmap->filename << endl;
-			cout << "\tstart_addr: " << hex << hypervisor_mmap->start_addr;
-			cout << "; end addr: " << hypervisor_mmap->end_addr << endl;
+			ostringstream message;
+			message << "Synthesize mmapping for " << hypervisor_mmap->filename << endl;
+			message << "\tstart_addr: " << hex << hypervisor_mmap->start_addr;
+			message << "; end addr: " << hypervisor_mmap->end_addr << endl;
+			cout << message.str();
 		}
 		process_mapping(hypervisor_mmap, false);
 	}
