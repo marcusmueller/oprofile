@@ -114,6 +114,20 @@ binary image filename.
 .BI "--symbols / -l"
 List per-symbol information instead of a binary image summary.
 .br
+Usually, the total of all per-symbols samples for a given binary image
+equals the summary count for the binary image (shown by running
+.B opreport
+with no options).
+However, it's possible for some sample addresses to fall outside the range of
+any symbols for a given binary image.  In such cases, the total number of
+per-symbols samples for the binary image may be less than the summary count
+for the image. Running
+.B opreport
+with the
+.I --verbose=debug
+option will display an informational message when this difference is detected.
+This difference is typically very small and can be ignored.
+.br
 .TP
 .BI "--threshold / -t [percentage]"
 Only output data for symbols that have more than the given percentage

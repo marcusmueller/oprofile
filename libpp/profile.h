@@ -77,6 +77,7 @@ public:
 
 	/// Set an appropriate start offset, see comments below.
 	void set_offset(op_bfd const & abfd);
+	u64 get_offset(void) const { return start_offset; }
 
 	class const_iterator;
 	typedef std::pair<const_iterator, const_iterator> iterator_pair;
