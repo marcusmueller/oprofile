@@ -804,8 +804,9 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 
 	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);
 
-	for (size_t i = 0; i < OP_MAX_HANDLED_UMS; ++i) {
-		QCheckBox * check = 0;
+	QCheckBox * check = NULL;
+
+	for (size_t i = 0; i < um->num; ++i) {
 		switch (i) {
 			case 0: check = check0; break;
 			case 1: check = check1; break;
