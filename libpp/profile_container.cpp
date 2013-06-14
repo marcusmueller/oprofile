@@ -137,11 +137,11 @@ void profile_container::add(profile_t const & profile,
 			profile.samples_range(profile.get_offset(), ~0ULL);
 		count_type module_summary_count = accumulate(summary_it.first, summary_it.second, 0ull);
 		if (sym_count_total < module_summary_count)
-			cerr << "INFO: Sample counts differ:  Module summary count: " << dec
+			cout << "INFO: Sample counts differ:  Module summary count: " << dec
 			     << module_summary_count << "; total symbols count: " << sym_count_total
 			     << endl << "\timage name: " << image_name << endl;
-		else
-			cerr << "Warning: Number of samples for module unexpectedly less than total "
+		else if (module_summary_count < sym_count_total)
+			cout << "Warning: Number of samples for module unexpectedly less than total "
 			     "symbols count!"  << endl << "\timage name: " << image_name << endl;
 	}
 }
