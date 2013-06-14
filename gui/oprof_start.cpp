@@ -833,8 +833,6 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 
 		check->show();
 	}
-	unit_mask_group->setMinimumSize(unit_mask_group->sizeHint());
-	setup_config_tab->setMinimumSize(setup_config_tab->sizeHint());
 }
 
 
