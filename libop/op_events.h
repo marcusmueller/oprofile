@@ -21,6 +21,8 @@ extern "C" {
 #include "op_list.h"
 
 #define EXTRA_EDGE (1U << 18)
+#define EXTRA_MIN_VAL EXTRA_EDGE
+
 #define EXTRA_ANY  (1U << 21)
 #define EXTRA_INV  (1U << 23)
 #define EXTRA_CMASK_SHIFT 24

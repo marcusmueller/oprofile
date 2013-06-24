@@ -1436,8 +1436,12 @@ static void do_resolve_unit_mask(struct op_event *e,
 			extra_check(e, pe->unit_mask_name, i);
 			pe->unit_mask_valid = 1;
 			pe->unit_mask = e->unit->um[i].value;
-			if (extra)
-				*extra = e->unit->um[i].extra;
+			if (extra) {
+				if (e->unit->um[i].extra == EXTRA_NONE)
+					*extra = e->unit->um[i].value;
+				else
+					*extra = e->unit->um[i].extra;
+			}
 			return;
 		}
 	}

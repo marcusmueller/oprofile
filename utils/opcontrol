@@ -1539,11 +1539,20 @@ do_param_setup()
 
 				EXTRA=`$OPHELP --extra-mask $EVENT:$COUNT:$UNIT_MASK_NAMED`
 				if test "$EXTRA" -ne 0 ; then
-					if ! test -f $MOUNT/$CTR/extra ; then
-						echo >&2 "Warning: $GOTEVENT has extra mask, but kernel does not support extra field"
-						echo >&2 "Please update your kernel or use a different event. Will miscount."
+				# A value >= 0x40000 returned by 'ophelp --extra-mask' (EXTRA_MIN_VAL) is interpreted
+				# as a valid extra value; otherwise we interpret as a simple unit mask value
+				# for a named unit mask with EXTRA_NONE.
+				EXTRA_MIN_VAL=262144
+					if test "$EXTRA" -ge $EXTRA_MIN_VAL ; then
+						if ! test -f $MOUNT/$CTR/extra ; then
+							echo >&2 "Warning: $GOTEVENT has extra mask, but kernel does not support extra field"
+							echo >&2 "Please update your kernel or use a different event. Will miscount."
+						else
+							set_ctr_param $CTR extra $EXTRA
+						fi
 					else
-						set_ctr_param $CTR extra $EXTRA
+						UNIT_MASK=$EXTRA
+						set_ctr_param $CTR unit_mask $UNIT_MASK
 					fi
 				fi
 			fi
