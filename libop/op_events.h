@@ -26,6 +26,7 @@ extern "C" {
 #define EXTRA_CMASK_SHIFT 24
 #define EXTRA_CMASK_MASK 0xff
 #define EXTRA_PEBS (1U << 19) /* fake, mapped to pin control, but mapped back for perf */
+#define EXTRA_NONE (1U << 22) /* mapped to enabled */
 
 /*
  * For timer based sampling some targets (e.g. s390) use a virtual

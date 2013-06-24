@@ -114,7 +114,8 @@ unsigned parse_extra(const char *s)
 	unsigned v, w;
 	int o;
 
-	v = 0;
+	/* This signifies that the first word of the description is unique */
+	v = EXTRA_NONE;
 	while (*s) {
 		if (isspace(*s))
 			break;
