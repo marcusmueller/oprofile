@@ -98,16 +98,14 @@ for profiling. Each event spec is of the form:
 .br
 .I "   name:count[:unitmask[:kernel[:user]]]"
 .br
-When specifying a unit mask value, it may be either a numerical value (hex values
+You can specify unit mask values using either a numerical value (hex values
 .I must
-begin with "0x") or a string (i.e, symbolic name) which matches the first word in
-the unit mask description. Specifying a symbolic name for the unit mask is valid only
-for unit masks having "extra:" parameters, as shown by the output of
-.B ophelp.
-Unit masks with "extra:" parameters
-.I must
-be specified using the symbolic name, thus it is not possible to include them in bitmask values.
-If no unit mask is specified, the default unit mask value for the event is used.
+begin with "0x") or a symbolic name (if the
+.I name=<um_name>
+field is shown in the
+.B ophelp
+output). For some named unit masks, the hex value is not unique; thus, OProfile
+tools enforce specifying such unit masks value by name.
 .P
 .RS
 Event names for some IBM PowerPC systems include a

@@ -1085,8 +1085,8 @@ error message if you select an incompatible set of events.
 <tbody>
 <row><entry><option>name</option></entry><entry>The symbolic event name, e.g. <constant>CPU_CLK_UNHALTED</constant></entry></row>
 <row><entry><option>count</option></entry><entry>The counter reset value, e.g. 100000</entry></row>
-<row><entry><option>unitmask</option></entry><entry>The unit mask, as given in the events list: e.g. 0x0f; or a symbolic name as
-given by the first word of the description (only valid for unit masks having an "extra:" parameter)</entry></row>
+<row><entry><option>unitmask</option></entry><entry>The unit mask, as given in the events list: e.g. 0x0f; or a symbolic name
+if a <constant>name=&lt;um_name&gt;</constant> field is present</entry></row>
 <row><entry><option>kernel</option></entry><entry>Whether to profile kernel code</entry></row>
 <row><entry><option>user</option></entry><entry>Whether to profile userspace code</entry></row>
 </tbody>
@@ -1098,12 +1098,10 @@ they will be set to the default values (the default unit mask value for the give
 userspace code). Note that some events require a unit mask.
 </para>
 <para>
-When specifying a unit mask value, it may be either a numerical value (hex values
-<emphasis>must</emphasis> begin with "0x") or a string (i.e, symbolic name) which matches
-the first word in the unit mask description. Specifying a symbolic name for
-the unit mask is valid only for unit masks having "extra:" parameters, as
-shown by the output of <command>ophelp</command>.  Unit masks with "extra:" parameters <emphasis>must</emphasis>
-be specified using the symbolic name, thus it is not possible to include them in bitmask values.
+You can specify unit mask values using either a numerical value (hex values
+<emphasis>must</emphasis> begin with "0x") or a symbolic name (if the <constant>name=&lt;um_name&gt;</constant>
+field is shown in the <command>ophelp</command> output). For some named unit masks, the hex value is not unique; thus, OProfile
+tools enforce specifying such unit masks value by name.
 </para>
 <note><para>
 When using legacy mode <command>opcontrol</command> on IBM PowerPC platforms, all events specified must be in the same group;

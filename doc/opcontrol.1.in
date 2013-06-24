@@ -105,13 +105,16 @@ or "default" for the default event. The event is of the form
 "CPU_CLK_UNHALTED:30000:0:1:1" where the numeric values are
 count, unit mask, kernel-space counting, user-space counting,
 respectively.  Note that this over-rides all previous events selected;
-if you want two or more counters used simultaneously, you must specify
-them on the same opcontrol invocation. The unit mask value
-can also be specified as a string (i.e, symbolic name) which matches the first word in the unit mask
-description, but only for events with "extra:" parameters shown.
-Unit masks with "extra:" parameters
+if you want to profile with two or more events simultaneously, you must specify
+them on the same opcontrol invocation. You can specify unit mask values using either
+a numerical value (hex values
 .I must
-be specified by symbolic name, thus it is not possible to include them in bitmask values.
+begin with "0x") or a symbolic name (if the
+.I name=<um_name>
+field is shown in the
+.B ophelp
+output). For some named unit masks, the hex value is not unique; thus, OProfile
+tools enforce specifying such unit masks value by name.
 .br
 .TP
 .BI "--separate="[none,lib,kernel,thread,cpu,all]
