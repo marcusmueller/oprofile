@@ -33,7 +33,7 @@ name:sse_prefetch type:exclusive default:0x0
 	0x00 prefetch NTA instructions executed.
 	0x01 prefetch T1 instructions executed.
 	0x02 prefetch T1 and T2 instructions executed.
-	0x03 SSE weakly-ordered stores
+	0x03 extra: SSE weakly-ordered stores
 name:simd_instr_type_exec type:bitmask default:0x3f
 	0x01 SIMD packed multiplies
 	0x02 SIMD packed shifts
@@ -41,7 +41,7 @@ name:simd_instr_type_exec type:bitmask default:0x3f
 	0x08 SIMD unpack operations
 	0x10 SIMD packed logical
 	0x20 SIMD packed arithmetic
-	0x3f all of the above
+	0x3f extra: all of the above
 name:mmx_trans type:bitmask default:0x3
 	0x01 float->MMX transitions
 	0x02 MMX->float transitions
@@ -50,30 +50,30 @@ name:sse_miss type:exclusive default:0x0
 	0x01 PREFETCHT0
 	0x02 PREFETCHT1/PREFETCHT2
 name:load_block type:bitmask default:0x3e
-	0x02 STA  Loads blocked by a preceding store with unknown address.
-	0x04 STD  Loads blocked by a preceding store with unknown data.
-	0x08 OVERLAP_STORE  Loads that partially overlap an earlier store, or 4K aliased with a previous store.
-	0x10 UNTIL_RETIRE  Loads blocked until retirement.
-	0x20 L1D  Loads blocked by the L1 data cache.
+	0x02 extra: STA  Loads blocked by a preceding store with unknown address.
+	0x04 extra: STD  Loads blocked by a preceding store with unknown data.
+	0x08 extra: OVERLAP_STORE  Loads that partially overlap an earlier store, or 4K aliased with a previous store.
+	0x10 extra: UNTIL_RETIRE  Loads blocked until retirement.
+	0x20 extra: L1D  Loads blocked by the L1 data cache.
 name:store_block type:bitmask default:0x0b
-	0x01 SB_DRAIN_CYCLES	Cycles while stores are blocked due to store buffer drain.
-	0x02 ORDER	Cycles while store is waiting for a preceding store to be globally observed.
-	0x08 NOOP	A store is blocked due to a conflict with an external or internal snoop.
+	0x01 extra: SB_DRAIN_CYCLES	Cycles while stores are blocked due to store buffer drain.
+	0x02 extra: ORDER	Cycles while store is waiting for a preceding store to be globally observed.
+	0x08 extra: NOOP	A store is blocked due to a conflict with an external or internal snoop.
 name:dtlb_miss type:bitmask default:0x0f
-	0x01 ANY	Memory accesses that missed the DTLB.
-	0x02 MISS_LD	DTLB misses due to load operations.
-	0x04 L0_MISS_LD L0 DTLB misses due to load operations.
-	0x08 MISS_ST	TLB misses due to store operations.
+	0x01 extra: ANY	Memory accesses that missed the DTLB.
+	0x02 extra: MISS_LD	DTLB misses due to load operations.
+	0x04 extra: L0_MISS_LD L0 DTLB misses due to load operations.
+	0x08 extra: MISS_ST	TLB misses due to store operations.
 name:memory_dis type:exclusive default:0x01
-	0x01 RESET	Memory disambiguation reset cycles.
-	0x02 SUCCESS	Number of loads that were successfully disambiguated.
+	0x01 extra: RESET	Memory disambiguation reset cycles.
+	0x02 extra: SUCCESS	Number of loads that were successfully disambiguated.
 name:page_walks type:exclusive default:0x02
-	0x01 COUNT	Number of page-walks executed.
-	0x02 CYCLES	Duration of page-walks in core cycles.
+	0x01 extra: COUNT	Number of page-walks executed.
+	0x02 extra: CYCLES	Duration of page-walks in core cycles.
 name:delayed_bypass type:exclusive default:0x00
-	0x00 FP		Delayed bypass to FP operation.
-	0x01 SIMD	Delayed bypass to SIMD operation.
-	0x02 LOAD	Delayed bypass to load operation.
+	0x00 extra: FP		Delayed bypass to FP operation.
+	0x01 extra: SIMD	Delayed bypass to SIMD operation.
+	0x02 extra: LOAD	Delayed bypass to load operation.
 name:core type:exclusive default:0x40
 	0xc0	All cores
 	0x40	This core
@@ -133,13 +133,13 @@ name:esp type:bitmask default:0x01
 	0x01	ESP register content synchronizations
 	0x02	ESP register automatic additions
 name:inst_retired type:bitmask default:0x00
-	0x00	Any
-	0x01	Loads
-	0x02	Stores
-	0x04	Other
+	0x00	extra: Any
+	0x01	extra: Loads
+	0x02	extra: Stores
+	0x04	extra: Other
 name:x87_ops_retired type:exclusive default:0xfe
-	0x01	FXCH instructions retired
-	0xfe	Retired floating-point computational operations (precise)
+	0x01	extra: FXCH instructions retired
+	0xfe	extra: Retired floating-point computational operations (precise)
 name:uops_retired type:bitmask default:0x0f
 	0x01	Fused load+op or load+indirect branch retired
 	0x02	Fused store address + data retired
@@ -183,10 +183,10 @@ name:rat_stalls type:bitmask default:0xf
 	0x08	FPU status word
 	0x0f	All RAT
 name:seg_regs type:bitmask default:0x0f
-	0x01	ES
-	0x02	DS
-	0x04	FS
-	0x08	GS
+	0x01	extra: ES
+	0x02	extra: DS
+	0x04	extra: FS
+	0x08	extra: GS
 name:resource_stalls type:bitmask default:0x0f
 	0x01	when the ROB is full
 	0x02	during which the RS is full
