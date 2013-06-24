@@ -30,10 +30,10 @@ name:int_misc type:bitmask default:0x40
 	0x40 extra: rat_stall_cycles Cycles Resource Allocation Table (RAT) external stall is sent to Instruction Decode Queue (IDQ) for this thread.
 	0x3 extra:cmask=1 recovery_cycles Number of cycles waiting to be recover after Nuke due to all other cases except JEClear.
 	0x3 extra:cmask=1,edge recovery_stalls_count Edge applied to recovery_cycles, thus counts occurrences.
-name:uops_issued type:bitmask default:0x1
+name:uops_issued type:bitmask default:any
 	0x1 extra: any Number of Uops issued by the Resource Allocation Table (RAT) to the Reservation Station (RS)
 	0x1 extra:cmask=1,inv stall_cycles cycles no uops issued by this thread.
-name:arith type:bitmask default:0x1
+name:arith type:bitmask default:fpu_div_active
 	0x1 extra: fpu_div_active Cycles that the divider is busy with any divide or sqrt operation.
 	0x1 extra:cmask=1,edge fpu_div Number of times that the divider is actived, includes INT, SIMD and FP.
 name:l2_rqsts type:bitmask default:0x1
@@ -56,7 +56,7 @@ name:l2_store_lock_rqsts type:bitmask default:0xf
 name:l2_l1d_wb_rqsts type:bitmask default:0x4
 	0x4 extra: hit_e writebacks from L1D to L2 cache lines in E state
 	0x8 extra: hit_m writebacks from L1D to L2 cache lines in M state
-name:l1d_pend_miss type:bitmask default:0x1
+name:l1d_pend_miss type:bitmask default:pending
 	0x1 extra: pending Cycles with L1D load Misses outstanding.
 	0x1 extra:cmask=1,edge occurences This event counts the number of L1D misses outstanding occurences.
 name:dtlb_store_misses type:bitmask default:0x1
@@ -72,7 +72,7 @@ name:l1d type:bitmask default:0x1
 	0x2 extra: allocated_in_m L1D M-state Data Cache Lines Allocated
 	0x4 extra: eviction L1D M-state Data Cache Lines Evicted due to replacement (only)
 	0x8 extra: all_m_replacement All Modified lines evicted out of L1D
-name:partial_rat_stalls type:bitmask default:0x20
+name:partial_rat_stalls type:bitmask default:flags_merge_uop
 	0x20 extra: flags_merge_uop Number of perf sensitive flags-merge uops added by Sandy Bridge u-arch.
 	0x40 extra: slow_lea_window Number of cycles with at least 1 slow Load Effective Address (LEA) uop being allocated.
 	0x80 extra: mul_single_uop Number of Multiply packed/scalar single precision uops allocated
@@ -82,11 +82,11 @@ name:resource_stalls2 type:bitmask default:0x40
 	0xf extra: all_prf_control Resource stalls2 control structures full for physical registers
 	0xc extra: all_fl_empty Cycles with either free list is empty
 	0x4f extra: ooo_rsrc Resource stalls2 control structures full Physical Register Reclaim Table (PRRT),  Physical History Table (PHT), INT or SIMD Free List (FL), Branch Order Buffer (BOB)
-name:cpl_cycles type:bitmask default:0x1
+name:cpl_cycles type:bitmask default:ring0
 	0x1 extra: ring0 Unhalted core cycles the Thread was in Rings 0.
 	0x1 extra:cmask=1,edge ring0_trans Transitions from ring123 to Ring0.
 	0x2 extra: ring123 Unhalted core cycles the Thread was in Rings 1/2/3.
-name:offcore_requests_outstanding type:bitmask default:0x1
+name:offcore_requests_outstanding type:bitmask default:cycles_with_demand_data_rd
 	0x1 extra: demand_data_rd Offcore outstanding Demand Data Read transactions in the SuperQueue (SQ), queue to uncore, every cycle. Includes L1D data hardware prefetches.
 	0x1 extra:cmask=1 cycles_with_demand_data_rd cycles there are Offcore outstanding RD data transactions in the SuperQueue (SQ), queue to uncore.
 	0x2 extra: demand_code_rd Offcore outstanding Code Reads transactions in the SuperQueue (SQ), queue to uncore, every cycle.
@@ -148,7 +148,7 @@ name:br_misp_exec type:bitmask default:0xff
 	0xc1 extra: all_conditional All mispredicted macro conditional branch instructions.
 	0xc4 extra: all_indirect_jump_non_call_ret All mispredicted indirect branches that are not calls nor returns.
 	0xd0 extra: all_direct_near_call All mispredicted non-indirect calls
-name:idq_uops_not_delivered type:bitmask default:0x1
+name:idq_uops_not_delivered type:bitmask default:core
 	0x1 extra: core Count number of non-delivered uops to Resource Allocation Table (RAT).
 	0x1 extra:cmask=4 cycles_0_uops_deliv.core Counts the cycles no uops were delivered
 	0x1 extra:cmask=3 cycles_le_1_uop_deliv.core Counts the cycles less than 1 uops were delivered
@@ -190,21 +190,21 @@ name:offcore_requests type:bitmask default:0x1
 	0x2 extra: demand_code_rd Offcore Code read requests. Includes Cacheable and Un-cacheables.
 	0x4 extra: demand_rfo Offcore Demand RFOs. Includes regular RFO, Locks, ItoM.
 	0x8 extra: all_data_rd Offcore Demand and prefetch data reads returned to the core.
-name:uops_dispatched type:bitmask default:0x1
+name:uops_dispatched type:bitmask default:thread
 	0x1 extra: thread Counts total number of uops to be dispatched per-thread each cycle.
 	0x1 extra:cmask=1,inv stall_cycles Counts number of cycles no uops were dispatced to be executed on this thread.
 	0x2 extra: core Counts total number of uops dispatched from any thread
 name:tlb_flush type:bitmask default:0x1
 	0x1 extra: dtlb_thread Count number of DTLB flushes of thread-specific entries.
 	0x20 extra: stlb_any Count number of any STLB flushes
-name:l1d_blocks type:bitmask default:0x1
+name:l1d_blocks type:bitmask default:bank_conflict_cycles
 	0x1 extra: ld_bank_conflict Any dispatched loads cancelled due to DCU bank conflict
 	0x5 extra:cmask=1 bank_conflict_cycles Cycles with l1d blocks due to bank conflicts
 name:other_assists type:bitmask default:0x2
 	0x2 extra: itlb_miss_retired Instructions that experienced an ITLB miss.  Non Pebs
 	0x10 extra: avx_to_sse Number of transitions from AVX-256 to legacy SSE when penalty applicable Non Pebs
 	0x20 extra: sse_to_avx Number of transitions from legacy SSE to AVX-256 when penalty applicable Non Pebs
-name:uops_retired type:bitmask default:0x1
+name:uops_retired type:bitmask default:all
 	0x1 extra: all All uops that actually retired.
 	0x2 extra: retire_slots number of retirement slots used non PEBS
 	0x1 extra:cmask=1,inv stall_cycles Cycles no executable uops retired

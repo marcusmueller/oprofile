@@ -15,17 +15,17 @@ name:dtlb_load_misses type:exclusive default:0x81
 	0x81 extra: demand_ld_miss_causes_a_walk Demand load Miss in all translation lookaside buffer (TLB) levels causes an page walk of any page size.
 	0x82 extra: demand_ld_walk_completed Demand load Miss in all translation lookaside buffer (TLB) levels causes a page walk that completes of any page size.
 	0x84 extra: demand_ld_walk_duration Demand load cycles page miss handler (PMH) is busy with this walk.
-name:int_misc type:exclusive default:0x3
+name:int_misc type:exclusive default:recovery_cycles
 	0x3 extra:cmask=1 recovery_cycles Number of cycles waiting for the checkpoints in Resource Allocation Table (RAT) to be recovered after Nuke due to all other cases except JEClear (e.g. whenever a ucode assist is needed like SSE exception, memory disambiguation, etc...)
 	0x3 extra:cmask=1,edge recovery_stalls_count Number of occurences waiting for the checkpoints in Resource Allocation Table (RAT) to be recovered after Nuke due to all other cases except JEClear (e.g. whenever a ucode assist is needed like SSE exception, memory disambiguation, etc...)
-name:uops_issued type:exclusive default:0x1
+name:uops_issued type:exclusive default:any
 	0x1 extra: any Uops that Resource Allocation Table (RAT) issues to Reservation Station (RS)
 	0x1 extra:cmask=1,inv stall_cycles Cycles when Resource Allocation Table (RAT) does not issue Uops to Reservation Station (RS) for the thread
 	0x1 extra:cmask=1,inv,any core_stall_cycles Cycles when Resource Allocation Table (RAT) does not issue Uops to Reservation Station (RS) for all threads
 	0x10 extra: flags_merge Number of flags-merge uops being allocated.
 	0x20 extra: slow_lea Number of slow LEA uops being allocated. A uop is generally considered SlowLea if it has 3 sources (e.g. 2 sources + immediate) regardless if as a result of LEA instruction or not.
 	0x40 extra: single_mul Number of Multiply packed/scalar single precision uops allocated
-name:arith type:bitmask default:0x1
+name:arith type:bitmask default:fpu_div_active
 	0x1 extra: fpu_div_active Cycles when divider is busy executing divide operations
 	0x4 extra:cmask=1,edge fpu_div Divide operations executed
 name:l2_rqsts type:exclusive default:0x1
@@ -49,7 +49,7 @@ name:l2_l1d_wb_rqsts type:exclusive default:0x1
 	0x4 extra: hit_e Not rejected writebacks from L1D to L2 cache lines in E state
 	0x8 extra: hit_m Not rejected writebacks from L1D to L2 cache lines in M state
 	0xf extra: all Not rejected writebacks from L1D to L2 cache lines in any state.
-name:l1d_pend_miss type:exclusive default:0x1
+name:l1d_pend_miss type:exclusive default:pending_cycles
 	0x1 extra: pending L1D miss oustandings duration in cycles
 	0x1 extra:cmask=1 pending_cycles Cycles with L1D load Misses outstanding.
 	0x1 extra:cmask=1,edge occurences This event counts the number of L1D misses outstanding, using an edge detect to count transitions.
@@ -68,7 +68,7 @@ name:move_elimination type:bitmask default:0x1
 	0x2 extra: simd_not_eliminated Number of SIMD Move Elimination candidate uops that were not eliminated.
 	0x4 extra: int_eliminated Number of integer Move Elimination candidate uops that were eliminated.
 	0x8 extra: simd_eliminated Number of SIMD Move Elimination candidate uops that were eliminated.
-name:cpl_cycles type:exclusive default:0x1
+name:cpl_cycles type:exclusive default:ring0
 	0x1 extra: ring0 Unhalted core cycles when the thread is in ring 0
 	0x1 extra:cmask=1,edge ring0_trans Number of intervals between processor halts while thread is in ring 0
 	0x2 extra: ring123 Unhalted core cycles when thread is in rings 1, 2, or 3
@@ -76,7 +76,7 @@ name:rs_events type:mandatory default:0x1
 	0x1 extra: empty_cycles Cycles when Reservation Station (RS) is empty for the thread
 name:tlb_access type:mandatory default:0x4
 	0x4 extra: load_stlb_hit Load operations that miss the first DTLB level but hit the second and do not cause page walks
-name:offcore_requests_outstanding type:exclusive default:0x1
+name:offcore_requests_outstanding type:exclusive default:cycles_with_demand_data_rd
 	0x1 extra: demand_data_rd Offcore outstanding Demand Data Read transactions in uncore queue.
 	0x1 extra:cmask=1 cycles_with_demand_data_rd Cycles when offcore outstanding Demand Data Read transactions are present in SuperQueue (SQ), queue to uncore
 	0x2 extra: demand_code_rd Offcore outstanding code reads transactions in SuperQueue (SQ), queue to uncore, every cycle
@@ -87,7 +87,7 @@ name:offcore_requests_outstanding type:exclusive default:0x1
 name:lock_cycles type:bitmask default:0x1
 	0x1 extra: split_lock_uc_lock_duration Cycles when L1 and L2 are locked due to UC or split lock
 	0x2 extra: cache_lock_duration Cycles when L1D is locked
-name:idq type:exclusive default:0x2
+name:idq type:exclusive default:empty
 	0x2 extra: empty Instruction Decode Queue (IDQ) empty cycles
 	0x4 extra: mite_uops Uops delivered to Instruction Decode Queue (IDQ) from MITE path
 	0x4 extra:cmask=1 mite_cycles Cycles when uops are being delivered to Instruction Decode Queue (IDQ) from MITE path
@@ -137,14 +137,14 @@ name:br_misp_exec type:exclusive default:0x41
 	0xc1 extra: all_conditional Speculative and retired mispredicted macro conditional branches
 	0xc4 extra: all_indirect_jump_non_call_ret Mispredicted indirect branches excluding calls and returns
 	0xff extra: all_branches Speculative and retired mispredicted macro conditional branches
-name:idq_uops_not_delivered type:exclusive default:0x1
++name:idq_uops_not_delivered type:exclusive default:core
 	0x1 extra: core Uops not delivered by the Frontend to the Backend of the machine, while there is no Backend stall
 	0x1 extra:cmask=1 cycles_le_3_uop_deliv.core Cycles with 3 or less uops delivered by the Frontend to the Backend of the machine, while there is no Backend stall
 	0x1 extra:cmask=1,inv cycles_fe_was_ok Cycles with 4 uops delivered by the Frontend to the Backend of the machine, or the Backend was stalling
 	0x1 extra:cmask=2 cycles_le_2_uop_deliv.core Cycles with 2 or less uops delivered by the Frontend to the Backend of the machine, while there is no Backend stall
 	0x1 extra:cmask=3 cycles_le_1_uop_deliv.core Cycles with 1 or less uops delivered by the Frontend to the Backend of the machine, while there is no Backend stall
 	0x1 extra:cmask=4 cycles_0_uops_deliv.core Cycles with no uops delivered by the Frontend to the Backend of the machine, while there is no Backend stall
-name:uops_dispatched_port type:exclusive default:0x1
+name:uops_dispatched_port type:exclusive default:port_0
 	0x1 extra: port_0 Cycles per thread when uops are dispatched to port 0
 	0x1 extra:any port_0_core Cycles per core when uops are dispatched to port 0
 	0x2 extra: port_1 Cycles per thread when uops are dispatched to port 1
@@ -181,7 +181,7 @@ name:offcore_requests type:bitmask default:0x1
 	0x2 extra: demand_code_rd Cacheable and noncachaeble code read requests
 	0x4 extra: demand_rfo Demand RFO requests including regular RFOs, locks, ItoM
 	0x8 extra: all_data_rd Demand and prefetch data reads
-name:uops_executed type:exclusive default:0x1
+name:uops_executed type:exclusive default:thread
 	0x1 extra: thread Counts the number of uops to be executed per-thread each cycle.
 	0x1 extra:cmask=1 cycles_ge_1_uop_exec Cycles where at least 1 uop was executed per-thread
 	0x1 extra:cmask=1,inv stall_cycles Counts number of cycles no uops were dispatched to be executed on this thread.
@@ -196,7 +196,7 @@ name:other_assists type:bitmask default:0x8
 	0x8 extra: avx_store Number of AVX memory assist for stores. AVX microcode assist is being invoked whenever the hardware is unable to properly handle AVX-256b operations.
 	0x10 extra: avx_to_sse Number of transitions from AVX-256 to legacy SSE when penalty applicable.
 	0x20 extra: sse_to_avx Number of transitions from SSE to AVX-256 when penalty applicable.
-name:uops_retired type:exclusive default:0x1
+name:uops_retired type:exclusive default:all
 	0x1 extra: all Actually retired uops.
 	0x1 extra:cmask=1,inv stall_cycles Cycles without actually retired uops. 
 	0x1 extra:cmask=1,inv,any core_stall_cycles Cycles without actually retired uops. 

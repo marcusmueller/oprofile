@@ -27,7 +27,7 @@ name:dtlb_load_misses type:exclusive default:0x1
 	0x20 extra: stlb_hit_4k Load misses that miss the  DTLB and hit the STLB (4K)
 	0x40 extra: stlb_hit_2m Load misses that miss the  DTLB and hit the STLB (2M)
 	0x80 extra: pde_cache_miss DTLB demand load misses with low part of linear-to-physical address translation missed
-name:uops_issued type:exclusive default:0x1
+name:uops_issued type:exclusive default:any
 	0x1 extra: any Uops that Resource Allocation Table (RAT) issues to Reservation Station (RS)
 	0x10 extra: flags_merge Number of flags-merge uops being allocated. Such uops considered perf sensitive; added by GSR u-arch.
 	0x20 extra: slow_lea Number of slow LEA uops being allocated. A uop is generally considered SlowLea if it has 3 sources (e.g. 2 sources + immediate) regardless if as a result of LEA instruction or not.
@@ -51,7 +51,7 @@ name:l2_rqsts type:exclusive default:0x21
 	0xe7 extra: all_demand_references  Demand requests to L2 cache
 	0x3f extra: miss  All requests that miss L2 cache
 	0xff extra: references   All L2 requests
-name:l1d_pend_miss type:exclusive default:0x1
+name:l1d_pend_miss type:exclusive default:pending
 	0x1 extra: pending L1D miss oustandings duration in cycles
 	0x1 extra:cmask=1 pending_cycles Cycles with L1D load Misses outstanding.
 	0x1 extra:cmask=1,edge occurences This event counts the number of L1D misses outstanding, using an edge detect to count transitions.
@@ -81,7 +81,7 @@ name:move_elimination type:exclusive default:0x1
 	0x2 extra: simd_eliminated Number of SIMD Move Elimination candidate uops that were eliminated.
 	0x4 extra: int_not_eliminated Number of integer Move Elimination candidate uops that were not eliminated.
 	0x8 extra: simd_not_eliminated Number of SIMD Move Elimination candidate uops that were not eliminated.
-name:cpl_cycles type:exclusive default:0x1
+name:cpl_cycles type:exclusive default:ring0
 	0x1 extra: ring0 Unhalted core cycles when the thread is in ring 0
 	0x2 extra: ring123 Unhalted core cycles when thread is in rings 1, 2, or 3
 	0x1 extra:cmask=1,edge ring0_trans Number of intervals between processor halts while thread is in ring 0
@@ -145,14 +145,14 @@ name:br_misp_exec type:exclusive default:0xff
 	0xc1 extra: all_conditional Speculative and retired mispredicted macro conditional branches
 	0xc4 extra: all_indirect_jump_non_call_ret Mispredicted indirect branches excluding calls and returns
 	0xa0 extra: taken_indirect_near_call Taken speculative and retired mispredicted indirect calls
-name:idq_uops_not_delivered type:exclusive default:0x1
+name:idq_uops_not_delivered type:exclusive default:core
 	0x1 extra: core Uops not delivered to Resource Allocation Table (RAT) per thread when backend of the machine is not stalled
 	0x1 extra:cmask=4 cycles_0_uops_deliv_core Cycles per thread when 4 or more uops are not delivered to Resource Allocation Table (RAT) when backend of the machine is not stalled
 	0x1 extra:cmask=3 cycles_le_1_uop_deliv_core Cycles per thread when 3 or more uops are not delivered to Resource Allocation Table (RAT) when backend of the machine is not stalled 
 	0x1 extra:cmask=2 cycles_le_2_uop_deliv_core Cycles with less than 2 uops delivered by the front end.
 	0x1 extra:cmask=1 cycles_le_3_uop_deliv_core Cycles with less than 3 uops delivered by the front end.
 	0x1 extra:cmask=1,inv cycles_fe_was_ok Counts cycles FE delivered 4 uops or Resource Allocation Table (RAT) was stalling FE.
-name:uops_executed_port type:exclusive default:0x1
+name:uops_executed_port type:exclusive default:port_0
 	0x1 extra: port_0 Cycles per thread when uops are executed in port 0
 	0x2 extra: port_1 Cycles per thread when uops are executed in port 1
 	0x4 extra: port_2 Cycles per thread when uops are executed in port 2
@@ -183,7 +183,7 @@ name:offcore_requests type:exclusive default:0x2
 	0x2 extra: demand_code_rd Cacheable and noncachaeble code read requests
 	0x4 extra: demand_rfo Demand RFO requests including regular RFOs, locks, ItoM
 	0x8 extra: all_data_rd Demand and prefetch data reads
-name:uops_executed type:exclusive default:0x1
+name:uops_executed type:exclusive default:thread
 	0x1 extra: thread Counts the number of uops to be executed per-thread each cycle.
 	0x2 extra: core Number of uops executed on the core.
 	0x1 extra:cmask=1,inv stall_cycles Counts number of cycles no uops were dispatched to be executed on this thread.
@@ -207,7 +207,7 @@ name:other_assists type:exclusive default:0x8
 	0x8 extra: avx_to_sse Number of transitions from AVX-256 to legacy SSE when penalty applicable.
 	0x10 extra: sse_to_avx Number of transitions from SSE to AVX-256 when penalty applicable.
 	0x40 extra: any_wb_assist Number of times any microcode assist is invoked by HW upon uop writeback.
-name:uops_retired type:exclusive default:0x1
+name:uops_retired type:exclusive default:all
 	0x1 extra: all Actually retired uops. 
 	0x2 extra: retire_slots Retirement slots used. 
 	0x1 extra:pebs all_ps Actually retired uops. (Precise Event - PEBS)
@@ -219,7 +219,7 @@ name:machine_clears type:exclusive default:0x2
 	0x2 extra: memory_ordering Counts the number of machine clears due to memory order conflicts.
 	0x4 extra: smc Self-modifying code (SMC) detected.
 	0x20 extra: maskmov This event counts the number of executed Intel AVX masked load operations that refer to an illegal address range with the mask bits set to 0. 
-name:br_inst_retired type:exclusive default:0x1
+name:br_inst_retired type:exclusive default:all_branches_ps
 	0x1 extra: conditional Conditional branch instructions retired. 
 	0x2 extra: near_call Direct and indirect near call instructions retired. 
 	0x8 extra: near_return Return instructions retired. 
@@ -233,7 +233,7 @@ name:br_inst_retired type:exclusive default:0x1
 	0x20 extra:pebs near_taken_ps Taken branch instructions retired. (Precise Event - PEBS)
 	0x2 extra: near_call_r3 Direct and indirect macro near call instructions retired (captured in ring 3). 
 	0x2 extra:pebs near_call_r3_ps Direct and indirect macro near call instructions retired (captured in ring 3). (Precise Event - PEBS)
-name:br_misp_retired type:exclusive default:0x1
+name:br_misp_retired type:exclusive default:all_branches_ps
 	0x1 extra: conditional Mispredicted conditional branch instructions retired. 
 	0x1 extra:pebs conditional_ps Mispredicted conditional branch instructions retired. (Precise Event - PEBS)
 	0x4 extra:pebs all_branches_ps Mispredicted macro branch instructions retired. (Precise Event - PEBS)
@@ -263,7 +263,7 @@ name:fp_assist type:exclusive default:0x1e
 	0x4 extra: x87_input Number of X87 assists due to input value.
 	0x8 extra: simd_output Number of SIMD FP assists due to Output values
 	0x10 extra: simd_input Number of SIMD FP assists due to input values
-name:mem_uops_retired type:exclusive default:0x11
+name:mem_uops_retired type:exclusive default:all_loads
 	0x11 extra: stlb_miss_loads Load uops with true STLB miss retired to architected path. 
 	0x12 extra: stlb_miss_stores Store uops with true STLB miss retired to architected path. 
 	0x21 extra: lock_loads Load uops with locked access retired to architected path. 
@@ -278,7 +278,7 @@ name:mem_uops_retired type:exclusive default:0x11
 	0x42 extra:pebs split_stores_ps Line-splitted store uops retired to architected path. (Precise Event - PEBS)
 	0x81 extra:pebs all_loads_ps Load uops retired to architected path with filter on bits 0 and 1 applied. (Precise Event - PEBS)
 	0x82 extra:pebs all_stores_ps Store uops retired to architected path with filter on bits 0 and 1 applied. (Precise Event - PEBS)
-name:mem_load_uops_retired type:exclusive default:0x1
+name:mem_load_uops_retired type:exclusive default:l1_hit
 	0x1 extra: l1_hit Retired load uops with L1 cache hits as data sources. 
 	0x2 extra: l2_hit Retired load uops with L2 cache hits as data sources. 
 	0x4 extra: l3_hit Retired load uops which data sources were data hits in LLC without snoops required. 
@@ -288,7 +288,7 @@ name:mem_load_uops_retired type:exclusive default:0x1
 	0x2 extra:pebs l2_hit_ps Retired load uops with L2 cache hits as data sources. (Precise Event - PEBS)
 	0x4 extra:pebs l3_hit_ps Miss in last-level (L3) cache. Excludes Unknown data-source. (Precise Event - PEBS)
 	0x40 extra:pebs hit_lfb_ps Retired load uops which data sources were load uops missed L1 but hit FB due to preceding miss to the same cache line with data not ready. (Precise Event - PEBS)
-name:mem_load_uops_l3_hit_retired type:exclusive default:0x1
+name:mem_load_uops_l3_hit_retired type:exclusive default:xsnp_miss
 	0x1 extra: xsnp_miss Retired load uops which data sources were LLC hit and cross-core snoop missed in on-pkg core cache. 
 	0x2 extra: xsnp_hit Retired load uops which data sources were LLC and cross-core snoop hits in on-pkg core cache. 
 	0x4 extra: xsnp_hitm Retired load uops which data sources were HitM responses from shared LLC. 
