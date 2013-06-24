@@ -33,7 +33,7 @@ name:sse_prefetch type:exclusive default:0x0
 	0x00 prefetch NTA instructions executed.
 	0x01 prefetch T1 instructions executed.
 	0x02 prefetch T1 and T2 instructions executed.
-	0x03 extra: SSE weakly-ordered stores
+	0x03 SSE weakly-ordered stores
 name:simd_instr_type_exec type:bitmask default:0x3f
 	0x01 SIMD packed multiplies
 	0x02 SIMD packed shifts
@@ -41,7 +41,7 @@ name:simd_instr_type_exec type:bitmask default:0x3f
 	0x08 SIMD unpack operations
 	0x10 SIMD packed logical
 	0x20 SIMD packed arithmetic
-	0x3f extra: all of the above
+	0x3f all of the above
 name:mmx_trans type:bitmask default:0x3
 	0x01 float->MMX transitions
 	0x02 MMX->float transitions
@@ -138,8 +138,8 @@ name:inst_retired type:bitmask default:0x00
 	0x02	extra: Stores
 	0x04	extra: Other
 name:x87_ops_retired type:exclusive default:0xfe
-	0x01	extra: FXCH instructions retired
-	0xfe	extra: Retired floating-point computational operations (precise)
+	0x01	FXCH instructions retired
+	0xfe	Retired floating-point computational operations (precise)
 name:uops_retired type:bitmask default:0x0f
 	0x01	Fused load+op or load+indirect branch retired
 	0x02	Fused store address + data retired
