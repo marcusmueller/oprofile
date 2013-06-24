@@ -56,9 +56,11 @@ struct op_unit_mask {
 	u32 num;		/**< number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
 	u32 default_mask;	/**< only the gui use it */
+	char * default_mask_name;
 	struct op_described_um {
 	        u32 extra;
 		u32 value;
+		char * name;
 		char * desc;
 	} um[MAX_UNIT_MASK];
 	struct list_head um_next; /**< next um in list */

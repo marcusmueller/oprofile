@@ -74,8 +74,9 @@ static void word_wrap(int indent, int *column, char *msg)
 		printf("%.*s", wlen, msg);
 		*column += wlen + 1;
 		msg += wlen;
-		msg += strspn(msg, " ");
-		if (*msg)
+		wlen = strspn(msg, " ");
+		msg += wlen;
+		if (wlen != 0)
 			putchar(' ');
 	}
 }
@@ -136,34 +137,29 @@ static void help_for_event(struct op_event * event)
 
 	if (strcmp(event->unit->name, "zero")) {
 
-		printf("\tUnit masks (default 0x%x)\n",
-		       event->unit->default_mask);
+		if (event->unit->default_mask_name) {
+			printf("\tUnit masks (default %s)\n",
+			       event->unit->default_mask_name);
+		} else {
+			printf("\tUnit masks (default 0x%x)\n",
+			       event->unit->default_mask);
+		}
 		printf("\t----------\n");
 
 		for (j = 0; j < event->unit->num; j++) {
 			printf("\t0x%.2x: ",
 			       event->unit->um[j].value);
 			column = 14;
-			word_wrap(14, &column, event->unit->um[j].desc);
-			if (event->unit->um[j].extra) {
-				u32 extra = event->unit->um[j].extra;
 
-				word_wrap(14, &column, " (extra:");
-				if (extra & EXTRA_EDGE)
-					word_wrap(14, &column, " edge");
-				if (extra & EXTRA_INV)
-					word_wrap(14, &column, " inv");
-				if ((extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK) {
-					snprintf(buf, sizeof buf, " cmask=%x",
-						 (extra >> EXTRA_CMASK_SHIFT) & EXTRA_CMASK_MASK);
-					word_wrap(14, &column, buf);
-				}
-				if (extra & EXTRA_ANY)
-					word_wrap(14, &column, " any");
-				if (extra & EXTRA_PEBS)
-					word_wrap(14, &column, " pebs");
-				word_wrap(14, &column, ")");
+			/* Named mask */
+			if (event->unit->um[j].name) {
+				word_wrap(14, &column, "(name=");
+				word_wrap(14, &column,
+					event->unit->um[j].name);
+				word_wrap(14, &column, ") ");
 			}
+
+			word_wrap(14, &column, event->unit->um[j].desc);
 			putchar('\n');
 		}
 	}

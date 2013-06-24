@@ -197,7 +197,12 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 			if (seen_default)
 				parse_error("duplicate default: tag");
 			seen_default = 1;
-			um->default_mask = parse_hex(tagend);
+			if (0 != strncmp(tagend, "0x", 2)) {
+				um->default_mask_name = op_xstrndup(
+					tagend, valueend - tagend);
+			} else {
+				um->default_mask = parse_hex(tagend);
+			}
 		} else {
 			parse_error("invalid unit mask tag");
 		}
@@ -215,32 +220,50 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 
 
 /* \t0x08 (M)odified cache state */
-/* \t0x08 extra:inv,cmask=... (M)odified cache state */
+/* \t0x08 extra:inv,cmask=... mod_cach_state (M)odified cache state */
 static void parse_um_entry(struct op_described_um * entry, char const * line)
 {
 	char const * c = line;
 
+	/* value */
 	c = skip_ws(c);
 	entry->value = parse_hex(c);
-	c = skip_nonws(c);
 
+	/* extra: */
+	c = skip_nonws(c);
 	c = skip_ws(c);
+	if (!*c)
+		goto invalid_out;
+
 	if (strisprefix(c, "extra:")) {
 		c += 6;
 		entry->extra = parse_extra(c);
+		/* named mask */
 		c = skip_nonws(c);
-	} else
+		c = skip_ws(c);
+		if (!*c)
+			goto invalid_out;
+
+		/* "extra:" !!ALWAYS!! followed by named mask */
+		entry->name = op_xstrndup(c, strcspn(c, " \t"));
+		c = skip_nonws(c);
+		c = skip_ws(c);
+	} else {
 		entry->extra = 0;
+	}
 
-	if (!*c)
-		parse_error("invalid unit mask entry");
+	/* desc */
+	if (!*c) {
+		/* This is a corner case where the named unit mask entry
+		 * only has one word.  This should really be fixed in the
+		 * unit_mask file */
+		entry->desc = xstrdup(entry->name);
+	} else
+		entry->desc = xstrdup(c);
+	return;
 
-	c = skip_ws(c);
-
-	if (!*c)
-		parse_error("invalid unit mask entry");
-
-	entry->desc = xstrdup(c);
+invalid_out:
+	parse_error("invalid unit mask entry");
 }
 
 
@@ -605,10 +628,18 @@ static int check_unit_mask(struct op_unit_mask const * um,
 				"(%s)\n", um->name, cpu_name);
 			err = EXIT_FAILURE;
 		}
-	} else {
-		for (i = 0; i < um->num; ++i) {
-			if (um->default_mask == um->um[i].value)
-				break;
+	} else if (um->unit_type_mask == utm_exclusive) {
+		if (um->default_mask_name) {
+			for (i = 0; i < um->num; ++i) {
+				if (0 == strcmp(um->default_mask_name,
+						um->um[i].name))
+					break;
+			}
+		} else {
+			for (i = 0; i < um->num; ++i) {
+				if (um->default_mask == um->um[i].value)
+					break;
+			}
 		}
 
 		if (i == um->num) {
@@ -708,6 +739,7 @@ static void load_events(op_cpu cpu_type)
 	unit_mask->unit_type_mask = utm_mandatory;
 	unit_mask->um[0].extra = 0;
 	unit_mask->um[0].value = 0;
+	unit_mask->um[0].name = xstrdup("");
 	unit_mask->um[0].desc = xstrdup("No unit mask");
 	unit_mask->used = 1;
 
@@ -1335,9 +1367,17 @@ static void extra_check(struct op_event *e, char *name, unsigned w)
 	}
 }
 
-static void do_resolve_unit_mask(struct op_event *e, struct parsed_event *pe, u32 *extra)
+static void do_resolve_unit_mask(struct op_event *e,
+	struct parsed_event *pe, u32 *extra)
 {
 	unsigned i;
+
+	/* If not specified um and the default um is name type
+	 * we populate pe unitmask name with default name */
+	if ((e->unit->default_mask_name != NULL) &&
+		(pe->unit_mask_name == NULL)) {
+		pe->unit_mask_name = xstrdup(e->unit->default_mask_name);
+	}
 
 	for (;;) {
 		if (pe->unit_mask_name == NULL) {
@@ -1374,9 +1414,15 @@ static void do_resolve_unit_mask(struct op_event *e, struct parsed_event *pe, u3
 		} else {
 			/* For named unit mask */
 			for (i = 0; i < e->unit->num; i++) {
-				int len = strcspn(e->unit->um[i].desc, " \t");
-				if (!strncmp(pe->unit_mask_name, e->unit->um[i].desc,
-					    len) && pe->unit_mask_name[len] == '\0')
+				int len = 0;
+
+				if (e->unit->um[i].name)
+					len = strlen(e->unit->um[i].name);
+
+				if (len
+				&&  (!strncmp(pe->unit_mask_name,
+					      e->unit->um[i].name, len))
+				&&  (pe->unit_mask_name[len] == '\0'))
 					break;
 			}
 			if (i == e->unit->num) {
