@@ -137,7 +137,7 @@ name:br_misp_exec type:exclusive default:0x41
 	0xc1 extra: all_conditional Speculative and retired mispredicted macro conditional branches
 	0xc4 extra: all_indirect_jump_non_call_ret Mispredicted indirect branches excluding calls and returns
 	0xff extra: all_branches Speculative and retired mispredicted macro conditional branches
-+name:idq_uops_not_delivered type:exclusive default:core
+name:idq_uops_not_delivered type:exclusive default:core
 	0x1 extra: core Uops not delivered by the Frontend to the Backend of the machine, while there is no Backend stall
 	0x1 extra:cmask=1 cycles_le_3_uop_deliv.core Cycles with 3 or less uops delivered by the Frontend to the Backend of the machine, while there is no Backend stall
 	0x1 extra:cmask=1,inv cycles_fe_was_ok Cycles with 4 uops delivered by the Frontend to the Backend of the machine, or the Backend was stalling
