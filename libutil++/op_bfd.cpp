@@ -108,7 +108,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	anon_obj(false),
 	vma_adj(0)
 {
-	int fd =  -1;
+	fd =  -1;
 	struct stat st;
 	// after creating all symbol it's convenient for user code to access
 	// symbols through a vector. We use an intermediate list to avoid a
@@ -178,8 +178,6 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 out:
 	add_symbols(symbols, symbol_filter);
-	if (fd != -1)
-		close(fd);
 	return;
 out_fail:
 	ibfd.close();
@@ -192,6 +190,8 @@ out_fail:
 
 op_bfd::~op_bfd()
 {
+	if (fd != -1)
+		close(fd);
 }
 
 
