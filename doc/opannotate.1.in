@@ -64,6 +64,10 @@ A path to a filesystem to search for additional binaries.
 Only include files in the given comma-separated list of glob patterns.
 .br
 .TP
+.BI "--merge / -m [lib,cpu,tid,tgid,unitmask,all]"
+Merge any profiles separated in a --separate session.
+.br
+.TP
 .BI "--include-symbols / -i [symbols]"
 Only include symbols in the given comma-separated list.
 .br
