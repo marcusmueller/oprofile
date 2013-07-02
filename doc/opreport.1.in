@@ -77,7 +77,7 @@ Output full paths instead of basenames.
 Merge any profiles separated in a --separate session.
 .br
 .TP
-.BI "--no-header"
+.BI "--no-header / -n"
 Don't output a header detailing profiling parameters.
 .br
 .TP
