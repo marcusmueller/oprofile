@@ -15,15 +15,15 @@ dump profile data, and set up the profiling parameters.
 
 .SH OPTIONS
 .TP
-.BI "--help"
+.BI "--help / -?"
 Show help message.
 .br
 .TP
-.BI "--version"
+.BI "--version / -v"
 Show version.
 .br
 .TP
-.BI "--list-events"
+.BI "--list-events / -l"
 Shows the monitorable events.
 .br
 .TP
@@ -45,20 +45,20 @@ Show configuration information.
 Start the oprofile daemon without starting profiling.
 .br
 .TP
-.BI "--start"
+.BI "--start / -s"
 Start data collection with either arguments provided by --setup
 or with information saved in ~root/.oprofile/daemonrc.
 .br
 .TP
-.BI "--dump"
+.BI "--dump / -d"
 Force a flush of the collected profiling data to the daemon.
 .br
 .TP
-.BI "--stop"
+.BI "--stop / -t"
 Stop data collection.
 .br
 .TP
-.BI "--shutdown"
+.BI "--shutdown / -h"
 Stop data collection and kill the daemon.
 .br
 .TP
@@ -99,7 +99,7 @@ rate it can help to increase this if the log file show excessive count of
 sample lost cpu buffer overflow. Same rules as defined for buffer-size.
 .br
 .TP
-.BI "--event="[event|"default"]
+.BI "--event / -e "[event|"default"]
 Specify an event to measure for the hardware performance counters,
 or "default" for the default event. The event is of the form
 "CPU_CLK_UNHALTED:30000:0:1:1" where the numeric values are
@@ -117,7 +117,7 @@ output). For some named unit masks, the hex value is not unique; thus, OProfile
 tools enforce specifying such unit masks value by name.
 .br
 .TP
-.BI "--separate="[none,lib,kernel,thread,cpu,all]
+.BI "--separate / -p "[none,lib,kernel,thread,cpu,all]
 Separate samples based on the given separator. 'lib' separates
 dynamically linked library samples per application. 'kernel' separates
 kernel and kernel module samples per application; 'kernel'
@@ -126,13 +126,13 @@ task.  'cpu' separates for each CPU. 'all' implies all of the above
 options and 'none' turns off separation.
 .br
 .TP
-.BI "--callgraph=#depth"
+.BI "--callgraph / -c "[#depth]
 Enable callgraph sample collection with a maximum depth. Use 0 to disable
 callgraph profiling. This option is available on x86 using a
 2.6+ kernel with callgraph support enabled.  It is also available on PowerPC using a 2.6.17+ kernel.
 .br
 .TP
-.BI "--image="[name,name...|"all"]
+.BI "--image / -i "[name,name...|"all"]
 Only profile the given absolute paths to binaries, or "all" to profile
 everything (the default).
 .br
@@ -146,7 +146,7 @@ Use this when you don't have a kernel vmlinux file, and you don't want to
 profile the kernel.
 .br
 .TP
-.BI "--verbose"
+.BI "--verbose / -V "[options]
 Be verbose in the daemon log. This has a high overhead.
 .br
 .TP
