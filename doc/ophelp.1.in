@@ -27,6 +27,28 @@ Show the events for the given numerical CPU type.
 Show the symbolic CPU name.
 .br
 .TP
+.BI "--get-default-event / -d"
+.br
+Show the default event for the specified CPU type.
+.TP
+.BI "--check-events / -e [events]"
+Check the given space-separated event descriptions for validity.
+If the events are valid, show which pmu counter each event would be assigned to.
+.br
+.TP
+.BI "--callgraph [callgraph_depth]"
+Use the callgraph depth to compute the higher minimum sampling intervals
+for the events.
+.br
+.TP
+.BI "--unit-mask / -u [event]"
+Show the default unit mask for the given event.
+.br
+.TP
+.BI "--extra-mask / -E [event]"
+Show the extra unit mask for given event.
+.br
+.TP
 .BI "--xml / -X"
 List events in XML format.
 .br
