@@ -1,0 +1,43 @@
+.TH OPROF_START 1 "@DATE@" "oprofile @VERSION@"
+.UC 4
+.SH NAME
+oprof_start \- A GUI interface for OProfile
+.SH SYNOPSIS
+.br
+.B oprof_start
+[
+.I options
+]
+.SH DESCRIPTION
+
+The
+.B oprof_start
+application provides a GUI interface to control the operation of OProfile.
+Running
+.B oprof_start
+requires root privileges and does not support
+.B operf
+due to
+.B oprof_start
+using the older
+.B opcontrol
+script.
+
+.SH ENVIRONMENT
+No special environment variables are recognised by oprof_start.
+
+.SH FILES
+.TP
+.I /root/.oprofile/daemonrc
+Configuration file for opcontrol
+.TP
+.I /var/lib/oprofile/samples/
+The location of the generated sample files.
+
+.SH VERSION
+.TP
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+.BR @OP_DOCDIR@,
+.BR oprofile(1)

@@ -16,6 +16,7 @@ man_MANS = \
 	opgprof.1 \
 	ophelp.1 \
 	op-check-perfevents.1 \
+	oprof_start.1 \
 	oparchive.1 \
 	opimport.1
 
