@@ -15,6 +15,7 @@ man_MANS = \
 	opannotate.1 \
 	opgprof.1 \
 	ophelp.1 \
+	op-check-perfevents.1 \
 	oparchive.1 \
 	opimport.1
 

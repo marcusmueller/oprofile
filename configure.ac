@@ -426,6 +426,7 @@ AC_OUTPUT(Makefile \
 	doc/oprofile.1 \
 	doc/opcontrol.1 \
 	doc/ophelp.1 \
+	doc/op-check-perfevents.1 \
 	doc/opreport.1 \
 	doc/opannotate.1 \
 	doc/opgprof.1 \

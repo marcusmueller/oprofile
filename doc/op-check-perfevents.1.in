@@ -1,0 +1,36 @@
+.TH OP-CHECK-PERFEVENTS 1 "@DATE@" "oprofile @VERSION@"
+.UC 4
+.SH NAME
+op-check-perfevents \- checks for kernel perf pmu support
+.SH SYNOPSIS
+.br
+.B op-check-perfevents
+[
+.I options
+]
+.SH DESCRIPTION
+
+The small helper program
+.B op-check-perfevents
+determines whether the kernel supports the perf interface
+and returns a zero exit status if the perf pmu support is available.
+.SH OPTIONS
+.TP
+.BI "--help / -h"
+Show usage help message.
+.br
+.TP
+.BI "--verbose / -v"
+Print string describing the error number of perf_event_open syscall
+.br
+
+.SH ENVIRONMENT
+No special environment variables are recognised by op-check-perfevents.
+
+.SH VERSION
+.TP
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+.BR @OP_DOCDIR@,
+.BR oprofile(1)
