@@ -233,9 +233,6 @@ opcontrol: usage:
                                  buffer-size.
    --cpu-buffer-size=num         per-cpu buffer size in units (2.6 kernel)
                                  Same rules as defined for buffer-size.
-   --note-table-size             kernel notes buffer size in notes units (2.4
-                                 kernel)
-
    --xen                         Xen image (for Xen only)
    --active-domains=<list>       List of domains in profiling session (for Xen)
                                  (list contains domain ids separated by commas)
@@ -937,16 +934,6 @@ do_options()
 			--active-domains)
 				error_if_invalid_arg $arg $val
 				ACTIVE_DOMAINS=$val
-				DO_SETUP=yes
-				;;
-			--note-table-size)
-				if test "$KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" meaningless on this kernel" >&2
-					exit 1
-				else
-					error_if_not_number "$arg" "$val"
-					NOTE_SIZE=$val
-				fi
 				DO_SETUP=yes
 				;;
 			-i|--image)
