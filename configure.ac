@@ -399,6 +399,7 @@ OP_DOCDIR=`eval echo "${my_op_prefix}/share/doc/$PACKAGE/"`
 AC_SUBST(OP_DOCDIR)
 
 AC_OUTPUT(Makefile \
+	pe_counting/Makefile \
 	libpe_utils/Makefile \
 	pe_profiling/Makefile \
 	libperf_events/Makefile \
