@@ -357,6 +357,8 @@ set<int> op_pe_utils::op_get_available_cpus(int max_num_cpus)
 	FILE * online_cpus = fopen("/sys/devices/system/cpu/online", "r");
 
 	if (max_num_cpus == -1) {
+		if (online_cpus)
+			fclose(online_cpus);
 		return available_cpus;
 	}
 
@@ -845,7 +847,8 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 #define	_OP_USER 3
 		int place =  _OP_UM;
 		char * endptr = NULL;
-		event.evt_um = 0ULL;
+		event.evt_um = 0UL;
+		event.count = 0UL;
 		event.no_kernel = 0;
 		event.no_user = 0;
 		event.throttled = false;

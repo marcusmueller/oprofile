@@ -54,7 +54,7 @@ ocount_counter::ocount_counter(operf_event_t & evt,  bool enable_on_exec,
 	attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED |
 			    PERF_FORMAT_TOTAL_TIME_RUNNING;
 	event_name = evt.name;
-	fd = -1;
+	fd = cpu = pid = -1;
 }
 
 ocount_counter::~ocount_counter() {
@@ -112,6 +112,9 @@ ocount_record::ocount_record(enum op_runmode _runmode, std::vector<operf_event_t
 	evts = _evts;
 	valid = false;
 	system_wide = false;
+	tasks_are_threads = false;
+	num_cpus = 0;
+	app_pid = -1;
 }
 
 bool ocount_record::start_counting_app_process(pid_t _pid)
@@ -364,21 +367,24 @@ void ocount_record::output_short_results(ostream & out, bool use_separation)
 			u64 scaled_count = accum_counts[evt_num].aggregated_count ? accum_counts[evt_num].aggregated_count/percent_time_enabled : 0;
 			out << perfCounters[num].get_event_name() << "," << dec << scaled_count << ",";
 		}
+		ostringstream strm_tmp;
 		if (use_separation) {
 			if (!tmp_accum.enabled_time) {
 				out << 0 << endl;
 			} else {
-				out.precision(2);
-				out << fixed << ((double)tmp_accum.running_time/tmp_accum.enabled_time) * 100
-						<< endl;
+				strm_tmp.precision(2);
+				strm_tmp << fixed << ((double)tmp_accum.running_time/tmp_accum.enabled_time) * 100
+				         << endl;
+				out << strm_tmp.str();
 			}
 		} else {
 			if (!accum_counts[evt_num].enabled_time) {
 				out << "Event not counted" << endl;
 			} else {
-				out.precision(2);
-				out << fixed << ((double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time) * 100
-						<< endl;
+				strm_tmp.precision(2);
+				strm_tmp << fixed << ((double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time) * 100
+				         << endl;
+				out << strm_tmp.str();
 			}
 		}
 	}
@@ -498,21 +504,24 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 		strncpy(temp, space_padding, num_pads);
 		temp[num_pads] = '\0';
 		out << temp;
+		ostringstream strm_tmp;
 		if (use_separation) {
 			if (!tmp_accum.enabled_time) {
 				out << "Event not counted" << endl;
 			} else {
-				out.precision(2);
-				out << fixed << ((double)tmp_accum.running_time/tmp_accum.enabled_time) * 100
-						<< endl;
+				strm_tmp.precision(2);
+				strm_tmp << fixed << ((double)tmp_accum.running_time/tmp_accum.enabled_time) * 100
+				         << endl;
+				out << strm_tmp.str();
 			}
 		} else {
 			if (!accum_counts[evt_num].enabled_time) {
 				out << "Event not counted" << endl;
 			} else {
-				out.precision(2);
-				out << fixed << ((double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time) * 100
-						<< endl;
+				strm_tmp.precision(2);
+				strm_tmp << fixed << ((double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time) * 100
+				         << endl;
+				out << strm_tmp.str();
 			}
 		}
 	}

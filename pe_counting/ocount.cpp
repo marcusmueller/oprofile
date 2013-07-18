@@ -14,6 +14,7 @@
 #include "config.h"
 
 #include <iostream>
+#include <stdexcept>
 #include <fstream>
 #include <vector>
 #include <set>
@@ -300,8 +301,15 @@ bool start_counting(void)
 
 static void do_results(ostream & out)
 {
-	orecord->output_results(out, ocount_options::separate_cpu | ocount_options::separate_thread,
-	                        ocount_options::csv_output);
+	try {
+		orecord->output_results(out, ocount_options::separate_cpu | ocount_options::separate_thread,
+		                        ocount_options::csv_output);
+	} catch (runtime_error e) {
+		cerr << "Caught runtime error from ocount_record::output_results" << endl;
+		cerr << e.what() << endl;
+		cleanup();
+		exit(EXIT_FAILURE);
+	}
 }
 
 end_code_t _get_waitpid_status(int waitpid_status, int wait_rc)
@@ -389,8 +397,15 @@ static end_code_t _run(ostream & out)
 	sigfillset(&ss);
 	sigprocmask(SIG_BLOCK, &ss, NULL);
 
-	if (!start_counting()) {
-		return PERF_RECORD_ERROR;
+	try {
+		if (!start_counting()) {
+			return PERF_RECORD_ERROR;
+		}
+	} catch (runtime_error e) {
+		cerr << "Caught runtime error while setting up counters" << endl;
+		cerr << e.what() << endl;
+		cleanup();
+		exit(EXIT_FAILURE);
 	}
 	// parent continues here
 	if (startApp)
@@ -759,7 +774,14 @@ int main(int argc, char * const argv[])
 
 	cpu_type = op_get_cpu_type();
 	cpu_speed = op_cpu_frequency();
-	process_args(argc, argv);
+	try {
+		process_args(argc, argv);
+	} catch (runtime_error e) {
+		cerr << "Caught runtime error while processing args" << endl;
+		cerr << e.what() << endl;
+		cleanup();
+		exit(EXIT_FAILURE);
+	}
 
 	if ((runmode == OP_SYSWIDE || runmode == OP_CPULIST) && ((my_uid != 0) && (perf_event_paranoid > 0))) {
 		cerr << "To do ";
