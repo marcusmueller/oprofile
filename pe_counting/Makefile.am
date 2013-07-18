@@ -19,7 +19,7 @@ AM_CXXFLAGS = @OP_CXXFLAGS@
 AM_LDFLAGS = @OP_LDFLAGS@
 
 bin_PROGRAMS = ocount
-ocount_LDADD = 	../libpe_utils/libpe_utils.a \
+ocount_LDADD = -lrt ../libpe_utils/libpe_utils.a \
 	../libpe_utils/libpe_utils.a \
 	../libop/libop.a \
 	../libutil/libutil.a \
