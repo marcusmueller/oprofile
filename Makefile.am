@@ -21,6 +21,7 @@ SUBDIRS = \
 	gui \
 	libperf_events \
 	pe_profiling \
+	libpe_utils \
 	agents
 #### ATTENTION ####
 #    The agents directory must be kept as the last subdir
