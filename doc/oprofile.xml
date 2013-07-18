@@ -27,23 +27,34 @@
 
 <para>
 This manual applies to OProfile version <oprofileversion />.
-OProfile is a profiling system for Linux 2.6 and higher systems on a number of architectures. It is capable of profiling
-all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
-to binaries. OProfile can profile the whole system in the background, collecting information at a low overhead. These
-features make it ideal for profiling entire systems to determine bottle necks in real-world systems.
+OProfile is a set of performance monitoring tools for Linux 2.6 and higher systems, available on a number of architectures.
+OProfile provides the following features:
+<itemizedlist>
+<listitem>Profiler</listitem>
+<listitem>Post-processing tools for analyzing profile data</listitem>
+<listitem>Event counter</listitem>
+</itemizedlist>
 </para>
 <para>
+OProfile is capable of monitoring native hardware events occurring in all parts of a running system, from the kernel
+(including modules and interrupt handlers) to shared libraries
+to binaries. OProfile can collect event information for the whole system in the background with very little overhead. These
+features make it ideal for monitoring entire systems to determine bottle necks in real-world systems.
+</para>
+
+<para>
 Many CPUs provide "performance counters", hardware registers that can count "events"; for example,
-cache misses, or CPU cycles. OProfile provides profiles of code based on the number of these occurring events:
+cache misses, or CPU cycles. OProfile can collect profiles of code based on the number of these occurring events:
 repeatedly, every time a certain (configurable) number of events has occurred, the PC value is recorded.
-This information is aggregated into profiles for each binary image.</para>
+This information is aggregated into profiles for each binary image.  Alternatively, OProfile's event counting
+tool can collect simple raw event counts.</para>
 <para>
 Some hardware setups do not allow OProfile to use performance counters: in these cases, no
 events are available so OProfile operates in timer mode, as described in later chapters. Timer
-mode is only available in "legacy mode" (see <xref linkend="legacy_mode"/>).
+mode is only available in "legacy profiling mode" (see <xref linkend="legacy_mode"/>).
 </para>
 <sect1 id="legacy_mode">
-<title>OProfile legacy mode</title>
+<title>OProfile legacy profiling mode</title>
 "Legacy" OProfile consists of the <command>opcontrol</command> shell script, the <command>oprofiled</command> daemon, and several post-processing tools (e.g.,
 <command>opreport</command>). The <command>opcontrol</command> script is used for configuring, starting, and stopping a profiling session. An OProfile
 kernel driver (usually built as a kernel module) is used for collecting samples, which are then recorded into sample files by
@@ -56,7 +67,7 @@ override them with new values.
 </note>
 </sect1>
 <sect1 id="perf_events">
-<title>OProfile perf_events mode</title>
+<title>OProfile perf_events profiling mode</title>
 As of release 0.9.8, OProfile now includes the ability to profile a single process versus the system-wide technique
 of legacy OProfile. With this new technique, the <command>operf</command> program is used to control profiling instead of the
 <command>opcontrol</command> script and <command>oprofiled</command> daemon of leagacy mode. Also, <command>operf</command> does not require the
@@ -77,6 +88,20 @@ when attempting to use <command>operf</command>, try profiling with <command>opc
 to see if your processor type may be supported by OProfile's legacy mode.
 </note>
 </sect1>
+
+<sect1 id="event_counting">
+<title>OProfile event counting mode</title>
+As of release 0.9.9, OProfile now includes the <command>ocount</command> tool which provides the capability of
+collecting raw event counts on a per-application, per-process, per-cpu, or system-wide basis.  Unlike the
+profiling tools, post-processing of the data collected is not necessary -- the data is displayed in the
+output of <command>ocount</command>.  A common use case for event counting tools is when performance analysts
+want to determine the CPI (cycles per instruction) for an application. High CPI implies possible stalls,
+and many architectures provide events that give detailed information about the different types of stalls.
+The events provided are architecture-specific, so we refer the reader to the hardware manuals available for
+the processor type being used.
+</sect1>
+
+
 <sect1 id="applications">
 <title>Applications of OProfile</title>
 <para>
@@ -431,9 +456,9 @@ unless you pass the <code>--session-dir</code> option.
 </sect1>
 
 <sect1 id="getting-started-with-legacy">
-<title>Getting started with OProfile using legacy mode</title>
+<title>Getting started with OProfile using legacy profiling mode</title>
 <para>
-Before you can use OProfile's legacy mode, you must set it up. The minimum setup required for this
+Before you can use OProfile's legacy profiling mode, you must set it up. The minimum setup required for this
 is to tell OProfile where the <filename>vmlinux</filename> file corresponding to the
 running kernel is, for example :
 </para>
@@ -488,6 +513,147 @@ also detailed later.
 
 </sect1>
 
+<sect1 id="getting-started-with-ocount">
+<title>Getting started with OProfile using <command>ocount</command></title>
+<para>
+<command>ocount</command> is an OProfile tool that can be used to count native hardware events occurring in either
+a specific application, a set of processes or threads, a set of active system processors, or the
+entire system. The data collected during a counting session is displayed to stdout by default, but may
+also be saved to a file.  The <command>ocount</command> syntax is as follows:
+<para>
+<screen>ocount [ options ] [ --system-wide | --process-list &lt;pids&gt; | --thread-list &lt;tids&gt; | --cpu-list &lt;cpus&gt; [ command [ args ] ] ]
+</screen>
+</para>
+A typical usage might look like this:
+<para>
+<screen>ocount --events=CPU_CLK_UNHALTED,INST_RETIRED /home/user1/my_test_program my_arg</screen>
+</para>
+When <filename>my_test_program</filename> completes (or when you press Ctrl-C), counting
+stops and the results are displayed to the screen (as shown below).
+<para>
+<screen>
+Events were actively counted for 2.8 seconds.
+Event counts (actual) for /home/user1/my_test_program my_arg:
+	Event                   Count                    % time counted
+	CPU_CLK_UNHALTED        9,408,018,070            100.00
+	INST_RETIRED            16,719,918,108           100.00
+</screen>
+</para>
+</para>
+</sect1>
+
+<sect1 id="eventspec">
+<title>Specifying performance counter events</title>
+<para>
+Both methods of profiling (<command>operf</command> and <command>opcontrol</command>) --
+as well as event counting with <command>ocount</command> --
+allow you to give one or more event specifications to provide details of how each
+hardware performance counter should be set up. With <command>operf</command> and <command>ocount</command>, you
+can provide a comma-separated list of event specfications using the <code>--events</code>
+option.  With <command>opcontrol</command>, you use the <code>--event</code> option
+for each desired event specification.
+For profiling, the event specification is a colon-separated string of the form
+<option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option>
+as described in the table below. For <command>ocount</command>, specification is of the form
+<option><emphasis>name</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option>.
+Note the presence of the <emphasis>count</emphasis> field for profiling.  The <emphasis>count</emphasis> field tells the profiler
+how many events should occur between a profile snapshot (usually referred to as a "sample").  Since
+<command>ocount</command> does not do sampling, the <emphasis>count</emphasis> field is not needed.
+</para>
+<para>
+If no event specs are passed to <command>operf</command>, <command>ocount</command>, or <command>opcontrol</command>,
+the default event will be used. With <command>opcontrol</command>, if you have
+previously specified some non-default event but want to revert to the default event, use
+<option>--event=default</option>. Use of this option overrides all previous event selections
+that have been cached.
+</para>
+<para>
+<note>OProfile will allocate hardware counters as necessary, but some processor
+types have restrictions as to what hardware events may be counted simultaneously.
+<command>operf</command> and <command>ocount</command> use a multiplexing technique when such
+hardware restrictions are encountered, but <command>opcontrol</command> does
+not have this capability; instead, <command>opcontrol</command> will display an
+error message if you select an incompatible set of events.
+</note>
+</para>
+<informaltable frame="all">
+<tgroup cols='2'>
+<tbody>
+<row><entry><option>name</option></entry><entry>The symbolic event name, e.g. <constant>CPU_CLK_UNHALTED</constant></entry></row>
+<row><entry><option>count</option></entry><entry>The counter reset value, e.g. 100000; use only for profiling</entry></row>
+<row><entry><option>unitmask</option></entry><entry>The unit mask, as given in the events list: e.g. 0x0f; or a symbolic name
+if a <constant>name=&lt;um_name&gt;</constant> field is present</entry></row>
+<row><entry><option>kernel</option></entry><entry>Whether to profile kernel code</entry></row>
+<row><entry><option>user</option></entry><entry>Whether to profile userspace code</entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>
+The last three values are optional, if you omit them (e.g. <option>operf --events=DATA_MEM_REFS:30000</option>),
+they will be set to the default values (the default unit mask value for the given event, and profiling (or counting)
+both kernel and userspace code). Note that some events require a unit mask.
+</para>
+<para>
+You can specify unit mask values using either a numerical value (hex values
+<emphasis>must</emphasis> begin with "0x") or a symbolic name (if the <constant>name=&lt;um_name&gt;</constant>
+field is shown in the <command>ophelp</command> output). For some named unit masks, the hex value is not unique; thus, OProfile
+tools enforce specifying such unit masks value by name.
+</para>
+<note><para>
+When using legacy mode <command>opcontrol</command> on IBM PowerPC platforms, all events specified must be in the same group;
+i.e., the group number appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9
+</constant>) must be the same.
+</para>
+<para>
+When using <command>operf</command> or <command>ocount</command> on IBM PowerPC platforms, the above restriction
+regarding the same group number does not apply, and events may be
+specified with or without the group number suffix. If no group number suffix is given, one will be automatically
+assigned; thus, OProfile post-processing tools will always show real event
+names that include the group number suffix.
+</para>
+</note>
+<para>
+If OProfile is using timer-interrupt mode, there is no event configuration possible.
+</para>
+<para>
+The table below lists the default profiling event for various processor types. The same events
+can be used for <command>ocount</command>, minus the <emphasis>count</emphasis> field.
+</para>
+<informaltable frame="all">
+<tgroup cols='3'>
+<tbody>
+<row><entry>Processor</entry><entry>cpu_type</entry><entry>Default event</entry></row>
+<row><entry>Alpha EV4</entry><entry>alpha/ev4</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha EV5</entry><entry>alpha/ev5</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha PCA56</entry><entry>alpha/pca56</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha EV6</entry><entry>alpha/ev6</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha EV67</entry><entry>alpha/ev67</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>ARM/XScale PMU1</entry><entry>arm/xscale1</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>ARM/XScale PMU2</entry><entry>arm/xscale2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>ARM/MPCore</entry><entry>arm/mpcore</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>AVR32</entry><entry>avr32</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>Athlon</entry><entry>i386/athlon</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium Pro</entry><entry>i386/ppro</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium II</entry><entry>i386/pii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium III</entry><entry>i386/piii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium M (P6 core)</entry><entry>i386/p6_mobile</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium 4 (non-HT)</entry><entry>i386/p4</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
+<row><entry>Pentium 4 (HT)</entry><entry>i386/p4-ht</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
+<row><entry>Hammer</entry><entry>x86-64/hammer</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Family10h</entry><entry>x86-64/family10</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Family11h</entry><entry>x86-64/family11h</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM pseries</entry><entry>PowerPC 4/5/6/7/8/970/Cell</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+
+</sect1>
+
 <sect1 id="tools-overview">
 <title>Tools summary</title>
 <para>
@@ -504,7 +670,7 @@ This section gives a brief description of the available OProfile utilities and t
 <varlistentry>
 	<term><filename>operf</filename></term>
 	<listitem><para>
-		This is the recommended program for collecting profile data.
+		This is the recommended program for collecting profile data, discussed in <xref linkend="controlling" />.
 	</para></listitem>
 </varlistentry>
 	
@@ -573,7 +739,7 @@ This section gives a brief description of the available OProfile utilities and t
 	
 </chapter>
  
-<chapter id="controlling">
+<chapter id="controlling-profiler">
 <title>Controlling the profiler</title>
 
 <sect1 id="controlling-operf">
@@ -615,9 +781,9 @@ Following is a description of the <command>operf</command> options.
 </para>
 <variablelist>
 	<varlistentry>
-		<term><option>command</option></term>
+		<term><option>command [args]</option></term>
 		<listitem><para>
-		The command or application to be profiled. <command>args</command> are the input arguments
+		The command or application to be profiled. The<emphasis>[args]</emphasis> are the input arguments
         that the command or application requires. Either <code>command</code>, <code>--pid</code> or
         <code>--system-wide</code> is required, but cannot be used simultaneously.
 		</para></listitem>
@@ -1049,112 +1215,6 @@ current session, <command>opcontrol --reset</command>.
 </para>
 </sect3>
 </sect2> 
-</sect1>
-
-<sect1 id="eventspec">
-<title>Specifying performance counter events</title>
-<para>
-Both methods of profiling (<command>operf</command> and <command>opcontrol</command>)
-allow you to give one or more event specifications to provide details of how each
-hardware performance counter should be setup. With <command>operf</command>, you
-can provide a comma-separated list of event specfications using the <code>--events</code>
-option.  With <command>opcontrol</command>, you use the <code>--event</code> option
-for each desired event specification.
-The event specification is a colon-separated string of the form
-<option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option>
-as described in the table below.
-</para>
-<para>
-If no event specs are passed to <command>operf</command> or <command>opcontrol</command>,
-the default event will be used for profiling. With <command>opcontrol</command>, if you have
-previously specified some non-default event but want to revert to the default event, use
-<option>--event=default</option>. Use of this option overrides all previous event selections
-that have been cached.
-</para>
-<para>
-<note>OProfile will allocate hardware counters as necessary, but some processor
-types have restrictions as to what hardware events may be counted simultaneously.
-The <command>operf</command> program uses a multiplexing technique when such
-hardware restrictions are encountered, but <command>opcontrol</command> does
-not have this capability; instead, <command>opcontrol</command> will display an
-error message if you select an incompatible set of events.
-</note>
-</para>
-<informaltable frame="all">
-<tgroup cols='2'> 
-<tbody>
-<row><entry><option>name</option></entry><entry>The symbolic event name, e.g. <constant>CPU_CLK_UNHALTED</constant></entry></row>
-<row><entry><option>count</option></entry><entry>The counter reset value, e.g. 100000</entry></row>
-<row><entry><option>unitmask</option></entry><entry>The unit mask, as given in the events list: e.g. 0x0f; or a symbolic name
-if a <constant>name=&lt;um_name&gt;</constant> field is present</entry></row>
-<row><entry><option>kernel</option></entry><entry>Whether to profile kernel code</entry></row>
-<row><entry><option>user</option></entry><entry>Whether to profile userspace code</entry></row>
-</tbody>
-</tgroup>
-</informaltable>
-<para>
-The last three values are optional, if you omit them (e.g. <option>--event=DATA_MEM_REFS:30000</option>),
-they will be set to the default values (the default unit mask value for the given event, and profiling both kernel and
-userspace code). Note that some events require a unit mask.
-</para>
-<para>
-You can specify unit mask values using either a numerical value (hex values
-<emphasis>must</emphasis> begin with "0x") or a symbolic name (if the <constant>name=&lt;um_name&gt;</constant>
-field is shown in the <command>ophelp</command> output). For some named unit masks, the hex value is not unique; thus, OProfile
-tools enforce specifying such unit masks value by name.
-</para>
-<note><para>
-When using legacy mode <command>opcontrol</command> on IBM PowerPC platforms, all events specified must be in the same group;
-i.e., the group number appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9
-</constant>) must be the same.
-</para>
-<para>
-When profiling with <command>operf</command> on IBM PowerPC platforms, the above restriction
-regarding the same group number does not apply, and events may be
-specified with or without the group number suffix.   If no group number suffix is given, one will be automatically
-assigned; thus, OProfile post-processing tools will always show real event
-names that include the group number suffix.
-</para>
-</note>
-<para>
-If OProfile is using timer-interrupt mode, there is no event configuration possible.
-</para>
-<para>
-The table below lists the default event for various processor types:
-</para>
-<informaltable frame="all">
-<tgroup cols='3'> 
-<tbody>
-<row><entry>Processor</entry><entry>cpu_type</entry><entry>Default event</entry></row>
-<row><entry>Alpha EV4</entry><entry>alpha/ev4</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha EV5</entry><entry>alpha/ev5</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha PCA56</entry><entry>alpha/pca56</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha EV6</entry><entry>alpha/ev6</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha EV67</entry><entry>alpha/ev67</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>ARM/XScale PMU1</entry><entry>arm/xscale1</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
-<row><entry>ARM/XScale PMU2</entry><entry>arm/xscale2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
-<row><entry>ARM/MPCore</entry><entry>arm/mpcore</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
-<row><entry>AVR32</entry><entry>avr32</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
-<row><entry>Athlon</entry><entry>i386/athlon</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Pentium Pro</entry><entry>i386/ppro</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Pentium II</entry><entry>i386/pii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Pentium III</entry><entry>i386/piii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Pentium M (P6 core)</entry><entry>i386/p6_mobile</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Pentium 4 (non-HT)</entry><entry>i386/p4</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
-<row><entry>Pentium 4 (HT)</entry><entry>i386/p4-ht</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
-<row><entry>Hammer</entry><entry>x86-64/hammer</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Family10h</entry><entry>x86-64/family10</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Family11h</entry><entry>x86-64/family11h</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
-<row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
-<row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
-<row><entry>IBM pseries</entry><entry>PowerPC 4/5/6/7/8/970/Cell</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
-<row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
-</tbody>
-</tgroup>
-</informaltable>
-
 </sect1>
  
 <sect1 id="setup-jit">
@@ -1642,7 +1702,7 @@ interrupts are arriving at a dangerous level and will throttle back the sampling
 </chapter>
 
 <chapter id="results">
-<title>Obtaining results</title>
+<title>Obtaining profiling results</title>
 <para>
 OK, so the profiler has been running, but it's not much use unless we can get some data out. Sometimes,
 OProfile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
@@ -3397,6 +3457,173 @@ and <ulink url="http://developer.amd.com/devguides.jsp/">http://developer.amd.co
 </para>
 </sect1>
 </chapter>
+
+<chapter id="controlling-counter">
+<title>Controlling the event counter</title>
+<sect1 id="controlling-ocount">
+<title>Using <command>ocount</command></title>
+<para>
+This section describes in detail how <command>ocount</command> is used.
+Unless the <option>--events</option> option is specified, <command>ocount</command> will use
+the default event for your system. For most systems, the default event is some
+cycles-based event, assuming your processor type supports hardware performance
+counters. The event specification used for <command>ocount</command> is slightly
+different from that required for profiling -- a <emphasis>count</emphasis> value
+is not needed. You can see the event information for your CPU using <command>ophelp</command>.
+More information on event specification can be found at <xref linkend="eventspec"/>.
+</para>
+<para>
+The <command>ocount</command> command syntax is:
+<para>
+<screen>ocount [ options ] [ --system-wide | --process-list &lt;pids&gt; | --thread-list &lt;tids&gt; | --cpu-list &lt;cpus&gt; [ command [ args ] ] ]
+</screen>
+</para></para>
+<para>
+<command>ocount</command> has 5 run modes:
+<para>
+<itemizedlist>
+<listitem>system-wide</listitem>
+<listitem>process-list</listitem>
+<listitem>thread-list</listitem>
+<listitem>cpu-list</listitem>
+<listitem>command</listitem>
+</itemizedlist>
+</para></para>
+<para>
+One and only one of these 5 run modes must be specified when you run <command>ocount</command>.
+If you run <command>ocount</command> using a run mode other than <code>command [args]</code>, press Ctrl-c
+to stop it when finished counting (e.g., when the monitored process ends). If you background <command>ocount</command>
+(i.e., with ’&amp;’) while using one these run modes, you must stop it in a controlled manner so that
+the data collection process can be shut down cleanly and final results can be displayed.
+Use <code>kill -SIGINT &lt;ocount-PID&gt;</code> for this purpose.
+</para>
+<para>
+Following is a description of the <command>ocount</command> options.
+</para>
+<variablelist>
+	<varlistentry>
+		<term><option>command [args]</option></term>
+		<listitem><para>
+		The command or application to be profiled. The <emphasis>[args]</emphasis> are the input arguments
+        that the command or application requires. The command and its arguments must be positioned at the
+        end of the command line, after all other <command>ocount</command> options.
+        </para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--process-list / -p [PIDs]</option></term>
+		<listitem><para>
+		Use this option to count events for one or more already-running applications, specified via
+        a comma-separated list (PIDs). Event counts will be collected for all children of the
+        passed process(es) as well.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--thread-list / -r [TIDs]</option></term>
+		<listitem><para>
+		Use this option to count events for one or more already-running threads, specified via
+        a comma-separated list (TIDs). Event counts will <emphasis>not</emphasis> be collected
+        for any children of the passed thread(s).
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--system-wide / -s</option></term>
+		<listitem><para>
+		This option is for counting events for all processes running on your system. You must have
+        root authority to run <command>ocount</command> in this mode.
+        </para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--cpu-list / -C [CPUs]</option></term>
+		<listitem><para>
+		This option is for counting events on a subset of processors on your system. You must have
+        root authority to run <command>ocount</command> in this mode. This is a comma-separated list,
+        where each element in the list may be either a single processor number or a range of processor
+        numbers; for example: ’-C 2,3,4-11,15’.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--events / -e  [event1[,event2[,...]]]</option></term>
+		<listitem><para>
+		This option is for passing a comma-separated list of event specifications
+		for counting. Each event spec is of the form:
+		</para>
+		<screen>name[:unitmask[:kernel[:user]]]</screen>
+		<para>
+		When no event specification is given, the default event for the running
+		processor type will be used for counting. Use <command>ophelp</command>
+		to list the available events for your processor type.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--separate-thread / -t</option></term>
+		<listitem><para>
+        This option can be used in conjunction with either the <code>--process-list</code> or
+        <code>--thread-list</code> option to display event counts on a per-thread (per-process) basis.
+        Without this option, all counts are aggregated.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--separate-cpu / -c</option></term>
+		<listitem><para>
+		This option can be used in conjunction with either the <code>--system-wide</code> or
+		<code>--cpu-list</code> option to display event counts on a per-cpu basis. Without this option,
+		all counts are aggregated.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--time-interval / -i num_seconds[:num_intervals]</option></term>
+		<listitem><para>
+		Results collected for each time interval are printed every num_seconds instead of the
+        default of one dump of cumulative event counts at the end of the run. If <code>num_intervals</code>
+        is specified, <command>ocount</command> exits after the specified number of intervals occur.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+	   <term><option>--brief-format / -b</option></term>
+		<listitem><para>
+		Use this option to print results in the following brief format:
+		<para><screen>
+                  [optional cpu or thread,]&lt;event_name&gt;,&lt;count&gt;,&lt;percent_time_enabled&gt;
+                  [        &lt;int&gt;         ,]&lt;  string  &gt;,&lt; u64 &gt;,&lt;     double         &gt;
+        </screen></para>
+        If <code>--timer-interval</code> is specified, a separate line formatted as
+        <para><screen>
+                  t:&lt;num_seconds_since_epoch&gt;
+        </screen></para>
+        is printed ahead of each dump of event counts.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>--output-file / -f outfile_name</option></term>
+		<listitem><para>
+		Results are written to outfile_name instead of interactively to the terminal.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--verbose / -V</option></term>
+		<listitem><para>
+		Use this option to increase the verbosity of the output.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--version -v </option></term>
+		<listitem><para>
+		Show <command>ocount</command> version.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--help / -h</option></term>
+		<listitem><para>
+		Show a help message.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+
+</sect1>
+</chapter>
+
+
 <chapter id="ack">
 <title>Acknowledgments</title>
 <para>
