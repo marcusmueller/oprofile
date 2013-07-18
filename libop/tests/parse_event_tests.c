@@ -32,7 +32,7 @@ static void do_test(struct events_test const * ev)
 {
 	struct parsed_event parsed;
 
-	parse_events(&parsed, 1, ev->tests);
+	parse_events(&parsed, 1, ev->tests, 1);
 
 	if (strcmp(ev->expected.name, parsed.name) ||
 	    ev->expected.count != parsed.count ||

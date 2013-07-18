@@ -33,6 +33,7 @@ static op_cpu cpu_type = CPU_NO_GOOD;
 static char * cpu_string;
 static int callgraph_depth;
 static int want_xml;
+static int ignore_count;
 
 static poptContext optcon;
 
@@ -202,7 +203,7 @@ static void check_event(struct parsed_event * pev,
 	min_count = event->min_count;
 	if (callgraph_depth)
 		min_count *= callgraph_min_count_scale;
-	if (pev->count < min_count) {
+	if (!ignore_count && pev->count < min_count) {
 		fprintf(stderr, "Count %d for event %s is below the "
 		        "minimum %d\n", pev->count, pev->name, min_count);
 		exit(EXIT_FAILURE);
@@ -218,7 +219,8 @@ static void resolve_events(void)
 	size_t nr_counters = op_get_nr_counters(cpu_type);
 	struct op_event const * selected_events[num_chosen_events];
 
-	count = parse_events(parsed_events, num_chosen_events, chosen_events);
+	count = parse_events(parsed_events, num_chosen_events, chosen_events,
+	                     ignore_count ? 0 : 1);
 
 	for (i = 0; i < count; ++i) {
 	        op_resolve_unit_mask(&parsed_events[i], NULL);
@@ -285,7 +287,7 @@ static void show_unit_mask(void)
 {
 	size_t count;
 
-	count = parse_events(parsed_events, num_chosen_events, chosen_events);
+	count = parse_events(parsed_events, num_chosen_events, chosen_events, ignore_count ? 0 : 1);
 	if (count > 1) {
 		fprintf(stderr, "More than one event specified.\n");
 		exit(EXIT_FAILURE);
@@ -303,7 +305,7 @@ static void show_extra_mask(void)
 	size_t count;
 	unsigned extra = 0;
 
-	count = parse_events(parsed_events, num_chosen_events, chosen_events);
+	count = parse_events(parsed_events, num_chosen_events, chosen_events, ignore_count ? 0 : 1);
 	if (count > 1) {
 		fprintf(stderr, "More than one event specified.\n");
 		exit(EXIT_FAILURE);
@@ -338,6 +340,8 @@ static struct poptOption options[] = {
 	  "use the given CPU type", "cpu type", },
 	{ "check-events", 'e', POPT_ARG_NONE, &check_events, 0,
 	  "check the given event descriptions for validity", NULL, },
+	{ "ignore-count", 'i', POPT_ARG_NONE, &ignore_count, 0,
+	  "do not validate count value (used by ocount)", NULL},
 	{ "unit-mask", 'u', POPT_ARG_NONE, &unit_mask, 0,
 	  "default unit mask for the given event", NULL, },
 	{ "get-cpu-type", 'r', POPT_ARG_NONE, &get_cpu_type, 0,

@@ -39,6 +39,6 @@ struct parsed_event {
  * Return the number of events parsed.
  */
 size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
-                    char const * const * events);
+                    char const * const * events, int check_count);
 
 #endif /* !OP_PARSE_EVENT_H */

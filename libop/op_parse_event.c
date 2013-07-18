@@ -59,7 +59,7 @@ static int parse_ulong(char const * str)
 
 
 size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
-                  char const * const * events)
+                  char const * const * events, int check_count)
 {
 	size_t i = 0;
 	int timer_event_found_p = 0;
@@ -85,15 +85,16 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 
 		parsed_events[i].name = part;
 
-		part = next_part(&cp);
+		if (check_count) {
+			part = next_part(&cp);
+			if (!part) {
+				fprintf(stderr, "Invalid count for event %s\n", events[i]);
+				exit(EXIT_FAILURE);
+			}
 
-		if (!part) {
-			fprintf(stderr, "Invalid count for event %s\n", events[i]);
-			exit(EXIT_FAILURE);
+			parsed_events[i].count = parse_ulong(part);
+			free(part);
 		}
-
-		parsed_events[i].count = parse_ulong(part);
-		free(part);
 
 		parsed_events[i].unit_mask = 0;
 		part = next_part(&cp);
