@@ -154,7 +154,7 @@ static void do_test(struct allocated_counter const * it)
 
 	op_events(it->cpu_type);
 
-	nr_events = parse_events(parsed, MAX_EVENTS, it->events. 1);
+	nr_events = parse_events(parsed, MAX_EVENTS, it->events, 1);
 
 	for (i = 0; i < nr_events; ++i) {
 		event[i] = find_event_by_name(parsed[i].name, parsed[i].unit_mask,

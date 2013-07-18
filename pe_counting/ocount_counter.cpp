@@ -10,6 +10,7 @@
  * (C) Copyright IBM Corp. 2013
  *
  */
+#include <time.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -17,7 +18,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <signal.h>
-
 
 #include <iostream>
 #include <sstream>
@@ -106,9 +106,11 @@ int ocount_counter::read_count_data(ocount_accum_t * count_data)
 	return 0;
 }
 
-ocount_record::ocount_record(enum op_runmode _runmode, std::vector<operf_event_t> & _evts)
+ocount_record::ocount_record(enum op_runmode _runmode, std::vector<operf_event_t> & _evts,
+                             bool _with_time_interval)
 {
 	runmode = _runmode;
+	with_time_interval = _with_time_interval;
 	evts = _evts;
 	valid = false;
 	system_wide = false;
@@ -213,6 +215,7 @@ int ocount_record::do_counting_per_task(void)
 		for (unsigned event = 0; event < evts.size(); event++) {
 			ocount_accum_t count_data = {0ULL, 0ULL, 0ULL};
 			accum_counts.push_back(count_data);
+			prev_accum_counts.push_back(0ULL);
 			ocount_counter op_ctr(ocount_counter(evts[event], false, inherit));
 			if ((rc = op_ctr.perf_event_open(the_pid, -1)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
@@ -262,6 +265,7 @@ int ocount_record::do_counting_per_cpu(void)
 		for (unsigned event = 0; event < evts.size(); event++) {
 			ocount_accum_t count_data = {0ULL, 0ULL, 0ULL};
 			accum_counts.push_back(count_data);
+			prev_accum_counts.push_back(0ULL);
 			ocount_counter op_ctr(ocount_counter(evts[event], false, true));
 			if ((rc = op_ctr.perf_event_open(-1, the_cpu)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
@@ -292,7 +296,6 @@ void ocount_record::setup()
 		}
 	}
 
-
 	/* To set up to count events for an existing thread group, we need call perf_event_open
 	 * for each thread, and we need to pass cpu=-1 on the syscall.
 	 */
@@ -312,6 +315,7 @@ void ocount_record::setup()
 		for (unsigned event = 0; event < evts.size(); event++) {
 			ocount_accum_t count_data = {0ULL, 0ULL, 0ULL};
 			accum_counts.push_back(count_data);
+			prev_accum_counts.push_back(0ULL);
 			ocount_counter op_ctr(ocount_counter(evts[event], true, true));
 			if ((rc = op_ctr.perf_event_open(app_pid, -1)) < 0) {
 				err_msg = "Internal Error.  Perf event setup failed.";
@@ -326,6 +330,11 @@ void ocount_record::setup()
 		cverb << vdebug << "perf counter setup complete" << endl;
 		// Set bit to indicate we're set to go.
 		valid = true;
+		// Now that all events are programmed to start counting, init the start time
+		struct timespec tspec;
+		clock_gettime(CLOCK_MONOTONIC, &tspec);
+		start_time = tspec.tv_sec * 1000000000ULL + tspec.tv_nsec;
+
 		return;
 	}
 
@@ -334,16 +343,14 @@ error:
 		throw runtime_error(err_msg);
 }
 
-void ocount_record::output_short_results(ostream & out, bool use_separation)
+void ocount_record::output_short_results(ostream & out, bool use_separation, bool scaled)
 {
-	int num_elements_of_separation = perfCounters.size()/evts.size();
-	int stride_length = use_separation ? 1 : num_elements_of_separation;
-
+	size_t num_iterations = use_separation ? perfCounters.size() : evts.size();
 	out << endl;
-	for (size_t num = 0; num < perfCounters.size(); num+=stride_length) {
-		int evt_num = num/num_elements_of_separation;
+	for (size_t num = 0; num < num_iterations; num++) {
 		ostringstream count_str;
 		ocount_accum_t tmp_accum;
+		double fraction_time_running;
 		if (use_separation) {
 			if (cpus_to_count.size()) {
 				out << perfCounters[num].get_cpu();
@@ -359,12 +366,17 @@ void ocount_record::output_short_results(ostream & out, bool use_separation)
 				err_msg += errno ? strerror(errno) : "unknown error";
 				throw runtime_error(err_msg);
 			}
-			double percent_time_enabled = (double)tmp_accum.running_time/tmp_accum.enabled_time;
-			u64 scaled_count = tmp_accum.aggregated_count ? tmp_accum.aggregated_count/percent_time_enabled : 0;
+			fraction_time_running = scaled ? (double)tmp_accum.running_time/tmp_accum.enabled_time : 1;
+			if (with_time_interval) {
+				u64 save_prev = prev_accum_counts[num];
+				prev_accum_counts[num] = tmp_accum.count;
+				tmp_accum.count -= save_prev;
+			}
+			u64 scaled_count = tmp_accum.count ? tmp_accum.count/fraction_time_running : 0;
 			out << dec << scaled_count << ",";
 		} else {
-			double percent_time_enabled = (double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time;
-			u64 scaled_count = accum_counts[evt_num].aggregated_count ? accum_counts[evt_num].aggregated_count/percent_time_enabled : 0;
+			fraction_time_running = scaled ? (double)accum_counts[num].running_time/accum_counts[num].enabled_time : 1;
+			u64 scaled_count = accum_counts[num].count ? accum_counts[num].count/fraction_time_running : 0;
 			out << perfCounters[num].get_event_name() << "," << dec << scaled_count << ",";
 		}
 		ostringstream strm_tmp;
@@ -373,16 +385,16 @@ void ocount_record::output_short_results(ostream & out, bool use_separation)
 				out << 0 << endl;
 			} else {
 				strm_tmp.precision(2);
-				strm_tmp << fixed << ((double)tmp_accum.running_time/tmp_accum.enabled_time) * 100
+				strm_tmp << fixed << fraction_time_running * 100
 				         << endl;
 				out << strm_tmp.str();
 			}
 		} else {
-			if (!accum_counts[evt_num].enabled_time) {
+			if (!accum_counts[num].enabled_time) {
 				out << "Event not counted" << endl;
 			} else {
 				strm_tmp.precision(2);
-				strm_tmp << fixed << ((double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time) * 100
+				strm_tmp << fixed << fraction_time_running * 100
 				         << endl;
 				out << strm_tmp.str();
 			}
@@ -391,12 +403,14 @@ void ocount_record::output_short_results(ostream & out, bool use_separation)
 }
 
 void ocount_record::output_long_results(ostream & out, bool use_separation,
-                                        int longest_event_name, bool scaled)
+                                        int longest_event_name, bool scaled, u64 time_enabled)
 {
 #define COUNT_COLUMN_WIDTH 25
 #define SEPARATION_ELEMENT_COLUMN_WIDTH 10
 	char space_padding[64], temp[64];
 	char const * cpu, * task, * scaling;
+	u64 num_seconds_enabled = time_enabled/1000000000;
+	unsigned int num_minutes_enabled = num_seconds_enabled/60;
 	cpu = "CPU";
 	task = "Task ID";
 	scaling = scaled ? "(scaled) " : "(actual) ";
@@ -407,8 +421,33 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 	memset(space_padding, ' ', 64);
 	strncpy(temp, space_padding, num_pads);
 	temp[num_pads] = '\0';
-
-	out << "\nEvent counts " << scaling;
+	out << endl;
+	if (!with_time_interval) {
+		ostringstream strm;
+		strm << "Events were actively counted for ";
+		if (num_minutes_enabled) {
+			strm << " ";
+			strm << num_minutes_enabled;
+			if (num_minutes_enabled > 1)
+				strm << " minutes and ";
+			else
+				strm << " minute and ";
+			strm << num_seconds_enabled % 60;
+			strm << " seconds.";
+		} else {
+			if (num_seconds_enabled) {
+				// Show 1/10's of seconds
+				strm.precision(1);
+				strm << fixed << (double)time_enabled/1000000000;
+				strm << " seconds.";
+			} else {
+				// Show full nanoseconds
+				strm << time_enabled << " nanoseconds.";
+			}
+		}
+		out << strm.str() << endl;
+	}
+	out << "Event counts " << scaling;
 	if (app_name)
 		out << "for " << app_name << ":";
 	else if (system_wide)
@@ -439,7 +478,7 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 	num_pads = COUNT_COLUMN_WIDTH - strlen("Count");
 	strncpy(temp, space_padding, num_pads);
 	temp[num_pads] = '\0';
-	out << temp << "% time enabled" << endl;
+	out << temp << "% time counted" << endl;
 
 	/* If counting per-cpu or per-thread, I refer generically to cpu or thread values
 	 * as "elements of separation".  We will have one ocount_counter object per element of
@@ -450,17 +489,15 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 	 * each element of separation for each event; otherwise, we print aggregated counts
 	 * for each event.
 	 */
-	int num_elements_of_separation = perfCounters.size()/evts.size();
-	int stride_length = use_separation ? 1 : num_elements_of_separation;
-
-	for (size_t num = 0; num < perfCounters.size(); num+=stride_length) {
-		out << "\t" << perfCounters[num].get_event_name();
+	size_t num_iterations = use_separation ? perfCounters.size() : evts.size();
+	for (size_t num = 0; num < num_iterations; num++) {
+		double fraction_time_running;
+                out << "\t" << perfCounters[num].get_event_name();
 		num_pads = begin_second_col - perfCounters[num].get_event_name().length();
 		strncpy(temp, space_padding, num_pads);
 		temp[num_pads] = '\0';
 		out << temp;
 
-		int evt_num = num/num_elements_of_separation;
 		ostringstream count_str;
 		ocount_accum_t tmp_accum;
 		if (use_separation) {
@@ -486,13 +523,18 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 				err_msg += errno ? strerror(errno) : "unknown error";
 				throw runtime_error(err_msg);
 			}
-			double percent_time_enabled = (double)tmp_accum.running_time/tmp_accum.enabled_time;
-			u64 scaled_count = tmp_accum.aggregated_count ? tmp_accum.aggregated_count/percent_time_enabled : 0;
-			// Don't be fooled by the name, this is not really aggregated; it's the value read from one counter
+			fraction_time_running = scaled ? (double)tmp_accum.running_time/tmp_accum.enabled_time : 1;
+
+			if (with_time_interval) {
+				u64 save_prev = prev_accum_counts[num];
+				prev_accum_counts[num] = tmp_accum.count;
+				tmp_accum.count -= save_prev;
+			}
+			u64 scaled_count = tmp_accum.count ? tmp_accum.count/fraction_time_running : 0;
 			count_str << dec << scaled_count;
 		} else {
-			double percent_time_enabled = (double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time;
-			u64 scaled_count = accum_counts[evt_num].aggregated_count ? accum_counts[evt_num].aggregated_count/percent_time_enabled : 0;
+			fraction_time_running = scaled ? (double)accum_counts[num].running_time/accum_counts[num].enabled_time : 1;
+			u64 scaled_count = accum_counts[num].count ? accum_counts[num].count/fraction_time_running : 0;
 			count_str << dec << scaled_count;
 		}
 		string count = count_str.str();
@@ -510,16 +552,16 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 				out << "Event not counted" << endl;
 			} else {
 				strm_tmp.precision(2);
-				strm_tmp << fixed << ((double)tmp_accum.running_time/tmp_accum.enabled_time) * 100
+				strm_tmp << fixed << fraction_time_running * 100
 				         << endl;
 				out << strm_tmp.str();
 			}
 		} else {
-			if (!accum_counts[evt_num].enabled_time) {
+			if (!accum_counts[num].enabled_time) {
 				out << "Event not counted" << endl;
 			} else {
 				strm_tmp.precision(2);
-				strm_tmp << fixed << ((double)accum_counts[evt_num].running_time/accum_counts[evt_num].enabled_time) * 100
+				strm_tmp << fixed << fraction_time_running * 100
 				         << endl;
 				out << strm_tmp.str();
 			}
@@ -530,6 +572,7 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 void ocount_record::output_results(ostream & out, bool use_separation, bool short_format)
 {
 	size_t longest_event_name = 0;
+	u64 time_enabled = 0ULL;
 	bool scaled = false;
 
 	for (unsigned long evt_num = 0; evt_num < evts.size(); evt_num++) {
@@ -537,6 +580,19 @@ void ocount_record::output_results(ostream & out, bool use_separation, bool shor
 			longest_event_name = strlen(evts[evt_num].name);
 	}
 
+	if (with_time_interval) {
+		// reset the accum count values
+		for (size_t i = 0; i < evts.size(); i++) {
+			ocount_accum_t accum = accum_counts[i];
+			accum.count = 0ULL;
+			accum_counts[i] = accum;
+		}
+	}
+
+	/* We need to inspect all of the count data now to ascertain if scaling
+	 * is required, so we also collect aggregated counts into the accum_counts
+	 * vector (if needed).
+	 */
 	for (unsigned long ocounter = 0; ocounter < perfCounters.size(); ocounter++) {
 		ocount_accum_t tmp_accum;
 		int evt_key = ocounter % evts.size();
@@ -549,18 +605,35 @@ void ocount_record::output_results(ostream & out, bool use_separation, bool shor
 		}
 		if (!use_separation) {
 			ocount_accum_t real_accum = accum_counts[evt_key];
-			real_accum.aggregated_count += tmp_accum.aggregated_count;
+			real_accum.count += tmp_accum.count;
 			real_accum.enabled_time += tmp_accum.enabled_time;
 			real_accum.running_time += tmp_accum.running_time;
 			accum_counts[evt_key] = real_accum;
 		}
-		if (tmp_accum.enabled_time != tmp_accum.running_time)
-			scaled = true;
+		if (tmp_accum.enabled_time != tmp_accum.running_time) {
+			if (((double)(tmp_accum.enabled_time - tmp_accum.running_time)/tmp_accum.enabled_time) > 0.01)
+				scaled = true;
+		}
 	}
+
+	if (with_time_interval && !use_separation) {
+		for (size_t i = 0; i < evts.size(); i++) {
+			u64 save_prev = prev_accum_counts[i];
+			ocount_accum_t real_accum = accum_counts[i];
+			prev_accum_counts[i] = real_accum.count;
+			real_accum.count -= save_prev;
+			accum_counts[i] = real_accum;
+		}
+	}
+	struct timespec tspec;
+	clock_gettime(CLOCK_MONOTONIC, &tspec);
+	time_enabled = (tspec.tv_sec * 1000000000ULL + tspec.tv_nsec) - start_time;
+
+
 	if (short_format)
-		output_short_results(out, use_separation);
+		output_short_results(out, use_separation, scaled);
 	else
-		output_long_results(out, use_separation, longest_event_name, scaled);
+		output_long_results(out, use_separation, longest_event_name, scaled, time_enabled);
 }
 
 int ocount_record::_get_one_process_info(pid_t pid)

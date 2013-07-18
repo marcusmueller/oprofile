@@ -162,10 +162,10 @@ to display event counts on a per-cpu basis.  Without this option, all counts are
 .br
 
 .TP
-.BI "--time-intervals / -i " num_seconds[:num_intervals]
-Cumulative results are printed every
+.BI "--time-interval / -i " num_seconds[:num_intervals]
+Results collected for each time interval are printed every
 .IR "num_seconds"
-instead of the default of one dump of event counts at the end of the run.
+instead of the default of one dump of cumulative event counts at the end of the run.
 If
 .I num_intervals
 is specified,
@@ -183,10 +183,10 @@ Use this option to print results in the following brief format:
 .P
 .RS
 If
-.I --timer-intervals
+.I --timer-interval
 is specified, a separate line formatted as
 .br
-    t:<num_seconds_since_epoch>
+    timestamp,<num_seconds_since_epoch>
 .br
 is printed ahead of each dump of event counts.
 .RE

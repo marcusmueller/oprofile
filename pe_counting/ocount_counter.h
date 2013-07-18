@@ -15,7 +15,8 @@
 #define OCOUNT_COUNTER_H_
 
 #include <linux/perf_event.h>
-#include <asm/unistd.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 #include <vector>
 #include <set>
@@ -35,7 +36,7 @@ enum op_runmode {
 };
 
 typedef struct ocount_accum {
-	u64 aggregated_count;
+	u64 count;
 	u64 enabled_time;
 	u64 running_time;
 } ocount_accum_t;
@@ -72,7 +73,8 @@ private:
 
 class ocount_record {
 public:
-	ocount_record(enum op_runmode _runmode, std::vector<operf_event_t> & _evts);
+	ocount_record(enum op_runmode _runmode, std::vector<operf_event_t> & _evts,
+	              bool _with_time_interval);
 	~ocount_record();
 	bool start_counting_app_process(pid_t _pid);
 	bool start_counting_tasklist(std::vector<pid_t> _tasks, bool _are_threads);
@@ -89,9 +91,9 @@ private:
 	int _get_one_process_info(pid_t pid);
 	int do_counting_per_cpu(void);
 	int do_counting_per_task(void);
-	void output_short_results(std::ostream & out, bool use_separation);
+	void output_short_results(std::ostream & out, bool use_separation, bool scaled);
 	void output_long_results(std::ostream & out, bool use_separation,
-                                 int longest_event_name, bool scaled);
+                                 int longest_event_name, bool scaled, u64 time_enabled);
 
 	enum op_runmode runmode;
 	bool tasks_are_threads;
@@ -105,8 +107,18 @@ private:
 	std::vector<operf_event_t> evts;
 	std::vector<pid_t> specified_tasks;
 	std::vector<int> specified_cpus;
-	std::vector<ocount_accum_t> accum_counts;  // same size as evts; one object for each event
+	std::vector<ocount_accum_t> accum_counts;  // accumulated across threads or cpus; one object per event
+
+	/* The prev_accum_counts vector is used with time intervals for computing count values for just
+	 * the current time interval. The number of elements in this vector depends on the run mode:
+	 *   - For <command> [args] : vector size == evts.size()
+	 *   - For system-wide or cpu list : vector size is number of processors
+	 *   - For process or thread list : vector size is number of tasks
+	 */
+	std::vector<u64> prev_accum_counts;
 	bool valid;
+	bool with_time_interval;
+	u64 start_time;
 };
 
 

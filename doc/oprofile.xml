@@ -3588,7 +3588,7 @@ Following is a description of the <command>ocount</command> options.
         </screen></para>
         If <code>--timer-interval</code> is specified, a separate line formatted as
         <para><screen>
-                  t:&lt;num_seconds_since_epoch&gt;
+                  timestamp,&lt;num_seconds_since_epoch&gt;
         </screen></para>
         is printed ahead of each dump of event counts.
 		</para></listitem>

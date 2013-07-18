@@ -558,7 +558,9 @@ static string _handle_powerpc_event_spec(string event_spec)
 		evt_name_len = event_spec.length();
 	strncpy(event_name, event_spec.c_str(), evt_name_len);
 	event_name[evt_name_len] = '\0';
-	remaining_evt_spec = ((char *)event_spec.c_str() + strlen(event_name) + 1);
+	remaining_evt_spec = colon_start ?
+	                                  ((char *)event_spec.c_str() + strlen(event_name) + 1)
+	                                  : NULL;
 	if (!strcmp("CYCLES", event_name)) {
 		event_found = true;
 		goto out;

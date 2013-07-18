@@ -156,7 +156,7 @@ static void __print_usage_and_exit(const char * extra_msg)
 {
 	if (extra_msg)
 		cerr << extra_msg << endl;
-	cerr << "usage: ocount [ options ] [ --system-wide | --pid <pid> | [ command [ args ] ] ]" << endl;
+	cerr << "usage: ocount [ options ] [ --system-wide | -p <pids> | -r <tids> | -C <cpus> [ command [ args ] ] ]" << endl;
 	cerr << "See ocount man page for details." << endl;
 	exit(EXIT_FAILURE);
 }
@@ -212,7 +212,6 @@ void run_app(void)
 bool start_counting(void)
 {
 	vector<pid_t> proc_list; // May contain processes or threads
-	bool procs_are_threads;
 
 	// The only process that should return from this function is the process
 	// which invoked it.  Any forked process must do _exit() rather than return().
@@ -244,12 +243,9 @@ bool start_counting(void)
 			return false;
 		}
 		proc_list.push_back(app_PID);
-		procs_are_threads = false;
 	} else if (!ocount_options::threads.empty()) {
-		procs_are_threads = true;
 		proc_list = ocount_options::threads;
 	} else if (!ocount_options::processes.empty()) {
-		procs_are_threads = false;
 		proc_list = ocount_options::processes;
 	}
 
@@ -263,7 +259,7 @@ bool start_counting(void)
 		app_started = true;
 	}
 
-	orecord = new ocount_record(runmode, events);
+	orecord = new ocount_record(runmode, events, ocount_options::display_interval ? true : false);
 	bool ret;
 	switch (runmode) {
 	case OP_START_APP:
@@ -365,7 +361,7 @@ end_code_t _wait_for_app(ostream & out)
 					if (!ocount_options::csv_output)
 						out << endl << "Current time (seconds since epoch): ";
 					else
-						out << endl << "t:";
+						out << endl << "timestamp,";
 					out << dec << mytime.tv_sec;
 					do_results(out);
 				}
