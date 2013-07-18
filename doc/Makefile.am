@@ -21,7 +21,8 @@ man_MANS = \
 	opimport.1
 
 if BUILD_FOR_PERF_EVENT
-man_MANS += operf.1
+man_MANS += operf.1 \
+			ocount.1
 endif
 
 htmldir = $(prefix)/share/doc/oprofile

@@ -1,0 +1,224 @@
+.\" an page for ocount
+.\" Author: Maynard Johnson <maynardj@us.ibm.com>
+.TH ocount 1 "@DATE@" "oprofile @VERSION@"
+.SH NAME
+ocount \- Event counting tool for Linux
+
+.SH SYNOPSIS
+.B ocount
+[
+.I options
+]
+[ --system-wide | --process-list <pids> | --thread-list <tids> | --cpu-list <cpus> [ command [ args ] ] ]
+
+.SH DESCRIPTION
+.BI ocount
+is an OProfile tool that can be used to count native hardware events occurring
+in either a given application, a set of processes or threads, a subset of active
+system processors, or the entire system. The data collected during
+a counting session is displayed to stdout by default or, optionally,
+to a file.
+.P
+When counting multiple events, the kernel may not be able to count all events
+simultaneously and, thus, may need to multiplex the counting of the events.
+If this happens, the "Percent time enabled" column in the
+.B ocount
+output will be less than 100, but counts are scaled up to a 100% estimated value.
+.br
+
+.SH RUN MODES
+One (and only one) of the following
+.SB run modes
+must be specified.  If you run
+.BI ocount
+using a run mode other than
+.BI "command " [args]
+, press Ctrl-c to stop
+.BI ocount
+when finished counting (e.g., when the monitored process ends).
+If you background
+.BI ocount
+(i.e., with '&') while using one these run modes, you
+.B must
+stop it in a controlled manner so that the data collection process can
+be shut down cleanly and final results can be displayed. Use
+.BI kill
+.BI -SIGINT
+.BI <ocount-PID>
+for this purpose.
+.TP
+.BI "command " [args]
+The
+.I command
+is the application for which to count events.
+.I args
+are the input arguments required by the application.
+The
+.I command
+and its arguments
+.B must
+be positioned at the
+end of the command line, after all ocount options.
+.br
+.TP
+.BI "--process-list / -p " pids
+Use this option to count events for one or more already-running applications, specified
+via a comma-separated list (
+.I pids
+). Event counts will be collected for all children of the passed process(es)
+as well.
+.br
+
+.TP
+.BI "--thread-list / -r " tids
+Use this option to count events for one or more already-running threads, specified
+via a comma-separated list (
+.I tids
+). Event counts will
+.B not
+be collected for any children of the passed thread(s).
+.br
+
+.TP
+.BI "--system-wide / -s"
+This option is for counting events for all processes running on your system.  You must
+have root authority to run ocount in this mode.
+.br
+
+.TP
+.BI "--cpu-list / -C " cpus
+This option is for counting events on a subset of processors on your system. You must
+have root authority to run ocount in this mode. This is a comma-separated list, where each
+element in the list may be either a single processor number or a range of processor numbers;
+for example: '-C 2,3,4-11,15'.
+.br
+
+.SH OTHER OPTIONS
+.TP
+.BI "--events / -e " event1[,event2[,...]]
+This option is for passing a comma-separated list of event specifications
+for counting. Each event spec is of the form:
+.br
+.I "   name[:unitmask[:kernel[:user]]]"
+.br
+.B Note:
+Do
+.B not
+include a
+.I count
+value in the event spec, as that parameter is only need when profiling.
+.P
+.RS
+You can specify unit mask values using either a numerical value (hex values
+.I must
+begin with "0x") or a symbolic name (if the
+.I name=<um_name>
+field is shown in the
+.B ophelp
+output). For some named unit masks, the hex value is not unique; thus, OProfile
+tools enforce specifying such unit masks value by name.
+If no unit mask is specified, the default unit mask value for the event is used.
+.P
+Event names for certain processor types include a
+.I "_GRP<n>"
+suffix.  For such cases, the
+.I --events
+option may be specified with or without the
+.I "_GRP<n>"
+suffix.
+.P
+When no event specification is given, the default event for the running
+processor type will be used for counting.
+Use
+.BI ophelp
+to list the available events for your processor type.
+.RE
+.br
+
+.TP
+.BI "--separate-thread / -t"
+This option can be used in conjunction with either the
+.I --process-list
+or
+.I --thread-list
+option to display event counts on a per-thread (per-process) basis.  Without this option, all counts
+are aggregated.
+.P
+.RS
+.BI NOTE:
+If new threads are started by the process(es) being monitored after counting begins,
+the counts for those threads are aggregated with their parent's counts.
+.RE
+
+.br
+.TP
+.BI "--separate-cpu / -c"
+This option can be used in conjunction with either the
+.I --system-wide
+or
+.I --cpu-list
+option
+to display event counts on a per-cpu basis.  Without this option, all counts are aggregated.
+.br
+
+.TP
+.BI "--time-intervals / -i " num_seconds[:num_intervals]
+Cumulative results are printed every
+.IR "num_seconds"
+instead of the default of one dump of event counts at the end of the run.
+If
+.I num_intervals
+is specified,
+.BI ocount
+exits after the specified number of intervals occur.
+.br
+
+.TP
+.BI "--brief-format / -b"
+Use this option to print results in the following brief format:
+.br
+    [optional cpu or thread,]<event_name>,<count>,<percent_time_enabled>
+.br
+    [        <int>         ,]<  string  >,< u64 >,<     double         >
+.P
+.RS
+If
+.I --timer-intervals
+is specified, a separate line formatted as
+.br
+    t:<num_seconds_since_epoch>
+.br
+is printed ahead of each dump of event counts.
+.RE
+
+.TP
+.BI "--output-file / -f " outfile_name
+Results are written to
+.I outfile_name
+instead of interactively to the terminal.
+.br
+.TP
+.BI "--verbose / -V"
+Use this option to increase the verbosity of the output.
+.br
+.TP
+.BI "--version / -v"
+Show ocount version.
+.br
+.TP
+.BI "--help / -h"
+Display brief usage message.
+.br
+.TP
+.BI "--usage / -u"
+Display brief usage message.
+.br
+
+.SH EXAMPLE
+$ ocount make
+
+.SH VERSION
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+operf(1).
