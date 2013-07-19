@@ -486,7 +486,14 @@ static void _get_event_code(operf_event_t * event, op_cpu cpu_type)
 		// opreport.  It would be better if we could somehow have the unit mask name that the
 		// user passed to us show up in opreort.
 		event->evt_um = strtoull(mask, (char **) NULL, 10);
-		config |= event->evt_um;
+		/* A value >= EXTRA_MIN_VAL returned by 'ophelp --extra-mask' is interpreted as a
+		 * valid extra value; otherwise we interpret it as a simple unit mask value
+		 * for a named unit mask with EXTRA_NONE.
+		 */
+		if (event->evt_um >= EXTRA_MIN_VAL)
+			config |= event->evt_um;
+		else
+			config |= ((event->evt_um & 0xFFULL) << 8);
 	} else if (!event->evt_um) {
 		command.clear();
 		command = OP_BINDIR;
