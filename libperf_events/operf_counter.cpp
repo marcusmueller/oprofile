@@ -207,7 +207,7 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 	if (separate_cpu)
 		attr.sample_type |= PERF_SAMPLE_CPU;
 	attr.type = PERF_TYPE_RAW;
-#if defined(__i386__) || defined(__x86_64__)
+#if ((defined(__i386__) || defined(__x86_64__)) && (HAVE_PERF_PRECISE_IP))
 	if (evt.evt_code & EXTRA_PEBS) {
 		attr.precise_ip = 2;
 		evt.evt_code ^= EXTRA_PEBS;
