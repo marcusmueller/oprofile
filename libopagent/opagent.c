@@ -130,7 +130,6 @@ op_agent_t op_open_agent(void)
 	int pad_cnt;
 	char dump_path[PATH_MAX];
 	char err_msg[PATH_MAX + 16];
-	struct stat dirstat;
 	int rc;
 	struct jitheader header;
 	int fd;
