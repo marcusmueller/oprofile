@@ -1375,7 +1375,7 @@ static void do_resolve_unit_mask(struct op_event *e,
 	/* If not specified um and the default um is name type
 	 * we populate pe unitmask name with default name */
 	if ((e->unit->default_mask_name != NULL) &&
-		(pe->unit_mask_name == NULL)) {
+			(pe->unit_mask_name == NULL) && (!pe->unit_mask_valid)) {
 		pe->unit_mask_name = xstrdup(e->unit->default_mask_name);
 	}
 
