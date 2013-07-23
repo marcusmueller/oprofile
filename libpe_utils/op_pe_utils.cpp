@@ -887,7 +887,8 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 		free(event_str);
 		_get_event_code(&event, cpu_type);
 #if PPC64_ARCH
-		strncpy(event.name, strtok(ppc64_save_event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
+		if (cpu_type < CPU_PPC64_ARCH_V1)
+			strncpy(event.name, strtok(ppc64_save_event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
 #endif
 		events.push_back(event);
 	}
