@@ -375,7 +375,7 @@ static int handle_overlap_region(int start_idx, int end_idx)
 	int cnt;
 	char * name;
 	int i, j;
-	unsigned long long totaltime;
+	unsigned long long totaltime, pct;
 
 	if (debug) {
 		for (i = start_idx; i <= end_idx; i++) {
@@ -400,17 +400,17 @@ static int handle_overlap_region(int start_idx, int end_idx)
 		goto out;
 	}
 	e = entries_address_ascending[idx];
+	pct = (totaltime == 0) ? 100 : (e->life_end - e->life_start) * 100 / totaltime;
 
 	cnt = 1;
-	j = (e->life_end - e->life_start) * 100 / totaltime;
+	j = pct;
 	while ((j = j/10))
 		cnt++;
 
 	// Mark symbol name with a %% to indicate the overlap.
 	cnt += strlen(e->symbol_name) + 2 + 1;
 	name = xmalloc(cnt);
-	snprintf(name, cnt, "%s%%%llu", e->symbol_name,
-		 (e->life_end - e->life_start) * 100 / totaltime);
+	snprintf(name, cnt, "%s%%%llu", e->symbol_name, pct);
 	if (e->sym_name_malloced)
 		free(e->symbol_name);
 	e->symbol_name = name;
