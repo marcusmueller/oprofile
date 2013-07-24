@@ -1123,6 +1123,7 @@ static void _get_event_code(operf_event_t * event)
 	config |= base_code & 0xFFULL;
 
 	// Setup unitmask field
+handle_named_um:
 	if (event->um_name[0]) {
 		command = OP_BINDIR;
 		command += "ophelp ";
@@ -1159,6 +1160,7 @@ static void _get_event_code(operf_event_t * event)
 		else
 			config |= ((event->evt_um & 0xFFULL) << 8);
 	} else if (!event->evt_um) {
+		char * endptr;
 		command.clear();
 		command = OP_BINDIR;
 		command += "ophelp ";
@@ -1178,7 +1180,13 @@ static void _get_event_code(operf_event_t * event)
 			exit(EXIT_FAILURE);
 		}
 		pclose(fp);
-		event->evt_um = strtoull(mask, (char **) NULL, 10);
+		event->evt_um = strtoull(mask, &endptr, 10);
+		if ((endptr >= mask) &&
+				(endptr <= (mask + strlen(mask) - 1))) {
+			// Must be a default named unit mask
+			strncpy(event->um_name, mask, OP_MAX_UM_NAME_LEN);
+			goto handle_named_um;
+		}
 		config |= ((event->evt_um & 0xFFULL) << 8);
 	} else {
 		config |= ((event->evt_um & 0xFFULL) << 8);

@@ -722,8 +722,8 @@ normalise_events()
 			KERNEL=`echo $GOTEVENT | awk -F: '{print $4}'`
 			USER=`echo $GOTEVENT | awk -F: '{print $5}'`
 			TMPEVENT="$EVENT:$COUNT:$UNIT_MASK"
-			UNIT_MASK_NAMED="$UNIT_MASK"
 			UNIT_MASK=`$OPHELP --unit-mask $TMPEVENT`
+			UNIT_MASK_NAMED="$UNIT_MASK"
 			if test "$?" != 0; then
 				exit 1
 			fi
