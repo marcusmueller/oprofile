@@ -821,19 +821,8 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 #if PPC64_ARCH
 		// Starting with CPU_PPC64_ARCH_V1, ppc64 events files are formatted like
 		// other architectures, so no special handling is needed.
-		char * ppc64_save_event_str;
-		if (cpu_type < CPU_PPC64_ARCH_V1) {
-			/* The old style of event names for IBM Power processors included a
-			 * _<GRP_n> suffix, but operf and ocount allow the user to specify with
-			 * or without the suffix.  If an event is passed without a suffix, the
-			 * _handle_powerpc_event_spec will try to find a valid <event_name>_GRP<n>
-			 * and pass that back, modifying the event_spec.  We save the passed
-			 * event name in case it was one that did not have the  _<GRP_n> suffix,
-			 * and we'll use that name to finally put into the events vector.
-			 */
-			ppc64_save_event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
+		if (cpu_type < CPU_PPC64_ARCH_V1)
 			event_spec = _handle_powerpc_event_spec(event_spec);
-		}
 #endif
 
 		full_cmd += event_spec;
@@ -894,10 +883,6 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 		}
 		free(event_str);
 		_get_event_code(&event, cpu_type);
-#if PPC64_ARCH
-		if (cpu_type < CPU_PPC64_ARCH_V1)
-			strncpy(event.name, strtok(ppc64_save_event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
-#endif
 		events.push_back(event);
 	}
 #if PPC64_ARCH
