@@ -670,14 +670,14 @@ This section gives a brief description of the available OProfile utilities and t
 <varlistentry>
 	<term><filename>operf</filename></term>
 	<listitem><para>
-		This is the recommended program for collecting profile data, discussed in <xref linkend="controlling" />.
+		This is the recommended program for collecting profile data, discussed in <xref linkend="controlling-operf" />.
 	</para></listitem>
 </varlistentry>
 	
 <varlistentry>
 	<term><filename>opcontrol</filename></term>
 	<listitem><para>
-		Used for controlling OProfile data collection in legacy mode, discussed in <xref linkend="controlling" />.
+		Used for controlling OProfile data collection in legacy mode, discussed in <xref linkend="controlling-daemon" />.
 	</para></listitem>
 </varlistentry>
 
