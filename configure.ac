@@ -11,7 +11,7 @@
 
 AC_PREREQ(2.13)
 
-AC_INIT([OProfile], [0.9.9git])
+AC_INIT([OProfile], [0.9.9])
 AC_CONFIG_SRCDIR([libop/op_config.h])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(config.h)
