@@ -145,6 +145,8 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x3e:
 			return CPU_IVYBRIDGE;
 		case 0x3c:
+		case 0x3f:
+		case 0x45:
 		case 0x46:
 		case 0x47:
 			return CPU_HASWELL;
