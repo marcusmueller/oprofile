@@ -110,7 +110,10 @@ static double op_cpu_freq_sys_devices(void)
 		free(line);
 	op_close_file(fp);
 
-	return fval;
+        /* Return the frequency in MHz.  When the frequency is
+         * printed it is assumed to be in units of MHz.
+	 */
+	return fval/1000;
 }
 
 
