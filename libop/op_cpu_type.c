@@ -126,6 +126,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "IBM Power Architected Events V1", "ppc64/architected_events_v1", CPU_PPC64_ARCH_V1, 6 },
 	{ "ppc64 POWER8", "ppc64/power8", CPU_PPC64_POWER8, 6 },
 	{ "e500mc", "ppc/e500mc", CPU_PPC_E500MC, 4 },
+	{ "e6500", "ppc/e6500", CPU_PPC_E6500, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

@@ -1309,6 +1309,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC_E500:
 		case CPU_PPC_E500_2:
 		case CPU_PPC_E500MC:
+		case CPU_PPC_E6500:
 		case CPU_PPC_E300:
 			descr->name = "CPU_CLK";
 			break;
