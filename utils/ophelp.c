@@ -753,6 +753,7 @@ int main(int argc, char const * argv[])
 
 	case CPU_PPC_E500:
 	case CPU_PPC_E500_2:
+	case CPU_PPC_E500MC:
 		event_doc =
 			"See PowerPC e500 Core Complex Reference Manual\n"
 			"Chapter 7: Performance Monitor\n"

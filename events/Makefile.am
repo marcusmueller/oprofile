@@ -76,6 +76,7 @@ event_files = \
 	ppc/7450/events ppc/7450/unit_masks \
 	ppc/e500/events ppc/e500/unit_masks \
 	ppc/e500v2/events ppc/e500v2/unit_masks \
+	ppc/e500mc/events ppc/e500mc/unit_masks \
 	ppc/e300/events ppc/e300/unit_masks \
 	tile/tile64/events tile/tile64/unit_masks \
 	tile/tilepro/events tile/tilepro/unit_masks \

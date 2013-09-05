@@ -105,6 +105,7 @@ typedef enum {
 	CPU_AMD64_GENERIC, /**< AMD64 Generic */
 	CPU_PPC64_ARCH_V1, /** < IBM Power architected events version 1 */
 	CPU_PPC64_POWER8, /**< ppc64 POWER8 family */
+	CPU_PPC_E500MC, /**< e500mc */
 	MAX_CPU_TYPE
 } op_cpu;
 
