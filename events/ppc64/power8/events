@@ -54,6 +54,7 @@ event:0x3e050 counters:2 um:zero minimum:10000 name:PM_DC_PREF_STREAM_STRIDED_CO
 event:0x4d01e counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_BR_MPRED : Gct empty fo this thread due to  branch mispred.
 event:0x4d01a counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_BR_MPRED_ICMISS : Gct empty fo this thread due to Icache Miss and branch mispred.
 event:0x2d01e counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_ISSQ : Gct empty fo this thread due to dispatch hold on this thread due to Issue q full.
+event:0x4d01c counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_MAP : Gct empty fo this thread due to dispatch hold on this thread due to Mapper full.
 event:0x2e010 counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_OTHER : Gct empty fo this thread due to dispatch hold on this thread due to sync.
 event:0x2d01c counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_DISP_HELD_SRQ : Gct empty fo this thread due to dispatch hold on this thread due to SRQ full.
 event:0x4e010 counters:3 um:zero minimum:10000 name:PM_GCT_NOSLOT_IC_L3MISS : Gct empty fo this thread due to  icach l3 miss.
@@ -87,6 +88,7 @@ event:0x20114 counters:1 um:zero minimum:1000 name:PM_MRK_L2_RC_DISP : Marked In
 event:0x4013e counters:3 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1_CYC : Marked ld latency.
 event:0x3013e counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC : Marked Group Completion Stall cycles (use edge detect to count  ).
 event:0x3006e counters:2 um:zero minimum:10000 name:PM_NEST_REF_CLK : Nest reference clocks.
+event:0x2001a counters:1 um:zero minimum:10000 name:PM_NTCG_ALL_FIN : Cycles after all instructions have finished to group completed
 event:0x20010 counters:1 um:zero minimum:10000 name:PM_PMC1_OVERFLOW : Overflow from counter 1.
 event:0x30010 counters:2 um:zero minimum:10000 name:PM_PMC2_OVERFLOW : Overflow from counter 2.
 event:0x40010 counters:3 um:zero minimum:10000 name:PM_PMC3_OVERFLOW : Overflow from counter 3.
