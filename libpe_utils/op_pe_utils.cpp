@@ -52,7 +52,9 @@ extern op_cpu cpu_type;
 
 using namespace std;
 
-static int _op_get_next_online_cpu(DIR * dir, struct dirent *entry)
+// Global functions
+
+int op_pe_utils::op_get_next_online_cpu(DIR * dir, struct dirent *entry)
 {
 #define OFFLINE 0x30
 	unsigned int cpu_num;
@@ -85,8 +87,6 @@ static int _op_get_next_online_cpu(DIR * dir, struct dirent *entry)
 	else
 		return cpu_num;
 }
-
-// Global functions
 
 int op_pe_utils::op_get_sys_value(const char * filename)
 {
@@ -148,7 +148,7 @@ int op_pe_utils::op_get_cpu_for_perf_events_cap(void)
 			goto error;
 		} else {
 			struct dirent *entry = NULL;
-			retval = _op_get_next_online_cpu(dir, entry);
+			retval = op_get_next_online_cpu(dir, entry);
 			closedir(dir);
 		}
 	} else {
@@ -310,40 +310,6 @@ int op_pe_utils::op_validate_app_name(char ** app, char ** save_appname)
 
 	out: return rc;
 }
-static int _get_next_online_cpu(DIR * dir, struct dirent *entry)
-{
-#define OFFLINE 0x30
-	unsigned int cpu_num;
-	char cpu_online_pathname[40];
-	int res;
-	FILE * online;
-	again:
-	do {
-		entry = readdir(dir);
-		if (!entry)
-			return -1;
-	} while (entry->d_type != DT_DIR);
-
-	res = sscanf(entry->d_name, "cpu%u", &cpu_num);
-	if (res <= 0)
-		goto again;
-
-	errno = 0;
-	snprintf(cpu_online_pathname, 40, "/sys/devices/system/cpu/cpu%u/online", cpu_num);
-	if ((online = fopen(cpu_online_pathname, "r")) == NULL) {
-		cerr << "Unable to open " << cpu_online_pathname << endl;
-		if (errno)
-			cerr << strerror(errno) << endl;
-		return -1;
-	}
-	res = fgetc(online);
-	fclose(online);
-	if (res == OFFLINE)
-		goto again;
-	else
-		return cpu_num;
-}
-
 
 set<int> op_pe_utils::op_get_available_cpus(int max_num_cpus)
 {
@@ -392,7 +358,7 @@ set<int> op_pe_utils::op_get_available_cpus(int max_num_cpus)
 		if (all_cpus_avail) {
 			available_cpus.insert(cpu);
 		} else {
-			real_cpu = _get_next_online_cpu(dir, entry);
+			real_cpu = op_get_next_online_cpu(dir, entry);
 			if (real_cpu < 0) {
 				err_msg = "Internal Error: Number of online cpus cannot be determined.";
 				rc = -1;
@@ -803,7 +769,8 @@ static bool convert_event_vals(vector<operf_event_t> * evt_vec)
 
 
 
-void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
+void op_pe_utils::op_process_events_list(vector<string> & passed_evts,
+                                         bool do_profiling, bool do_callgraph)
 {
 	string cmd = OP_BINDIR;
 
@@ -812,7 +779,9 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 		     << OP_MAX_EVENTS << "." << endl;
 		exit(EXIT_FAILURE);
 	}
-	cmd += "/ophelp --check-events --ignore-count ";
+	cmd += "/ophelp --check-events ";
+	if (!do_profiling)
+		cmd += "--ignore-count ";
 	for (unsigned int i = 0; i <  passed_evts.size(); i++) {
 		FILE * fp;
 		string full_cmd = cmd;
@@ -825,6 +794,8 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 			event_spec = _handle_powerpc_event_spec(event_spec);
 #endif
 
+		if (do_callgraph)
+			full_cmd += " --callgraph=1 ";
 		full_cmd += event_spec;
 		fp = popen(full_cmd.c_str(), "r");
 		if (fp == NULL) {
@@ -836,14 +807,21 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 			pclose(fp);
 			cerr << "Error retrieving info for event "
 			     << event_spec << endl;
+			if (do_callgraph)
+				cerr << "Note: When doing callgraph profiling, the sample count must be"
+				     << endl << "15 times the minimum count value for the event."  << endl;
 			exit(EXIT_FAILURE);
 		}
 		pclose(fp);
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
 		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
+		if (do_profiling)
+			event.count = atoi(strtok(NULL, ":"));
+		else
+			event.count = 0UL;
 		/* Event name is required in the event spec in order for
-		 * 'ophelp --check-events --ignore-count' to pass.  But since unit mask
+		 * 'ophelp --check-events' to pass.  But since unit mask
 		 *  and domain control bits are optional, we need to ensure the result of
 		 *  strtok is valid.
 		 */
@@ -854,7 +832,6 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 		int place =  _OP_UM;
 		char * endptr = NULL;
 		event.evt_um = 0UL;
-		event.count = 0UL;
 		event.no_kernel = 0;
 		event.no_user = 0;
 		event.throttled = false;
@@ -904,7 +881,7 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts)
 #endif
 }
 
-void op_pe_utils::op_get_default_event(void)
+void op_pe_utils::op_get_default_event(bool do_callgraph)
 {
 	operf_event_t dft_evt;
 	struct op_default_event_descr descr;
@@ -918,7 +895,18 @@ void op_pe_utils::op_get_default_event(void)
 	}
 
 	memset(&dft_evt, 0, sizeof(dft_evt));
-	dft_evt.count = descr.count;
+	if (do_callgraph) {
+		struct op_event * _event;
+		op_events(cpu_type);
+		if ((_event = find_event_by_name(descr.name, 0, 0))) {
+			dft_evt.count = _event->min_count * CALLGRAPH_MIN_COUNT_SCALE;
+		} else {
+			cerr << "Error getting event info for " << descr.name << endl;
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		dft_evt.count = descr.count;
+	}
 	dft_evt.evt_um = descr.um;
 	strncpy(dft_evt.name, descr.name, OP_MAX_EVT_NAME_LEN - 1);
 	_get_event_code(&dft_evt, cpu_type);

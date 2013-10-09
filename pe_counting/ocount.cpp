@@ -720,9 +720,9 @@ static void process_args(int argc, char * const argv[])
 
 	if (ocount_options::evts.empty()) {
 		// Use default event
-		op_pe_utils::op_get_default_event();
+		op_pe_utils::op_get_default_event(false);
 	} else  {
-		op_pe_utils::op_process_events_list(ocount_options::evts);
+		op_pe_utils::op_process_events_list(ocount_options::evts, false, false);
 	}
 	cverb << vdebug << "Number of events passed is " << events.size() << endl;
 	return;

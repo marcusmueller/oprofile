@@ -18,11 +18,13 @@
 #include <dirent.h>
 
 #include <vector>
+#include <set>
 
 #include "op_cpu_type.h"
 
 #define OP_APPNAME_LEN 1024
 #define OP_MAX_EVENTS 24
+#define CALLGRAPH_MIN_COUNT_SCALE 15
 
 /* A macro to be used for ppc64 architecture-specific code.  The '__powerpc__' macro
  * is defined for both ppc64 and ppc32 architectures, so we must further qualify by
@@ -38,8 +40,10 @@ extern int op_check_perf_events_cap(bool use_cpu_minus_one);
 extern int op_get_sys_value(const char * filename);
 extern int op_get_cpu_for_perf_events_cap(void);
 extern int op_validate_app_name(char ** app, char ** save_appname);
-extern void op_get_default_event(void);
-extern void op_process_events_list(std::vector<std::string> & passed_evts);
+extern void op_get_default_event(bool do_callgraph);
+extern void op_process_events_list(std::vector<std::string> & passed_evts,
+                                   bool do_profiling, bool do_callgraph);
+extern int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
 extern std::set<int> op_get_available_cpus(int max_num_cpus);
 }
 

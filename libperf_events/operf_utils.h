@@ -87,8 +87,6 @@ int op_write_output(int output, void *buf, size_t size);
 int op_write_event(event_t * event, u64 sample_type);
 int op_read_from_stream(std::ifstream & is, char * buf, std::streamsize sz);
 int op_mmap_trace_file(struct mmap_info & info, bool init);
-int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
-bool op_convert_event_vals(std::vector<operf_event_t> * evt_vec);
 void op_reprocess_unresolved_events(u64 sample_type, bool print_progress);
 void op_release_resources(void);
 }

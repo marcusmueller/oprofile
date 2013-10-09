@@ -31,6 +31,7 @@
 #include "operf_process_info.h"
 #include "op_libiberty.h"
 #include "operf_stats.h"
+#include "op_pe_utils.h"
 
 
 using namespace std;
@@ -645,7 +646,7 @@ void operf_record::setup()
 		} else if (all_cpus_avail) {
 			real_cpu = cpu;
 		} else {
-			real_cpu = op_get_next_online_cpu(dir, entry);
+			real_cpu = op_pe_utils::op_get_next_online_cpu(dir, entry);
 			if (real_cpu < 0) {
 				err_msg = "Internal Error: Number of online cpus cannot be determined.";
 				rc = -1;

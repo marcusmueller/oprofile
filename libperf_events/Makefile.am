@@ -7,6 +7,7 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb \
 	-I ${top_srcdir}/libperf_events \
+	-I ${top_srcdir}/libpe_utils \
 	@PERF_EVENT_FLAGS@ \
 	@OP_CPPFLAGS@
 
