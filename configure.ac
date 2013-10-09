@@ -185,10 +185,10 @@ AC_CANONICAL_HOST
 if test "$HAVE_PERF_EVENTS" = "1"; then
 	PFM_LIB=
 	if test "$host_cpu" = "powerpc64"; then
-		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; usually provided in papi devel package])])
+		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; may be provided by libpfm devel or papi devel package])])
 		AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1', [
 			AC_CHECK_LIB(pfm, pfm_get_event_name, HAVE_LIBPFM3='1'; HAVE_LIBPFM='1',
-			[AC_MSG_ERROR([libpfm not found; usually provided in papi devel package])])])
+			[AC_MSG_ERROR([libpfm not found; may be provided by libpfm devel or papi devel package])])])
 		PFM_LIB="-lpfm"
 		AC_DEFINE_UNQUOTED(HAVE_LIBPFM3, $HAVE_LIBPFM3, [Define to 1 if using libpfm3; 0 if using newer libpfm])
 		AC_DEFINE_UNQUOTED(HAVE_LIBPFM, $HAVE_LIBPFM, [Define to 1 if libpfm is available])
