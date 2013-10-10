@@ -150,6 +150,9 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x46:
 		case 0x47:
 			return CPU_HASWELL;
+		case 0x37:
+		case 0x4d:
+			return CPU_SILVERMONT;
 		}
 	}
 	return cpu_type;

@@ -127,6 +127,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 POWER8", "ppc64/power8", CPU_PPC64_POWER8, 6 },
 	{ "e500mc", "ppc/e500mc", CPU_PPC_E500MC, 4 },
 	{ "e6500", "ppc/e6500", CPU_PPC_E6500, 6 },
+	{ "Intel Silvermont microarchitecture", "i386/silvermont", CPU_SILVERMONT, 2 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -644,6 +645,7 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 	case CPU_ATOM:
 	case CPU_NEHALEM:
 	case CPU_HASWELL:
+	case CPU_SILVERMONT:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
 	case CPU_IVYBRIDGE:

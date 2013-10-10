@@ -551,19 +551,20 @@ int main(int argc, char const * argv[])
 	case CPU_CORE_I7:
 	case CPU_NEHALEM:
 	case CPU_HASWELL:
+	case CPU_SILVERMONT:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
 	case CPU_IVYBRIDGE:
 	case CPU_ATOM:
 		event_doc =
 			"See Intel Architecture Developer's Manual Volume 3B, Appendix A and\n"
-			"Intel Architecture Optimization Reference Manual (730795-001)\n\n";
+			"Intel Architecture Optimization Reference Manual\n\n";
 		break;
 
 	case CPU_ARCH_PERFMON:
 		event_doc =
 			"See Intel 64 and IA-32 Architectures Software Developer's Manual\n"
-			"Volume 3B (Document 253669) Chapter 18 for architectural perfmon events\n"
+			"Volume 3B Chapter 18 for architectural perfmon events\n"
 			"This is a limited set of fallback events because oprofile doesn't know your CPU\n";
 		break;
 	

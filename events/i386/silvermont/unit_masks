@@ -1,0 +1,71 @@
+#
+# Unit masks for the Intel "Silvermont" micro architecture
+#
+# See http://ark.intel.com/ for help in identifying Silvermont based CPUs
+#
+include:i386/arch_perfmon
+name:x02 type:mandatory default:0x2
+	0x2 No unit mask
+name:x10 type:mandatory default:0x10
+	0x10 No unit mask
+name:l2_prefetcher_throttle type:exclusive default:0x2
+	0x2 extra:edge conservative Counts the number of cycles the L2 prefetcher spends in throttling mode
+	0x1 extra:edge aggressive Counts the number of cycles the L2 prefetcher spends in throttling mode
+name:nip_stall type:exclusive default:0x3f
+	0x3f extra: all Counts the number of cycles the NIP stalls.
+	0x1 extra: pfb_full Counts the number of cycles the NIP stalls and the PFBs are full.   This DOES NOT inlude PFB throttler cases.
+	0x2 extra: itlb_miss Counts the number of cycles the NIP stalls and there is an outstanding ITLB miss. This is a cummulative count of cycles the NIP stalled for all ITLB misses.
+	0x8 extra: pfb_throttler Counts the number of cycles the NIP stalls, the throttler is engaged, and the PFBs appear full.
+	0x10 extra: do_snoop Counts the number of cycles the NIP stalls because of a SMC compliance snoop to the MEC is required.
+	0x20 extra: misc_other Counts the number of cycles the NIP stalls due to NUKE, Stop Front End, Inserted flows.
+	0x1e extra: pfb_ready Counts the number of cycles the NIP stalls when the PFBs are not full and the decoders are able to process bytes.  Does not count PFB_FULL nor MISC_OTHER stall cycles.
+name:decode_stall type:exclusive default:0x1
+	0x1 extra: pfb_empty Counts the number of cycles decoder is stalled because the PFB is empty, this count is useful to see if the decoder is receiving the bytes from the front end. This event together with the DECODE_STALL.IQ_FULL may be used to narrow down on the bottleneck.
+	0x2 extra: iq_full Counts the number of cycles decoder is stalled because the IQ is full, this count is useful to see if the decoder is delivering the decoded uops. This event together with the DECODE_STALL.PFB_EMPTY may be used to narrow down on the bottleneck.
+name:uip_match type:exclusive default:0x1
+	0x1 extra: first_uip This event is used for counting the number of times a specific micro IP address was decoded
+	0x2 extra: second_uip This event is used for counting the number of times a specific micro IP address was decoded
+name:uops_retired type:exclusive default:0x2
+	0x2 extra: x87 This event counts the number of micro-ops retired that used X87 hardware.
+	0x4 extra: mul This event counts the number of micro-ops retired that used MUL hardware.
+	0x8 extra: div This event counts the number of micro-ops retired that used DIV hardware.
+	0x1 extra: ms_cyles Counts the number of uops that are from the complex flows issued by the micro-sequencer (MS).  This includes uops from flows due to faults, assists, and inserted flows.
+name:br_inst_retired type:exclusive default:0x1
+	0x1 extra: remove_jcc REMOVE_JCC counts the number of branch instructions retired but removes taken and not taken conditional branches (JCC).  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x2 extra: remove_rel_call REMOVE_REL_CALL counts the number of branch instructions retired but removes near relative CALL.  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x4 extra: remove_ind_call REMOVE_IND_CALL counts the number of branch instructions retired but removes near indirect CALL. Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x8 extra: remove_ret REMOVE_RET counts the number of branch instructions retired but removes near RET.  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x10 extra: remove_ind_jmp REMOVE_IND_JMP counts the number of branch instructions retired but removes near indirect JMP.  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x20 extra: remove_rel_jmp REMOVE_REL_JMP counts the number of branch instructions retired but removes near relative JMP.  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x40 extra: remove_far REMOVE_FAR counts the number of branch instructions retired but removes all far branches.  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+	0x80 extra: remove_not_taken_jcc REMOVE_NOT_TAKEN_JCC counts the number of branch instructions retired but removes taken conditional branches (JCC).  Branch prediction predicts the branch target and enables the processor to begin executing instructions long before the branch true execution path is known. All branches utilize the branch prediction unit (BPU) for prediction. This unit predicts the target address not only based on the EIP of the branch but also based on the execution path through which execution reached this EIP. The BPU can efficiently predict the following branch types: conditional branches, direct calls and jumps, indirect calls and jumps, returns.
+name:br_misp_retired type:exclusive default:0x1
+	0x1 extra: remove_jcc REMOVE_JCC counts the number of mispredicted branch instructions retired but removes taken and not taken conditional branches (JCC).  This event counts the number of retired branch instructions that were mispredicted by the processor, categorized by type. A branch misprediction occurs when the processor predicts that the branch would be taken, but it is not, or vice-versa.  When the misprediction is discovered, all the instructions executed in the wrong (speculative) path must be discarded, and the processor must start fetching from the correct path.
+	0x4 extra: remove_ind_call REMOVE_IND_CALL Counts the number of mispredicted branch instructions retired but removes near indirect CALL.  This event counts the number of retired branch instructions that were mispredicted by the processor, categorized by type. A branch misprediction occurs when the processor predicts that the branch would be taken, but it is not, or vice-versa.  When the misprediction is discovered, all the instructions executed in the wrong (speculative) path must be discarded, and the processor must start fetching from the correct path.
+	0x8 extra: remove_ret REMOVE_RET Counts the number of mispredicted branch instructions retired but removes near RET.  This event counts the number of retired branch instructions that were mispredicted by the processor, categorized by type. A branch misprediction occurs when the processor predicts that the branch would be taken, but it is not, or vice-versa.  When the misprediction is discovered, all the instructions executed in the wrong (speculative) path must be discarded, and the processor must start fetching from the correct path.
+	0x10 extra: remove_ind_jmp REMOVE_IND_JMP counts the number of mispredicted branch instructions retired but removes near indirect JMP.  This event counts the number of retired branch instructions that were mispredicted by the processor, categorized by type. A branch misprediction occurs when the processor predicts that the branch would be taken, but it is not, or vice-versa.  When the misprediction is discovered, all the instructions executed in the wrong (speculative) path must be discarded, and the processor must start fetching from the correct path.
+	0x80 extra: remove_not_taken_jcc REMOVE_NOT_TAKEN_JCC counts the number of mispredicted branch instructions retired but removes taken conditional branches (JCC).  This event counts the number of retired branch instructions that were mispredicted by the processor, categorized by type. A branch misprediction occurs when the processor predicts that the branch would be taken, but it is not, or vice-versa.  When the misprediction is discovered, all the instructions executed in the wrong (speculative) path must be discarded, and the processor must start fetching from the correct path.
+name:no_alloc_cycles type:exclusive default:0x3f
+	0x3f extra:inv all Counts the number of cycles that uops are allocated (inverse of NO_ALLOC_CYCLES.ALL)
+	0x2 extra: sd_buffer_full Counts the number of cycles when no uops are allocated and the store data buffer is full.
+	0x4 extra: mispredicts Counts the number of cycles when no uops are allocated and the alloc pipe is stalled waiting for a mispredicted jump to retire.  After the misprediction is detected, the front end will start immediately but the allocate pipe stalls until the mispredicted
+	0x8 extra: scoreboard Counts the number of cycles when no uops are allocated and a microcode IQ-based scoreboard stall is active. This includes stalls due to both the retirement scoreboard (at-ret) and micro-Jcc execution scoreboard (at-jeu).  Does not count cycles when the MS
+	0x10 extra: iq_empty Counts the number of cycles when no uops are allocated and the IQ is empty.  Will assert immediately after a mispredict and partially overlap with MISPREDICTS sub event.
+name:rs_full_stall type:exclusive default:0x2
+	0x2 extra: iec_port0 Counts the number of cycles the Alloc pipeline is stalled because IEC RS for port 0 is full.
+	0x4 extra: iec_port1 Counts the number of cycles the Alloc pipeline is stalled because IEC RS for port 1 is full.
+	0x8 extra: fpc_port0 Counts the number of cycles the Alloc pipeline is stalled because FPC RS for port 0 is full.
+	0x10 extra: fpc_port1 Counts the number of cycles the Alloc pipeline is stalled because FPC RS for port 1 is full.
+name:rs_dispatch_stall type:exclusive default:0x1
+	0x1 extra: iec0_rs *COUNTER BROKEN - NO FIX* Counts cycles when no uops were disptached from port 0 of IEC RS while the RS had valid ops left to dispatch
+	0x2 extra: iec1_rs *COUNTER BROKEN - NO FIX* Counts cycles when no uops were disptached from port 1 of IEC RS while the RS had valid ops left to dispatch
+	0x4 extra: fpc0_rs Counts cycles when no uops were disptached from port 0 of FPC RS while the RS had valid ops left to dispatch
+	0x8 extra: fpc1_rs Counts cycles when no uops were disptached from port 1 of FPC RS while the RS had valid ops left to dispatch
+	0x10 extra: mec_rs Counts cycles when no uops were dispatched from the MEC RS or rehab queue while valid ops were left to dispatch
+name:baclears type:exclusive default:0x2
+	0x2 extra: indirect Counts the number indirect branch baclears
+	0x4 extra: uncond Counts the number unconditional branch baclears
+	0x1e extra: no_corner_case sum of submasks [4:1].  Does not count special case baclears due to things like parity errors, bogus branches, and pd$ issues.
+name:decode_restriction type:exclusive default:0x1
+	0x1 extra: pdcache_wrong Counts the number of times a decode restriction reduced the decode throughput due to wrong instruction length prediction
+	0x2 extra: all_3cycle_resteers Counts the number of times a decode restriction reduced the decode throughput because of all 3 cycle resteer conditions.  Mainly PDCACHE_WRONG and MS_ENTRY cases.

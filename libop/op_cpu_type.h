@@ -107,6 +107,7 @@ typedef enum {
 	CPU_PPC64_POWER8, /**< ppc64 POWER8 family */
 	CPU_PPC_E500MC, /**< e500mc */
 	CPU_PPC_E6500, /**< e6500 */
+	CPU_SILVERMONT, /** < Intel Silvermont microarchitecture */
 	MAX_CPU_TYPE
 } op_cpu;
 
