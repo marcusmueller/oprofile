@@ -484,7 +484,8 @@ handle_named_um:
 		pclose(fp);
 		event->evt_um = strtoull(mask, &endptr, 10);
 		if ((endptr >= mask) &&
-				(endptr <= (mask + strlen(mask) - 1))) {
+				(endptr <= (mask + strlen(mask) - 2))) { // '- 2' to account for linefeed and '\0'
+
 			// Must be a default named unit mask
 			strncpy(event->um_name, mask, OP_MAX_UM_NAME_LEN);
 			goto handle_named_um;
