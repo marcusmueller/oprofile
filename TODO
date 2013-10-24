@@ -1,4 +1,4 @@
-This is an (incomplete) list of some of the stuff we want to look at doing.
+This is a list (not exhaustive) of some of the stuff to cleanup/fix.
 
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
@@ -8,91 +8,28 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
 (this is a minimal selection of stuff I think we need)
 
- o default to a vmlinux location: need agreement from kernel developers
- o default to --separate=library (with anon, =none, makes not much sense)
- o prettify image name for .jo files and allow lib-image: to specify it
- o gisle's fixes
- o opreport tgid:<tgid> doesn't work even if .jo files with that pid
- o Fix:
-
-warning: [vdso] (tgid:9236 range:0x7fff98ffd000-0x7fff98fff000) could not be found.
-warning: /no-vmlinux could not be found.
-warning: /usr/lib64/libpanel-applet-2.so.0.2.27.#prelink#.sXCUK1 (deleted) could not be found.
-
- o amd64 32 bit build needs a sys32_lookup_dcookie() translator in the
-   kernel
- o decide on -m tgid semantics for anon regions
- o if ev67 is not fixed, back it out
- o lapic : module should says "didn't find apic" if needed, FAQ and doc should
-  speak a bit about lapic kernel option on x86 and recent kernel
- o see the big comment in db_insert.c, it's possible to allow unlimited
-   amount of samples with a very minor change in libdb.
- o if oprofile doesn't recognize the processor selected by the kernel
-   opcontrol could setup the module in timer mode (remove/reload prolly), and
-   warn the user it must upgrade oprofile to get all the feature from its
-   hardware.
+ o default to use kallsyms if no --vmlinux option is passed to operf
+ o the various open bugs
 
 Later
 -----
-
- o remove 2.95/2.2 support so we can use boost multi index container in
-   symbol/sample container
- o consider if we can improve anon mapping growing support
-
-<movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /bin/bash | grep vfprintf
-<movement> 14        0.1301  6         0.0102  /lib/tls/libc-2.3.2.so   vfprintf
-<movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /usr/bin/vim | grep vfprintf
-<movement> 176       2.0927  349       1.2552  /lib/tls/libc-2.3.2.so   vfprintf
-<movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so { image:/bin/bash } { image:/usr/bin/vim } | grep vfprintf
-<movement> 176      10.9657  +++       349       7.8888  +++       vfprintf
-<movement> 14       ---      ---       6        ---      ---       vfprintf
-<movement> it seems them as two separate symbols
-<movement> but can we remove the app_name from rough_less and still be able to walk the two lists?
-<movement> even if we could, it would still go wrong when we're profiling multiple apps
-
- o Java stuff??
- o with opreport -c I can get "warning: /no-vmlinux could not be found.".
-   Should be smarter ?
- o opreport -c gives weird output for an image with no symbols:
-
-    samples  %        symbol name
-  15965    100.000  (no symbols)
-253      100.000  (no symbols)
-  15965    98.4400  (no symbols)
-  253       1.5600  (no symbols) [self]
+(Thoughts from John Levon. Some of these may no longer be valid.
+And for opcontrol-related issues, we don't care, since oprofile 1.0
+will no longer support opcontrol.)
 
  o consider tagging opreport -c entries with a number like gprof
  o --details for opreport -c, or diff??
  o should [self] entries be ommitted if 0 ??
- o stress test opreport -c: compile a Big Application w/o frame pointer and look
-   how driver and opreport -c react.
  o oparchive could fix up {kern} paths with -p (what about diff between
    archive and current though?)
- o can say more in opcontrol --status
  o consider a sort option for diff %
  o opannotate is silent about symbols missing debug info
- o oprofiled.log now contains various statistics about lost sample etc. from
-  the driver. Post profile tools must parse that and warn eventually, warning
-  must include a proposed work around. User need this: if nothing seems wrong
-  people are unlikely to get a look in oprofiled.log (I ran oprofile on 2.6.1
-  2 weeks before noticing at 30000 I lost a lot of samples, the profile seemed
-  ok du to the randomization of lost samples). As developper we need that too,
-  actually we have no clear idea of the behavior on different arch, NUMA etc.
-  Not perfect because if the profiler is running the oprofiled.log will show
-  those warning only after the first  alarm signal, I think we must dump the
-  statistics information after each opcontrol --dump to avoid that.
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o output column shortname headers for opreport -l
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
- o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
- o oparchive will be more usefull with a --root= options to allow profiling
-  on a small box, nfs mount / to another box and transfer sample file and
-  binary on a bigger box for analysis. There is also a problem in oparchive
-  you can use session: to get the right path to samples files but oprofiled.log
-  and abi files path are hardcoded to /var/lib/oprofile.
  o callgraph patch: better way to skip ignored backtrace ?
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not
@@ -110,8 +47,6 @@ Later
   extension
  o do we need an opreport like opreport -c (showing caller/callee at binary
   boundary not symbols) ?
- o we should notice an opcontrol config change (--separate etc.) and
-   auto-restart the daemon if necessary (Run)
  o we can add lots more unit tests yet
  o Itanium event constraints are not implemented
  o GUI still has a physical-counter interface, should have a general one
@@ -130,16 +65,6 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o i18n. We need a good formatter, and also remember format_percent()
  o opannotate --source --output-dir=~moz/op/ /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
- o cpu names instead of numbers in 2.4 module/ ?
- o remove 1 and 2 magic numbers for oprof_ready
- o adapt Anton's patch for handling non-symbolled libraries ? (nowaday C++
-  anon namespace symbol are static, 3.4 iirc, so with recent distro we are
-  more likely to get problems with a "fallback to dynamic symbols" approch)
- o use standard C integer type <stdint.h> int32_t int16_t etc.
- o event multiplexing for real
- o randomizing of reset value
- o XML output
- o profile the NMI handler code
  o opannotate : I added this to the doc about difference between nr samples
   credited to a source function and total number of samples for this function:
    "The missing samples are not lost, they will be credited to another source
@@ -254,6 +179,7 @@ General checks to make
 ----------------------
  
  o rgrep FIXME
+ o run Coverity
  o valgrind (--show-reachable=yes --leak-check=yes)
  o audit to track unnecessary include <>
  o gcc 3.0/3.x compile
