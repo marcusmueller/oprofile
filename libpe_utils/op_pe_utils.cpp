@@ -413,8 +413,8 @@ static void _get_event_code(operf_event_t * event, op_cpu cpu_type)
 
 
 #if defined(__i386__) || defined(__x86_64__)
+	char mask[OP_MAX_UM_NAME_LEN];
 	// Setup EventSelct[11:8] field for AMD
-	char mask[12];
 	const char * vendor_AMD = "AuthenticAMD";
 	if (op_is_cpu_vendor((char *)vendor_AMD)) {
 		config = base_code & 0xF00ULL;
