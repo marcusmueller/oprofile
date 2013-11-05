@@ -836,23 +836,40 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts,
 		event.no_kernel = 0;
 		event.no_user = 0;
 		event.throttled = false;
+		event.mode_specified = false;
+		event.umask_specified = false;
 		memset(event.um_name, '\0', OP_MAX_UM_NAME_LEN);
+		memset(event.um_numeric_val_as_str, '\0', OP_MAX_UM_NAME_STR_LEN);
 		while ((info = strtok(NULL, ":"))) {
 			switch (place) {
 			case _OP_UM:
 				event.evt_um = strtoul(info, &endptr, 0);
+				event.umask_specified = true;
+
 				// If any of the UM part is not a number, then we
 				// consider the entire part a string.
 				if (*endptr) {
 					event.evt_um = 0;
 					strncpy(event.um_name, info, OP_MAX_UM_NAME_LEN - 1);
+				} else {
+					/* event.evt_um gets modified later,
+					 * save the specified number as a
+					 * string to output later.
+					 */
+					stringstream strs;
+					strs << "0x" << hex << event.evt_um;
+					strncpy(event.um_numeric_val_as_str,
+						(char *)strs.str().c_str(),
+                                                strs.str().length());
 				}
 				break;
 			case _OP_KERNEL:
+				event.mode_specified = true;
 				if (atoi(info) == 0)
 					event.no_kernel = 1;
 				break;
 			case _OP_USER:
+				event.mode_specified = true;
 				if (atoi(info) == 0)
 					event.no_user = 1;
 				break;

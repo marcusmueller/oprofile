@@ -177,9 +177,17 @@ exits after the specified number of intervals occur.
 .BI "--brief-format / -b"
 Use this option to print results in the following brief format:
 .br
-    [optional cpu or thread,]<event_name>,<count>,<percent_time_enabled>
+    [cpu or thread,]<event_name>[:umask[:K:U]],<count>,<percent_time_enabled>
 .br
-    [        <int>         ,]<  string  >,< u64 >,<     double         >
+    [    <u32>    ,]<  string  >[< u32>[<bb>]],<  u64 >,<     double        >
+
+The umask,
+.BR K ernel
+and
+.BR U ser
+modes are only printed if the values were specified as part of the event.
+The 'K' and 'U' fields are binary fields separated by colons, where the value for each binary
+field may be either '0' or '1'.
 .P
 .RS
 If

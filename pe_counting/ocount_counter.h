@@ -60,15 +60,22 @@ public:
 	int perf_event_open(pid_t pid, int cpu);
 	int get_cpu(void) { return cpu; }
 	pid_t get_pid(void) { return pid; }
-	const std::string get_event_name(void) const { return event_name; }
+	const std::string get_umask_value(void) const { return event.um_name; }
+	const std::string get_event_name(void) const { return event.name; }
+	std::string get_um_numeric_val_as_str(void)
+		{ return event.um_numeric_val_as_str; }
+	int get_no_user(void) const { return attr.exclude_user; }
+	int get_no_kernel(void) const { return attr.exclude_kernel; }
+	bool get_mode_specified(void) { return event.mode_specified; }
+	bool get_um_specified(void) { return event.umask_specified; }
 	int read_count_data(ocount_accum_t * accum);
 
 private:
+	operf_event_t event;
 	struct perf_event_attr attr;
 	int fd;
 	int cpu;
 	pid_t pid;
-	std::string event_name;
 };
 
 class ocount_record {
@@ -93,7 +100,8 @@ private:
 	int do_counting_per_task(void);
 	void output_short_results(std::ostream & out, bool use_separation, bool scaled);
 	void output_long_results(std::ostream & out, bool use_separation,
-                                 int longest_event_name, bool scaled, u64 time_enabled);
+                                 int longest_event_name,
+                                 bool scaled, u64 time_enabled);
 
 	enum op_runmode runmode;
 	bool tasks_are_threads;

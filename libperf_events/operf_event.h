@@ -22,6 +22,7 @@
 
 #define OP_MAX_EVT_NAME_LEN 64
 #define OP_MAX_UM_NAME_LEN 64
+#define OP_MAX_UM_NAME_STR_LEN 17
 #define OP_MAX_NUM_EVENTS 512
 
 struct ip_event {
@@ -133,6 +134,9 @@ typedef struct operf_event {
 	bool no_kernel;
 	bool no_user;
 	bool no_hv;
+	bool mode_specified; /* user specified user or kernel modes */
+	bool umask_specified; /* user specified a unit mask */
+	char um_numeric_val_as_str[OP_MAX_UM_NAME_STR_LEN];
 	bool throttled;  /* set to true if the event is ever throttled */
 } operf_event_t;
 

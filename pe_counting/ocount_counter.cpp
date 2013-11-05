@@ -34,6 +34,34 @@ extern char * app_name;
 
 using namespace std;
 
+static string print_mask_modes(bool mode_specified,bool um_specified,
+			       int no_kernel, int no_user,
+			       string um_numeric_as_str, string umask_value)
+{
+	ostringstream qualifier_string;
+
+	if (um_specified) {
+		if (umask_value.size() == 0)
+			umask_value = um_numeric_as_str;
+
+		qualifier_string << ":" << umask_value;
+	}
+
+	if (mode_specified) {
+		if (no_kernel)
+			qualifier_string << ":0";
+		else
+			qualifier_string << ":1";
+
+		if (no_user)
+			qualifier_string << ":0";
+		else
+			qualifier_string << ":1";
+
+	}
+
+	return qualifier_string.str();
+}
 
 ocount_counter::ocount_counter(operf_event_t & evt,  bool enable_on_exec,
                                bool inherit)
@@ -53,7 +81,7 @@ ocount_counter::ocount_counter(operf_event_t & evt,  bool enable_on_exec,
 	// when multiplexing has been done by the kernel.
 	attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED |
 			    PERF_FORMAT_TOTAL_TIME_RUNNING;
-	event_name = evt.name;
+	event = evt;
 	fd = cpu = pid = -1;
 }
 
@@ -351,13 +379,25 @@ void ocount_record::output_short_results(ostream & out, bool use_separation, boo
 		ostringstream count_str;
 		ocount_accum_t tmp_accum;
 		double fraction_time_running;
+		string qual_string;
+
 		if (use_separation) {
 			if (cpus_to_count.size()) {
 				out << perfCounters[num].get_cpu();
 			} else {
 				out << perfCounters[num].get_pid();
 			}
-			out << "," << perfCounters[num].get_event_name() << ",";
+			out << "," << perfCounters[num].get_event_name();
+
+			qual_string =
+			  print_mask_modes(perfCounters[num].get_mode_specified(),
+			                   perfCounters[num].get_um_specified(),
+			                   perfCounters[num].get_no_kernel(),
+			                   perfCounters[num].get_no_user(),
+			                   perfCounters[num].get_um_numeric_val_as_str(),
+			                   perfCounters[num].get_umask_value());
+			out << qual_string;
+			out  << ",";
 
 			errno = 0;
 			cverb << vdebug << "Reading counter data for event " << perfCounters[num].get_event_name() << endl;
@@ -377,7 +417,16 @@ void ocount_record::output_short_results(ostream & out, bool use_separation, boo
 		} else {
 			fraction_time_running = scaled ? (double)accum_counts[num].running_time/accum_counts[num].enabled_time : 1;
 			u64 scaled_count = accum_counts[num].count ? accum_counts[num].count/fraction_time_running : 0;
-			out << perfCounters[num].get_event_name() << "," << dec << scaled_count << ",";
+			out << perfCounters[num].get_event_name();
+
+			qual_string = print_mask_modes(perfCounters[num].get_mode_specified(),
+			                               perfCounters[num].get_um_specified(),
+			                               perfCounters[num].get_no_kernel(),
+			                               perfCounters[num].get_no_user(),
+			                               perfCounters[num].get_um_numeric_val_as_str(),
+			                               perfCounters[num].get_umask_value());
+			out << qual_string;
+			out << "," << dec << scaled_count << ",";
 		}
 		ostringstream strm_tmp;
 		if (use_separation) {
@@ -403,10 +452,13 @@ void ocount_record::output_short_results(ostream & out, bool use_separation, boo
 }
 
 void ocount_record::output_long_results(ostream & out, bool use_separation,
-                                        int longest_event_name, bool scaled, u64 time_enabled)
+                                        int evt_name_col_size, bool scaled,
+                                        u64 time_enabled)
 {
 #define COUNT_COLUMN_WIDTH 25
 #define SEPARATION_ELEMENT_COLUMN_WIDTH 10
+#define MIN_NAME_COLUMN_SPACING 8
+
 	char space_padding[64], temp[64];
 	char const * cpu, * task, * scaling;
 	u64 num_seconds_enabled = time_enabled/1000000000;
@@ -415,9 +467,16 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 	task = "Task ID";
 	scaling = scaled ? "(scaled) " : "(actual) ";
 
-	// We put 8 spaces between the end of the event name and beginning of the second column
-	unsigned int begin_second_col = longest_event_name + 8;
-	unsigned int num_pads = begin_second_col - strlen("Event");
+	unsigned int begin_second_col;
+	unsigned int num_pads;
+	ostringstream debug_string;
+
+	/* Need to account for any events that will be printing user/kernel
+	 * mode or unit mask names when setting up the columns of the data.
+	 */
+	begin_second_col = evt_name_col_size + MIN_NAME_COLUMN_SPACING;
+	num_pads = begin_second_col - strlen("Event");
+
 	memset(space_padding, ' ', 64);
 	strncpy(temp, space_padding, num_pads);
 	temp[num_pads] = '\0';
@@ -492,8 +551,19 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 	size_t num_iterations = use_separation ? perfCounters.size() : evts.size();
 	for (size_t num = 0; num < num_iterations; num++) {
 		double fraction_time_running;
-                out << "\t" << perfCounters[num].get_event_name();
-		num_pads = begin_second_col - perfCounters[num].get_event_name().length();
+		string qual_string;
+
+		out << "\t" << perfCounters[num].get_event_name();
+		qual_string = print_mask_modes(perfCounters[num].get_mode_specified(),
+		                               perfCounters[num].get_um_specified(),
+		                               perfCounters[num].get_no_kernel(),
+		                               perfCounters[num].get_no_user(),
+		                               perfCounters[num].get_um_numeric_val_as_str(),
+		                               perfCounters[num].get_umask_value());
+		out << qual_string;
+		num_pads = begin_second_col - qual_string.size()
+			- perfCounters[num].get_event_name().size();
+
 		strncpy(temp, space_padding, num_pads);
 		temp[num_pads] = '\0';
 		out << temp;
@@ -571,13 +641,33 @@ void ocount_record::output_long_results(ostream & out, bool use_separation,
 
 void ocount_record::output_results(ostream & out, bool use_separation, bool short_format)
 {
-	size_t longest_event_name = 0;
+#define MODE_FIELD_SIZE  3    /* space for :KU in the output */
+
+	size_t evt_name_col_size = 0;
 	u64 time_enabled = 0ULL;
 	bool scaled = false;
+	bool mode_specified = false;
 
 	for (unsigned long evt_num = 0; evt_num < evts.size(); evt_num++) {
-		if (strlen(evts[evt_num].name) > longest_event_name)
-			longest_event_name = strlen(evts[evt_num].name);
+		unsigned int length = 0;
+
+		/* calculate the longest name + unit mask + mode specifier */
+		length = strlen(evts[evt_num].um_name) +
+		  strlen(evts[evt_num].name) + 1; /* for colon */
+
+		if ((strlen(evts[evt_num].um_numeric_val_as_str)
+		     + strlen(evts[evt_num].name)) > length)
+			length = strlen(evts[evt_num].um_numeric_val_as_str) +
+			  strlen(evts[evt_num].name) + 1;  /* for colon */
+
+		if (evts[evt_num].mode_specified)
+			length += MODE_FIELD_SIZE;
+
+		if (length > evt_name_col_size)
+			evt_name_col_size = length;
+
+		mode_specified = mode_specified ||
+			evts[evt_num].mode_specified;
 	}
 
 	if (with_time_interval) {
@@ -633,7 +723,8 @@ void ocount_record::output_results(ostream & out, bool use_separation, bool shor
 	if (short_format)
 		output_short_results(out, use_separation, scaled);
 	else
-		output_long_results(out, use_separation, longest_event_name, scaled, time_enabled);
+		output_long_results(out, use_separation, evt_name_col_size,
+				    scaled, time_enabled);
 }
 
 int ocount_record::_get_one_process_info(pid_t pid)
