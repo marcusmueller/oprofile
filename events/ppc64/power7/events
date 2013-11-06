@@ -2121,3 +2121,13 @@ event:0X1072 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP263 : (Group 
 event:0X1073 counters:3 um:zero minimum:1000 name:PM_MRK_LSU_FIN_GRP263 : (Group 263 pm_mrk_misc8) One of the Load/Store Units finished a marked instruction. Instructions that finish may not necessary complete
 event:0X1074 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP263 : (Group 263 pm_mrk_misc8) Number of run instructions completed.
 event:0X1075 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP263 : (Group 263 pm_mrk_misc8) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
+
+#Group 264 pm_gct_noslot, GCT no slot events
+###### DO NOT REMOVE ######
+# Manually added group
+event:0X1080 counters:0 um:zero minimum:1000 name:PM_GCT_NOSLOT_CYC_EDGE_COUNT_GRP264 : (Group 264 pm_gct_noslot) Number of distinct occurrences when the Global Completion Table has no slots from this thread.
+event:0X1081 counters:1 um:zero minimum:1000 name:PM_GCT_EMPTY_CYC_GRP264 : (Group 264 pm_gct_noslot) Cycles when the Global Completion Table was completely empty.  No thread had an entry allocated.
+event:0X1082 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP264 : (Group 264 pm_gct_noslot) Number of PowerPC Instructions that completed.
+event:0X1081 counters:1 um:zero minimum:10000 name:PM_CYC_GRP264 : (Group 264 pm_gct_noslot) Processor Cycles
+event:0X1084 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP264 : (Group 264 pm_gct_noslot) Number of run instructions completed.
+event:0X1085 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP264 : (Group 264 pm_gct_noslot) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.

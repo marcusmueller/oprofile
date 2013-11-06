@@ -630,6 +630,7 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 {
 	unsigned int num_events = evt_vec->size();
 	int tmp_code, ret;
+	bool edge_detect = false;
 	char evt_name[OP_MAX_EVT_NAME_LEN];
 	unsigned int events_converted = 0;
 	for (unsigned int i = 0; i < num_events; i++) {
@@ -647,6 +648,25 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 		} else {
 			strncpy(evt_name, event.name, strlen(event.name));
 		}
+
+		/* Events where the "_EDGE_COUNT" suffix has been appended to a
+		 * real native event name are pseudo events (events that have
+		 * not been formally defined in processor documentation), where
+		 * we wish to detect the rising edge of the real native event.
+		 * This "edge detection" technique is useful for events that normally
+		 * count the number of cycles that a particular condition is true.
+		 * Since libpfm does not know about pseudo events, we need to
+		 * convert them to their real native event equivalent, and then
+		 * set the "edge detect" bit (the LSB) in the event code.
+		 */
+		string evt = evt_name;
+		size_t edge_suffix_pos = evt.rfind("_EDGE_COUNT");
+		if (edge_suffix_pos != string::npos) {
+			evt = evt.substr(0, edge_suffix_pos);
+			strncpy(evt_name, evt.c_str(), evt.length() + 1);
+			edge_detect = true;
+		}
+
 		if (strncmp(name, evt_name, OP_MAX_EVT_NAME_LEN))
 			continue;
 		ret = pfm_get_event_code(pfm_idx, &tmp_code);
@@ -657,10 +677,13 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 			throw runtime_error(msg);
 		}
 		event.evt_code = tmp_code;
+		// Setting LSB of code makes this a "rising edge detection" type of event
+		if (edge_detect)
+			event.evt_code |= 1;
 		(*evt_vec)[i] = event;
 		events_converted++;
 		cverb << vdebug << "Successfully converted " << event.name << " to perf_event code "
-		      << hex << tmp_code << endl;
+		      << hex << event.evt_code << endl;
 	}
 	return (events_converted == num_events);
 }
@@ -669,6 +692,7 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 {
 	int ret, i;
 	unsigned int num_events = evt_vec->size();
+	bool edge_detect = false;
 	char evt_name[OP_MAX_EVT_NAME_LEN];
 	unsigned int events_converted = 0;
 	u64 code[1];
@@ -705,6 +729,24 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 			strncpy(evt_name, event.name, strlen(event.name));
 		}
 
+		/* Events where the "_EDGE_COUNT" suffix has been appended to a
+		 * real native event name are pseudo events (events that have
+		 * not been formally defined in processor documentation), where
+		 * we wish to detect the rising edge of the real native event.
+		 * This "edge detection" technique is useful for events that normally
+		 * count the number of cycles that a particular condition is true.
+		 * Since libpfm does not know about pseudo events, we need to
+		 * convert them to their real native event equivalent, and then
+		 * set the "edge detect" bit (the LSB) in the event code.
+		 */
+		string evt = evt_name;
+		size_t edge_suffix_pos = evt.rfind("_EDGE_COUNT");
+		if (edge_suffix_pos != string::npos) {
+			evt = evt.substr(0, edge_suffix_pos);
+			strncpy(evt_name, evt.c_str(), evt.length() + 1);
+			edge_detect = true;
+		}
+
 		memset(&raw, 0, sizeof(raw));
 		ret = pfm_get_os_event_encoding(evt_name, PFM_PLM3, PFM_OS_NONE, &raw);
 		if (ret != PFM_SUCCESS) {
@@ -713,8 +755,10 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 					"; cannot continue";
 			throw runtime_error(msg);
 		}
-
 		event.evt_code = raw.codes[0];
+		// Setting LSB of code makes this a "rising edge detection" type of event
+		if (edge_detect)
+			event.evt_code |= 1;
 		(*evt_vec)[i] = event;
 		events_converted++;
 		cverb << vdebug << "Successfully converted " << event.name << " to perf_event code "
