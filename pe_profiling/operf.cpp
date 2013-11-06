@@ -108,7 +108,7 @@ string vmlinux;
 bool separate_cpu;
 bool separate_thread;
 bool post_conversion;
-vector<string> evts;
+set<string> evts;
 }
 
 static const char * valid_verbose_vals[] = { "debug", "record", "convert", "misc", "sfile", "arcs", "all"};
@@ -1187,7 +1187,7 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 		case 'e':
 			event = strtok(optarg, ",");
 			do {
-				operf_options::evts.push_back(event);
+				operf_options::evts.insert(event);
 			} while ((event = strtok(NULL, ",")));
 			break;
 		case 'c':

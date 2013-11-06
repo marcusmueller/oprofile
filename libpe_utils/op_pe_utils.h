@@ -41,7 +41,7 @@ extern int op_get_sys_value(const char * filename);
 extern int op_get_cpu_for_perf_events_cap(void);
 extern int op_validate_app_name(char ** app, char ** save_appname);
 extern void op_get_default_event(bool do_callgraph);
-extern void op_process_events_list(std::vector<std::string> & passed_evts,
+extern void op_process_events_list(std::set<std::string> & passed_evts,
                                    bool do_profiling, bool do_callgraph);
 extern int op_get_next_online_cpu(DIR * dir, struct dirent *entry);
 extern std::set<int> op_get_available_cpus(int max_num_cpus);

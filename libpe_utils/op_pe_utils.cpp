@@ -770,7 +770,7 @@ static bool convert_event_vals(vector<operf_event_t> * evt_vec)
 
 
 
-void op_pe_utils::op_process_events_list(vector<string> & passed_evts,
+void op_pe_utils::op_process_events_list(set<string> & passed_evts,
                                          bool do_profiling, bool do_callgraph)
 {
 	string cmd = OP_BINDIR;
@@ -783,10 +783,10 @@ void op_pe_utils::op_process_events_list(vector<string> & passed_evts,
 	cmd += "/ophelp --check-events ";
 	if (!do_profiling)
 		cmd += "--ignore-count ";
-	for (unsigned int i = 0; i <  passed_evts.size(); i++) {
+	for (set<string>::iterator it = passed_evts.begin(); it != passed_evts.end(); it++) {
 		FILE * fp;
 		string full_cmd = cmd;
-		string event_spec = passed_evts[i];
+		string event_spec = *it;
 
 #if PPC64_ARCH
 		// Starting with CPU_PPC64_ARCH_V1, ppc64 events files are formatted like

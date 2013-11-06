@@ -75,7 +75,7 @@ vector<int> cpus;
 string outfile;
 bool separate_cpu;
 bool separate_thread;
-vector<string> evts;
+set<string> evts;
 bool csv_output;
 long display_interval;
 long num_intervals;
@@ -549,7 +549,7 @@ static int _process_ocount_and_app_args(int argc, char * const argv[])
 		case 'e':
 			event = strtok(optarg, ",");
 			do {
-				ocount_options::evts.push_back(event);
+				ocount_options::evts.insert(event);
 			} while ((event = strtok(NULL, ",")));
 			break;
 		case 'f':
