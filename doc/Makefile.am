@@ -26,7 +26,7 @@ man_MANS += operf.1 \
 endif
 
 htmldir = $(prefix)/share/doc/oprofile
-dist_html_DATA = oprofile.html internals.html opreport.xsd op-jit-devel.html
+dist_html_DATA = oprofile.html internals.html opreport.xsd ophelp.xsd op-jit-devel.html
 
 if have_xsltproc
 
