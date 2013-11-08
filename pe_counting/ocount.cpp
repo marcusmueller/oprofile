@@ -300,7 +300,7 @@ static void do_results(ostream & out)
 	try {
 		orecord->output_results(out, ocount_options::separate_cpu | ocount_options::separate_thread,
 		                        ocount_options::csv_output);
-	} catch (runtime_error e) {
+	} catch (const runtime_error & e) {
 		cerr << "Caught runtime error from ocount_record::output_results" << endl;
 		cerr << e.what() << endl;
 		cleanup();
@@ -397,7 +397,7 @@ static end_code_t _run(ostream & out)
 		if (!start_counting()) {
 			return PERF_RECORD_ERROR;
 		}
-	} catch (runtime_error e) {
+	} catch (const runtime_error & e) {
 		cerr << "Caught runtime error while setting up counters" << endl;
 		cerr << e.what() << endl;
 		cleanup();
@@ -772,7 +772,7 @@ int main(int argc, char * const argv[])
 	cpu_speed = op_cpu_frequency();
 	try {
 		process_args(argc, argv);
-	} catch (runtime_error e) {
+	} catch (const runtime_error & e) {
 		cerr << "Caught runtime error while processing args" << endl;
 		cerr << e.what() << endl;
 		cleanup();

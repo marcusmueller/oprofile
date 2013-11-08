@@ -40,7 +40,6 @@
 
 extern verbose vmisc;
 extern volatile bool quit;
-extern volatile bool read_quit;
 extern operf_read operfRead;
 extern int sample_reads;
 extern unsigned int pagesize;

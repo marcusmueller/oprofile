@@ -369,7 +369,7 @@ int start_profiling(void)
 			operfRecord.recordPerfData();
 			cverb << vdebug << "Total bytes recorded from perf events: " << dec
 					<< operfRecord.get_total_bytes_recorded() << endl;
-		} catch (runtime_error re) {
+		} catch (const runtime_error & re) {
 			/* If the user does ctl-c, the operf-record process may get interrupted
 			 * in a system call, causing problems with writes to the sample data pipe.
 			 * So we'll ignore such errors unless the user requests debug info.
@@ -925,7 +925,7 @@ static void convert_sample_data(void)
 		try {
 			unsigned int num = operfRead.convertPerfData();
 			cverb << vdebug << "operf_read: Total bytes received from operf_record process: " << dec << num << endl;
-		} catch (runtime_error e) {
+		} catch (const runtime_error & e) {
 			cerr << "Caught runtime error from operf_read::convertPerfData" << endl;
 			cerr << e.what() << endl;
 			rc = EXIT_FAILURE;

@@ -145,6 +145,8 @@ ocount_record::ocount_record(enum op_runmode _runmode, std::vector<operf_event_t
 	tasks_are_threads = false;
 	num_cpus = 0;
 	app_pid = -1;
+	start_time = 0ULL;
+	total_bytes_recorded = 0;
 }
 
 bool ocount_record::start_counting_app_process(pid_t _pid)
