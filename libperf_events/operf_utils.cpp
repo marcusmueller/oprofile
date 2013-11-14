@@ -431,13 +431,15 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		trans.sample_id = data->id;
 		retval = &trans;
 	} else {
-		if ((cverb << vconvert) && !first_time_processing) {
-			string domain = trans.in_kernel ? "kernel" : "userspace";
-			ostringstream message;
-			message << "Discarding " << domain << " sample for process " << data->pid
-			        << " where no appropriate mapping was found. (pc=0x"
-			        << hex << data->ip <<")" << endl;
-			cout << message.str();
+		if (!first_time_processing) {
+			if (cverb << vconvert) {
+				string domain = trans.in_kernel ? "kernel" : "userspace";
+				ostringstream message;
+				message << "Discarding " << domain << " sample for process " << data->pid
+						<< " where no appropriate mapping was found. (pc=0x"
+						<< hex << data->ip <<")" << endl;
+				cout << message.str();
+			}
 			operf_stats[OPERF_LOST_NO_MAPPING]++;
 		}
 		retval = NULL;
@@ -478,7 +480,7 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 					update_trans_last(&trans);
 				}
 			} else {
-				if (data->ip)
+				if (data->ip && !first_time_processing)
 					operf_stats[OPERF_BT_LOST_NO_MAPPING]++;
 			}
 		}
