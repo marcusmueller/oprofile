@@ -110,9 +110,11 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled,
 		_write_stats_file(stats_dir + "/" + stats_filenames[OPERF_SAMPLES], operf_stats[OPERF_SAMPLES]);
 
 	if (total_lost_samples > (int)(OPERF_WARN_LOST_SAMPLES_THRESHOLD
-				       * operf_stats[OPERF_SAMPLES]))
+				       * operf_stats[OPERF_SAMPLES])) {
 		fprintf(stderr, "\nWARNING: Lost samples detected! See %s for details.\n", operf_log.c_str());
-
+		fprintf(stderr, "Lowering the sampling rate may reduce or eliminate lost samples.\n");
+		fprintf(stderr, "See the '--events' option description in the operf man page for help.\n");
+	}
 	fflush(fp);
 	fclose(fp);
 };

@@ -97,7 +97,15 @@ This option is for passing a comma-separated list of event specifications
 for profiling. Each event spec is of the form:
 .br
 .I "   name:count[:unitmask[:kernel[:user]]]"
-.br
+.P
+.RS
+The
+.I count
+value is used to control the sampling rate for profiling; it is the number
+of events to occur between samples. The rate is lowered by specifying a higher
+.I count
+value -- i.e., a higher number of events to occur between samples.
+.P
 You can specify unit mask values using either a numerical value (hex values
 .I must
 begin with "0x") or a symbolic name (if the
@@ -107,7 +115,6 @@ field is shown in the
 output). For some named unit masks, the hex value is not unique; thus, OProfile
 tools enforce specifying such unit masks value by name.
 .P
-.RS
 Event names for some IBM PowerPC systems include a
 .I _GRP<n>
 (group number) suffix. You can pass either the full event name or the base event name
