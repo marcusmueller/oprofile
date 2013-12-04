@@ -104,7 +104,7 @@ The
 value is used to control the sampling rate for profiling; it is the number
 of events to occur between samples. The rate is lowered by specifying a higher
 .I count
-value -- i.e., a higher number of events to occur between samples.
+value \(em i.e., a higher number of events to occur between samples.
 .P
 You can specify unit mask values using either a numerical value (hex values
 .I must
@@ -114,6 +114,22 @@ field is shown in the
 .B ophelp
 output). For some named unit masks, the hex value is not unique; thus, OProfile
 tools enforce specifying such unit masks value by name.
+If no unit mask is specified, the default unit mask value for the event is used.
+.P
+The
+.I kernel
+and
+.I user
+parts of the event specification are binary values ('1' or '0') indicating
+whether or not to collect samples for kernel space and user space.
+.br
+.B Note:
+In order to specify the
+.I kernel/user
+bits, you must also specify a
+.I unitmask
+value, even if the running processor type does not use unit masks \(em
+in which case, use the value '0' to signify a null unit mask.
 .P
 Event names for some IBM PowerPC systems include a
 .I _GRP<n>
