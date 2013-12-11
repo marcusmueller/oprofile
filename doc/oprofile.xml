@@ -817,8 +817,11 @@ Following is a description of the <command>operf</command> options.
 		A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
 		Kernel samples will be attributed to this binary, allowing post-processing tools
 		(like <command>opreport</command>) to attribute samples to the appropriate kernel symbols.
-		If this option is not specified, all kernel samples will be attributed to a pseudo
-		binary named "no-vmlinux".
+		If this option is not specified, the file /proc/kallsyms is used to obtain
+		kernel symbol addresses correponding to sample addresses.  However, the setting of
+		/proc/sys/kernel/kptr_restrict may restrict a non-root user's access to
+		/proc/kallsyms, in which case,
+		all kernel samples are attributed to a pseudo binary named "no-vmlinux".
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

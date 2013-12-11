@@ -36,6 +36,7 @@
 #include "op_fileio.h"
 #include "op_libiberty.h"
 #include "operf_stats.h"
+#include "utility.h"
 
 
 extern verbose vmisc;
@@ -1210,6 +1211,14 @@ static void _record_module_info(int output_fd, operf_record * pr)
 			continue;
 		}
 
+		if (start_address == 0) {
+			cerr << "Unable to obtain module information. Set "
+			     << "/proc/sys/kernel/kptr_restrict to 0 to "
+			     << "collect kernel module samples." << endl;
+			fclose(fp);
+			return;
+		}
+
 		mmap.header.type = PERF_RECORD_MMAP;
 		mmap.header.misc = PERF_RECORD_MISC_KERNEL;
 		size = strlen(module_name) + 1;
@@ -1242,10 +1251,21 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 	mmap.header.type = PERF_RECORD_MMAP;
 	mmap.header.misc = PERF_RECORD_MISC_KERNEL;
 	if (vmlinux_file.empty()) {
-		size = strlen( "no_vmlinux") + 1;
-		strncpy(mmap.filename, "no-vmlinux", size);
-		mmap.start = 0ULL;
-		mmap.len = 0ULL;
+		if ((start_addr == 0) && (end_addr == 0)) {
+			/* Did not have permission to read
+			 * /proc/kallsyms and no vmlinux file
+			 */
+			size = strlen( "no_vmlinux") + 1;
+			strncpy(mmap.filename, "no-vmlinux", size);
+			mmap.start = 0ULL;
+			mmap.len = 0ULL;
+		} else {
+			size = sizeof(KALL_SYM_FILE) + 1;
+			strncpy(mmap.filename, KALL_SYM_FILE, size);
+			mmap.start = start_addr;
+			mmap.len = end_addr - mmap.start;
+		}
+
 	} else {
 		size = vmlinux_file.length() + 1;
 		strncpy(mmap.filename, vmlinux_file.c_str(), size);
@@ -1265,7 +1285,9 @@ void OP_perf_utils::op_record_kernel_info(string vmlinux_file, u64 start_addr, u
 		cout << message.str();
 	}
 	pr->add_to_total(num);
-	_record_module_info(output_fd, pr);
+
+	if (start_addr && end_addr)
+		_record_module_info(output_fd, pr);
 }
 
 void OP_perf_utils::op_get_kernel_event_data(struct mmap_data *md, operf_record * pr)

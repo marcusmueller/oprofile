@@ -14,6 +14,8 @@
 
 #include <cstddef>
 
+#define KALL_SYM_FILE "/proc/kallsyms"
+
 /** noncopyable : object of class derived from this class can't be copied
  * and isn't copy-constructible */
 class noncopyable {

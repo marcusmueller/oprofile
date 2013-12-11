@@ -21,6 +21,8 @@
 #include "populate_for_spu.h"
 
 #include "image_errors.h"
+#include "utility.h"
+#include <string.h>
 
 #include <iostream>
 
@@ -59,6 +61,8 @@ void
 populate_for_image(profile_container & samples, inverted_profile const & ip,
 	string_filter const & symbol_filter, bool * has_debug_info)
 {
+	op_bfd *abfd;
+
 	if (is_spu_profile(ip)) {
 		populate_for_spu_image(samples, ip, symbol_filter,
 				       has_debug_info);
@@ -66,8 +70,14 @@ populate_for_image(profile_container & samples, inverted_profile const & ip,
 	}
 
 	bool ok = ip.error == image_ok;
-	op_bfd abfd(ip.image, symbol_filter,
-		    samples.extra_found_images, ok);
+
+	if (strncmp(ip.image.c_str(), KALL_SYM_FILE, strlen(ip.image.c_str())) == 0)
+		abfd = new op_bfd(ip.image, samples.extra_found_images);
+
+	else
+		abfd = new op_bfd(ip.image, symbol_filter,
+				  samples.extra_found_images, ok);
+
 	if (!ok && ip.error == image_ok)
 		ip.error = image_format_failure;
 
@@ -89,9 +99,9 @@ populate_for_image(profile_container & samples, inverted_profile const & ip,
 		// to the wrong app_image otherwise
 		for (; it != end; ++it) {
 			profile_t profile;
-			if (populate_from_files(profile, abfd, it->files)) {
+			if (populate_from_files(profile, *abfd, it->files)) {
 				header = profile.get_header();
-				samples.add(profile, abfd, it->app_image, i);
+				samples.add(profile, *abfd, it->app_image, i);
 				found = true;
 			}
 		}
@@ -106,5 +116,7 @@ populate_for_image(profile_container & samples, inverted_profile const & ip,
 	}
 
 	if (has_debug_info)
-		*has_debug_info = abfd.has_debug_info();
+		*has_debug_info = abfd->has_debug_info();
+
+	delete abfd;
 }

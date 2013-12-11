@@ -120,6 +120,13 @@ public:
 	       extra_images const & extra_images,
 	       bool & ok);
 
+	/**
+	 * This constructor is used when the /proc/kallsyms file is used
+	 * to get the kernel symbols.
+	 */
+	op_bfd(std::string const & filename,
+	       extra_images const & extra_images);
+
 	std::string get_embedding_filename() const { return embedding_filename; }
 
 	/// close an opened bfd image and free all related resources
@@ -228,6 +235,9 @@ private:
 	 * with op_bfd_symbol::operator<() comparator.
 	 */
 	void get_symbols(symbols_found_t & symbols);
+
+	/* functions for reading kallsyms */
+	void get_kallsym_symbols(symbols_found_t & symbols, std::ifstream& infile);
 
 	/**
 	 * Helper function for get_symbols.

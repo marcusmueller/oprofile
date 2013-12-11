@@ -34,6 +34,7 @@
 #include "format_output.h"
 #include "xml_utils.h"
 #include "cverb.h"
+#include "utility.h"
 
 using namespace std;
 
@@ -88,6 +89,13 @@ bool is_jit_sample(string const & filename)
 void check_mtime(string const & file, opd_header const & header)
 {
 	u64 newmtime = op_get_mtime(file.c_str());
+
+	if (strncmp(file.c_str(), KALL_SYM_FILE, strlen(file.c_str())) == 0)
+		/* The /proc/kallsyms file isn't a real file.  It
+		 * is generated when read.  The time comparison doesn't
+		 * really apply here as we are not using a real bfd file.
+		 */
+		return;
 
 	if (newmtime == header.mtime)
 		return;

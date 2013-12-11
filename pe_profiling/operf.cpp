@@ -49,6 +49,7 @@
 #include "op_get_time.h"
 #include "operf_stats.h"
 #include "op_netburst.h"
+#include "utility.h"
 
 using namespace std;
 using namespace op_pe_utils;
@@ -79,6 +80,8 @@ std::vector<operf_event_t> events;
 
 
 #define DEFAULT_OPERF_OUTFILE "operf.data"
+#define KERN_ADDR_SPACE_START_SYMBOL  "_text"
+#define KERN_ADDR_SPACE_END_SYMBOL    "_etext"
 
 static char * app_name_SAVE = NULL;
 static char ** app_args = NULL;
@@ -1046,6 +1049,107 @@ bool _get_vmlinux_address_info(vector<string> args, string cmp_val, string &str)
 	return found;
 }
 
+static bool _add_kernel_entry(string start_addr_str, string end_addr_str, string image_name)
+{
+	string str, start_end;
+	unsigned long long start_addr, end_addr;
+
+	errno = 0;
+	start_addr = strtoull(start_addr_str.c_str(), NULL, 16);
+	if (errno) {
+		cerr << "Unable to convert kallsyms start address " << start_addr_str
+		     << " to a valid hex value. errno is " << strerror(errno) << endl;
+		return false;
+	}
+
+	errno = 0;
+	end_addr =  strtoull(end_addr_str.c_str(), NULL, 16);
+	if (errno) {
+		cerr << "Unable to convert kallsyms end address " << end_addr_str
+		     << " to a valid hex value. errno is " << strerror(errno) << endl;
+		return false;
+	}
+
+	if ((start_addr == 0) || (end_addr == 0)) {
+		no_vmlinux = true;
+		cerr << "Kernel profiling is not possible with current system "
+		     << "config." << endl
+		     << "Set /proc/sys/kernel/kptr_restrict to 0 to "
+		     << "collect kernel samples." << endl;
+		return false;
+	}
+
+	/* Do not assign kernel_start and kernel_end until the addresses
+	 * have been validated.
+	 */
+	kernel_start = start_addr;
+	kernel_end = end_addr;
+
+	start_end = start_addr_str;
+	start_end.append(",");
+	start_end.append(end_addr_str);
+
+	no_vmlinux = false;  // set to false or the operf_get_vmlinux_name() returns "no-vmlinux"
+	operf_create_vmlinux(image_name.c_str(), start_end.c_str());
+	return true;
+}
+
+static bool _process_kallsyms(void)
+{
+	ifstream  infile;
+	string start_addr_str, end_addr_str;
+	string address_str;
+	string str, start_end;
+	std::string line;
+	stringstream iss;
+	string name;
+	string kall_syms_file = KALL_SYM_FILE;
+	char type;
+	int rtn = false;
+
+	infile.open(kall_syms_file.c_str());
+	if (!infile) {
+		cerr << "Internal Error: Could not open kallsyms file." << endl;
+		return false;
+	}
+
+	start_addr_str.clear();
+	end_addr_str.clear();
+
+	/* get the start and end  address of the kernel address range */
+	while ( !infile.eof() ) {
+		getline(infile, line);
+		iss.clear();
+		iss << line;
+		address_str.clear();
+
+		iss >> address_str;
+		iss >> type;
+		iss >> name;
+
+		if (strncmp(name.c_str(), KERN_ADDR_SPACE_START_SYMBOL,
+			    strlen(name.c_str())) == 0) {
+			/* found the symbol for the start of the kernel
+			 * address space.
+			*/
+			start_addr_str.assign(address_str);
+		}
+
+		if (strncmp(name.c_str(), KERN_ADDR_SPACE_END_SYMBOL,
+			    strlen(name.c_str())) == 0) {
+			/* found the symbol for the end of the kernel
+			 * address space.
+			 */
+			end_addr_str.assign(address_str);
+			rtn = _add_kernel_entry(start_addr_str,
+						  end_addr_str, KALL_SYM_FILE);
+			break;
+		}
+	}
+	infile.close();
+	return rtn;
+}
+
 string _process_vmlinux(string vmlinux_file)
 {
 	vector<string> args;
@@ -1280,8 +1384,14 @@ static void process_args(int argc, char * const argv[])
 	op_nr_events = events.size();
 
 	if (operf_options::vmlinux.empty()) {
-		no_vmlinux = true;
-		operf_create_vmlinux(NULL, NULL);
+		/* get the begining and end of the kernel addr space */
+		if (!_process_kallsyms()) {
+			/* Do not have permission to read
+			 * kernel addresses from /proc/kallsyms.
+			 */
+			no_vmlinux = true;
+			operf_create_vmlinux(NULL, NULL);
+		}
 	} else {
 		string startEnd = _process_vmlinux(operf_options::vmlinux);
 		operf_create_vmlinux(operf_options::vmlinux.c_str(), startEnd.c_str());

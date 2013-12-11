@@ -88,9 +88,15 @@ storing sample data files in locations accessible by regular users.
 .br
 .TP
 .BI "--vmlinux / k " vmlinux_path
+.RS
 A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
 Kernel samples will be attributed to this binary, allowing post-processing tools
 (like opreport) to attribute samples to the appropriate kernel symbols.
+.P
+The kernel symbol information may be obtained from /proc/kallsyms if
+the user does not specify a vmlinux file.  The symbol addresses are given
+in /proc/kallsyms if permitted by the setting of /proc/sys/kernel/kptr_restrict.
+.RE
 .TP
 .BI "--events / -e " event1[,event2[,...]]
 This option is for passing a comma-separated list of event specifications
@@ -141,7 +147,7 @@ If the base event name is passed,
 will automatically choose an appropriate group number suffix
 for the event; thus, OProfile post-processing tools will always show real event
 names that include the group number suffix.
-.P
+.Po
 When no event specification is given, the default event for the running
 processor type will be used for profiling.
 Use
