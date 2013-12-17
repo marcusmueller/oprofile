@@ -29,6 +29,8 @@
 #include "op_bfd.h"
 #include "op_sample_file.h"
 #include "locate_images.h"
+#include "utility.h"
+#include <string.h>
 
 using namespace std;
 
@@ -449,6 +451,8 @@ void callgraph_container::populate(list<string> const & cg_files,
 	list<string>::const_iterator const end = cg_files.end();
 	for (it = cg_files.begin(); it != end; ++it) {
 		cverb << vdebug << "samples file : " << *it << endl;
+		op_bfd *caller_bfd;
+		op_bfd *callee_bfd;
 
 		parsed_filename caller_file =
 			parse_filename(*it, extra_found_images);
@@ -463,8 +467,15 @@ void callgraph_container::populate(list<string> const & cg_files,
 					   error, false, extra_found_images);
 
 		bool caller_bfd_ok = true;
-		op_bfd caller_bfd(caller_file.lib_image,
-			string_filter(), extra_found_images, caller_bfd_ok);
+
+		if (strncmp(caller_file.lib_image.c_str(), KALL_SYM_FILE,
+			    strlen(caller_file.lib_image.c_str())) == 0)
+			caller_bfd = new op_bfd(caller_file.lib_image, extra_found_images);
+
+		else
+			caller_bfd = new op_bfd(caller_file.lib_image, string_filter(),
+						extra_found_images, caller_bfd_ok);
+
 		if (!caller_bfd_ok)
 			report_image_error(caller_file.lib_image,
 			                   image_format_failure, false,
@@ -480,8 +491,14 @@ void callgraph_container::populate(list<string> const & cg_files,
 					   error, false, extra_found_images);
 
 		bool callee_bfd_ok = true;
-		op_bfd callee_bfd(callee_file.cg_image,
-			string_filter(), extra_found_images, callee_bfd_ok);
+		if (strncmp(callee_file.cg_image.c_str(), KALL_SYM_FILE,
+			    strlen(callee_file.lib_image.c_str())) == 0)
+			callee_bfd = new op_bfd(callee_file.cg_image, extra_found_images);
+
+		else
+			callee_bfd = new op_bfd(callee_file.cg_image, string_filter(),
+						extra_found_images, callee_bfd_ok);
+
 		if (!callee_bfd_ok)
 			report_image_error(callee_file.cg_image,
 		                           image_format_failure, false,
@@ -491,9 +508,13 @@ void callgraph_container::populate(list<string> const & cg_files,
 		// We can't use start_offset support in profile_t, give
 		// it a zero offset and we will fix that in add()
 		profile.add_sample_file(*it);
-		add(profile, caller_bfd, caller_bfd_ok, callee_bfd,
+
+		add(profile, *caller_bfd, caller_bfd_ok, *callee_bfd,
 		    merge_lib ? app_image : app_name, pc,
 		    debug_info, pclass);
+
+		delete caller_bfd;
+		delete callee_bfd;
 	}
 }
 

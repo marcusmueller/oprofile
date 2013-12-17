@@ -193,7 +193,7 @@ out_fail:
 op_bfd::~op_bfd()
 {
 	if (ibfd.abfd == (bfd * ) 1)
-		/* Kallsyms setup a fake ibfd file.  Set to NULL
+		/* Kallsyms setup a pseudo ibfd file.  Set to NULL
 		 * to prevent a segmentation fault.
 		 */
 		ibfd.abfd = (bfd * ) NULL;
@@ -465,7 +465,7 @@ bool op_bfd::has_debug_info() const
 	if (debug_info.cached())
 		return debug_info.get();
 
-	if (!ibfd.valid())
+	if (ibfd.is_pseudo_bfd() || !ibfd.valid())
 		return debug_info.reset(false);
 
 	if (ibfd.has_debug_info())

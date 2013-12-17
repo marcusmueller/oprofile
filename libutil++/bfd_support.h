@@ -36,6 +36,13 @@ struct bfd_info {
 	/// return true if BFD is readable
 	bool valid() const { return abfd; }
 
+	/* return true if the BFD is a pseudo file.  A pseudo BFD file is used
+	 * when the kernel symbols are obtained from /proc/kallsyms rather
+	 * then vmlinux.
+	 */
+	bool is_pseudo_bfd() const {
+	return (abfd == ((bfd *) 1)); }
+
 	/// return true if BFD has debug info
 	bool has_debug_info() const;
 
