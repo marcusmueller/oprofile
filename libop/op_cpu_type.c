@@ -290,7 +290,16 @@ static op_cpu _try_ppc64_arch_generic_cpu(void)
 			}
 		}
 		if (!platforms_are_equivalent) {
-			if (strcmp(platform, "power7") == 0)
+			//  FIXME
+			/* For POWER8 running in POWER7 compat mode (RHEL 6.5 and SLES 11 SP4),
+			 * the kernel will have enough POWER8-specific PMU code so we can utilize
+			 * all of the POWER8 events. In general, this is not necessarily the case
+			 * when running in compat mode.  This code needs to be inspected for every
+			 * new IBM Power processor released, but for now, we'll assume that for the
+			 * next processor model (assuming there will be something like a POWER9?),
+			 * we should use just the architected events when running POWER8 compat mode.
+			 */
+			if (strcmp(platform, "power8") == 0)
 				cpu_type = CPU_PPC64_ARCH_V1;
 		}
 	}
