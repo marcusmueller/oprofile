@@ -771,12 +771,11 @@ void operf_record::recordPerfData(void)
 }
 
 void operf_read::init(int sample_data_pipe_fd, string input_filename, string samples_loc, op_cpu cputype,
-                      vector<operf_event_t> & events, bool systemwide)
+                      bool systemwide)
 {
 	sample_data_fd = sample_data_pipe_fd;
 	inputFname = input_filename;
 	sampledir = samples_loc;
-	evts = events;
 	cpu_type = cputype;
 	syswide = systemwide;
 }

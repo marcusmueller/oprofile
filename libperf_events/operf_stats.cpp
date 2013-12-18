@@ -53,7 +53,8 @@ void operf_print_stats(string sessiondir, char * starttime, bool throttled,
 	string stats_dir = create_stats_dir(sessiondir + "/" + "samples/current/");
 	if (strcmp(stats_dir.c_str(), "") != 0) {
 		// If there are throttled events print them
-		write_throttled_event_files(events, stats_dir);
+		if (throttled)
+			write_throttled_event_files(events, stats_dir);
 	} else {
 		stats_dir_valid = false;
 		perror("Unable to create stats dir");
@@ -130,7 +131,6 @@ static void write_throttled_event_files(vector< operf_event_t> const & events,
 	int rc;
 
 	throttled_dir =  stats_dir + "/throttled";
-
 	for (unsigned index = 0; index < events.size(); index++) {
 		if (events[index].throttled == true) {
 
@@ -163,17 +163,7 @@ static void write_throttled_event_files(vector< operf_event_t> const & events,
 			}
 		}
 	  }
-	if (throttled_dir_created) {
-		cerr << "\nWARNING! Some of the events were throttled. "
-		     << "Throttling occurs when\n";
-		cerr << "the initial sample rate is too high, causing an "
-		     << "excessive number of\n";
-		cerr << "interrupts.  Decrease the sampling frequency. "
-		     << "Check the directory\n";
-		cerr << throttled_dir << "\n"
-		     << "for the throttled event names.\n\n";
-	}
-};
+}
 
 
 static string create_stats_dir(string const & cur_sampledir)

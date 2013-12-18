@@ -67,7 +67,6 @@ char * app_name = NULL;
 bool use_cpu_minus_one = false;
 pid_t app_PID = -1;
 uint64_t kernel_start, kernel_end;
-operf_read operfRead;
 op_cpu cpu_type;
 double cpu_speed;
 uint op_nr_events;
@@ -77,6 +76,7 @@ bool no_vmlinux;
 int kptr_restrict;
 char * start_time_human_readable;
 std::vector<operf_event_t> events;
+operf_read operfRead(events);
 
 
 #define DEFAULT_OPERF_OUTFILE "operf.data"
@@ -146,6 +146,7 @@ void __set_event_throttled(int index)
 		cerr << "Unable to determine if throttling occurred for ";
 		cerr << "event " << events[index].name << endl;
 	} else {
+		throttled = true;
 		events[index].throttled = true;
 	}
 }
@@ -916,7 +917,7 @@ static void convert_sample_data(void)
 		inputfd = sample_data_pipe[0];
 		inputfname = "";
 	}
-	operfRead.init(inputfd, inputfname, current_sampledir, cpu_type, events, operf_options::system_wide);
+	operfRead.init(inputfd, inputfname, current_sampledir, cpu_type, operf_options::system_wide);
 	if ((rc = operfRead.readPerfHeader()) < 0) {
 		if (rc != OP_PERF_HANDLED_ERROR)
 			cerr << "Error: Cannot create read header info for sample data " << endl;

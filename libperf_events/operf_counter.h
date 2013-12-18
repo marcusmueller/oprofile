@@ -130,9 +130,11 @@ private:
 
 class operf_read {
 public:
-	operf_read(void) : sample_data_fd(-1), inputFname(""), cpu_type(CPU_NO_GOOD) { valid = syswide = false;}
+	operf_read(std::vector<operf_event_t> & _evts)
+	: sample_data_fd(-1), inputFname(""), evts(_evts), cpu_type(CPU_NO_GOOD)
+	  { valid = syswide = false;}
 	void init(int sample_data_pipe_fd, std::string input_filename, std::string samples_dir, op_cpu cputype,
-	          std::vector<operf_event_t> & evts, bool systemwide);
+	          bool systemwide);
 	~operf_read();
 	int readPerfHeader(void);
 	unsigned int convertPerfData(void);
@@ -146,7 +148,7 @@ private:
 	std::string sampledir;
 	std::ifstream istrm;
 	struct OP_header opHeader;
-	std::vector<operf_event_t> evts;
+	std::vector<operf_event_t> & evts;
 	bool valid;
 	bool syswide;
 	op_cpu cpu_type;
