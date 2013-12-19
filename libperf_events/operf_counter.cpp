@@ -97,7 +97,7 @@ again:
 		// Implies pipe has been closed on the write end, so return -1 to quit reading
 		rc = OP_PIPE_CLOSED;
 		goto out;
-	} else if (num_read != read_size) {
+	} else if (num_read != (ssize_t)read_size) {
 		header += num_read;
 		read_size -= num_read;
 		goto again;
@@ -137,7 +137,7 @@ again2:
 		// Implies pipe has been closed on the write end, so return -1 to quit reading
 		rc = OP_PIPE_CLOSED;
 		goto out;
-	} else if (num_read != read_size) {
+	} else if (num_read != (ssize_t)read_size) {
 		evt += num_read;
 		read_size -= num_read;
 		goto again;
@@ -283,7 +283,7 @@ operf_record::~operf_record()
 
 	if (poll_data)
 		delete[] poll_data;
-	for (int i = 0; i < samples_array.size(); i++) {
+	for (size_t i = 0; i < samples_array.size(); i++) {
 		struct mmap_data *md = &samples_array[i];
 		munmap(md->base, (num_mmap_pages + 1) * pagesize);
 	}
@@ -301,7 +301,6 @@ operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_ru
                            vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg,
                            bool separate_by_cpu, bool out_fd_is_file)
 {
-	int flags = O_CREAT|O_RDWR|O_TRUNC;
 	struct sigaction sa;
 	sigset_t ss;
 	vmlinux_file = vi.image_name;
@@ -540,7 +539,7 @@ int operf_record::prepareToRecord(void)
 			     << num_cpus << " x " << evts.size() << ")." << endl;
 			return -1;
 		}
-		for (unsigned int cpu = 0; cpu < num_cpus; cpu++) {
+		for (int cpu = 0; cpu < num_cpus; cpu++) {
 			int fd_for_set_output = perfCounters[op_ctr_idx].get_fd();
 			for (unsigned event = 0; event < evts.size(); event++) {
 				int fd = perfCounters[op_ctr_idx].get_fd();
@@ -640,7 +639,6 @@ void operf_record::setup()
 
 	for (int cpu = 0; cpu < num_cpus; cpu++) {
 		int real_cpu;
-		int mmap_fd;
 		if (use_cpu_minus_one) {
 			real_cpu = -1;
 		} else if (all_cpus_avail) {
@@ -703,7 +701,7 @@ void operf_record::setup()
 error:
 	delete[] poll_data;
 	poll_data = NULL;
-	for (int i = 0; i < samples_array.size(); i++) {
+	for (size_t i = 0; i < samples_array.size(); i++) {
 		struct mmap_data *md = &samples_array[i];
 		munmap(md->base, (num_mmap_pages + 1) * pagesize);
 	}
@@ -727,7 +725,7 @@ void operf_record::record_process_info(void)
 		if (cverb << vrecord)
 			cout << "Created COMM event for " << procs[proc_idx].comm << endl;
 
-		if ((procs[proc_idx].pid == last_tgid) ||
+		if (((pid_t)(procs[proc_idx].pid) == last_tgid) ||
 				(pids_mapped.find(procs[proc_idx].pid) != pids_mapped.end()))
 			continue;
 		OP_perf_utils::op_record_process_exec_mmaps(procs[proc_idx].tid,
@@ -748,7 +746,7 @@ void operf_record::recordPerfData(void)
 	while (1) {
 		int prev = sample_reads;
 
-		for (int i = 0; i < samples_array.size(); i++) {
+		for (size_t i = 0; i < samples_array.size(); i++) {
 			if (samples_array[i].base)
 				op_get_kernel_event_data(&samples_array[i], this);
 		}
@@ -973,7 +971,7 @@ unsigned int operf_read::convertPerfData(void)
 	unsigned int num_bytes = 0;
 	struct mmap_info info;
 	bool error = false;
-	event_t * event;
+	event_t * event = NULL;
 
 	if (!inputFname.empty()) {
 		info.file_data_offset = opHeader.data_offset;

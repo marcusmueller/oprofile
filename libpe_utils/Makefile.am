@@ -9,6 +9,8 @@ AM_CPPFLAGS = \
 	@PERF_EVENT_FLAGS@ \
 	@OP_CPPFLAGS@
 
+AM_CXXFLAGS = @OP_CXXFLAGS@
+
 noinst_LIBRARIES = libpe_utils.a
 libpe_utils_a_SOURCES =  \
 	op_pe_utils.h \

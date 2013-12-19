@@ -11,6 +11,8 @@ AM_CPPFLAGS = \
 	@PERF_EVENT_FLAGS@ \
 	@OP_CPPFLAGS@
 
+AM_CXXFLAGS = @OP_CXXFLAGS@
+
 noinst_LIBRARIES = libperf_events.a
 libperf_events_a_SOURCES =  \
 	operf_utils.h \

@@ -31,8 +31,8 @@ using namespace OP_perf_utils;
 
 operf_process_info::operf_process_info(pid_t tgid, const char * appname,
                                        bool app_arg_is_fullname, bool is_valid)
-: pid(tgid), valid(is_valid), appname_valid(false), forked(false), look_for_appname_match(false),
-  appname_is_fullname(NOT_FULLNAME), num_app_chars_matched(-1)
+: pid(tgid), valid(is_valid), appname_valid(false), look_for_appname_match(false),
+  forked(false), appname_is_fullname(NOT_FULLNAME), num_app_chars_matched(-1)
 {
 	_appname = "";
 	set_appname(appname, app_arg_is_fullname);
@@ -186,7 +186,7 @@ void operf_process_info::check_mapping_for_appname(struct operf_mmap * mapping)
 		string basename;
 		int num_matched_chars = get_num_matching_chars(mapping->filename, basename);
 		if (num_matched_chars > num_app_chars_matched) {
-			if (num_matched_chars == app_basename.length()) {
+			if (num_matched_chars == (int)app_basename.length()) {
 				appname_is_fullname = YES_FULLNAME;
 				look_for_appname_match = false;
 				appname_valid = true;

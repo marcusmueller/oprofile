@@ -39,7 +39,6 @@
 #include "utility.h"
 
 
-extern verbose vmisc;
 extern volatile bool quit;
 extern operf_read operfRead;
 extern int sample_reads;
@@ -170,7 +169,7 @@ static void __handle_comm_event(event_t * event)
 		 */
 		const char * appname_arg;
 		bool is_complete_appname;
-		if (app_name && (app_PID == event->comm.pid)) {
+		if (app_name && (app_PID == (pid_t) event->comm.pid)) {
 			appname_arg = app_name;
 			is_complete_appname = true;
 		} else {
@@ -320,7 +319,7 @@ static void __handle_mmap_event(event_t * event)
 			 */
 			const char * appname_arg;
 			bool is_complete_appname;
-			if (app_name && (app_PID == event->mmap.pid)) {
+			if (app_name && (app_PID == (pid_t)event->mmap.pid)) {
 				appname_arg = app_name;
 				is_complete_appname = true;
 			} else {
@@ -456,7 +455,7 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 	if (data->callchain->nr) {
 		if (cverb << vconvert)
 			cout << "Processing callchain" << endl;
-		for (int i = 0; i < data->callchain->nr; i++) {
+		for (u64 i = 0; i < data->callchain->nr; i++) {
 			data->ip = data->callchain->ips[i];
 			if (data->ip >= PERF_CONTEXT_MAX) {
 				switch (data->ip) {
@@ -488,6 +487,7 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 	}
 }
 
+#if PPC64_ARCH
 static void __map_hypervisor_sample(u64 ip, u32 pid)
 {
 	operf_process_info * proc;
@@ -504,7 +504,7 @@ static void __map_hypervisor_sample(u64 ip, u32 pid)
 		 */
 		const char * appname_arg;
 		bool is_complete_appname;
-		if (app_name && (app_PID == pid)) {
+		if (app_name && (app_PID == (pid_t)pid)) {
 			appname_arg = app_name;
 			is_complete_appname = true;
 		} else {
@@ -524,8 +524,9 @@ static void __map_hypervisor_sample(u64 ip, u32 pid)
 	}
 	proc->process_hypervisor_mapping(ip);
 }
+#endif
 
-static int __handle_throttle_event(event_t * event, u64 sample_type)
+static int __handle_throttle_event(event_t * event)
 {
 	int rc = 0;
 	trans.event = operfRead.get_eventnum_by_perf_event_id(event->throttle.id);
@@ -542,7 +543,6 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 	bool found_trans = false;
 	bool in_kernel;
 	int rc = 0;
-	const struct operf_mmap * op_mmap = NULL;
 	bool hypervisor = (event->header.misc == PERF_RECORD_MISC_HYPERVISOR);
 	u64 *array = event->sample.array;
 
@@ -785,7 +785,7 @@ int OP_perf_utils::op_write_event(event_t * event, u64 sample_type)
 		__handle_fork_event(event);
 		return 0;
 	case PERF_RECORD_THROTTLE:
-		return __handle_throttle_event(event, sample_type);
+		return __handle_throttle_event(event);
 	case PERF_RECORD_LOST:
 		operf_stats[OPERF_RECORD_LOST_SAMPLE] += event->lost.lost;
 		return 0;
@@ -1130,9 +1130,6 @@ int OP_perf_utils::op_get_process_info(bool system_wide, pid_t pid, operf_record
 	if (!system_wide) {
 		ret = _get_one_process_info(system_wide, pid, pr);
 	} else {
-		char buff[BUFSIZ];
-		pid_t tgid = 0;
-		size_t size = 0;
 		DIR *pids;
 		struct dirent dirent, *next;
 
@@ -1145,11 +1142,8 @@ int OP_perf_utils::op_get_process_info(bool system_wide, pid_t pid, operf_record
 		while (!readdir_r(pids, &dirent, &next) && next) {
 			char *end;
 			pid = strtol(dirent.d_name, &end, 10);
-			if (((errno == ERANGE && (pid == LONG_MAX || pid == LONG_MIN))
-					|| (errno != 0 && pid == 0)) || (end == dirent.d_name)) {
-				cverb << vmisc << "/proc entry " << dirent.d_name << " is not a PID" << endl;
+			if (*end)
 				continue;
-			}
 			if ((ret = _get_one_process_info(system_wide, pid, pr)) < 0)
 				break;
 		}
@@ -1171,7 +1165,6 @@ static void _record_module_info(int output_fd, operf_record * pr)
 	const char * fname = "/proc/modules";
 	FILE *fp;
 	char * line;
-	struct operf_kernel_image * image;
 	int module_size;
 	char ref_count[32+1];
 	int ret;
