@@ -7,8 +7,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
 (this is a minimal selection of stuff I think we need)
-
- o default to use kallsyms if no --vmlinux option is passed to operf
+ o Remove opcontrol and all daemon-related stuff (as it's been deprecated
+   since 0.9.8)
  o the various open bugs
 
 Later
