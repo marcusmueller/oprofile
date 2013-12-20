@@ -689,6 +689,10 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 			cout << "Deferring processing of hypervisor sample." << endl;
 		goto out;
 	}
+	// This sample is for a different event than the last sample
+	if (data.id != trans.sample_id)
+		goto find_trans;
+
 	/* Check for the common case first -- i.e., where the current sample is from
 	 * the same context as the previous sample.  For the "no-vmlinux" case, start_addr
 	 * and end_addr will be zero, so need to make sure we detect that.
@@ -716,6 +720,7 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 		found_trans = true;
 	}
 
+find_trans:
 	if (!found_trans && __get_operf_trans(&data, hypervisor, in_kernel)) {
 		trans.current = operf_sfile_find(&trans);
 		found_trans = true;
