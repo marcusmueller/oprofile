@@ -452,7 +452,6 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 {
 	bool in_kernel = false;
 	u64 sampled_addr = data->ip;
-	bool tab = false;
 	data->callchain = (struct ip_callchain *) array;
 	if (data->callchain->nr) {
 		if (cverb << vconvert)
