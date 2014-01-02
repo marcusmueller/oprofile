@@ -451,6 +451,8 @@ out:
 static void __handle_callchain(u64 * array, struct sample_data * data)
 {
 	bool in_kernel = false;
+	u64 sampled_addr = data->ip;
+	bool tab = false;
 	data->callchain = (struct ip_callchain *) array;
 	if (data->callchain->nr) {
 		if (cverb << vconvert)
@@ -472,6 +474,8 @@ static void __handle_callchain(u64 * array, struct sample_data * data)
 					default:
 						break;
 				}
+				if (i == 0 && (data->callchain->ips[i+1]==sampled_addr))
+					i++;
 				continue;
 			}
 			if (data->ip && __get_operf_trans(data, false, in_kernel)) {
