@@ -156,7 +156,7 @@ static void __print_usage_and_exit(const char * extra_msg)
 {
 	if (extra_msg)
 		cerr << extra_msg << endl;
-	cerr << "usage: ocount [ options ] [ --system-wide | -p <pids> | -r <tids> | -C <cpus> [ command [ args ] ] ]" << endl;
+	cerr << "usage: ocount [ options ] [ --system-wide | -p <pids> | -r <tids> | -C <cpus> | [ command [ args ] ] ]" << endl;
 	cerr << "See ocount man page for details." << endl;
 	exit(EXIT_FAILURE);
 }

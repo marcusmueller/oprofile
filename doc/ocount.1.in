@@ -9,7 +9,7 @@ ocount \- Event counting tool for Linux
 [
 .I options
 ]
-[ --system-wide | --process-list <pids> | --thread-list <tids> | --cpu-list <cpus> [ command [ args ] ] ]
+[ --system-wide | --process-list <pids> | --thread-list <tids> | --cpu-list <cpus> | [ command [ args ] ] ]
 
 .SH DESCRIPTION
 .BI ocount
