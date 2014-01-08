@@ -690,7 +690,7 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 #else
 static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 {
-	int ret, i;
+	int ret;
 	unsigned int num_events = evt_vec->size();
 	bool edge_detect = false;
 	char evt_name[OP_MAX_EVT_NAME_LEN];
@@ -770,9 +770,6 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 
 static bool convert_event_vals(vector<operf_event_t> * evt_vec)
 {
-	unsigned int i, count;
-	char name[256];
-	int ret;
 	for (unsigned int i = 0; i < evt_vec->size(); i++) {
 		operf_event_t event = (*evt_vec)[i];
 		if (cpu_type == CPU_PPC64_POWER7) {
@@ -790,6 +787,10 @@ static bool convert_event_vals(vector<operf_event_t> * evt_vec)
 	}
 
 #if HAVE_LIBPFM3
+	unsigned int i, count;
+	char name[256];
+	int ret;
+
 	if (pfm_initialize() != PFMLIB_SUCCESS)
 		throw runtime_error("Unable to initialize libpfm; cannot continue");
 

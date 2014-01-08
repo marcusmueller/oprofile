@@ -66,6 +66,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "perf_event_open syscall returned %s\n", strerror(errno));
 	return errno;
 #else
+	if (_verbose)
+		fprintf(stderr, "perf_events is not available on this system\n");
+
 	return -1;
 #endif
 }
