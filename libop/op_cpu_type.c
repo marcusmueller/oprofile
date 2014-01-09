@@ -621,7 +621,8 @@ static op_cpu __get_cpu_type_alt_method(void)
 	    fnmatch("i?86", uname_info.machine, 0) == 0) {
 		return _get_x86_64_cpu_type();
 	}
-	if (strncmp(uname_info.machine, "ppc64", 5) == 0) {
+	if ((strncmp(uname_info.machine, "ppc64", 5) == 0) ||
+			(strncmp(uname_info.machine, "ppc64le", 7) == 0)) {
 		return _get_ppc64_cpu_type();
 	}
 	if (strncmp(uname_info.machine, "arm", 3) == 0) {

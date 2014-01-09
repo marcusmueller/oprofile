@@ -634,9 +634,7 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 bool bfd_info::get_synth_symbols()
 {
 	extern const bfd_target bfd_elf64_powerpc_vec;
-	extern const bfd_target bfd_elf64_powerpcle_vec;
-	bool is_elf64_powerpc_target = (abfd->xvec == &bfd_elf64_powerpc_vec)
-		|| (abfd->xvec == &bfd_elf64_powerpcle_vec);
+	bool is_elf64_powerpc_target = (abfd->xvec == &bfd_elf64_powerpc_vec);
 
 	if (!is_elf64_powerpc_target)
 		return false;
