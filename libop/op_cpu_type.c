@@ -128,6 +128,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "e500mc", "ppc/e500mc", CPU_PPC_E500MC, 4 },
 	{ "e6500", "ppc/e6500", CPU_PPC_E6500, 6 },
 	{ "Intel Silvermont microarchitecture", "i386/silvermont", CPU_SILVERMONT, 2 },
+	{ "ARMv7 Krait", "arm/armv7-krait", CPU_ARM_KRAIT, 5 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

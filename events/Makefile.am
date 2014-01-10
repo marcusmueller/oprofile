@@ -53,6 +53,7 @@ event_files = \
 	arm/armv7/events arm/armv7/unit_masks \
 	arm/armv7-scorpion/events arm/armv7-scorpion/unit_masks \
 	arm/armv7-scorpionmp/events arm/armv7-scorpionmp/unit_masks \
+	arm/armv7-krait/events arm/armv7-krait/unit_masks \
 	arm/armv7-ca9/events arm/armv7-ca9/unit_masks \
 	arm/armv7-ca5/events arm/armv7-ca5/unit_masks \
 	arm/armv7-ca7/events arm/armv7-ca7/unit_masks \

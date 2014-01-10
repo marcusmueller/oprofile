@@ -1,0 +1,3 @@
+# ARM V7 events
+# WARNING: just re-uses common ARM PMU codes as Stephen Boyd advised
+include:arm/armv7-common

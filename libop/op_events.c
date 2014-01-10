@@ -1252,6 +1252,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_AVR32:
 		case CPU_ARM_SCORPION:
 		case CPU_ARM_SCORPIONMP:
+		case CPU_ARM_KRAIT:
 			descr->name = "CPU_CYCLES";
 			break;
 
