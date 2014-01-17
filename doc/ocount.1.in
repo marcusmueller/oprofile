@@ -66,7 +66,12 @@ Use this option to count events for one or more already-running applications, sp
 via a comma-separated list (
 .I pids
 ). Event counts will be collected for all children of the passed process(es)
-as well.
+as well. You must have privileges for the user ID under which the specified process(es)
+are running; e.g., for a non-root user, the user ID of the process(es) is the same as
+that used for running ocount. A lack of privileges will result in the following
+failure message:
+.br
+        perf_event_open failed with Permission denied
 .br
 
 .TP
@@ -76,7 +81,9 @@ via a comma-separated list (
 .I tids
 ). Event counts will
 .B not
-be collected for any children of the passed thread(s).
+be collected for any children of the passed thread(s). See the description of
+.I --process-list
+concerning required privileges.
 .br
 
 .TP
@@ -106,7 +113,7 @@ Do
 .B not
 include a
 .I count
-value in the event spec, as that parameter is only need when profiling.
+value in the event spec, as that parameter is only needed when profiling.
 .P
 .RS
 You can specify unit mask values using either a numerical value (hex values
@@ -181,7 +188,7 @@ to display event counts on a per-cpu basis.  Without this option, all counts are
 Results collected for each time interval are printed every
 .IR "num_seconds"
 instead of the default of one dump of cumulative event counts at the end of the run.
-If
+Counters are reset to zero at the start of each interval. If
 .I num_intervals
 is specified,
 .BI ocount
