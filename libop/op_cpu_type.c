@@ -300,7 +300,9 @@ static op_cpu _try_ppc64_arch_generic_cpu(void)
 			 * next processor model (assuming there will be something like a POWER9?),
 			 * we should use just the architected events when running POWER8 compat mode.
 			 */
-			if (strcmp(platform, "power8") == 0)
+			if ((strcmp(platform, "power7") == 0) && (strcmp(base_platform, "power8") == 0))
+				cpu_type = CPU_PPC64_POWER8;
+			else
 				cpu_type = CPU_PPC64_ARCH_V1;
 		}
 	}
