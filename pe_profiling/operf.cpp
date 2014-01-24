@@ -632,33 +632,23 @@ static end_code_t _run(void)
 		 *    2. keep_trying is set to false, so we drop out of while loop and proceed to end of function
 		 *    3. call _kill_operf_record_pid and _kill_operf_read_pid
 		 */
-		struct timeval tv;
-		long long usec_timer;
 		bool keep_trying = true;
 		const char * app_process = "profiled app";
 		const char * record_process = "operf-record process";
 		waitpid_status = 0;
-		gettimeofday(&tv, NULL);
-		usec_timer = tv.tv_usec;
 		cverb << vdebug << "going into waitpid on profiled app " << app_PID << endl;
 
-		// We'll try the waitpid with WNOHANG once every 100,000 usecs.
+		// We'll try the waitpid with WNOHANG once every 100 ms (100,000,000 nsecs).
 		while (keep_trying) {
 			pid_t the_pid = app_PID;
 			int wait_rc;
 			const char * the_process = app_process;
-			gettimeofday(&tv, NULL);
-			/* If we exceed the 100000 usec interval or if the tv_usec
-			 * value has rolled over to restart at 0, then we reset
-			 * the usec_timer to current tv_usec and try waitpid.
-			 */
-			if ((tv.tv_usec % 1000000) > (usec_timer + 100000)
-					|| (tv.tv_usec < usec_timer))
-				usec_timer = tv.tv_usec;
-			else
-				continue;
-
 			bool trying_user_app = true;
+			struct timespec ts_req;
+			ts_req.tv_sec = 0;
+			ts_req.tv_nsec = 100000000;
+
+			(void)nanosleep(&ts_req, NULL);
 again:
 			if ((wait_rc = waitpid(the_pid, &waitpid_status, WNOHANG)) < 0) {
 				keep_trying = false;
