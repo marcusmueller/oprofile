@@ -39,10 +39,10 @@ static void free_jit_debug_line(void)
 	jitentry_debug_line_list = NULL;
 }
 
-int op_jit_convert(struct op_jitdump_info file_info, char const * elffile,
+int op_jit_convert(struct op_jitdump_info * file_info, char const * elffile,
                    unsigned long long start_time, unsigned long long end_time)
 {
-	void const * jitdump = file_info.dmp_file;
+	void const * jitdump = file_info->dmp_file;
 	int rc= OP_JIT_CONV_OK;
 
 	entry_count = 0;
@@ -53,7 +53,7 @@ int op_jit_convert(struct op_jitdump_info file_info, char const * elffile,
 	jitentry_debug_line_list = NULL;
 	entries_symbols_ascending = entries_address_ascending = NULL;
 
-	if ((rc = parse_all(jitdump, jitdump + file_info.dmp_file_stat.st_size,
+	if ((rc = parse_all(jitdump, jitdump + file_info->dmp_file_stat.st_size,
 	                    end_time)) == OP_JIT_CONV_FAIL)
 		goto out;
 

@@ -50,7 +50,7 @@ op_bfd::op_bfd(uint64_t spu_offset, string const & fname,
 	anon_obj(false),
 	vma_adj(0)
 {
-	int fd = -1;
+	fd = -1;
 	struct stat st;
 	int notes_remaining;
 	bool spu_note_found = false;

@@ -99,7 +99,7 @@ int parse_all(void const * start, void const * end,
 	      unsigned long long end_time);
 
 /* conversion.c */
-int op_jit_convert(struct op_jitdump_info file_info, char const * elffile,
+int op_jit_convert(struct op_jitdump_info *file_info, char const * elffile,
                    unsigned long long start_time, unsigned long long end_time);
 
 /* create_bfd.c */

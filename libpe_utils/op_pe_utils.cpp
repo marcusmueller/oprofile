@@ -487,7 +487,7 @@ handle_named_um:
 				(endptr <= (mask + strlen(mask) - 2))) { // '- 2' to account for linefeed and '\0'
 
 			// Must be a default named unit mask
-			strncpy(event->um_name, mask, OP_MAX_UM_NAME_LEN);
+			strncpy(event->um_name, mask, OP_MAX_UM_NAME_LEN - 1);
 			goto handle_named_um;
 		}
 		config |= ((event->evt_um & 0xFFULL) << 8);

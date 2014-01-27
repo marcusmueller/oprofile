@@ -19,6 +19,7 @@
 #include "op_file.h"
 #include "op_libiberty.h"
 
+#include <getopt.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <errno.h>
@@ -75,6 +76,19 @@ int debug;
 int non_root;
 /* indicates we should delete jitdump files owned by the user */
 int delete_jitdumps;
+/* Session directory where sample data is stored */
+char * session_dir;
+
+static struct option long_options [] = {
+                                        { "session-dir", required_argument, NULL, 's'},
+                                        { "debug", no_argument, NULL, 'd'},
+                                        { "delete-jitdumps", no_argument, NULL, 'j'},
+                                        { "non-root", no_argument, NULL, 'n'},
+                                        { "help", no_argument, NULL, 'h'},
+                                        { NULL, 9, NULL, 0}
+};
+const char * short_options = "s:djnh";
+
 LIST_HEAD(jitdump_deletion_candidates);
 
 /*
@@ -407,7 +421,7 @@ chk_proc_id:
 			goto free_res3;
 		}
 		/* Convert the dump file as the special user 'oprofile'. */
-		rc = op_jit_convert(dmp_info, tmp_elffile, start_time, end_time);
+		rc = op_jit_convert(&dmp_info, tmp_elffile, start_time, end_time);
 		if (rc < 0)
 			goto free_res3;
 
@@ -772,61 +786,99 @@ static void _cleanup_jitdumps(void)
 
 }
 
-int main(int argc, char ** argv)
+static void __print_usage(const char * extra_msg)
+{
+	if (extra_msg)
+		fprintf(stderr, extra_msg);
+	fprintf(stderr, "usage: opjitconv [--debug | --non-root | --delete-jitdumps ] --session-dir=<dir> <starttime> <endtime>\n");
+}
+
+static int _process_args(int argc, char * const argv[])
+{
+	int keep_trying = 1;
+	int idx_of_non_options = 0;
+	setenv("POSIXLY_CORRECT", "1", 0);
+	while (keep_trying) {
+		int option_idx = 0;
+		int c = getopt_long(argc, argv, short_options, long_options, &option_idx);
+		switch (c) {
+		case -1:
+			if (optind != argc) {
+				idx_of_non_options = optind;
+			}
+			keep_trying = 0;
+			break;
+		case '?':
+			printf("non-option detected at optind %d\n", optind);
+			keep_trying = 0;
+			idx_of_non_options = -1;
+			break;
+		case 's':
+			session_dir = optarg;
+			break;
+		case 'd':
+			debug = 1;
+			break;
+		case 'n':
+			non_root = 1;
+			break;
+		case 'j':
+			delete_jitdumps = 1;
+			break;
+		case 'h':
+			break;
+		default:
+			break;
+		}
+	}
+	return idx_of_non_options;
+}
+
+int main(int argc, char * const argv[])
 {
 	unsigned long long start_time, end_time;
-	char session_dir[PATH_MAX];
-	int rc = 0;
+	struct stat filestat;
+	int non_options_idx, rc = 0;
 	size_t sessdir_len = 0;
-	char * path_end;
 
 	debug = 0;
-	if (argc > 1 && strcmp(argv[1], "-d") == 0) {
-		debug = 1;
-		argc--;
-		argv++;
-	}
 	non_root = 0;
-	if (argc > 1 && strcmp(argv[1], "--non-root") == 0) {
-		non_root = 1;
-		argc--;
-		argv++;
-	}
-
 	delete_jitdumps = 0;
-	if (argc > 1 && strcmp(argv[1], "--delete-jitdumps") == 0) {
-		delete_jitdumps = 1;
-		argc--;
-		argv++;
-	}
-
-	if (argc != 4) {
-		printf("Usage: opjitconv [-d] <session_dir> <starttime>"
-		       " <endtime>\n");
+	session_dir = NULL;
+	non_options_idx = _process_args(argc, argv);
+	// We need the session_dir and two non-option values passed -- starttime and endtime.
+	if (!session_dir || (non_options_idx != argc - 2)) {
+		__print_usage(NULL);
 		fflush(stdout);
 		rc = EXIT_FAILURE;
 		goto out;
 	}
 
 	/*
-	 * Check for a maximum of 4096 bytes (Linux path name length limit) decremented
-	 * by 16 bytes (will be used later for appending samples sub directory).
+	 * Check for a maximum of 4096 bytes (Linux path name length limit) minus 16 bytes
+	 * (to be used later for appending samples sub directory) minus 1 (for terminator).
 	 * Integer overflows according to the session dir parameter (user controlled)
 	 * are not possible anymore.
 	 */
-	path_end = memchr(argv[1], '\0', PATH_MAX);
-	if (!path_end || ((sessdir_len = (path_end - argv[1])) >= PATH_MAX - 16)) {
+	if ((sessdir_len = strlen(session_dir)) >= (PATH_MAX - 17)) {
 		printf("opjitconv: Path name length limit exceeded for session directory\n");
 		rc = EXIT_FAILURE;
 		goto out;
 	}
-	memset(session_dir, '\0', PATH_MAX);
-	assert(sessdir_len < (PATH_MAX - 16 - 1));
-	strncpy(session_dir, argv[1], sessdir_len);
-	session_dir[PATH_MAX -1] = '\0';
 
-	start_time = atol(argv[2]);
-	end_time = atol(argv[3]);
+	if (stat(session_dir, &filestat)) {
+		perror("stat operation on passed session-dir failed");
+		rc = EXIT_FAILURE;
+		goto out;
+	}
+	if (!S_ISDIR(filestat.st_mode)) {
+		printf("Passed session-dir %s is not a directory\n", session_dir);
+		rc = EXIT_FAILURE;
+		goto out;
+	}
+
+	start_time = atol(argv[non_options_idx++]);
+	end_time = atol(argv[non_options_idx]);
 
 	if (start_time > end_time) {
 		rc = EXIT_FAILURE;

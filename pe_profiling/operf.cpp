@@ -787,7 +787,7 @@ static void _do_jitdump_convert()
 	struct timeval tv;
 	char end_time_str[32];
 	char opjitconv_path[PATH_MAX + 1];
-	char * exec_args[8];
+	char * exec_args[9];
 
 	jitconv_pid = fork();
 	switch (jitconv_pid) {
@@ -799,6 +799,7 @@ static void _do_jitdump_convert()
 		const char * debug_option = "-d";
 		const char * non_root_user = "--non-root";
 		const char * delete_jitdumps = "--delete-jitdumps";
+		const char * sess_dir =  "--session-dir";
 		gettimeofday(&tv, NULL);
 		end_time = tv.tv_sec;
 		sprintf(end_time_str, "%llu", end_time);
@@ -810,6 +811,7 @@ static void _do_jitdump_convert()
 		if (my_uid != 0)
 			exec_args[arg_num++] = (char *)non_root_user;
 		exec_args[arg_num++] = (char *)delete_jitdumps;
+		exec_args[arg_num++] = (char *)sess_dir;
 		exec_args[arg_num++] = (char *)operf_options::session_dir.c_str();
 		exec_args[arg_num++] = start_time_str;
 		exec_args[arg_num++] = end_time_str;

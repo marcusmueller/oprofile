@@ -334,8 +334,8 @@ private:
         bfd_vma vma_adj;
 
         /**
-         * The file descriptor for an image file that we pass to fdopen_bfd must be kep
-         * open through the life of the op_bfd to enable proper beahvior of certain
+         * The file descriptor for an image file that we pass to fdopen_bfd must be kept
+         * open through the life of the op_bfd to enable proper behavior of certain
          * BFD functions -- in particular, bfd_find_nearest_line().
          */
         int fd;
