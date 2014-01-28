@@ -95,6 +95,10 @@ void xml_help_for_event(struct op_event const * event)
 		close_xml_element(NONE, 1, buffer, MAX_BUFFER);
 		for (i = 0; i < event->unit->num; i++) {
 			open_xml_element(HELP_UNIT_MASK, 1, buffer, MAX_BUFFER);
+			if (event->unit->um[i].name)
+				init_xml_str_attr(HELP_UNIT_MASK_NAME,
+					  event->unit->um[i].name,
+					  buffer, MAX_BUFFER);
 			init_xml_int_attr(HELP_UNIT_MASK_VALUE,
 					  event->unit->um[i].value,
 					  buffer, MAX_BUFFER);

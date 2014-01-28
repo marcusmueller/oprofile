@@ -59,6 +59,7 @@ typedef enum {
 	HELP_UNIT_MASK_VALUE,
 	HELP_UNIT_MASK_DESC,
 	HELP_UNIT_EXTRA_VALUE,
+	HELP_UNIT_MASK_NAME,
 	} tag_t;
 
 char const * xml_tag_name(tag_t tag);
