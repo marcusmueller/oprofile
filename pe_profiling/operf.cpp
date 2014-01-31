@@ -1468,18 +1468,26 @@ int main(int argc, char * const argv[])
 	}
 
 	cpu_type = op_get_cpu_type();
+	if (cpu_type == CPU_NO_GOOD) {
+		cerr << "Unable to ascertain cpu type.  Exiting." << endl;
+		cleanup();
+		exit(1);
+	}
+
+	if (cpu_type == CPU_TIMER_INT) {
+		cerr << "CPU type 'timer' was detected, but operf does not support timer mode." << endl
+		     << "Ensure the oprofile kernel module is unloaded ('opcontrol --deinit');" << endl
+		     << "then try running operf again." << endl;
+		cleanup();
+		exit(1);
+	}
+
 	cpu_speed = op_cpu_frequency();
 	process_args(argc, argv);
 
 	if (operf_options::system_wide && ((my_uid != 0) && (perf_event_paranoid > 0))) {
 		cerr << "To do system-wide profiling, either you must be root or" << endl;
 		cerr << "/proc/sys/kernel/perf_event_paranoid must be set to 0 or -1." << endl;
-		cleanup();
-		exit(1);
-	}
-
-	if (cpu_type == CPU_NO_GOOD) {
-		cerr << "Unable to ascertain cpu type.  Exiting." << endl;
 		cleanup();
 		exit(1);
 	}

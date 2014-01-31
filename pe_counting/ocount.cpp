@@ -769,6 +769,20 @@ int main(int argc, char * const argv[])
 		exit(1);
 
 	cpu_type = op_get_cpu_type();
+
+	if (cpu_type == CPU_NO_GOOD) {
+		cerr << "Unable to ascertain cpu type.  Exiting." << endl;
+		cleanup();
+		exit(1);
+	}
+
+	if (cpu_type == CPU_TIMER_INT) {
+		cerr << "CPU type 'timer' was detected, but ocount does not support timer mode." << endl
+		     << "Ensure the oprofile kernel module is unloaded ('opcontrol --deinit');" << endl
+		     << "then try running ocount again." << endl;
+		cleanup();
+		exit(1);
+	}
 	cpu_speed = op_cpu_frequency();
 	try {
 		process_args(argc, argv);
@@ -787,12 +801,6 @@ int main(int argc, char * const argv[])
 			cerr << "cpu-list ";
 		cerr << "event counting, either you must be root or" << endl;
 		cerr << "/proc/sys/kernel/perf_event_paranoid must be set to 0 or -1." << endl;
-		cleanup();
-		exit(1);
-	}
-
-	if (cpu_type == CPU_NO_GOOD) {
-		cerr << "Unable to ascertain cpu type.  Exiting." << endl;
 		cleanup();
 		exit(1);
 	}

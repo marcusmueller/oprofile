@@ -450,8 +450,12 @@ int main(int argc, char const * argv[])
 	}
 
 	if (cpu_type == CPU_TIMER_INT) {
-		if (!check_events)
-			printf("Using timer interrupt.\n");
+		if (!check_events) {
+			printf("Using timer interrupt.\n"
+			       "Timer mode is only supported by 'opcontrol'. If you intend to use operf or\n"
+			       "ocount, you must first ensure the oprofile kernel module is unloaded\n"
+			       "(using 'opcontrol --deinit'); then try the operation again.\n");
+		}
 		exit(EXIT_SUCCESS);
 	}
 
