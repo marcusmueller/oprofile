@@ -11,7 +11,7 @@
       <xs:attribute name="schemaversion" use="required">
         <xs:simpleType>
           <xs:restriction base = "xs:string">
-            <xs:pattern value = "1\.[0-9]+"/>
+            <xs:pattern value = "2\.[0-9]+"/>
           </xs:restriction>
         </xs:simpleType>       </xs:attribute>
     </xs:complexType>

@@ -84,7 +84,6 @@ char const * xml_tag_map[] = {
 	"unit_mask",
 		"mask",
 		"desc",
-		"extra",
 		"name"
 };
 

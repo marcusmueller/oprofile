@@ -21,7 +21,7 @@ static char buffer[MAX_BUFFER];
 
 void open_xml_events(char const * title, char const * doc, op_cpu the_cpu_type)
 {
-	char const * schema_version = "1.1";
+	char const * schema_version = "2.0";
 
 	buffer[0] = '\0';
 	cpu_type = the_cpu_type;
@@ -105,10 +105,6 @@ void xml_help_for_event(struct op_event const * event)
 			init_xml_str_attr(HELP_UNIT_MASK_DESC,
 					  event->unit->um[i].desc,
 					  buffer, MAX_BUFFER);
-			if (event->unit->um[i].extra)
-				init_xml_int_attr(HELP_UNIT_EXTRA_VALUE,
-					          event->unit->um[i].extra,
-					          buffer, MAX_BUFFER);
 			close_xml_element(NONE, 0, buffer, MAX_BUFFER);
 		}
 		close_xml_element(HELP_UNIT_MASKS, 0, buffer, MAX_BUFFER);
