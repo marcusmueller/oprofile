@@ -30,20 +30,20 @@ event:0x300f6 counters:2 um:zero minimum:10000 name:PM_L1_DCACHE_RELOAD_VALID : 
 event:0x200fc counters:1 um:zero minimum:10000 name:PM_L1_ICACHE_MISS : Demand iCache Miss
 event:0x400f0 counters:3 um:zero minimum:10000 name:PM_LD_MISS_L1 : Load Missed L1
 event:0x200f6 counters:1 um:zero minimum:10000 name:PM_LSU_DERAT_MISS : DERAT Reloaded due to a DERAT miss
-event:0x300e4 counters:2 um:zero minimum:1000 name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted
-event:0x100e2 counters:0 um:zero minimum:1000 name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken completed
-event:0x400e8 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS : sampled load resolved beyond L2
-event:0x200e4 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS : sampled load resolved beyond L3
-event:0x200e0 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM : sampled load resolved from memory
-event:0x300e6 counters:2 um:zero minimum:1000 name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes
-event:0x400e4 counters:3 um:zero minimum:1000 name:PM_MRK_DTLB_MISS : sampled Instruction dtlb miss
-event:0x400e0 counters:3 um:zero minimum:1000 name:PM_MRK_INST_CMPL : Marked group complete
-event:0x100e0 counters:0 um:zero minimum:1000 name:PM_MRK_INST_DISP : The thread has dispatched a randomly sampled marked instruction
-event:0x400e6 counters:3 um:zero minimum:1000 name:PM_MRK_INST_FROM_L3MISS : sampled instruction missed icache and came from beyond L3 A Instruction cacheline request for a marked/sampled instruction resolved from a location that was beyond the local L3 cache
-event:0x100e4 counters:0 um:zero minimum:1000 name:PM_MRK_L1_ICACHE_MISS : sampled Instruction suffered an icache Miss
-event:0x100ea counters:0 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID : Sampled Instruction had a data reload
-event:0x200e2 counters:1 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss
-event:0x300e2 counters:2 um:zero minimum:1000 name:PM_MRK_ST_CMPL : marked store completed and sent to nest
+event:0x301e4 counters:2 um:zero minimum:1000 name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted
+event:0x101e2 counters:0 um:zero minimum:1000 name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken completed
+event:0x401e8 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS : sampled load resolved beyond L2
+event:0x201e4 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS : sampled load resolved beyond L3
+event:0x201e0 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM : sampled load resolved from memory
+event:0x301e6 counters:2 um:zero minimum:1000 name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes
+event:0x401e4 counters:3 um:zero minimum:1000 name:PM_MRK_DTLB_MISS : sampled Instruction dtlb miss
+event:0x401e0 counters:3 um:zero minimum:1000 name:PM_MRK_INST_CMPL : Marked group complete
+event:0x101e0 counters:0 um:zero minimum:1000 name:PM_MRK_INST_DISP : The thread has dispatched a randomly sampled marked instruction
+event:0x401e6 counters:3 um:zero minimum:1000 name:PM_MRK_INST_FROM_L3MISS : sampled instruction missed icache and came from beyond L3 A Instruction cacheline request for a marked/sampled instruction resolved from a location that was beyond the local L3 cache
+event:0x101e4 counters:0 um:zero minimum:1000 name:PM_MRK_L1_ICACHE_MISS : sampled Instruction suffered an icache Miss
+event:0x101ea counters:0 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID : Sampled Instruction had a data reload
+event:0x201e2 counters:1 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss
+event:0x301e2 counters:2 um:zero minimum:1000 name:PM_MRK_ST_CMPL : marked store completed and sent to nest
 event:0x600f4 counters:5 um:zero minimum:100000 name:PM_RUN_CYC : Run_cycles
 event:0x500fa counters:4 um:zero minimum:100000 name:PM_RUN_INST_CMPL : Run_Instructions
 event:0x400f4 counters:3 um:zero minimum:10000 name:PM_RUN_PURR : Run_PURR
