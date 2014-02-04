@@ -331,6 +331,9 @@ static op_cpu _get_ppc64_cpu_type(void)
 
 	if (strncmp(cpu_name_lowercase, "power7+", 7) == 0)
 		cpu_name_lowercase[6] = '\0';
+	if (strncmp(cpu_name_lowercase, "power8e", 7) == 0)
+		cpu_name_lowercase[6] = '\0';
+
 	cpu_type_str[0] = '\0';
 	strcat(cpu_type_str, "ppc64/");
 	strncat(cpu_type_str, cpu_name_lowercase, len);
