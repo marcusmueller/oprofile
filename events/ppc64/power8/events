@@ -10,7 +10,7 @@ include:ppc64/architected_events_v1
 event:0x40036 counters:3 um:zero minimum:10000 name:PM_BR_2PATH : two path branch.
 event:0x40060 counters:3 um:zero minimum:10000 name:PM_BR_CMPL : Branch Instruction completed.
 event:0x40138 counters:3 um:zero minimum:10000 name:PM_BR_MRK_2PATH : marked two path branch.
-event:0x1e054 counters:0 um:zero minimum:10000 name:PM_CMPLU_STALL : Completion stall.
+event:0x4000a counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL : Completion stall.
 event:0x4d018 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_BRU : Completion stall due to a Branch Unit.
 event:0x2d018 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_BRU_CRU : Completion stall due to IFU.
 event:0x30026 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_COQ_FULL : Completion stall due to CO q full.
@@ -30,6 +30,7 @@ event:0x4d014 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_LOAD_FINISH :
 event:0x2c010 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_LSU : Completion stall by LSU instruction.
 event:0x10036 counters:0 um:zero minimum:10000 name:PM_CMPLU_STALL_LWSYNC : completion stall due to isync/lwsync.
 event:0x30028 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_MEM_ECC_DELAY : Completion stall due to mem ECC delay.
+event:0x2e01c counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_NO_NTF : Completion stall due to nop
 event:0x2e01e counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_NTCG_FLUSH : Completion stall due to reject (load hit store).
 event:0x30006 counters:2 um:zero minimum:10000 name:PM_CMPLU_STALL_OTHER_CMPL : Instructions core completed while this thread was stalled.
 event:0x4c010 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_REJECT : Completion stall due to LSU reject.
@@ -62,7 +63,7 @@ event:0x2d01a counters:1 um:zero minimum:10000 name:PM_GCT_NOSLOT_IC_MISS : Gct 
 event:0x3000a counters:2 um:zero minimum:100000 name:PM_GRP_DISP : dispatch_success (Group Dispatched).
 event:0x10130 counters:0 um:zero minimum:10000 name:PM_GRP_MRK : Instruction marked in idu.
 event:0x2000a counters:1 um:zero minimum:10000 name:PM_HV_CYC : cycles in hypervisor mode .
-event:0x10002 counters:0 um:zero minimum:100000 name:PM_INST_CMPL :   PPC Instructions Finished (completed).
+event:0x2 counters:0,1,2,3 um:zero minimum:100000 name:PM_INST_CMPL : PPC Instructions Finished (completed).
 event:0x10014 counters:0 um:zero minimum:100000 name:PM_IOPS_CMPL : IOPS Completed.
 event:0x1002e counters:0 um:zero minimum:10000 name:PM_LD_CMPL : count of Loads completed.
 event:0x10062 counters:0 um:zero minimum:10000 name:PM_LD_L3MISS_PEND_CYC : Cycles L3 miss was pending for this thread.
@@ -86,14 +87,13 @@ event:0x40130 counters:3 um:zero minimum:1000 name:PM_MRK_GRP_CMPL : marked inst
 event:0x20130 counters:1 um:zero minimum:1000 name:PM_MRK_INST_DECODED : marked instruction decoded. Name from ISU?
 event:0x20114 counters:1 um:zero minimum:1000 name:PM_MRK_L2_RC_DISP : Marked Instruction RC dispatched in L2.
 event:0x4013e counters:3 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1_CYC : Marked ld latency.
-event:0x3013e counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC : Marked Group Completion Stall cycles (use edge detect to count  ).
+event:0x3013e counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC : Marked Group Completion Stall cycles (use edge detect to count #).
 event:0x3006e counters:2 um:zero minimum:10000 name:PM_NEST_REF_CLK : Nest reference clocks.
-event:0x2001a counters:1 um:zero minimum:10000 name:PM_NTCG_ALL_FIN : Cycles after all instructions have finished to group completed
+event:0x2001a counters:1 um:zero minimum:10000 name:PM_NTCG_ALL_FIN : Cycles after all instructions have finished to group completed.
 event:0x20010 counters:1 um:zero minimum:10000 name:PM_PMC1_OVERFLOW : Overflow from counter 1.
 event:0x30010 counters:2 um:zero minimum:10000 name:PM_PMC2_OVERFLOW : Overflow from counter 2.
 event:0x40010 counters:3 um:zero minimum:10000 name:PM_PMC3_OVERFLOW : Overflow from counter 3.
 event:0x10010 counters:0 um:zero minimum:10000 name:PM_PMC4_OVERFLOW : Overflow from counter 4.
 event:0x30024 counters:2 um:zero minimum:10000 name:PM_PMC6_OVERFLOW : Overflow from counter 6.
-event:0x40002 counters:3 um:zero minimum:10000 name:PM_PPC_CMPL :   PPC Instructions Finished (completed).
 event:0x2000c counters:1 um:zero minimum:100000 name:PM_THRD_ALL_RUN_CYC : All Threads in Run_cycles (was both threads in run_cycles).
 event:0x4016e counters:3 um:zero minimum:10000 name:PM_THRESH_NOT_MET : Threshold counter did not meet threshold.
