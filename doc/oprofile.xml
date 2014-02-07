@@ -3574,11 +3574,20 @@ Following is a description of the <command>ocount</command> options.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--time-interval / -i num_seconds[:num_intervals]</option></term>
+		<term><option>--time-interval / -i interval_length[:num_intervals]</option></term>
 		<listitem><para>
-		Results collected for each time interval are printed every num_seconds instead of the
-        default of one dump of cumulative event counts at the end of the run. If <code>num_intervals</code>
-        is specified, <command>ocount</command> exits after the specified number of intervals occur.
+		<command>Note: </command>The <code>interval_length</code> is given in milliseconds.
+              However, the current implementation only supports 100 ms
+              granularity, so the given <code>interval_length</code> will be rounded
+              to the nearest 100 ms.  Results collected for each time
+              interval are printed immediately instead of the default
+              of one dump of cumulative event counts at the end of the
+              run.  Counters are reset to zero at the start of each
+              interval.
+		</para>
+		<para>
+              If <code>num_intervals</code> is specified, ocount exits after the
+              specified number of intervals occur.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -3591,9 +3600,10 @@ Following is a description of the <command>ocount</command> options.
         </screen></para>
         If <code>--timer-interval</code> is specified, a separate line formatted as
         <para><screen>
-                  timestamp,&lt;num_seconds_since_epoch&gt;
+                  timestamp,&lt;num_seconds_since_epoch&gt;[.n]
         </screen></para>
-        is printed ahead of each dump of event counts.
+        is printed ahead of each dump of event counts. If the time interval specified is
+        less than one second, the timestamp will have 1/10 second precision.
 		</para></listitem>
 	</varlistentry>
 

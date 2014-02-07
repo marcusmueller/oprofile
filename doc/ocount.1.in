@@ -184,16 +184,26 @@ to display event counts on a per-cpu basis.  Without this option, all counts are
 .br
 
 .TP
-.BI "--time-interval / -i " num_seconds[:num_intervals]
-Results collected for each time interval are printed every
-.IR "num_seconds"
+.BI "--time-interval / -i " interval_length[:num_intervals]
+
+.B Note:
+The
+.I "interval_length"
+is given in milliseconds. However, the current implementation only supports
+100 ms granularity, so the given
+.I "interval_length"
+will be rounded to the nearest 100 ms.
+Results collected for each time interval are printed immediately
 instead of the default of one dump of cumulative event counts at the end of the run.
-Counters are reset to zero at the start of each interval. If
+Counters are reset to zero at the start of each interval.
+.P
+.RS
+If
 .I num_intervals
 is specified,
 .BI ocount
 exits after the specified number of intervals occur.
-.br
+.RE
 
 .TP
 .BI "--brief-format / -b"
@@ -216,9 +226,10 @@ If
 .I --timer-interval
 is specified, a separate line formatted as
 .br
-    timestamp,<num_seconds_since_epoch>
+    timestamp,<num_seconds_since_epoch>[.n]
 .br
-is printed ahead of each dump of event counts.
+is printed ahead of each dump of event counts. If the time interval specified is
+less than one second, the timestamp will have 1/10 second precision.
 .RE
 
 .TP

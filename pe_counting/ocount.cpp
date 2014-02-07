@@ -27,6 +27,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <sys/time.h>
+#include <math.h>
 
 #include "op_pe_utils.h"
 #include "ocount_counter.h"
@@ -42,6 +43,12 @@ bool use_cpu_minus_one = false;
 std::vector<operf_event_t> events;
 op_cpu cpu_type;
 
+#define OCOUNT_MSECS_PER_SEC 1000
+// Current implementation supports a display interval of 100 ms
+#define OCOUNT_DSP_INTVL_MSECS 100
+#define OCOUNT_DSP_INTVLS_PER_SEC (OCOUNT_MSECS_PER_SEC/OCOUNT_DSP_INTVL_MSECS)
+#define OCOUNT_NSECS_PER_MSEC 1000000
+#define OCOUNT_NSECS_PER_DSP_INTVL (OCOUNT_NSECS_PER_MSEC * OCOUNT_DSP_INTVL_MSECS)
 
 static char * app_name_SAVE = NULL;
 static char ** app_args = NULL;
@@ -349,10 +356,55 @@ end_code_t _wait_for_app(ostream & out)
 		long number_intervals = ocount_options::num_intervals;
 		do {
 			struct timeval mytime;
-			int countdown = ocount_options::display_interval;
+			unsigned int countdown, dsp_intvl_in_100ms_units = 0;
+			struct timespec ts_req;
+
+			/* The display_interval is in milliseconds; but at this time, we only allow
+			 * 100ms granularity. */
+			dsp_intvl_in_100ms_units = (int)round(((double)ocount_options::display_interval/
+					OCOUNT_DSP_INTVL_MSECS));
+			if (dsp_intvl_in_100ms_units == 0)
+				dsp_intvl_in_100ms_units = 1; // special case of rounding up; prevent 0 time interval
+			countdown = dsp_intvl_in_100ms_units;
+			cverb << vdebug << "Actual display interval used: " << dsp_intvl_in_100ms_units
+					<< "x100ms" << endl;
+			ts_req.tv_nsec = countdown * OCOUNT_NSECS_PER_DSP_INTVL;
+			ts_req.tv_sec = 0;
 			while (countdown) {
-				sleep(1);
-				if (--countdown == 0) {
+				/* We want to avoid the scenario where, say, the user requests a
+				 * 10 second time interval and the app being counted ends
+				 * immediately after we call sleep().  If we called sleep() with
+				 * the full time interval, we'd be sleeping unnecessarily for
+				 * 10 seconds.  So, for any time interval of one second or longer,
+				 * we do a one second sleep(), wake up and check if the app is
+				 * still alive.
+				 */
+				if (countdown >= OCOUNT_DSP_INTVLS_PER_SEC) {
+					countdown -= OCOUNT_DSP_INTVLS_PER_SEC;
+					sleep(1);
+					if (countdown && (countdown < OCOUNT_DSP_INTVLS_PER_SEC)) {
+						/* The next time through the loop, we'll be taking the
+						 * 'else' leg of this if-statement -- i.e., we will have
+						 * finished the specified time interval, modulo
+						 * OCOUNT_DSP_INTVLS_PER_SEC. So we set sleep time
+						 * accordingly and force dsp_intvl_in_100ms_units to be
+						 * equal to the current countdown value so the "-=" op
+						 * below makes the countdown finally zero.
+						 */
+						ts_req.tv_nsec = countdown * OCOUNT_NSECS_PER_DSP_INTVL;
+						dsp_intvl_in_100ms_units  = countdown;
+					}
+
+				} else {
+					/* We don't bother keeping track of remaining time, since signals delivered
+					 * to this process will be rare (see nanosleep man page). The real time (in
+					 * the supported granularity of 100 ms) is printed out for each time interval,
+					 * so we leave it to the user to note any time gaps.
+					 */
+					(void)nanosleep(&ts_req, NULL);
+					countdown -= dsp_intvl_in_100ms_units;
+				}
+				if (countdown == 0) {
 					if (gettimeofday(&mytime, NULL) < 0) {
 						cleanup();
 						perror("gettimeofday");
@@ -362,7 +414,15 @@ end_code_t _wait_for_app(ostream & out)
 						out << endl << "Current time (seconds since epoch): ";
 					else
 						out << endl << "timestamp,";
-					out << dec << mytime.tv_sec;
+					if (dsp_intvl_in_100ms_units % OCOUNT_DSP_INTVLS_PER_SEC) {
+						int tenths_secs = (int)round(((double)mytime.tv_usec/100000));
+						if (tenths_secs == 10)
+							out << dec << mytime.tv_sec + 1 << "." << "0";
+						else
+							out << dec << mytime.tv_sec << "." << tenths_secs;
+					} else {
+						out << dec << mytime.tv_sec;
+					}
 					do_results(out);
 				}
 				wait_rc = waitpid(app_PID, &waitpid_status, WNOHANG);
@@ -415,8 +475,20 @@ static end_code_t _run(ostream & out)
 		if (ocount_options::display_interval) {
 			long number_intervals = ocount_options::num_intervals;
 			struct timeval mytime;
+			/* The display_interval is in milliseconds; but at this time, we only allow
+			 * 100ms granularity. */
+			struct timespec ts_req;
+			unsigned int dsp_intvl_in_100ms_units = (int)round(((double)ocount_options::display_interval/
+					OCOUNT_DSP_INTVL_MSECS));
+			if (dsp_intvl_in_100ms_units == 0)
+				dsp_intvl_in_100ms_units = 1; // special case of rounding up; prevent 0 time interval
+			cverb << vdebug << "Actual display interval used: " << dsp_intvl_in_100ms_units
+					<< "x100ms" << endl;
+			// 10 dsp_intvl_in_100ms_units is one second, so we set ts_req accordingly
+			ts_req.tv_sec = dsp_intvl_in_100ms_units/10;
+			ts_req.tv_nsec = (dsp_intvl_in_100ms_units % 10) * OCOUNT_NSECS_PER_DSP_INTVL;
 			while (!stop) {
-				sleep(ocount_options::display_interval);
+				(void)nanosleep(&ts_req, NULL);
 				if (gettimeofday(&mytime, NULL) < 0) {
 					cleanup();
 					perror("gettimeofday");
@@ -426,7 +498,15 @@ static end_code_t _run(ostream & out)
 					out << endl << "Current time (seconds since epoch): ";
 				else
 					out << endl << "t:";
-				out << dec << mytime.tv_sec;
+				if (dsp_intvl_in_100ms_units % OCOUNT_DSP_INTVLS_PER_SEC) {
+					int tenths_secs = (int)round(((double)mytime.tv_usec/100000));
+					if (tenths_secs == 10)
+						out << dec << mytime.tv_sec + 1 << "." << "0";
+					else
+						out << dec << mytime.tv_sec << "." << tenths_secs;
+				} else {
+					out << dec << mytime.tv_sec;
+				}
 				do_results(out);
 				if (--number_intervals == 0)
 					stop = true;
@@ -482,15 +562,17 @@ static void _parse_time_interval(void)
 	char * endptr;
 	char * num_intervals, * interval = strtok(optarg, ":");
 	ocount_options::display_interval = strtol(interval, &endptr, 10);
-	if ((endptr >= interval) && (endptr <= (interval + strlen(interval) - 1))) {
-			__print_usage_and_exit("ocount: Invalid numeric value for num_seconds.");
-	}
+	if (((endptr >= interval) && (endptr <= (interval + strlen(interval) - 1))) ||
+			(ocount_options::display_interval < 0))
+		__print_usage_and_exit("ocount: Invalid numeric value for interval_length.");
+
 	// User has specified num_intervals: e.g., '-i 5:10'
 	num_intervals = strtok(NULL, ":");
 	if (num_intervals) {
 		ocount_options::num_intervals = strtol(num_intervals, &endptr, 10);
-		if ((endptr >= num_intervals) && (endptr <= (num_intervals + strlen(num_intervals) - 1)))
-				__print_usage_and_exit("ocount: Invalid numeric value for num_intervals.");
+		if (((endptr >= num_intervals) && (endptr <= (num_intervals + strlen(num_intervals) - 1))) ||
+				(ocount_options::num_intervals < 0))
+			__print_usage_and_exit("ocount: Invalid numeric value for num_intervals.");
 	}
 }
 
