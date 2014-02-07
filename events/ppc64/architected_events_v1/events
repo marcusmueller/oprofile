@@ -44,8 +44,8 @@ event:0x101e4 counters:0 um:zero minimum:1000 name:PM_MRK_L1_ICACHE_MISS : Marke
 event:0x101ea counters:0 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID : Marked demand reload.
 event:0x201e2 counters:1 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss counted at exec time.
 event:0x10134 counters:0 um:zero minimum:1000 name:PM_MRK_ST_CMPL : Marked store completed.
-event:0x60005 counters:5 um:zero minimum:100000 name:PM_RUN_CYC : Run_cycles.
-event:0x50009 counters:4 um:zero minimum:100000 name:PM_RUN_INST_CMPL : Run_Instructions.
+event:0x600f4 counters:5 um:zero minimum:100000 name:PM_RUN_CYC : Run_cycles.
+event:0x500fa counters:4 um:zero minimum:100000 name:PM_RUN_INST_CMPL : Run_Instructions.
 event:0x400f4 counters:3 um:zero minimum:10000 name:PM_RUN_PURR : Run_PURR.
 event:0x200f0 counters:1 um:zero minimum:10000 name:PM_ST_FIN : Store Instructions Finished (store sent to nest).
 event:0x300f0 counters:2 um:zero minimum:10000 name:PM_ST_MISS_L1 : Store Missed L1.
