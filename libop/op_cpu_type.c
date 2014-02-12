@@ -129,6 +129,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "e6500", "ppc/e6500", CPU_PPC_E6500, 6 },
 	{ "Intel Silvermont microarchitecture", "i386/silvermont", CPU_SILVERMONT, 2 },
 	{ "ARMv7 Krait", "arm/armv7-krait", CPU_ARM_KRAIT, 5 },
+	{ "APM X-Gene", "arm/armv8-xgene", CPU_ARM_V8_APM_XGENE, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -395,6 +396,11 @@ static op_cpu _get_arm_cpu_type(void)
 		case 0xc0f:
 			return op_get_cpu_number("arm/armv7-ca15");
 		}
+	} else if (vendorid == 0x50) {	/* Applied Micro Circuits Corporation */
+		switch (cpuid) {
+		case 0x000:
+			return op_get_cpu_number("arm/armv8-xgene");
+		}
 	} else if (vendorid == 0x69) {	/* Intel xscale */
 		switch (cpuid >> 9) {
 		case 1:
@@ -631,7 +637,8 @@ static op_cpu __get_cpu_type_alt_method(void)
 			(strncmp(uname_info.machine, "ppc64le", 7) == 0)) {
 		return _get_ppc64_cpu_type();
 	}
-	if (strncmp(uname_info.machine, "arm", 3) == 0) {
+	if (strncmp(uname_info.machine, "arm", 3) == 0 ||
+	    strncmp(uname_info.machine, "aarch64", 7) == 0) {
 		return _get_arm_cpu_type();
 	}
 	if (strncmp(uname_info.machine, "tile", 4) == 0) {

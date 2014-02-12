@@ -59,6 +59,8 @@ event_files = \
 	arm/armv7-ca7/events arm/armv7-ca7/unit_masks \
 	arm/armv7-ca15/events arm/armv7-ca15/unit_masks \
 	arm/mpcore/events arm/mpcore/unit_masks \
+	arm/armv8-pmuv3-common/events arm/armv8-pmuv3-common/unit_masks \
+	arm/armv8-xgene/events arm/armv8-xgene/unit_masks \
 	avr32/events avr32/unit_masks \
 	mips/20K/events mips/20K/unit_masks \
 	mips/24K/events mips/24K/unit_masks \

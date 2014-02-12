@@ -656,6 +656,13 @@ int main(int argc, char const * argv[])
 			"Cortex A15 DDI (ARM DDI 0438F, revision r3p1)\n";
 		break;
 
+	case CPU_ARM_V8_APM_XGENE:
+		event_doc =
+			"See ARM Architecture Reference Manual \n"
+			"ARMv8, for ARMv8-A architecture profile\n"
+			"DDI (ARM DDI0487A.a)\n";
+		break;
+
 	case CPU_PPC64_PA6T:
 		event_doc =
 			"See PA6T Power Implementation Features Book IV\n"

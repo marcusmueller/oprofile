@@ -109,6 +109,7 @@ typedef enum {
 	CPU_PPC_E6500, /**< e6500 */
 	CPU_SILVERMONT, /** < Intel Silvermont microarchitecture */
 	CPU_ARM_KRAIT, /**< ARM KRAIT */
+	CPU_ARM_V8_APM_XGENE, /* APM X-Gene */
 	MAX_CPU_TYPE
 } op_cpu;
 

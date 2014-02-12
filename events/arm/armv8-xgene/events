@@ -1,0 +1,7 @@
+#
+# Copyright (c) Red Hat, 2014.
+# Contributed by William Cohen <wcohen@redhat.com>
+#
+# Basic ARM V8 events
+#
+include:arm/armv8-pmuv3-common

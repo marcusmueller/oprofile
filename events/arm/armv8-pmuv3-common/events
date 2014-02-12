@@ -1,0 +1,38 @@
+#
+# Copyright (c) Red Hat, 2014.
+# Contributed by William Cohen <wcohen@redhat.com>
+#
+# ARMv8 pmu v3 architected events
+
+event:0x00 um:zero minimum:500 name:SW_INCR : Instruction architecturally executed, condition code check pass, software increment
+event:0x01 um:zero minimum:5000 name:L1I_CACHE_REFILL : Level 1 instruction cache refill
+event:0x02 um:zero minimum:5000 name:L1I_TLB_REFILL : Level 1 instruction TLB refill
+event:0x03 um:zero minimum:5000 name:L1D_CACHE_REFILL : Level 1 data cache refill
+event:0x04 um:zero minimum:5000 name:L1D_CACHE : Level 1 data cache access
+event:0x05 um:zero minimum:5000 name:L1D_TLB_REFILL : Level 1 data TLB refill
+event:0x06 um:zero minimum:100000 name:LD_RETIRED : Instruction architecturally executed, condition code check pass, load
+event:0x07 um:zero minimum:100000 name:ST_RETIRED : Instruction architecturally executed, condition code check pass, store
+event:0x08 um:zero minimum:100000 name:INST_RETIRED : Instruction architecturally executed
+event:0x09 um:zero minimum:500 name:EXC_TAKEN : Exception taken
+event:0x0A um:zero minimum:500 name:EXC_RETURN : Instruction architecturally executed, condition code check pass, exception return
+event:0x0B um:zero minimum:500 name:CID_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, write to CONTEXTIDR
+event:0x0C um:zero minimum:5000 name:PC_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, software change of the PC
+event:0x0D um:zero minimum:5000 name:BR_IMMED_RETIRED : Instruction architecturally executed, immediate branch
+event:0x0E um:zero minimum:5000 name:BR_RETURN_RETIRED : Instruction architecturally executed, condition code check pass, procedure return
+event:0x0F um:zero minimum:500 name:UNALIGNED_LDST_RETIRED : Instruction architecturally executed, condition code check pass, unaligned load or store
+event:0x10 um:zero minimum:5000 name:BR_MIS_PRED : Mispredicted or not predicted branch speculatively executed
+event:0x11 um:zero minimum:100000 name:CPU_CYCLES : Cycle
+event:0x12 um:zero minimum:5000 name:BR_PRED : Predictable branch speculatively executed
+event:0x13 um:zero minimum:100000 name:MEM_ACCESS : Data memory access
+event:0x14 um:zero minimum:5000 name:L1I_CACHE : Level 1 instruction cache access
+event:0x15 um:zero minimum:5000 name:L1D_CACHE_WB : Level 1 data cache write-back
+event:0x16 um:zero minimum:5000 name:L2D_CACHE : Level 2 data cache access
+event:0x17 um:zero minimum:5000 name:L2D_CACHE_REFILL : Level 2 data cache refill
+event:0x18 um:zero minimum:5000 name:L2D_CACHE_WB : Level 2 data cache write-back
+event:0x19 um:zero minimum:5000 name:BUS_ACCESS : Bus access
+event:0x1A um:zero minimum:500 name:MEMORY_ERROR : Local memory error
+event:0x1B um:zero minimum:100000 name:INST_SPEC : Operation speculatively executed
+event:0x1C um:zero minimum:5000 name:TTBR_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, write to TTBR
+event:0x1D um:zero minimum:5000 name:BUS_CYCLES : Bus cycle
+event:0x1F um:zero minimum:5000 name:L1D_CACHE_ALLOCATE : Level 1 data cache allocation without refill
+event:0x20 um:zero minimum:5000 name:L2D_CACHE_ALLOCATE : Level 2 data cache allocation without refill

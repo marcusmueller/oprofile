@@ -400,6 +400,11 @@ do_init()
 				do_deinit
 				exit 1
 				;;
+		        aarch64/*)
+				echo "*** ARM AArch64 processors are not supported with opcontrol.  Please use operf instead. ***"
+				do_deinit
+				exit 1
+				;;
 		esac
 	fi
 
