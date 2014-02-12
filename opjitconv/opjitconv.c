@@ -35,6 +35,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <wait.h>
+#include <sys/file.h>
 
 /*
  * list head.  The linked list is used during parsing (parse_all) to
@@ -212,10 +213,31 @@ out:
  */
 int copy_dumpfile(char const * dumpfile, char * tmp_dumpfile)
 {
+#define OP_JITCONV_USECS_TO_WAIT 1000
+	int file_locked = 0;
+	unsigned int usecs_waited = 0;
 	int rc = OP_JIT_CONV_OK;
-
+	int fd = open(dumpfile, S_IRUSR);
+	if (fd < 0) {
+		perror("opjitconv failed to open JIT dumpfile");
+		return OP_JIT_CONV_FAIL;
+	}
+again:
+	// Need OS-level file locking here since opagent may still be writing to the file.
+	rc = flock(fd, LOCK_EX | LOCK_NB);
+	if (rc) {
+		if (usecs_waited < OP_JITCONV_USECS_TO_WAIT) {
+			usleep(100);
+			usecs_waited += 100;
+			goto again;
+		} else {
+			printf("opjitconv: Unable to obtain lock on %s.\n", dumpfile);
+			rc = OP_JIT_CONV_FAIL;
+			goto out;
+		}
+	}
+	file_locked = 1;
 	sprintf(sys_cmd_buffer, "/bin/cp -p %s %s", dumpfile, tmp_dumpfile);
-
 	if (system(sys_cmd_buffer) != 0) {
 		printf("opjitconv: Calling system() to copy files failed.\n");
 		rc = OP_JIT_CONV_FAIL;
@@ -229,6 +251,11 @@ int copy_dumpfile(char const * dumpfile, char * tmp_dumpfile)
 	}
 	
 out:
+#undef OP_JITCONV_USECS_TO_WAIT
+	close(fd);
+	if (file_locked)
+		flock(fd, LOCK_UN);
+
 	return rc;
 }
 

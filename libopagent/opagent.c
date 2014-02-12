@@ -126,6 +126,8 @@ static int define_bfd_vars(void)
 
 op_agent_t op_open_agent(void)
 {
+#define OP_JITCONV_USECS_TO_WAIT 1000
+	unsigned int usecs_waited = 0;
 	char pad_bytes[7] = {0, 0, 0, 0, 0, 0, 0};
 	int pad_cnt;
 	char dump_path[PATH_MAX];
@@ -196,6 +198,23 @@ op_agent_t op_open_agent(void)
 		close(fd);
 		return NULL;
 	}
+
+again:
+	/* We need OS-level file locking here because the opjitconv process may need to
+	 * copy the dumpfile while the JIT agent is still writing to it. */
+	rc = flock(fd, LOCK_EX | LOCK_NB);
+	if (rc) {
+		if (usecs_waited < OP_JITCONV_USECS_TO_WAIT) {
+			usleep(100);
+			usecs_waited += 100;
+			goto again;
+		} else {
+			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			return NULL;
+		}
+	}
+
+
 	if (define_bfd_vars()) {
 		fclose(dumpfile);
 		return NULL;
@@ -216,30 +235,35 @@ op_agent_t op_open_agent(void)
 
 	header.timestamp = tv.tv_sec;
 	snprintf(err_msg, PATH_MAX + 16, "Error writing to %s", dump_path);
-	if (!fwrite(&header, sizeof(header), 1, dumpfile)) {
+	if (!fwrite_unlocked(&header, sizeof(header), 1, dumpfile)) {
 		fclose(dumpfile);
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
-	if (!fwrite(_bfd_target_name, strlen(_bfd_target_name) + 1, 1,
+	if (!fwrite_unlocked(_bfd_target_name, strlen(_bfd_target_name) + 1, 1,
 		    dumpfile)) {
 		fclose(dumpfile);
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
 	/* write padding '\0' if necessary */
-	if (pad_cnt && !fwrite(pad_bytes, pad_cnt, 1, dumpfile)) {
+	if (pad_cnt && !fwrite_unlocked(pad_bytes, pad_cnt, 1, dumpfile)) {
 		fclose(dumpfile);
 		fprintf(stderr, "%s\n", err_msg);
 		return NULL;
 	}
-	fflush(dumpfile);
+	fflush_unlocked(dumpfile);
+	flock(fd, LOCK_UN);
+#undef OP_JITCONV_USECS_TO_WAIT
 	return (op_agent_t)dumpfile;
 }
 
 
 int op_close_agent(op_agent_t hdl)
 {
+#define OP_JITCONV_USECS_TO_WAIT 1000
+	unsigned int usecs_waited = 0;
+	int dumpfd, rc;
 	struct jr_code_close rec;
 	struct timeval tv;
 	FILE * dumpfile = (FILE *) hdl;
@@ -255,9 +279,26 @@ int op_close_agent(op_agent_t hdl)
 	}
 	rec.timestamp = tv.tv_sec;
 
-	if (!fwrite(&rec, sizeof(rec), 1, dumpfile))
+again:
+	/* We need OS-level file locking here because the opjitconv process may need to
+	 * copy the dumpfile while the JIT agent is still writing to it. */
+	rc = flock(dumpfd, LOCK_EX | LOCK_NB);
+	if (rc) {
+		if (usecs_waited < OP_JITCONV_USECS_TO_WAIT) {
+			usleep(100);
+			usecs_waited += 100;
+			goto again;
+		} else {
+			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			return -1;
+		}
+	}
+
+	if (!fwrite_unlocked(&rec, sizeof(rec), 1, dumpfile))
 		return -1;
 	fclose(dumpfile);
+	flock(dumpfd, LOCK_UN);
+#undef OP_JITCONV_USECS_TO_WAIT
 	dumpfile = NULL;
 	return 0;
 }
@@ -266,6 +307,9 @@ int op_close_agent(op_agent_t hdl)
 int op_write_native_code(op_agent_t hdl, char const * symbol_name,
 	uint64_t vma, void const * code, unsigned int const size)
 {
+#define OP_JITCONV_USECS_TO_WAIT 1000
+	unsigned int usecs_waited = 0;
+	int dumpfd, rc;
 	struct jr_code_load rec;
 	struct timeval tv;
 	size_t sz_symb_name;
@@ -296,7 +340,27 @@ int op_write_native_code(op_agent_t hdl, char const * symbol_name,
 
 	rec.timestamp = tv.tv_sec;
 
-	/* locking makes sure that we continuously write this record, if
+	if ((dumpfd = fileno(dumpfile)) < 0) {
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		return -1;
+	}
+again:
+	/* We need OS-level file locking here because the opjitconv process may need to
+	 * copy the dumpfile while the JIT agent is still writing to it.
+	 */
+	rc = flock(dumpfd, LOCK_EX | LOCK_NB);
+	if (rc) {
+		if (usecs_waited < OP_JITCONV_USECS_TO_WAIT) {
+			usleep(100);
+			usecs_waited += 100;
+			goto again;
+		} else {
+			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			return -1;
+		}
+	}
+
+	/* This locking makes sure that we continuously write this record if
 	 * we are called within a multi-threaded context */
 	flockfile(dumpfile);
 	/* Write record, symbol name, code (optionally), and (if necessary)
@@ -312,10 +376,13 @@ int op_write_native_code(op_agent_t hdl, char const * symbol_name,
 		 * data as soon as possible */
 		fflush_unlocked(dumpfile);
 		funlockfile(dumpfile);
+		flock(dumpfd, LOCK_UN);
 		return 0;
 	}
 	fflush_unlocked(dumpfile);
 	funlockfile(dumpfile);
+	flock(dumpfd, LOCK_UN);
+#undef OP_JITCONV_USECS_TO_WAIT
 	return -1;
 }
 
@@ -324,13 +391,15 @@ int op_write_debug_line_info(op_agent_t hdl, void const * code,
 			     size_t nr_entry,
 			     struct debug_line_info const * compile_map)
 {
+#define OP_JITCONV_USECS_TO_WAIT 1000
+	unsigned int usecs_waited = 0;
 	struct jr_code_debug_info rec;
 	long cur_pos, last_pos;
 	struct timeval tv;
 	size_t i;
 	size_t padding_count;
 	char padd_bytes[7] = {0, 0, 0, 0, 0, 0, 0};
-	int rc = -1;
+	int dumpfd, rc = -1;
 	FILE * dumpfile = (FILE *) hdl;
 
 	if (!dumpfile) {
@@ -355,6 +424,27 @@ int op_write_debug_line_info(op_agent_t hdl, void const * code,
 
 	rec.timestamp = tv.tv_sec;
 
+	if ((dumpfd = fileno(dumpfile)) < 0) {
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		return -1;
+	}
+again:
+	/* We need OS-level file locking here because the opjitconv process may need to
+	 * copy the dumpfile while the JIT agent is still writing to it. */
+	rc = flock(dumpfd, LOCK_EX | LOCK_NB);
+	if (rc) {
+		if (usecs_waited < OP_JITCONV_USECS_TO_WAIT) {
+			usleep(100);
+			usecs_waited += 100;
+			goto again;
+		} else {
+			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			return -1;
+		}
+	}
+
+	/* This locking makes sure that we continuously write this record if
+	 * we are called within a multi-threaded context. */
 	flockfile(dumpfile);
 
 	if ((cur_pos = ftell(dumpfile)) == -1l)
@@ -392,12 +482,17 @@ int op_write_debug_line_info(op_agent_t hdl, void const * code,
 error:
 	fflush_unlocked(dumpfile);
 	funlockfile(dumpfile);
+	flock(dumpfd, LOCK_UN);
+#undef OP_JITCONV_USECS_TO_WAIT
 	return rc;
 }
 
 
 int op_unload_native_code(op_agent_t hdl, uint64_t vma)
 {
+#define OP_JITCONV_USECS_TO_WAIT 1000
+	int dumpfd, rc;
+	unsigned int usecs_waited = 0;
 	struct jr_code_unload rec;
 	struct timeval tv;
 	FILE * dumpfile = (FILE *) hdl;
@@ -417,9 +512,35 @@ int op_unload_native_code(op_agent_t hdl, uint64_t vma)
 	}
 	rec.timestamp = tv.tv_sec;
 
-	if (!fwrite(&rec, sizeof(rec), 1, dumpfile))
+	if ((dumpfd = fileno(dumpfile)) < 0) {
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
 		return -1;
-	fflush(dumpfile);
+	}
+again:
+	/* We need OS-level file locking here because the opjitconv process may need to
+	 * copy the dumpfile while the JIT agent is still writing to it. */
+	rc = flock(dumpfd, LOCK_EX | LOCK_NB);
+	if (rc) {
+		if (usecs_waited < OP_JITCONV_USECS_TO_WAIT) {
+			usleep(100);
+			usecs_waited += 100;
+			goto again;
+		} else {
+			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			return -1;
+		}
+	}
+
+	/* This locking makes sure that we continuously write this record if
+	 * we are called within a multi-threaded context. */
+	flockfile(dumpfile);
+
+	if (!fwrite_unlocked(&rec, sizeof(rec), 1, dumpfile))
+		return -1;
+	fflush_unlocked(dumpfile);
+	funlockfile(dumpfile);
+	flock(dumpfd, LOCK_UN);
+#undef OP_JITCONV_USECS_TO_WAIT
 	return 0;
 }
 
