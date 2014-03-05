@@ -334,8 +334,7 @@ set<int> op_pe_utils::op_get_available_cpus(int max_num_cpus)
 		goto out;
 	}
 	memset(cpus_online, 0, sizeof(cpus_online));
-	fgets(cpus_online, sizeof(cpus_online), online_cpus);
-	if (!cpus_online[0]) {
+	if (fgets(cpus_online, sizeof(cpus_online), online_cpus) == NULL) {
 		fclose(online_cpus);
 		err_msg = "Internal Error: Number of online cpus cannot be determined.";
 		rc = -1;

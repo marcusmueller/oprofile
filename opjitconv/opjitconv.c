@@ -813,10 +813,8 @@ static void _cleanup_jitdumps(void)
 
 }
 
-static void __print_usage(const char * extra_msg)
+static void __print_usage(void)
 {
-	if (extra_msg)
-		fprintf(stderr, extra_msg);
 	fprintf(stderr, "usage: opjitconv [--debug | --non-root | --delete-jitdumps ] --session-dir=<dir> <starttime> <endtime>\n");
 }
 
@@ -875,7 +873,7 @@ int main(int argc, char * const argv[])
 	non_options_idx = _process_args(argc, argv);
 	// We need the session_dir and two non-option values passed -- starttime and endtime.
 	if (!session_dir || (non_options_idx != argc - 2)) {
-		__print_usage(NULL);
+		__print_usage();
 		fflush(stdout);
 		rc = EXIT_FAILURE;
 		goto out;
