@@ -38,8 +38,11 @@ void report_image_error(string const & image, image_error error, bool fatal,
 		reported_images_error.insert(image_name);
 
 		// FIXME: hacky
-		if (error == image_not_found && is_prefix(image, "anon "))
+		if (error == image_not_found && (is_prefix(image, "anon ") ||
+				image == "/no-vmlinux" || is_prefix(image, "[vdso]") ||
+                                is_prefix(image, "[hypervisor_bucket]"))) {
 			return;
+		}
 
 		cerr << (fatal ? "error: " : "warning: ");
 		cerr << image_name << ' ';

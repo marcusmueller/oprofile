@@ -87,7 +87,7 @@ directory should be /root or a subdirectory of /root to avoid
 storing sample data files in locations accessible by regular users.
 .br
 .TP
-.BI "--vmlinux / k " vmlinux_path
+.BI "--vmlinux / -k " vmlinux_path
 .RS
 A vmlinux file that matches the running kernel that has symbol and/or debuginfo.
 Kernel samples will be attributed to this binary, allowing post-processing tools
@@ -96,6 +96,12 @@ Kernel samples will be attributed to this binary, allowing post-processing tools
 The kernel symbol information may be obtained from /proc/kallsyms if
 the user does not specify a vmlinux file.  The symbol addresses are given
 in /proc/kallsyms if permitted by the setting of /proc/sys/kernel/kptr_restrict.
+.P
+If the
+.I --vmlinux
+option is not used and kernel symbols cannot be obtained from /proc/kallsyms,
+then all kernel samples are attributed to "no-vmlinux", which is simply
+a bucket to hold the samples and not an actual file.
 .RE
 .TP
 .BI "--events / -e " event1[,event2[,...]]
