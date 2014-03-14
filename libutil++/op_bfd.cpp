@@ -303,7 +303,7 @@ void op_bfd::get_kallsym_symbols(symbols_found_t & symbols, ifstream& infile)
 	stringstream iss;
 
 	bfd_vma start = 0, start_prev = 0;
-	unsigned long long length;
+	unsigned long long length, start_value;
 	bool ignore_symbol = true;
 	bfd_vma base_addr = 0;
 	name_prev = "";
@@ -319,7 +319,8 @@ void op_bfd::get_kallsym_symbols(symbols_found_t & symbols, ifstream& infile)
 		iss >> type;
 		iss >> name;
 
-		sscanf(address_str.c_str(), "%lx", &start);
+		sscanf(address_str.c_str(), "%llx", &start_value);
+		start = start_value;
 
 		if (start_prev == start)
 			length = 0;
