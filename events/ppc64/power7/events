@@ -2128,6 +2128,16 @@ event:0X1075 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP263 : (Group 26
 event:0X1080 counters:0 um:zero minimum:1000 name:PM_GCT_NOSLOT_CYC_EDGE_COUNT_GRP264 : (Group 264 pm_gct_noslot) Number of distinct occurrences when the Global Completion Table has no slots from this thread.
 event:0X1081 counters:1 um:zero minimum:1000 name:PM_GCT_EMPTY_CYC_GRP264 : (Group 264 pm_gct_noslot) Cycles when the Global Completion Table was completely empty.  No thread had an entry allocated.
 event:0X1082 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP264 : (Group 264 pm_gct_noslot) Number of PowerPC Instructions that completed.
-event:0X1081 counters:1 um:zero minimum:10000 name:PM_CYC_GRP264 : (Group 264 pm_gct_noslot) Processor Cycles
+event:0X1083 counters:3 um:zero minimum:1000 name:PM_GCT_NOSLOT_BR_MPRED_EDGE_COUNT_GRP264 : (Group 264 pm_gct_noslot) Number of distinct occurrences when the Global Completion Table has no slots from this thread because of a branch misprediction.
 event:0X1084 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP264 : (Group 264 pm_gct_noslot) Number of run instructions completed.
 event:0X1085 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP264 : (Group 264 pm_gct_noslot) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
+
+#Group 265 pm_cmplu_stall, CMPLU stall events
+###### DO NOT REMOVE ######
+event:0X1090 counters:0 um:zero minimum:1000 name:PM_CMPLU_STALL_THRD_EDGE_COUNT_GRP265 : (Group 265 pm_cmplu_stall) Number of distinct occurrences when completion stalled due to thread conflict.  Group ready to complete but it was another thread's turn
+event:0X1091 counters:1 um:zero minimum:1000 name:PM_CMPLU_STALL_DFU_GRP265 : (Group 265 pm_cmplu_stall) Completion stall caused by Decimal Floating Point Unit
+event:0X1092 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP265 : (Group 265 pm_cmplu_stall) Number of PowerPC Instructions that completed.
+event:0X1093 counters:3 um:zero minimum:1000 name:PM_GCT_NOSLOT_BR_MPRED_IC_MISS_GRP265 : (Group 265 pm_cmplu_stall) No slot in GCT caused by branch mispredict or I cache miss
+event:0X1094 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP265 : (Group 265 pm_cmplu_stall) Number of run instructions completed.
+event:0X1095 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP265 : (Group 265 pm_cmplu_stall) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
+
