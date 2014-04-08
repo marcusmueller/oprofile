@@ -574,7 +574,7 @@ static void _add_jitdumps_to_deletion_list(void * all_jitdumps, char const * jit
 			continue;
 		}
 		close(fd);
-		if (geteuid() == mystat.st_uid) {
+		if (!non_root || geteuid() == mystat.st_uid) {
 			struct jitdump_deletion_candidate * jdc =
 					xmalloc(sizeof(struct jitdump_deletion_candidate));
 			jdc->name = xstrdup(dmpfile->name);
