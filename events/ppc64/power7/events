@@ -2141,3 +2141,28 @@ event:0X1093 counters:3 um:zero minimum:1000 name:PM_GCT_NOSLOT_BR_MPRED_IC_MISS
 event:0X1094 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP265 : (Group 265 pm_cmplu_stall) Number of run instructions completed.
 event:0X1095 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP265 : (Group 265 pm_cmplu_stall) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
 
+#Group 266 pm_cmplu_stall2, CMPLU stall (vector)
+###### DO NOT REMOVE ######
+event:0X10A0 counters:0 um:zero minimum:1000 name:PM_CMPLU_STALL_END_GCT_NOSLOT_GRP266 : (Group 266 pm_cmplu_stall2) Count ended because GCT went empty
+event:0X10A1 counters:1 um:zero minimum:1000 name:PM_CMPLU_STALL_VECTOR_EDGE_COUNT_GRP266 : (Group 266 pm_cmplu_stall2) Number of distinct occurrences when completion stalled caused by Vector instruction
+event:0X10A2 counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC_COUNT_GRP266 : (Group 266 pm_cmplu_stall2) Marked Group Completion Stall cycles (use edge detect to count #)
+event:0X10A3 counters:3 um:zero minimum:1000 name:PM_CMPLU_STALL_EDGE_COUNT_GRP266 : (Group 266 pm_cmplu_stall2) Number of distinct occurrences when no groups completed, GCT not empty
+event:0X10A4 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP266 : (Group 266 pm_cmplu_stall2) Number of run instructions completed.
+event:0X10A5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP266 : (Group 266 pm_cmplu_stall2) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
+
+#Group 267 pm_cmplu_stall3, CMPLU stall (scalar)
+###### DO NOT REMOVE ######
+event:0X10B0 counters:0 um:zero minimum:1000 name:PM_FLOP_GRP267 : (Group 267 pm_cmplu_stall3) A floating point operation has completed
+event:0X10B1 counters:1 um:zero minimum:1000 name:PM_CMPLU_STALL_SCALAR_LONG_GRP267 : (Group 267 pm_cmplu_stall3) Completion stall caused by long latency scalar instruction
+event:0X10B2 counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC_GRP267 : (Group 267 pm_cmplu_stall3) Marked Group Completion Stall cycles
+event:0X10B3 counters:3 um:zero minimum:1000 name:PM_CMPLU_STALL_SCALAR_EDGE_COUNT_GRP267 : (Group 267 pm_cmplu_stall3) Number of distinct occurrences when completion stalled caused by FPU instruction
+event:0X10B4 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP267 : (Group 267 pm_cmplu_stall3) Number of run instructions completed.
+event:0X10B5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP267 : (Group 267 pm_cmplu_stall3) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
+
+#Group 268 pm_cmplu_ifu, IFU stall
+event:0X10C0 counters:0 um:zero minimum:1000 name:PM_CMPLU_STALL_END_GCT_NOSLOT_GRP268 : (Group 268 pm_cmplu_ifu) Count ended because GCT went empty
+event:0X10C1 counters:1 um:zero minimum:1000 name:PM_LSU0_L1_SW_PREF_GRP268 : (Group 268 pm_cmplu_ifu) LSU0 Software L1 Prefetches, including SW Transient Prefetches
+event:0X10C2 counters:2 um:zero minimum:1000 name:PM_LSU1_L1_SW_PREF_GRP268 : (Group 268 pm_cmplu_ifu) LSU1 Software L1 Prefetches, including SW Transient Prefetches
+event:0X10C3 counters:3 um:zero minimum:1000 name:PM_CMPLU_STALL_IFU_EDGE_COUNT_GRP268 : (Group 268 pm_cmplu_ifu) Number of distinct occurrences when completion stalled due to IFU
+event:0X10C4 counters:4 um:zero minimum:1000 name:PM_RUN_INST_CMPL_GRP268 : (Group 268 pm_cmplu_ifu) Number of run instructions completed.
+event:0X10C5 counters:5 um:zero minimum:10000 name:PM_RUN_CYC_GRP268 : (Group 268 pm_cmplu_ifu) Processor Cycles gated by the run latch.  Operating systems use the run latch to indicate when they are doing useful work.  The run latch is typically cleared in the OS idle loop.  Gating by the run latch filters out the idle loop.
