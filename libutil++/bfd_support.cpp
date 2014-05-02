@@ -633,8 +633,14 @@ void bfd_info::translate_debuginfo_syms(asymbol ** dbg_syms, long nr_dbg_syms)
 
 bool bfd_info::get_synth_symbols()
 {
-	extern const bfd_target bfd_elf64_powerpc_vec;
-	bool is_elf64_powerpc_target = (abfd->xvec == &bfd_elf64_powerpc_vec);
+	const char* targname = bfd_get_target(abfd);
+	// Match elf64-powerpc and elf64-powerpc-freebsd, but not
+	// elf64-powerpcle.  elf64-powerpcle is a different ABI without
+	// function descriptors, so we don't need the synthetic
+	// symbols to have function code marked by a symbol.
+	bool is_elf64_powerpc_target = (!strncmp(targname, "elf64-powerpc", 13)
+					&& (targname[13] == 0
+					    || targname[13] == '-'));
 
 	if (!is_elf64_powerpc_target)
 		return false;

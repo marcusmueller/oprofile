@@ -22,32 +22,32 @@ dnl Use a different bfd function here so as not to use cached result from above
 
 AC_LANG_PUSH(C)
 # Determine if bfd_get_synthetic_symtab macro is available
-OS="`uname`"
-if test "$OS" = "Linux"; then
-	AC_MSG_CHECKING([whether bfd_get_synthetic_symtab() exists in BFD library])
-	rm -f test-for-synth
-	AC_LANG_CONFTEST(
-		[AC_LANG_PROGRAM([[#include <bfd.h>]],
-			[[asymbol * synthsyms;	bfd * ibfd = 0; 
-			long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);
-			extern const bfd_target bfd_elf64_powerpc_vec;
-			extern const bfd_target bfd_elf64_powerpcle_vec;
-			char * ppc_name = bfd_elf64_powerpc_vec.name;
-			char * ppcle_name = bfd_elf64_powerpcle_vec.name;
-			printf("%s %s\n", ppc_name, ppcle_name);]])
-		])
-	$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS -o  test-for-synth > /dev/null 2>&1
-	if test -f test-for-synth; then
-		echo "yes"
-		SYNTHESIZE_SYMBOLS='1'
-	else
-		echo "no"
-		SYNTHESIZE_SYMBOLS='0'
-	fi
-	AC_DEFINE_UNQUOTED(SYNTHESIZE_SYMBOLS, $SYNTHESIZE_SYMBOLS, [Synthesize special symbols when needed])
-	rm -f test-for-synth*
+AC_MSG_CHECKING([whether bfd_get_synthetic_symtab() exists in BFD library])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>
+	]],
+	[[asymbol * synthsyms;	bfd * ibfd = 0;
+	long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);
+	extern const bfd_target powerpc_elf64_vec;
+	char *ppc_name = powerpc_elf64_vec.name;
+	printf("%s\n", ppc_name);
+	]])],
+	[AC_MSG_RESULT([yes])
+	SYNTHESIZE_SYMBOLS=2],
+	[AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>
+		]],
+		[[asymbol * synthsyms;	bfd * ibfd = 0;
+		long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);
+		extern const bfd_target bfd_elf64_powerpc_vec;
+		char *ppc_name = bfd_elf64_powerpc_vec.name;
+		printf("%s\n", ppc_name);
+		]])],
+		[AC_MSG_RESULT([yes])
+		SYNTHESIZE_SYMBOLS=1],
+		[AC_MSG_RESULT([no])
+		SYNTHESIZE_SYMBOLS=0])
+	])
+AC_DEFINE_UNQUOTED(SYNTHESIZE_SYMBOLS, $SYNTHESIZE_SYMBOLS, [Synthesize special symbols when needed])
 
-fi
 AC_LANG_POP(C)
 ]
 )
