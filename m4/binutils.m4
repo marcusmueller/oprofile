@@ -23,9 +23,10 @@ dnl Use a different bfd function here so as not to use cached result from above
 AC_LANG_PUSH(C)
 # Determine if bfd_get_synthetic_symtab macro is available
 AC_MSG_CHECKING([whether bfd_get_synthetic_symtab() exists in BFD library])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>
-	]],
-	[[asymbol * synthsyms;	bfd * ibfd = 0;
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>]
+	[#include <stdio.h>]
+	[static bfd _ibfd;]],
+	[[asymbol * synthsyms;	bfd * ibfd = &_ibfd;
 	long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);
 	extern const bfd_target powerpc_elf64_vec;
 	char *ppc_name = powerpc_elf64_vec.name;
@@ -33,9 +34,10 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>
 	]])],
 	[AC_MSG_RESULT([yes])
 	SYNTHESIZE_SYMBOLS=2],
-	[AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>
-		]],
-		[[asymbol * synthsyms;	bfd * ibfd = 0;
+	[AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <bfd.h>]
+		[#include <stdio.h>]
+		[static bfd _ibfd;]],
+		[[asymbol * synthsyms;	bfd * ibfd = &_ibfd;
 		long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);
 		extern const bfd_target bfd_elf64_powerpc_vec;
 		char *ppc_name = bfd_elf64_powerpc_vec.name;
