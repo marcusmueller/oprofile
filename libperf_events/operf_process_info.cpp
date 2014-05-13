@@ -103,7 +103,7 @@ void operf_process_info::set_appname(const char * appname, bool app_arg_is_fulln
 			ostringstream message;
 			message << "PID: " << hex << pid << " Unable to obtain appname from " << exe_symlink << endl
 			        <<  "\t" << strerror(errno) << endl;
-			cerr << message.str();
+			cout << message.str();
 		}
 		if (appname && strcmp(appname, "taskset")) {
 			_appname = appname;
