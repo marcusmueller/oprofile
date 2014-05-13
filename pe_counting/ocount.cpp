@@ -228,12 +228,12 @@ bool start_counting(void)
 	if (startApp) {
 		if (pipe(app_ready_pipe) < 0 || pipe(start_app_pipe) < 0) {
 			perror("Internal error: ocount-record could not create pipe");
-			_exit(EXIT_FAILURE);
+			return false;
 		}
 		app_PID = fork();
 		if (app_PID < 0) {
 			perror("Internal error: fork failed");
-			_exit(EXIT_FAILURE);
+			return false;
 		} else if (app_PID == 0) { // child process for exec'ing app
 			run_app();
 		}
@@ -261,7 +261,7 @@ bool start_counting(void)
 		cverb << vdebug << "telling child to start app" << endl;
 		if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
 			perror("Internal error on start_app_pipe");
-			return -1;
+			return false;
 		}
 		app_started = true;
 	}
@@ -460,8 +460,7 @@ static end_code_t _run(ostream & out)
 	} catch (const runtime_error & e) {
 		cerr << "Caught runtime error while setting up counters" << endl;
 		cerr << e.what() << endl;
-		cleanup();
-		exit(EXIT_FAILURE);
+		return PERF_RECORD_ERROR;
 	}
 	// parent continues here
 	if (startApp)
