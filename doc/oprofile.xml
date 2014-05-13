@@ -2576,6 +2576,15 @@ used --separate.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-file [files]</option></term><listitem><para>
 Exclude all files in the given comma-separated list of glob patterns.
+This option is supported solely with the <code>--source</code>
+option. It can be used to filter out source files in the output using the
+following types of specifications:
+<itemizedlist>
+<listitem>filenames (basename -- i.e., no path)</listitem>
+<listitem>filename glob specifications (all files whose base filename matches the given pattern)</listitem>
+<listitem>directory segments (all source files located in the specified directory; e.g. "libio")</listitem>
+<listitem>directory segment glob specifications (e.g., "libi*")</listitem>
+</itemizedlist>
 </para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-symbols / -e [symbols]</option></term><listitem><para>
 Exclude all the symbols in the given comma-separated list.
@@ -2592,6 +2601,7 @@ A path to a filesystem to search for additional binaries.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--include-file [files]</option></term><listitem><para>
 Only include files in the given comma-separated list of glob patterns.
+The same rules apply for this option as for the <code>--exclude-file</code> option.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--include-symbols / -i [symbols]</option></term><listitem><para>
 Only include symbols in the given comma-separated list.

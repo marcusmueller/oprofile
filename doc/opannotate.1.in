@@ -40,7 +40,21 @@ used --separate.
 .br
 .TP
 .BI "--exclude-file [files]"
-Exclude all files in the given comma-separated list of glob patterns.
+Exclude all files in the given comma-separated list of glob patterns. This option
+is supported solely with the
+.I --source
+option. It can be used to filter out source files in the output using the
+following types of specifications:
+.RS
+.IP \(bu 2
+filenames (basename -- i.e., no path)
+.IP \(bu 2
+filename glob specifications (all files whose base filename matches the given pattern)
+.IP \(bu 2
+directory segments (all source files located in the specified directory; e.g. "libio")
+.IP \(bu 2
+directory segment glob specifications (e.g., "libi*")
+.RE
 .br
 .TP
 .BI "--exclude-symbols / -e [symbols]"
@@ -62,6 +76,9 @@ A path to a filesystem to search for additional binaries.
 .TP
 .BI "--include-file [files]"
 Only include files in the given comma-separated list of glob patterns.
+The same rules apply for this option as for the
+.I --exclude-file
+option.
 .br
 .TP
 .BI "--merge / -m [lib,cpu,tid,tgid,unitmask,all]"

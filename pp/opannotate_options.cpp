@@ -140,6 +140,12 @@ void handle_options(options::spec const & spec)
 		exit(EXIT_FAILURE);
 	}
 
+	if (assembly && (!include_file.empty() || !exclude_file.empty())) {
+		cerr << "--exclude[include]-file options not supported with --assembly" << endl;
+		cerr << "Please see the opannotate man page." << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	options::symbol_filter = string_filter(include_symbols, exclude_symbols);
 
 	options::file_filter = path_filter(include_file, exclude_file);
