@@ -399,7 +399,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 			 */
 		}
 	} else {
-		op_mmap = proc->find_mapping_for_sample(data->ip);
+		op_mmap = proc->find_mapping_for_sample(data->ip, hypervisor_domain);
 		if (op_mmap && op_mmap->is_hypervisor && !hypervisor_domain) {
 			cverb << vconvert << "Invalid sample: Address falls within hypervisor address range, but is not a hypervisor domain sample." << endl;
 			operf_stats[OPERF_INVALID_CTX]++;

@@ -217,11 +217,12 @@ void operf_process_info::find_best_match_appname_all_mappings(void)
 
 }
 
-const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample_addr)
+const struct operf_mmap * operf_process_info::find_mapping_for_sample(u64 sample_addr, bool hypervisor_sample)
 {
 	map<u64, struct operf_mmap *>::iterator it = mmappings.begin();
 	while (it != mmappings.end()) {
-		if (sample_addr >= it->second->start_addr && sample_addr <= it->second->end_addr)
+		if (sample_addr >= it->second->start_addr && sample_addr <= it->second->end_addr &&
+				it->second->is_hypervisor == hypervisor_sample)
 			return it->second;
 		it++;
 	}

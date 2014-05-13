@@ -68,7 +68,7 @@ public:
 	void try_disassociate_from_parent(char * appname);
 	void remove_forked_process(pid_t forked_pid);
 	std::string get_app_name(void) { return _appname; }
-	const struct operf_mmap * find_mapping_for_sample(u64 sample_addr);
+	const struct operf_mmap * find_mapping_for_sample(u64 sample_addr, bool hypervisor_sample);
 	void set_appname(const char * appname, bool app_arg_is_fullname);
 	void check_mapping_for_appname(struct operf_mmap * mapping);
 
