@@ -2189,7 +2189,7 @@ linkend="interpreting-callgraph" /> for an explanation.
 </para>
 </sect3>
 <sect3 id="cg-with-jitsupport">
-<title>Callgraph and JIT support</title>
+<title>Callgraph is not supported with JIT samples</title>
 <para>
 Callgraph output where anonymously mapped code is in the callstack can sometimes be misleading.
 For all such code, the samples for the anonymously mapped code are stored in a samples subdirectory
