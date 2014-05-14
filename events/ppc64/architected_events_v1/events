@@ -8,32 +8,32 @@
 # Manually add CYCLES for backward compatibility for default event
 event:0x100f0 counters:0 um:zero minimum:100000 name:CYCLES : Cycles
 
-event:0x100f2 counters:0 um:zero minimum:100000 name:PM_1PLUS_PPC_CMPL : 1 or more ppc  insts finished (completed).
+event:0x100f2 counters:0 um:zero minimum:100000 name:PM_1PLUS_PPC_CMPL : 1 or more ppc insts finished (completed).
 event:0x400f2 counters:3 um:zero minimum:100000 name:PM_1PLUS_PPC_DISP : Cycles at least one Instr Dispatched. Could be a group with only microcode. Issue HW016521
-event:0x100fa counters:0 um:zero minimum:100000 name:PM_ANY_THRD_RUN_CYC : Any thread in run_cycles  (was one thread in run_cycles).
+event:0x100fa counters:0 um:zero minimum:100000 name:PM_ANY_THRD_RUN_CYC : Any thread in run_cycles (was one thread in run_cycles).
 event:0x400f6 counters:3 um:zero minimum:10000 name:PM_BR_MPRED_CMPL : Number of Branch Mispredicts.
 event:0x200fa counters:1 um:zero minimum:10000 name:PM_BR_TAKEN_CMPL : Branch Taken.
-event:0x1e counters:0,1,2,3 um:zero minimum:100000 name:PM_CYC : Cycles.
+event:0x1e counters:0,1,2,3 um:zero minimum:100000 name:PM_CYC : Cycles .
 event:0x200fe counters:1 um:zero minimum:10000 name:PM_DATA_FROM_L2MISS : Demand LD - L2 Miss (not L2 hit).
 event:0x300fe counters:2 um:zero minimum:10000 name:PM_DATA_FROM_L3MISS : Demand LD - L3 Miss (not L2 hit and not L3 hit).
 event:0x400fe counters:3 um:zero minimum:10000 name:PM_DATA_FROM_MEM : Data cache reload from memory (including L4).
-event:0x300fc counters:2 um:zero minimum:10000 name:PM_DTLB_MISS : Data PTEG Reloaded  (DTLB Miss).
+event:0x300fc counters:2 um:zero minimum:10000 name:PM_DTLB_MISS : Data PTEG Reloaded (DTLB Miss).
 event:0x200f8 counters:1 um:zero minimum:10000 name:PM_EXT_INT : external interrupt.
 event:0x100f4 counters:0 um:zero minimum:10000 name:PM_FLOP : Floating Point Operations Finished.
 event:0x400f8 counters:3 um:zero minimum:10000 name:PM_FLUSH : Flush (any type).
 event:0x100f8 counters:0 um:zero minimum:10000 name:PM_GCT_NOSLOT_CYC : Pipeline empty (No itags assigned , no GCT slots used).
-event:0x100f6 counters:0 um:zero minimum:10000 name:PM_IERAT_RELOAD : IERAT Reloaded  (Miss).
+event:0x100f6 counters:0 um:zero minimum:10000 name:PM_IERAT_RELOAD : IERAT Reloaded (Miss).
 event:0x200f2 counters:1 um:zero minimum:100000 name:PM_INST_DISP : PPC Dispatched.
 event:0x300fa counters:2 um:zero minimum:10000 name:PM_INST_FROM_L3MISS : Inst from L3 miss.
 event:0x400fc counters:3 um:zero minimum:10000 name:PM_ITLB_MISS : ITLB Reloaded.
-event:0x300f6 counters:2 um:zero minimum:10000 name:PM_L1_DCACHE_RELOAD_VALID : DL1  reloaded due to Demand Load .
+event:0x300f6 counters:2 um:zero minimum:10000 name:PM_L1_DCACHE_RELOAD_VALID : DL1 reloaded due to Demand Load .
 event:0x200fd counters:1 um:zero minimum:10000 name:PM_L1_ICACHE_MISS : Demand iCache Miss.
 event:0x3e054 counters:2 um:zero minimum:10000 name:PM_LD_MISS_L1 : Load Missed L1.
-event:0x200f6 counters:1 um:zero minimum:10000 name:PM_LSU_DERAT_MISS : DERAT Reloaded  (Miss).
+event:0x200f6 counters:1 um:zero minimum:10000 name:PM_LSU_DERAT_MISS : DERAT Reloaded (Miss).
 event:0x301e4 counters:2 um:zero minimum:1000 name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted.
 event:0x101e2 counters:0 um:zero minimum:1000 name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken.
 event:0x401e8 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS : Data cache reload L2 miss.
-event:0x201e4 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS : The processor's data cache was reloaded from a localtion other than the local core's L3  due to a marked load.
+event:0x201e4 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS : The processor's data cache was reloaded from a localtion other than the local core's L3 due to a marked load.
 event:0x201e0 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load.
 event:0x301e6 counters:2 um:zero minimum:1000 name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes.
 event:0x401e4 counters:3 um:zero minimum:1000 name:PM_MRK_DTLB_MISS : Marked dtlb miss.
@@ -51,9 +51,9 @@ event:0x200f0 counters:1 um:zero minimum:10000 name:PM_ST_FIN : Store Instructio
 event:0x300f0 counters:2 um:zero minimum:10000 name:PM_ST_MISS_L1 : Store Missed L1.
 event:0x300f8 counters:2 um:zero minimum:10000 name:PM_TB_BIT_TRANS : timebase event.
 event:0x300f4 counters:2 um:zero minimum:100000 name:PM_THRD_CONC_RUN_INST : Concurrent Run Instructions.
-event:0x301ea counters:2 um:zero minimum:1000 name:PM_THRESH_EXC_1024 : Reload latency exceeded 1024 cyc
+event:0x301ea counters:2 um:zero minimum:1000 name:PM_THRESH_EXC_1024 : Threshold counter exceeded a value of 1024.
 event:0x401ea counters:3 um:zero minimum:1000 name:PM_THRESH_EXC_128 : Threshold counter exceeded a value of 128.
-event:0x401ec counters:3 um:zero minimum:1000 name:PM_THRESH_EXC_2048 : Threshold counter exceeded a value of 2048
+event:0x401ec counters:3 um:zero minimum:1000 name:PM_THRESH_EXC_2048 : Threshold counter exceeded a value of 2048.
 event:0x101e8 counters:0 um:zero minimum:1000 name:PM_THRESH_EXC_256 : Threshold counter exceed a count of 256.
 event:0x201e6 counters:1 um:zero minimum:1000 name:PM_THRESH_EXC_32 : Threshold counter exceeded a value of 32.
 event:0x101e6 counters:0 um:zero minimum:1000 name:PM_THRESH_EXC_4096 : Threshold counter exceed a count of 4096.
