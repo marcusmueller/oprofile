@@ -245,11 +245,11 @@ void xml_utils::add_option(tag_t tag, bool value)
 void xml_utils::output_xml_header(string const & command_options,
                        string const & cpu_info, string const & events)
 {
-	// the integer portion indicates the schema version and should change
+	// The integer portion indicates the schema version and should change
 	// both here and in the schema file when major changes are made to
-	// the schema.  changes to opreport, or minor changes to the schema
+	// the schema.  Changes to opreport, or minor changes to the schema
 	// can be indicated by changes to the fraction part.
-	string const schema_version = "3.0";
+	string const schema_version = "3.1";
 
 	// This is the XML version, not schema version.
 	string const xml_header = "<?xml version=\"1.0\" ?>";
