@@ -140,7 +140,7 @@ again2:
 	} else if (num_read != (ssize_t)read_size) {
 		evt += num_read;
 		read_size -= num_read;
-		goto again;
+		goto again2;
 	}
 
 out:
