@@ -25,6 +25,7 @@
 #include "op_events.h"
 #include "op_libiberty.h"
 #include "cverb.h"
+#include "utility.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -137,6 +138,7 @@ int operf_open_sample_file(odb_t *file, struct operf_sfile *last,
 	char const * binary;
 	vma_t last_start = 0;
 	int err;
+	time_t mtime;
 
 	mangled = mangle_filename(last, sf, counter, cg);
 
@@ -177,10 +179,25 @@ retry:
 		goto out;
 	}
 
-	if (!sf->kernel)
+	if (!sf->kernel) {
 		binary = sf->image_name;
-	else
+		mtime = op_get_mtime(binary);
+	} else {
 		binary = sf->kernel->name;
+
+		if (binary) {
+			if (strncmp(KALL_SYM_FILE, binary,
+				    strlen(KALL_SYM_FILE)) == 0 )
+			  /* The Kallsyms file is not a real file.  op_get_mtime() may
+			   * return different values for each call.
+			   */
+				mtime = 0;
+			else
+				mtime = op_get_mtime(binary);
+		} else {
+			mtime = 0;
+		}
+	}
 
 	if (last && last->is_anon)
 		last_start = last->start_addr;
@@ -188,8 +205,7 @@ retry:
 	fill_header((struct opd_header *)odb_get_data(file), counter,
 		    sf->is_anon ? sf->start_addr : 0, last_start,
 		    !!sf->kernel, last ? !!last->kernel : 0,
-		    0, 0,
-		    binary ? op_get_mtime(binary) : 0);
+		    0, 0, mtime);
 
 out:
 	operf_sfile_put(sf);
