@@ -101,12 +101,6 @@ bool has_separated_thread_info()
 }
 
 
-string get_cpu_num(size_t pclass)
-{
-	return classes.v[pclass].ptemplate.cpu;
-}
-
-
 };  // anonymous namespace
 
 xml_utils::xml_utils(format_output::xml_formatter * xo,

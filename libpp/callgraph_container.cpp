@@ -36,13 +36,6 @@ using namespace std;
 
 namespace {
 
-bool operator==(cg_symbol const & lhs, cg_symbol const & rhs)
-{
-	less_symbol cmp_symb;
-	return !cmp_symb(lhs, rhs) && !cmp_symb(rhs, lhs);
-}
-
-
 // we store {caller,callee} inside a single u64
 odb_key_t caller_to_key(u32 value)
 {
