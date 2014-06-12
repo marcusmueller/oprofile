@@ -739,6 +739,8 @@ void operf_record::recordPerfData(void)
 	bool disabled = false;
 	if (pid_started || system_wide)
 		record_process_info();
+	else
+		op_get_vsyscall_mapping(pid_to_profile, output_fd, this);
 
 	op_record_kernel_info(vmlinux_file, kernel_start, kernel_end, output_fd, this);
 	cerr << "operf: Profiler started" << endl;

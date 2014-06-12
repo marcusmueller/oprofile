@@ -963,6 +963,72 @@ int OP_perf_utils::op_write_output(int output, void *buf, size_t size)
 	return sum;
 }
 
+/* On certain architectures and older kernels (3.0 and older, I think), a static mapping
+ * was placed into every process's memory map to provide vsyscall functionality.  The
+ * mapping is labeled '[vsyscall]'.  For some reason (which I don't care to investigate,
+ * since vsyscall is now obsolete), the kernel's perf_events subsystem does not send a
+ * PERF_RECORD_MMAP message for this mapping.  The function below is used to synthesize
+ * such a message so that samples taken in the vsyscall memory range can be correctly
+ * attributed.
+ */
+void OP_perf_utils::op_get_vsyscall_mapping(pid_t tgid, int output_fd, operf_record * pr)
+{
+	char fname[PATH_MAX];
+	FILE *fp;
+	char line_buffer[BUFSIZ];
+	char perms[5], pathname[PATH_MAX], dev[16];
+	unsigned long long start_addr, end_addr, offset;
+	u_int32_t inode;
+	struct mmap_event mmap;
+	size_t size;
+
+	memset(pathname, '\0', sizeof(pathname));
+	memset(&mmap, 0, sizeof(mmap));
+
+	snprintf(fname, sizeof(fname), "/proc/%d/maps", tgid);
+
+	fp = fopen(fname, "r");
+	if (fp == NULL) {
+		// Process must have exited already or invalid pid.
+		cverb << vrecord << "couldn't open " << fname << endl;
+		return;
+	}
+
+	while (1) {
+		mmap.pgoff = 0;
+		mmap.header.type = PERF_RECORD_MMAP;
+		mmap.header.misc = PERF_RECORD_MISC_USER;
+
+		if (fgets(line_buffer, sizeof(line_buffer), fp) == NULL)
+			break;
+
+		sscanf(line_buffer, "%llx-%llx %s %llx %s %d %s",
+				&start_addr, &end_addr, perms, &offset, dev, &inode, pathname);
+		if (perms[2] == 'x') {
+			char * imagename;
+			if ((imagename = strstr(pathname, "[vsyscall]")) == NULL)
+				continue;
+
+			size = strlen(imagename) + 1;
+			strcpy(mmap.filename, imagename);
+			size = align_64bit(size);
+			mmap.start = start_addr;
+			mmap.len = end_addr - mmap.start;
+			mmap.pid = tgid;
+			mmap.tid = tgid;
+			mmap.header.size = (sizeof(mmap) -
+					(sizeof(mmap.filename) - size));
+			int num = OP_perf_utils::op_write_output(output_fd, &mmap, mmap.header.size);
+			if (cverb << vrecord)
+				cout << "Created MMAP event for " << imagename << endl;
+			pr->add_to_total(num);
+			break;
+		}
+	}
+
+	fclose(fp);
+	return;
+}
 
 void OP_perf_utils::op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, operf_record * pr)
 {
@@ -1004,6 +1070,9 @@ void OP_perf_utils::op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int outp
 
 			if (imagename == NULL)
 				imagename = strstr(pathname, "[vdso]");
+
+			if (imagename == NULL)
+				imagename = strstr(pathname, "[vsyscall]");
 
 			if ((imagename == NULL) && !strstr(pathname, "["))
 				imagename = (char *)anon_mem;

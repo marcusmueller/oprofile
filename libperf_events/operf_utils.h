@@ -83,6 +83,7 @@ void op_perfrecord_sigusr1_handler(int sig __attribute__((unused)),
 		void *u_context __attribute__((unused)));
 int op_get_process_info(bool system_wide, pid_t pid, operf_record * pr);
 void op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int output_fd, operf_record * pr);
+void op_get_vsyscall_mapping(pid_t tgid, int output_fd, operf_record * pr);
 int op_write_output(int output, void *buf, size_t size);
 int op_write_event(event_t * event, u64 sample_type);
 int op_read_from_stream(std::ifstream & is, char * buf, std::streamsize sz);
