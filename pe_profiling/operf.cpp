@@ -11,7 +11,7 @@
  * (C) Copyright IBM Corp. 2011
  *
  * Modified by Maynard Johnson <maynardj@us.ibm.com>
- * (C) Copyright IBM Corporation 2012, 2013
+ * (C) Copyright IBM Corporation 2012, 2013, 2014
  *
  */
 
@@ -77,12 +77,19 @@ int kptr_restrict;
 char * start_time_human_readable;
 std::vector<operf_event_t> events;
 operf_read operfRead(events);
+/* With certain operf options, we have to take extra steps to track new threads
+ * and processes that an app may create via pthread_create, fork, etc.  Note that
+ * any such thread or process creation APIs will result in a PERF_RECORD_FORK event,
+ * so we handle these new threads/processes in operf_utils::__handle_fork_event.
+ */
+bool track_new_forks;
 
 
 #define DEFAULT_OPERF_OUTFILE "operf.data"
 #define KERN_ADDR_SPACE_START_SYMBOL  "_text"
 #define KERN_ADDR_SPACE_END_SYMBOL    "_etext"
 
+static operf_record * operfRecord = NULL;
 static char * app_name_SAVE = NULL;
 static char ** app_args = NULL;
 static 	pid_t jitconv_pid = -1;
@@ -96,6 +103,14 @@ static char start_time_str[32];
 static bool jit_conversion_running;
 static void convert_sample_data(void);
 static int sample_data_pipe[2];
+static int app_ready_pipe[2], start_app_pipe[2], operf_record_ready_pipe[2];
+// The operf_convert_record_write_pipe is used for the convert process to send
+// forked PID data to the record process.
+static int operf_convert_record_write_pipe[2];
+// The operf_record_convert_write_pipe is used for the record process to send
+// data to the convert process in response to the forked PID data.
+static int operf_record_convert_write_pipe[2];
+
 bool ctl_c = false;
 bool pipe_closed = false;
 
@@ -225,8 +240,6 @@ void set_signals_for_parent(void)
 	}
 }
 
-static int app_ready_pipe[2], start_app_pipe[2], operf_record_ready_pipe[2];
-
 static string args_to_string(void)
 {
 	string ret;
@@ -310,6 +323,14 @@ int start_profiling(void)
 		perror("Internal error: could not create pipe");
 		return -1;
 	}
+	if (pipe2(operf_convert_record_write_pipe, O_NONBLOCK) < 0) {
+		perror("Internal error: could not create pipe");
+		return -1;
+	}
+	if (pipe(operf_record_convert_write_pipe) < 0) {
+		perror("Internal error: could not create pipe");
+		return -1;
+	}
 	operf_record_pid = fork();
 	if (operf_record_pid < 0) {
 		return -1;
@@ -318,6 +339,8 @@ int start_profiling(void)
 		int exit_code = EXIT_SUCCESS;
 		_set_basic_SIGINT_handler_for_child();
 		close(operf_record_ready_pipe[0]);
+		close(operf_convert_record_write_pipe[1]);
+		close(operf_record_convert_write_pipe[0]);
 		if (!operf_options::post_conversion)
 			close(sample_data_pipe[0]);
 		/*
@@ -343,11 +366,12 @@ int start_profiling(void)
 			} else {
 				outfd = sample_data_pipe[1];
 			}
-			operf_record operfRecord(outfd, operf_options::system_wide, app_PID,
+			operfRecord = new operf_record(outfd, operf_options::system_wide, app_PID,
 			                         (operf_options::pid == app_PID), events, vi,
 			                         operf_options::callgraph,
-			                         operf_options::separate_cpu, operf_options::post_conversion);
-			if (operfRecord.get_valid() == false) {
+			                         operf_options::separate_cpu, operf_options::post_conversion,
+			                         operf_convert_record_write_pipe[0], operf_record_convert_write_pipe[1]);
+			if (operfRecord->get_valid() == false) {
 				/* If valid is false, it means that one of the "known" errors has
 				 * occurred:
 				 *   - profiled process has already ended
@@ -370,9 +394,10 @@ int start_profiling(void)
 			}
 
 			// start recording
-			operfRecord.recordPerfData();
+			operfRecord->recordPerfData();
 			cverb << vdebug << "Total bytes recorded from perf events: " << dec
-					<< operfRecord.get_total_bytes_recorded() << endl;
+					<< operfRecord->get_total_bytes_recorded() << endl;
+			delete operfRecord;
 		} catch (const runtime_error & re) {
 			/* If the user does ctl-c, the operf-record process may get interrupted
 			 * in a system call, causing problems with writes to the sample data pipe.
@@ -388,6 +413,9 @@ int start_profiling(void)
 		_exit(exit_code);
 
 fail_out:
+		if (operfRecord)
+			delete operfRecord;
+
 		if (!ready){
 			/* ready==0 means we've not yet told parent we're ready,
 			 * but the parent is reading our pipe.  So we tell the
@@ -615,6 +643,10 @@ static end_code_t _run(void)
 			// parent
 			close(sample_data_pipe[0]);
 			close(sample_data_pipe[1]);
+			close(operf_convert_record_write_pipe[0]);
+			close(operf_convert_record_write_pipe[1]);
+			close(operf_record_convert_write_pipe[0]);
+			close(operf_record_convert_write_pipe[1]);
 		}
 	}
 
@@ -909,7 +941,11 @@ static void convert_sample_data(void)
 		inputfd = sample_data_pipe[0];
 		inputfname = "";
 	}
-	operfRead.init(inputfd, inputfname, current_sampledir, cpu_type, operf_options::system_wide);
+	close(operf_record_convert_write_pipe[1]);
+	close(operf_convert_record_write_pipe[0]);
+	operfRead.init(inputfd, inputfname, current_sampledir, cpu_type,
+	               operf_options::system_wide, operf_convert_record_write_pipe[1],
+	               operf_record_convert_write_pipe[0]);
 	if ((rc = operfRead.readPerfHeader()) < 0) {
 		if (rc != OP_PERF_HANDLED_ERROR)
 			cerr << "Error: Cannot create read header info for sample data " << endl;
@@ -1389,6 +1425,10 @@ static void process_args(int argc, char * const argv[])
 		string startEnd = _process_vmlinux(operf_options::vmlinux);
 		operf_create_vmlinux(operf_options::vmlinux.c_str(), startEnd.c_str());
 	}
+	if (operf_options::pid && !operf_options::post_conversion)
+		track_new_forks = true;
+	else
+		track_new_forks = false;
 
 	return;
 }

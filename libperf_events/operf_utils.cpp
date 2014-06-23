@@ -10,7 +10,7 @@
  * (C) Copyright IBM Corp. 2011
  *
  * Modified by Maynard Johnson <maynardj@us.ibm.com>
- * (C) Copyright IBM Corporation 2012, 2013
+ * (C) Copyright IBM Corporation 2012, 2013, 2014
  *
  */
 
@@ -48,6 +48,7 @@ extern pid_t app_PID;
 extern verbose vrecord;
 extern verbose vconvert;
 extern void __set_event_throttled(int index);
+extern bool track_new_forks;
 
 using namespace std;
 
@@ -87,6 +88,8 @@ static void __handle_fork_event(event_t * event)
 	operf_process_info * parent = NULL;
 	operf_process_info * forked_proc = NULL;
 
+	// First, see if we already have a proc_info object for the parent process
+	// that did the fork
 	it = process_map.find(event->fork.ppid);
 	if (it != process_map.end()) {
 		parent = it->second;
@@ -101,14 +104,42 @@ static void __handle_fork_event(event_t * event)
 		process_map[event->fork.ppid] = parent;
 	}
 
-	 /* If the forked process's pid is the same as the parent's, we simply ignore the FORK
-	 * event. This is because operf_process_info objects are stored in the map collection
-	 * by pid, meaning that the forked process and its parent reference the same
+	/* If the user requested to profile by "--pid", then we must notify the
+	 * recording process whenever we see a fork event. If the record process
+	 * isn't already recording samples for this thread/process, it will start
+	 * recording now.
+	 */
+	if (track_new_forks) {
+		if (cverb << vconvert)
+			cout << "Inform record process of new pid/tid "
+			     << event->fork.pid << "/" << event->fork.tid << endl;
+		pid_t id = (event->fork.pid == event->fork.ppid) ? event->fork.tid :
+				event->fork.pid;
+		ssize_t len = write(operfRead.get_write_comm_pipe(), &id, sizeof(id));
+		if (len < 0)
+			perror("Internal error on record write_comm_pipe");
+		else if (len != sizeof(id))
+			cerr << "Incomplete write to record write_comm_pipe" << endl;
+		u64 sample_id;
+		// get sample id from recording process
+		len = read(operfRead.get_read_comm_pipe(), &sample_id, sizeof(sample_id));
+		if (sample_id == OP_PERF_NO_SAMPLE_ID) {
+			cverb << vconvert << "convert: No sample_id from record process" << endl;
+		} else {
+			cverb << vconvert << "Add sample_id " << sample_id << " to opHeader" << endl;
+			operfRead.add_sample_id_to_opHeader(sample_id);
+		}
+	}
+
+	/* If the forked process's pid is the same as the parent's, we simply ignore
+	 * the FORK event. This is because operf_process_info objects are stored in the map
+	 * collection by pid, meaning that the forked process and its parent reference the same
 	 * operf_process_info object.
 	 */
 	if (event->fork.pid == event->fork.ppid)
 		return;
 
+	// Now try to find a proc_info for the forked process itself.
 	it = process_map.find(event->fork.pid);
 	if (it == process_map.end()) {
 		forked_proc = new operf_process_info(event->fork.pid, NULL, false, false);

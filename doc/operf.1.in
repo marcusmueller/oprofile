@@ -35,21 +35,19 @@ and lost samples, are written to the operf.log file that can be found in the
 <session_dir>/samples directory.
 .br
 
-.SH OPTIONS
+.SH RUN MODES
+One (and only one) of the following
+.SB run modes
+must be specified:
 .TP
 .BI command [args]
 The command or application to be profiled.
 .I args
-are the input arguments that the command or application requires.  One (and only one) of either
-.I command
-,
-.I --pid
-or
-.I --system-wide
-is required.
+are the input arguments that the command or application requires.
 .br
 .TP
 .BI "--pid / -p " PID
+.RS
 This option enables operf to profile a running application.
 .I PID
 should be the process ID of the process you wish to profile.  When
@@ -65,7 +63,13 @@ data it has collected.  Use
 .BI -SIGINT
 .BI <operf-PID>
 for this purpose.
-.br
+.P
+.B Limitation:
+When using this option to profile a multi-threaded application that also forks
+new processes, be aware that samples for processes that are forked before profiling
+is started may not be recorded (depending on timing of thread creation and when
+operf is started).
+.RE
 .TP
 .BI "--system-wide / -s"
 This option is for performing a system-wide profile.  You must
@@ -86,6 +90,7 @@ that when running operf with this option, the user's current working
 directory should be /root or a subdirectory of /root to avoid
 storing sample data files in locations accessible by regular users.
 .br
+.SH OTHER OPTIONS
 .TP
 .BI "--vmlinux / -k " vmlinux_path
 .RS
@@ -188,6 +193,7 @@ directory on the current path.
 .br
 .TP
 .BI "--lazy-conversion / -l"
+.RS
 Use this option to reduce the overhead of
 .BI operf
 during profiling. Normally, profile data received from the kernel is converted
@@ -200,7 +206,16 @@ particularly on busy multi-processor systems. The
 option directs
 .BI operf
 to wait until profiling is completed to do the conversion of profile data.
-.br
+.P
+.B Note:
+This option is
+.B not
+recommended to be used in conjunction with the
+.I --pid
+option for profiling multi-threaded processes. Depending
+on the order of thread creation (or forking of new processes),
+you may not get any samples for the new threads/processes.
+.RE
 .TP
 .BI "--append / -a"
 By default,

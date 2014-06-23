@@ -1,5 +1,5 @@
 /**
- * @file pe_profiling/operf_counter.cpp
+ * @file libperf_events/operf_counter.cpp
  * C++ class implementation that abstracts the user-to-kernel interface
  * for using Linux Performance Events Subsystem.
  *
@@ -11,7 +11,7 @@
  * (C) Copyright IBM Corp. 2011
  *
  * Modified by Maynard Johnson <maynardj@us.ibm.com>
- * (C) Copyright IBM Corporation 2012
+ * (C) Copyright IBM Corporation 2012, 2014
  *
 */
 
@@ -50,6 +50,7 @@ extern bool throttled;
 extern size_t mmap_size;
 extern size_t pg_sz;
 extern bool use_cpu_minus_one;
+extern bool track_new_forks;
 
 namespace {
 
@@ -233,7 +234,7 @@ operf_counter::~operf_counter() {
 }
 
 
-int operf_counter::perf_event_open(pid_t pid, int cpu, operf_record * rec)
+int operf_counter::perf_event_open(pid_t pid, int cpu, operf_record * rec, bool print_error)
 {
 	struct {
 		u64 count;
@@ -249,16 +250,21 @@ int operf_counter::perf_event_open(pid_t pid, int cpu, operf_record * rec)
 		int ret = -1;
 		cverb << vrecord << "perf_event_open failed: " << strerror(errno) << endl;
 		if (errno == EBUSY) {
-			cerr << "The performance monitoring hardware reports EBUSY. Is another profiling tool in use?" << endl
-			     << "On some architectures, tools such as oprofile and perf being used in system-wide "
-			     << "mode can cause this problem." << endl;
+			if (print_error) {
+				cerr << "The performance monitoring hardware reports EBUSY. Is another profiling tool in use?" << endl
+				     << "On some architectures, tools such as oprofile and perf being used in system-wide "
+				     << "mode can cause this problem." << endl;
+			}
 			ret = OP_PERF_HANDLED_ERROR;
 		} else if (errno == ESRCH) {
-			cerr << "!!!! No samples collected !!!" << endl;
-			cerr << "The target program/command ended before profiling was started." << endl;
+			if (print_error) {
+				cerr << "!!!! No samples collected !!!" << endl;
+				cerr << "The target program/command ended before profiling was started." << endl;
+			}
 			ret = OP_PERF_HANDLED_ERROR;
 		} else {
-			cerr << "perf_event_open failed with " << strerror(errno) << endl;
+			if (print_error)
+				cerr << "perf_event_open failed with " << strerror(errno) << endl;
 		}
 		return ret;
 	}
@@ -299,7 +305,8 @@ operf_record::~operf_record()
 
 operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_running,
                            vector<operf_event_t> & events, vmlinux_info_t vi, bool do_cg,
-                           bool separate_by_cpu, bool out_fd_is_file)
+                           bool separate_by_cpu, bool out_fd_is_file,
+                           int _convert_read_pipe, int _convert_write_pipe)
 {
 	struct sigaction sa;
 	sigset_t ss;
@@ -317,6 +324,8 @@ operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_ru
 	valid = false;
 	poll_data = NULL;
 	output_fd = out_fd;
+	read_comm_pipe = _convert_read_pipe;
+	write_comm_pipe = _convert_write_pipe;
 	write_to_file = out_fd_is_file;
 	opHeader.data_size = 0;
 	num_cpus = -1;
@@ -657,6 +666,7 @@ void operf_record::setup()
 		 * "inherit" on the perf_event_attr we pass to perf_event_open when cpu is '-1'.
 		 */
 		bool inherit = !profile_process_group;
+		std::map<u32, struct comm_event>::iterator proc_it = procs.begin();
 		for (unsigned proc_idx = 0; proc_idx < num_procs; proc_idx++) {
 			for (unsigned event = 0; event < evts.size(); event++) {
 				/* For a parent process, comm.tid==comm.pid, but for child
@@ -664,14 +674,17 @@ void operf_record::setup()
 				 * we must use comm.tid for the perf_event_open call.  So
 				 * we can use comm.tid for all cases.
 				 */
-				pid_t pid_for_open = profile_process_group ? procs[proc_idx].tid
-				                                           : pid_to_profile;
+				pid_t pid_for_open;
+				if (profile_process_group)
+					pid_for_open = proc_it++->second.tid;
+				else
+					pid_for_open = pid_to_profile;
 				operf_counter op_ctr(operf_counter(evts[event],
 				                                   (!pid_started && !system_wide),
 				                                   callgraph, separate_cpu,
 				                                   inherit, event));
 				if ((rc = op_ctr.perf_event_open(pid_for_open,
-				                                 real_cpu, this)) < 0) {
+				                                 real_cpu, this, true)) < 0) {
 					err_msg = "Internal Error.  Perf event setup failed.";
 					goto error;
 				}
@@ -716,23 +729,92 @@ void operf_record::record_process_info(void)
 {
 	map<unsigned int, unsigned int> pids_mapped;
 	pid_t last_tgid = -1;
-	for (unsigned int proc_idx = 0; proc_idx < procs.size(); proc_idx++)
+	std::map<u32, struct comm_event>::iterator proc_it = procs.begin();
+	for (unsigned int proc_idx = 0; proc_idx < procs.size(); proc_idx++, proc_it++)
 	{
-		int num = OP_perf_utils::op_write_output(output_fd, &procs[proc_idx],
-		                                         procs[proc_idx].header.size);
+		struct comm_event ce = proc_it->second;
+		int num = OP_perf_utils::op_write_output(output_fd, &ce, ce.header.size);
 		add_to_total(num);
 		if (cverb << vrecord)
-			cout << "Created COMM event for " << procs[proc_idx].comm << endl;
+			cout << "Created COMM event for " << ce.comm << endl;
 
-		if (((pid_t)(procs[proc_idx].pid) == last_tgid) ||
-				(pids_mapped.find(procs[proc_idx].pid) != pids_mapped.end()))
+		if (((pid_t)(ce.pid) == last_tgid) ||
+				(pids_mapped.find(ce.pid) != pids_mapped.end()))
 			continue;
-		OP_perf_utils::op_record_process_exec_mmaps(procs[proc_idx].tid,
-		                                            procs[proc_idx].pid,
+		OP_perf_utils::op_record_process_exec_mmaps(ce.tid,
+		                                            ce.pid,
 		                                            output_fd, this);
-		pids_mapped[procs[proc_idx].pid] = last_tgid = procs[proc_idx].pid;
+		pids_mapped[ce.pid] = last_tgid = ce.pid;
 	}
 }
+
+int operf_record::_start_recoding_new_thread(pid_t id)
+{
+	string err_msg;
+	int num_mmaps, rc, fd_for_set_output = -1;
+	struct comm_event ce;
+	u64 sample_id;
+	struct pollfd * old_polldata = poll_data;
+
+	num_mmaps = sizeof(poll_data)/sizeof(poll_data[0]);
+	num_mmaps++;
+	poll_data = new struct pollfd [num_mmaps];
+	// Copy only the existing pollfd objects from the array.  The new pollfd will
+	// be filled in via the call to _prepare_to_record_one_fd.
+	for (int i = 0; i < num_mmaps - 1; i++)
+		poll_data[i] = old_polldata[i];
+	delete[] old_polldata;
+	// Make a pseudo comm_event object.  At this point, the
+	// only field we need to set is tid.
+	memset(&ce, sizeof(ce), 0);
+	ce.tid = id;
+	add_process(ce);
+
+	for (unsigned event = 0; event < evts.size(); event++) {
+		operf_counter op_ctr(operf_counter(evts[event],
+		                                   (!pid_started && !system_wide),
+		                                   callgraph, separate_cpu,
+		                                   false, event));
+		if (op_ctr.perf_event_open(id, -1, this, false) < 0) {
+			sample_id = OP_PERF_NO_SAMPLE_ID;
+			// Send special value to convert process to indicate failure
+			ssize_t len = write(write_comm_pipe, &sample_id, sizeof(sample_id));
+			if (len < 0)
+				perror("Internal error on convert write_comm_pipe");
+			return -1;
+		}
+		perfCounters.push_back(op_ctr);
+		int fd = op_ctr.get_fd();
+		if (event == 0) {
+			rc = _prepare_to_record_one_fd(num_mmaps - 1, fd);
+			fd_for_set_output = fd;
+		} else {
+			if ((rc = ioctl(fd, PERF_EVENT_IOC_SET_OUTPUT,
+			                fd_for_set_output)) < 0)
+				perror("_start_recoding_new_thread: ioctl #1 failed");
+		}
+
+		if (rc < 0)
+			return rc;
+
+		if ((rc = ioctl(fd, PERF_EVENT_IOC_ENABLE)) < 0) {
+			perror("_start_recoding_new_thread: ioctl #2 failed");
+			return rc;
+		}
+
+		sample_id = opHeader.h_attrs[event].ids.back();
+		ssize_t len = write(write_comm_pipe, &sample_id, sizeof(sample_id));
+		if (len < 0)
+			perror("Internal error on convert write_comm_pipe");
+		else if (len != sizeof(sample_id))
+			cerr << "Incomplete write convert to write_comm_pipe" << endl;
+		else
+			cverb << vrecord << "Sent sample_id " << sample_id << " to convert process" << endl;
+	}
+
+	return 0;
+}
+
 
 void operf_record::recordPerfData(void)
 {
@@ -746,6 +828,8 @@ void operf_record::recordPerfData(void)
 	cerr << "operf: Profiler started" << endl;
 	while (1) {
 		int prev = sample_reads;
+		pid_t pi;
+		ssize_t len;
 
 		for (size_t i = 0; i < samples_array.size(); i++) {
 			if (samples_array[i].base)
@@ -756,6 +840,20 @@ void operf_record::recordPerfData(void)
 
 		if (prev == sample_reads) {
 			(void)poll(poll_data, poll_count, -1);
+		}
+		if (!quit && track_new_forks && procs.size() > 1) {
+			len = read(read_comm_pipe, &pi, sizeof(pi));
+
+			if (len < 0 && errno != EAGAIN) {
+				cverb << vrecord << "Non-fatal error: read_comm_pipe returned too few bytes" << endl;
+			} else if (len == sizeof(pi) && (procs.find(pi) == procs.end())) {
+				// Start profiling this new thread
+				cverb << vrecord << "Start recording for new thread " << pi << endl;
+				// Don't treat as fatal error if it doesn't work
+				if (_start_recoding_new_thread(pi) < 0)
+					cerr << "Unable to collect samples for forked process " << pi
+					     << ". Process may have ended before recording could be started." << endl;
+			}
 		}
 
 		if (quit) {
@@ -770,9 +868,11 @@ void operf_record::recordPerfData(void)
 }
 
 void operf_read::init(int sample_data_pipe_fd, string input_filename, string samples_loc, op_cpu cputype,
-                      bool systemwide)
+                      bool systemwide, int _record_write_pipe, int _record_read_pipe)
 {
 	sample_data_fd = sample_data_pipe_fd;
+	read_comm_pipe = _record_read_pipe;
+	write_comm_pipe = _record_write_pipe;
 	inputFname = input_filename;
 	sampledir = samples_loc;
 	cpu_type = cputype;
@@ -784,6 +884,11 @@ operf_read::~operf_read()
 	evts.clear();
 }
 
+void operf_read::add_sample_id_to_opHeader(u64 sample_id)
+{
+	for (unsigned int i = 0; i < evts.size(); i++)
+		opHeader.h_attrs[i].ids.push_back(sample_id);
+}
 
 int operf_read::_read_header_info_with_ifstream(void)
 {
