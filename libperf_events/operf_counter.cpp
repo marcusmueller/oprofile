@@ -766,7 +766,7 @@ int operf_record::_start_recoding_new_thread(pid_t id)
 	delete[] old_polldata;
 	// Make a pseudo comm_event object.  At this point, the
 	// only field we need to set is tid.
-	memset(&ce, sizeof(ce), 0);
+	memset(&ce, 0, izeof(ce));
 	ce.tid = id;
 	add_process(ce);
 
