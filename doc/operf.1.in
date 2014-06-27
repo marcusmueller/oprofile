@@ -123,7 +123,9 @@ of events to occur between samples. The rate is lowered by specifying a higher
 .I count
 value \(em i.e., a higher number of events to occur between samples.
 .P
-You can specify unit mask values using either a numerical value (hex values
+You can specify
+.I unitmask
+values using either a numerical value (hex values
 .I must
 begin with "0x") or a symbolic name (if the
 .I name=<um_name>
@@ -145,8 +147,16 @@ In order to specify the
 .I kernel/user
 bits, you must also specify a
 .I unitmask
-value, even if the running processor type does not use unit masks \(em
-in which case, use the value '0' to signify a null unit mask.
+value, even if the processor type (or the specified event) does not use unit masks \(em
+in which case, use the value '0' to signify a null unit mask; for example:
+.br
+   -e INST_RETIRED_ANY_P:100000:0:1:0
+.br
+                         ^      ^ ^ ^
+                         |      | | |--- '0': do not record user space samples
+                         |      | |-- '1': record kernel space samples
+                         |      |-- '0': the null unit mask
+                         |--count value
 .P
 Event names for some IBM PowerPC systems include a
 .I _GRP<n>

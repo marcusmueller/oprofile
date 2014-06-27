@@ -116,7 +116,9 @@ include a
 value in the event spec, as that parameter is only needed when profiling.
 .P
 .RS
-You can specify unit mask values using either a numerical value (hex values
+You can specify
+.I unitmask
+values using either a numerical value (hex values
 .I must
 begin with "0x") or a symbolic name (if the
 .I name=<um_name>
@@ -139,7 +141,14 @@ In order to specify the
 bits, you must also specify a
 .I unitmask
 value, even if the running processor type does not use unit masks \(em
-in which case, use the value '0' to signify a null unit mask.
+in which case, use the value '0' to signify a null unit mask; for example:
+.br
+   -e INST_RETIRED_ANY_P:0:1:0
+.br
+                         ^ ^ ^
+                         | | |--- '0': do not count user space events
+                         | |-- '1': count kernel space events
+                         |-- '0': the null unit mask
 .P
 Event names for certain processor types include a
 .I "_GRP<n>"
