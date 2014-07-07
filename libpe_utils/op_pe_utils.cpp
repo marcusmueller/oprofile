@@ -860,6 +860,7 @@ void op_pe_utils::op_process_events_list(set<string> & passed_evts,
 		pclose(fp);
 		char * event_str = op_xstrndup(event_spec.c_str(), event_spec.length());
 		operf_event_t event;
+		memset(&event, 0, sizeof(event));
 		strncpy(event.name, strtok(event_str, ":"), OP_MAX_EVT_NAME_LEN - 1);
 		if (do_profiling)
 			event.count = atoi(strtok(NULL, ":"));
@@ -879,6 +880,24 @@ void op_pe_utils::op_process_events_list(set<string> & passed_evts,
 		event.evt_um = 0UL;
 		event.no_kernel = 0;
 		event.no_user = 0;
+		/* Explicitly exclude hypervisor samples since we currently do not have any
+		 * interface support for such.  If we did not do this, we could see situations
+		 * on hypervisor-controlled systems like the following:
+		 * 	$ ocount -e PM_RUN_CYC:0:0:0 /bin/true
+		 *
+		 * 	Events were actively counted for 398213 nanoseconds.
+		 * 	Event counts (actual) for /bin/true:
+		 *	        Event                         Count                    % time counted
+		 *	        PM_RUN_CYC_GRP1:0x0:0:0       123,260                  100.00
+		 *
+		 * Note that the event spec explicitly excludes both kernel and user events, yet
+		 * the output shows a non-zero count. The user could "assume" those counts are from
+		 * hypervisor, but that's ugly.
+		 *
+		 * FIXME: Add full hypervisor support by adding another bit in the event specification
+		 * and documenting it in the man pages and user guide.
+		 */
+		event.no_hv = 1;
 		event.throttled = false;
 		event.mode_specified = false;
 		event.umask_specified = false;
