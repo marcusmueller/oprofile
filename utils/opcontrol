@@ -1165,7 +1165,20 @@ do_setup()
 set_param()
 {
 	if test "$KERNEL_SUPPORT" = "yes"; then
-		echo $2 >$MOUNT/$1
+		if test "$IS_TIMER" = 1 -a "$1" = "backtrace_depth"; then
+			echo $2 >$MOUNT/$1 2> /dev/null
+			if test "$2" -ne 0; then
+				result=`cat $MOUNT/$1`
+				if test "$result" -ne "$2"; then
+					echo "Callgraph profiling not supported on this system in Timer mode"
+					echo "Continuing with flat profile run"
+					CALLGRAPH=0
+					echo "CALLGRAPH=$CALLGRAPH" >> $SETUP_FILE
+				fi
+			fi
+		else
+			echo $2 >$MOUNT/$1
+		fi
 	else
 		$SYSCTL -w dev.oprofile.$1=$2
 	fi
