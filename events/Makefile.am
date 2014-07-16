@@ -21,6 +21,7 @@ event_files = \
 	i386/sandybridge/events i386/sandybridge/unit_masks \
 	i386/ivybridge/events i386/ivybridge/unit_masks \
 	i386/haswell/events i386/haswell/unit_masks \
+	i386/broadwell/events i386/broadwell/unit_masks \
 	i386/silvermont/events i386/silvermont/unit_masks \
 	ia64/ia64/events ia64/ia64/unit_masks \
 	ia64/itanium2/events ia64/itanium2/unit_masks \

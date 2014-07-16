@@ -1201,6 +1201,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
  		case CPU_CORE_I7:
 		case CPU_NEHALEM:
 		case CPU_HASWELL:
+		case CPU_BROADWELL:
 		case CPU_SILVERMONT:
 		case CPU_WESTMERE:
 		case CPU_SANDYBRIDGE:

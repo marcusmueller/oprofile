@@ -130,6 +130,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Intel Silvermont microarchitecture", "i386/silvermont", CPU_SILVERMONT, 2 },
 	{ "ARMv7 Krait", "arm/armv7-krait", CPU_ARM_KRAIT, 5 },
 	{ "APM X-Gene", "arm/armv8-xgene", CPU_ARM_V8_APM_XGENE, 6 },
+	{ "Intel Broadwell microarchitecture", "i386/broadwell", CPU_BROADWELL, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -670,6 +671,7 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 	case CPU_ATOM:
 	case CPU_NEHALEM:
 	case CPU_HASWELL:
+	case CPU_BROADWELL:
 	case CPU_SILVERMONT:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:

@@ -110,6 +110,7 @@ typedef enum {
 	CPU_SILVERMONT, /** < Intel Silvermont microarchitecture */
 	CPU_ARM_KRAIT, /**< ARM KRAIT */
 	CPU_ARM_V8_APM_XGENE, /* APM X-Gene */
+	CPU_BROADWELL, /** < Intel Broadwell (Core-M) microarchitecture */
 	MAX_CPU_TYPE
 } op_cpu;
 
