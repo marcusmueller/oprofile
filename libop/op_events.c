@@ -1389,6 +1389,7 @@ static void do_resolve_unit_mask(struct op_event *e,
 		if (pe->unit_mask_name == NULL) {
 			/* For numerical unit mask */
 			int found = 0;
+			int old_um_valid = pe->unit_mask_valid;
 
 			/* Use default unitmask if not specified */
 			if (!pe->unit_mask_valid) {
@@ -1404,9 +1405,16 @@ static void do_resolve_unit_mask(struct op_event *e,
 					found++;
 			}
 			if (found > 1) {
-				fprintf(stderr, "Unit mask (0x%x) is non unique.\n"
-				        "Please specify the unit mask using the first "
-					"word of the description\n",
+				if (!old_um_valid)
+					fprintf(stderr,
+						"Default unit mask not supported for this event.\n"
+						"Please speicfy a unit mask by name, using the first "
+						"word of the unit mask description\n");
+				else
+					fprintf(stderr,
+						"Unit mask (0x%x) is non unique.\n"
+						"Please specify the unit mask using the first "
+						"word of the description\n",
 					pe->unit_mask);
 				exit(EXIT_FAILURE);
 			}
