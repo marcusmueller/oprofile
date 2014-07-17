@@ -58,7 +58,7 @@ event:0xcc counters:cpuid um:x20 minimum:2000003 name:rob_misc_events_lbr_insert
 event:0xd0 counters:0,1,2,3 um:mem_uops_retired minimum:2000003 name:mem_uops_retired :
 event:0xd1 counters:0,1,2,3 um:mem_load_uops_retired minimum:2000003 name:mem_load_uops_retired :
 event:0xd2 counters:0,1,2,3 um:mem_load_uops_l3_hit_retired minimum:100003 name:mem_load_uops_l3_hit_retired :
-event:0xd3 counters:0,1,2,3 um:one minimum:100007 name:mem_load_uops_l3_miss_retired_local_dram :
+event:0xd3 counters:0,1,2,3 um:mem_load_uops_l3_miss_retired minimum:100007 name:mem_load_uops_l3_miss_retired :
 event:0xe6 counters:cpuid um:x1f minimum:100003 name:baclears_any :
 event:0xf0 counters:cpuid um:l2_trans minimum:200003 name:l2_trans :
 event:0xf1 counters:cpuid um:l2_lines_in minimum:100003 name:l2_lines_in :
