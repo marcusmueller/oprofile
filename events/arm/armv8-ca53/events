@@ -1,0 +1,38 @@
+#
+# Copyright (c) Red Hat, 2014.
+# Contributed by William Cohen <wcohen@redhat.com>
+#
+# ARM Cortex A53 events
+# From Cortex A53 TRM
+#
+include:arm/armv8-pmuv3-common
+event:0x60 um:zero minimum:10007 name:BUS_ACCESS_LD : Bus access - Read
+event:0x61 um:zero minimum:10007 name:BUS_ACCESS_ST : Bus access - Write
+event:0x7A um:zero minimum:10007 name:BR_INDIRECT_SPEC : Branch speculatively executed - Indirect branch
+event:0x86 um:zero minimum:10007 name:EXC_IRQ : Exception taken, IRQ
+event:0x87 um:zero minimum:10007 name:EXC_FIQ : Exception taken, FIQ
+event:0xC0 um:zero minimum:10007 name:EXT_MEM_REQ : External memory request
+event:0xC1 um:zero minimum:10007 name:EXT_MEM_REQ_NC : Non-cacheable external memory request
+event:0xC2 um:zero minimum:10007 name:PREFETCH_LINEFILL : Linefill because of prefetch
+event:0xC3 um:zero minimum:10007 name:PREFETCH_LINEFILL_DROP : Instruction Cache Throttle occurred
+event:0xC4 um:zero minimum:10007 name:READ_ALLOC_ENTER : Entering read allocate mode
+event:0xC5 um:zero minimum:10007 name:READ_ALLOC : Read allocate mode
+event:0xC6 um:zero minimum:10007 name:PRE_DECODE_ERR : Pre-decode error
+event:0xC7 um:zero minimum:10007 name:STALL_SB_FULL : Data Write operation that stalls the pipeline because the store buffer is full
+event:0xC8 um:zero minimum:10007 name:EXT_SNOOP : SCU Snooped data from another CPU for this CPU
+event:0xC9 um:zero minimum:10007 name:BR_COND : Conditional branch executed
+event:0xCA um:zero minimum:10007 name:BR_INDIRECT_MISPRED : Indirect branch mispredicted
+event:0xCB um:zero minimum:10007 name:BR_INDIRECT_MISPRED_ADDR : Indirect branch mispredicted because of address miscompare
+event:0xCC um:zero minimum:10007 name:BR_COND_MISPRED : Conditional branch mispredicted
+event:0xD0 um:zero minimum:10007 name:L1I_CACHE_ERR : L1 Instruction Cache (data or tag) memory error
+event:0xD1 um:zero minimum:10007 name:L1D_CACHE_ERR : L1 Data Cache (data, tag or dirty) memory error, correctable or non-correctable
+event:0xD2 um:zero minimum:10007 name:TLB_ERR : TLB memory error
+event:0xE0 um:zero minimum:10007 name:OTHER_IQ_DEP_STALL : Cycles that the DPU IQ is empty and that is not because of a recent micro-TLB miss, instruction cache miss or pre-decode error
+event:0xE1 um:zero minimum:10007 name:IC_DEP_STALL : Cycles the DPU IQ is empty and there is an instruction cache miss being processed
+event:0xE2 um:zero minimum:10007 name:IUTLB_DEP_STALL : Cycles the DPU IQ is empty and there is an instruction micro-TLB miss being processed
+event:0xE3 um:zero minimum:10007 name:DECODE_DEP_STALL : Cycles the DPU IQ is empty and there is a pre-decode error being processed
+event:0xE4 um:zero minimum:10007 name:OTHER_INTERLOCK_STALL : Cycles there is an interlock other than  Advanced SIMD/Floating-point instructions or load/store instruction
+event:0xE5 um:zero minimum:10007 name:AGU_DEP_STALL : Cycles there is an interlock for a load/store instruction waiting for data to calculate the address in the AGU
+event:0xE6 um:zero minimum:10007 name:SIMD_DEP_STALL : Cycles there is an interlock for an Advanced SIMD/Floating-point operation.
+event:0xE7 um:zero minimum:10007 name:LD_DEP_STALL : Cycles there is a stall in the Wr stage because of a load miss
+event:0xE8 um:zero minimum:10007 name:ST_DEP_STALL : Cycles there is a stall in the Wr stage because of a store

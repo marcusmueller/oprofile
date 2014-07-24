@@ -1256,6 +1256,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_KRAIT:
 		case CPU_ARM_V8_APM_XGENE:
 		case CPU_ARM_V8_CA57:
+		case CPU_ARM_V8_CA53:
 			descr->name = "CPU_CYCLES";
 			break;
 

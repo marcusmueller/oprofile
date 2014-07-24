@@ -112,6 +112,7 @@ typedef enum {
 	CPU_ARM_V8_APM_XGENE, /* APM X-Gene */
 	CPU_BROADWELL, /** < Intel Broadwell (Core-M) microarchitecture */
 	CPU_ARM_V8_CA57, /* ARM Cortex-A57 */
+	CPU_ARM_V8_CA53, /* ARM Cortex-A53 */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -132,6 +132,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "APM X-Gene", "arm/armv8-xgene", CPU_ARM_V8_APM_XGENE, 6 },
 	{ "Intel Broadwell microarchitecture", "i386/broadwell", CPU_BROADWELL, 4 },
 	{ "ARM Cortex-A57", "arm/armv8-ca57", CPU_ARM_V8_CA57, 6},
+	{ "ARM Cortex-A53", "arm/armv8-ca53", CPU_ARM_V8_CA53, 6},
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -399,6 +400,8 @@ static op_cpu _get_arm_cpu_type(void)
 			return op_get_cpu_number("arm/armv7-ca15");
 		case 0xd07:
 			return op_get_cpu_number("arm/armv8-ca57");
+		case 0xd03:
+			return op_get_cpu_number("arm/armv8-ca53");
 		}
 	} else if (vendorid == 0x50) {	/* Applied Micro Circuits Corporation */
 		switch (cpuid) {
