@@ -63,6 +63,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <bfd.h>
+#include <sys/file.h>
 
 #include "opagent.h"
 #include "op_config.h"
@@ -210,6 +211,7 @@ again:
 			goto again;
 		} else {
 			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			fclose(dumpfile);
 			return NULL;
 		}
 	}
@@ -279,6 +281,10 @@ int op_close_agent(op_agent_t hdl)
 	}
 	rec.timestamp = tv.tv_sec;
 
+	if ((dumpfd = fileno(dumpfile)) < 0) {
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		return -1;
+	}
 again:
 	/* We need OS-level file locking here because the opjitconv process may need to
 	 * copy the dumpfile while the JIT agent is still writing to it. */
