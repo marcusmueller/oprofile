@@ -475,7 +475,7 @@ bool interesting_symbol(asymbol * sym)
 	/* ARM assembler internal mapping symbols aren't interesting */
 	if ((strcmp("$a", sym->name) == 0) ||
 	    (strcmp("$t", sym->name) == 0) ||
-	    (strcmp("$d", sym->name) == 0))||
+	    (strcmp("$d", sym->name) == 0) ||
 	    (strcmp("$x", sym->name) == 0))
 		return false;
 
