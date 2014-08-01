@@ -629,6 +629,39 @@ static op_cpu _get_mips_cpu_type(void)
 	return CPU_NO_GOOD;
 }
 
+static op_cpu _get_s390_cpu_type(void)
+{
+	char line[100];
+	char *ptr;
+	const char prefix[] = "machine = ";
+	unsigned model;
+
+	ptr = _get_cpuinfo_cpu_type_line(line, sizeof(line), "processor", 0);
+	if (!ptr)
+		return CPU_NO_GOOD;
+
+	ptr = strstr(ptr, prefix);
+	if (!ptr)
+		return CPU_NO_GOOD;
+
+	ptr += sizeof(prefix) - 1;
+	if (sscanf(ptr, "%u", &model) != 1)
+		return CPU_NO_GOOD;
+
+	switch (model) {
+	case 2097:
+	case 2098:
+		return CPU_S390_Z10;
+	case 2817:
+	case 2818:
+		return CPU_S390_Z196;
+	case 2827:
+	case 2828:
+		return CPU_S390_ZEC12;
+	}
+	return CPU_NO_GOOD;
+}
+
 static op_cpu __get_cpu_type_alt_method(void)
 {
 	struct utsname uname_info;
@@ -653,6 +686,9 @@ static op_cpu __get_cpu_type_alt_method(void)
 	}
 	if (strncmp(uname_info.machine, "mips", 4) == 0) {
 		return _get_mips_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "s390", 4) == 0) {
+		return _get_s390_cpu_type();
 	}
 	return CPU_NO_GOOD;
 }
