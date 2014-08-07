@@ -989,6 +989,8 @@ void op_pe_utils::op_get_default_event(bool do_callgraph)
 		dft_evt.count = descr.count;
 	}
 	dft_evt.evt_um = descr.um;
+	// See comment in op_process_events_list for why we set no_hv to 1
+	dft_evt.no_hv = 1;
 	strncpy(dft_evt.name, descr.name, OP_MAX_EVT_NAME_LEN - 1);
 	_get_event_code(&dft_evt, cpu_type);
 	events.push_back(dft_evt);
