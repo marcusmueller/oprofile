@@ -11,7 +11,6 @@ EXTRA_DIST = \
 	mallocattribute.m4 \
 	poptconst.m4 \
 	precompiledheader.m4 \
-	qt.m4 \
 	resultyn.m4 \
 	sstream.m4 \
 	typedef.m4

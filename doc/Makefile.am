@@ -10,13 +10,11 @@ STYLESHEETS=$(CHUNK_XHTML_STYLESHEET) $(srcdir)/xsl/xhtml-common.xsl
 
 man_MANS = \
 	oprofile.1 \
-	opcontrol.1 \
 	opreport.1 \
 	opannotate.1 \
 	opgprof.1 \
 	ophelp.1 \
 	op-check-perfevents.1 \
-	oprof_start.1 \
 	oparchive.1 \
 	opimport.1
 

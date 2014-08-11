@@ -68,15 +68,4 @@ init_op_config_dirs(char const * session_dir)
 	strcpy(op_samples_current_dir, op_samples_dir);
 	strcat(op_samples_current_dir, "/current/");
 
-	strcpy(op_lock_file, op_session_dir);
-	strcat(op_lock_file, "/lock");
-
-	strcpy(op_pipe_file, op_session_dir);
-	strcat(op_pipe_file, "/opd_pipe");
-
-	strcpy(op_log_file, op_samples_dir);
-	strcat(op_log_file, "oprofiled.log");
-
-	strcpy(op_dump_status, op_session_dir);
-	strcat(op_dump_status, "/complete_dump");
 }

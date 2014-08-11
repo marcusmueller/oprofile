@@ -13,22 +13,22 @@ operf \- Performance profiler tool for Linux
 [ --system-wide | --pid <pid> | [ command [ args ] ] ]
 
 .SH DESCRIPTION
-Operf is an OProfile tool that can be used in place of opcontrol for profiling. Operf
-uses the Linux Performance Events Subsystem, and hence, does not require the use of
-the opcontrol daemon -- in fact, operf and opcontrol usage are mutually exclusive.
+Operf is the profiler tool provided with OProfile. Operf
+uses the Linux Performance Events Subsystem and, thus, does not require the
+obsolete oprofile kernel driver.
 .P
 By default, operf uses <current_dir>/oprofile_data as the session-dir and stores profiling data there.
 You can change this by way of the
 .I --session-dir
-option.
-.P
-The usual post-profiling analysis tools such as
+option. The usual post-profiling analysis tools such as
 .BI opreport(1)
 and
 .BI opannotate(1)
-can be used to generate profile reports.  The post-processing analysis tools will search for samples in
-.I <current_dir>/oprofile_data
-first. If that directory does not exist, the post-processing tools use the standard session-dir of /var/lib/oprofile.
+can be used to generate profile reports. Unless a
+.I session-dir
+is specified, the post-processing analysis tools will search for samples in
+<current_dir>/oprofile_data first. If that directory does not exist, the
+post-processing tools use the standard session-dir of /var/lib/oprofile.
 .P
 Statistics, such as total samples received
 and lost samples, are written to the operf.log file that can be found in the

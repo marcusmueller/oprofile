@@ -67,9 +67,6 @@ No special environment variables are recognised by ophelp.
 .TP
 .I $prefix/share/oprofile/
 Event description files used by OProfile.
-.TP
-.I /var/lib/oprofile/samples/
-The location of the generated sample files.
 
 .SH VERSION
 .TP

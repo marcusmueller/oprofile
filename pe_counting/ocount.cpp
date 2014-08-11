@@ -836,7 +836,10 @@ int main(int argc, char * const argv[])
 		}
 	}
 	if (rc == EBUSY)
-		cerr << "Performance monitor unit is busy.  Do 'opcontrol --deinit' and try again." << endl;
+		cerr << "Performance monitor unit is busy.  Ensure that no other profilers are running on the system." << endl
+		     << "Note: For example, the obsolete opcontrol profiler (available in earlier oprofile releases)" << endl
+		     << "does not allow other performance tools to run simultaneously. To check for this, look for the" << endl
+		     << "'oprofiled' process using the 'ps' command." << endl;
 	else if (rc == ENOSYS)
 		cerr << "Your kernel does not implement a required syscall"
 		     << " for the ocount program." << endl;
@@ -858,9 +861,10 @@ int main(int argc, char * const argv[])
 	}
 
 	if (cpu_type == CPU_TIMER_INT) {
-		cerr << "CPU type 'timer' was detected, but ocount does not support timer mode." << endl
-		     << "Ensure the oprofile kernel module is unloaded ('opcontrol --deinit');" << endl
-		     << "then try running ocount again." << endl;
+		cerr << "CPU type 'timer' was detected, but ocount does not support 'timer' as a cpu type." << endl
+		     << "Ensure the obsolete opcontrol profiler (available in earlier oprofile releases)" << endl
+		     << "is not running on the system.  To check for this, look for the 'oprofiled'" << endl
+		     << "process using the 'ps' command." << endl;
 		cleanup();
 		exit(1);
 	}

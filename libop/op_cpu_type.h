@@ -25,12 +25,8 @@ typedef enum {
 	CPU_PII, /**< Pentium II series */
 	CPU_PIII, /**< Pentium III series */
 	CPU_ATHLON, /**< AMD P6 series */
-	CPU_TIMER_INT, /**< CPU using the timer interrupt */
-	CPU_RTC, /**< other CPU to use the RTC */
+        CPU_TIMER_INT, /**< CPU using the timer interrupt */
 	CPU_P4,  /**< Pentium 4 / Xeon series */
-	CPU_IA64, /**< Generic IA64 */
-	CPU_IA64_1, /**< IA64 Merced */
-	CPU_IA64_2, /**< IA64 McKinley */
 	CPU_HAMMER, /**< AMD Hammer family */
 	CPU_P4_HT2, /**< Pentium 4 / Xeon series with 2 hyper-threads */
 	CPU_AXP_EV4, /**< Alpha EV4 family */
@@ -64,19 +60,15 @@ typedef enum {
 	CPU_CORE_2, /**< Intel Core 2 */
 	CPU_PPC64_POWER6, /**< ppc64 POWER6 family */
 	CPU_PPC64_970MP, /**< ppc64 970MP */
-	CPU_PPC64_CELL, /**< ppc64 Cell Broadband Engine*/
 	CPU_FAMILY10, /**< AMD family 10 */
- 	CPU_PPC64_PA6T, /**< ppc64 PA6T */
 	CPU_ARM_MPCORE, /**< ARM MPCore */
 	CPU_ARM_V6, /**< ARM V6 */
 	CPU_PPC64_POWER5pp,  /**< ppc64 Power5++ family */
 	CPU_PPC_E300, /**< e300 */
-	CPU_AVR32, /**< AVR32 */
 	CPU_ARM_V7, /**< ARM Cortex-A8 */
  	CPU_ARCH_PERFMON, /**< Intel architectural perfmon */
 	CPU_FAMILY11H, /**< AMD family 11h */
 	CPU_PPC64_POWER7, /**< ppc64 POWER7 family */
-	CPU_PPC64_IBM_COMPAT_V1, /**< IBM PPC64 processor compat mode version 1 */
    	CPU_CORE_I7, /* Intel Core i7, Nehalem */
    	CPU_ATOM, /* First generation Intel Atom */
 	CPU_MIPS_LOONGSON2, /* < loongson2 family */
@@ -101,8 +93,7 @@ typedef enum {
 	CPU_ARM_V7_CA7, /**< ARM Cortex-A7 */
 	CPU_ARM_V7_CA15, /**< ARM Cortex-A15 */
 	CPU_HASWELL, /** < Intel Haswell microarchitecture */
-	CPU_S390_ZEC12, /**< IBM zEnterprise EC12 */
-	CPU_AMD64_GENERIC, /**< AMD64 Generic */
+	CPU_S390_ZEC12, /**< IBM zEnterprise EC12 */	CPU_AMD64_GENERIC, /**< AMD64 Generic */
 	CPU_PPC64_ARCH_V1, /** < IBM Power architected events version 1 */
 	CPU_PPC64_POWER8, /**< ppc64 POWER8 family */
 	CPU_PPC_E500MC, /**< e500mc */
@@ -175,28 +166,6 @@ int op_is_cpu_vendor(char * vendor);
  * returns 0 if the CPU could not be identified
  */
 int op_get_nr_counters(op_cpu cpu_type);
-
-typedef enum {
-	OP_INTERFACE_NO_GOOD = -1,
-	OP_INTERFACE_26
-} op_interface;
-
-/**
- * get the INTERFACE used to communicate between daemon and the kernel
- *
- * returns OP_INTERFACE_NO_GOOD if the INTERFACE could not be identified.
- * This function will identify the interface as OP_INTERFACE_NO_GOOD if
- * the module is not loaded.
- */
-op_interface op_get_interface(void);
-
-/**
- * determine if the /dev/oprofile/timer is available
- *
- * return true if the kernel modules provides the /dev/oprofile
- * interface for timer mode sampling.
- */
-int op_cpu_has_timer_fs(void);
 
 #ifdef __cplusplus
 }

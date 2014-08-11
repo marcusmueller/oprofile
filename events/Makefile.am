@@ -23,9 +23,6 @@ event_files = \
 	i386/haswell/events i386/haswell/unit_masks \
 	i386/broadwell/events i386/broadwell/unit_masks \
 	i386/silvermont/events i386/silvermont/unit_masks \
-	ia64/ia64/events ia64/ia64/unit_masks \
-	ia64/itanium2/events ia64/itanium2/unit_masks \
-	ia64/itanium/events ia64/itanium/unit_masks \
 	ppc64/architected_events_v1/events ppc64/architected_events_v1/unit_masks \
 	ppc64/power4/events ppc64/power4/event_mappings ppc64/power4/unit_masks \
 	ppc64/power5/events ppc64/power5/event_mappings ppc64/power5/unit_masks \
@@ -36,10 +33,6 @@ event_files = \
 	ppc64/power8/events ppc64/power8/unit_masks \
 	ppc64/970/events ppc64/970/event_mappings ppc64/970/unit_masks \
 	ppc64/970MP/events ppc64/970MP/event_mappings ppc64/970MP/unit_masks \
-	ppc64/ibm-compat-v1/events ppc64/ibm-compat-v1/event_mappings ppc64/ibm-compat-v1/unit_masks \
-	ppc64/pa6t/events ppc64/pa6t/event_mappings ppc64/pa6t/unit_masks \
-	ppc64/cell-be/events ppc64/cell-be/unit_masks \
-	rtc/events rtc/unit_masks \
 	x86-64/hammer/events x86-64/hammer/unit_masks \
 	x86-64/family10/events x86-64/family10/unit_masks \
 	x86-64/family11h/events x86-64/family11h/unit_masks \
@@ -64,7 +57,6 @@ event_files = \
 	arm/armv8-xgene/events arm/armv8-xgene/unit_masks \
 	arm/armv8-ca57/events arm/armv8-ca57/unit_masks \
 	arm/armv8-ca53/events arm/armv8-ca53/unit_masks \
-	avr32/events avr32/unit_masks \
 	mips/20K/events mips/20K/unit_masks \
 	mips/24K/events mips/24K/unit_masks \
 	mips/25K/events mips/25K/unit_masks \

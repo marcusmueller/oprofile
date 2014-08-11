@@ -10,7 +10,6 @@ SUBDIRS = \
 	libutil++ \
 	libopt++ \
 	libabi \
-	daemon \
 	utils \
 	libregex \
 	libpp \
@@ -18,7 +17,6 @@ SUBDIRS = \
 	pp \
 	events \
 	doc \
-	gui \
 	libpe_utils \
 	libperf_events \
 	pe_profiling \

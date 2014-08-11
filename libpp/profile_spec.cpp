@@ -616,9 +616,8 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 
 	if (!found_file) {
 		ostringstream os;
-		os  << "No sample file found: If using opcontrol for profiling,\n"
-		    << "try running 'opcontrol --dump'; otherwise, specify a session containing\n"
-		    << "sample files.\n";
+		os  << "No sample found: Please specify a session containing \n"
+		    << "sample data.\n";
 		throw op_fatal_error(os.str());
 	}
 

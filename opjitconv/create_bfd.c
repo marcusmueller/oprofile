@@ -15,7 +15,6 @@
  */
 
 #include "opjitconv.h"
-#include "opd_printf.h"
 #include "op_libiberty.h"
 
 #include <bfd.h>

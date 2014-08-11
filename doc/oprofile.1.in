@@ -4,11 +4,6 @@
 oprofile \- a system-wide profiler
 .SH SYNOPSIS
 .br
-.B opcontrol
-[
-.I options
-]
-.br
 .B opreport
 [
 .I options
@@ -44,10 +39,6 @@ OProfile can profile the whole system in high detail.
 For a gentle guide to using OProfile, please read the HTML documentation
 listed in SEE ALSO.
 .br
-.SH OPCONTROL
-.B opcontrol
-is used for starting and stopping the OProfile daemon, and providing set-up
-parameters.
 .SH OPREPORT
 .B opreport
 gives image and symbol-based profile summaries for the whole system or
@@ -150,20 +141,8 @@ No special environment variables are recognised by oprofile.
 .I $HOME/.oprofile/
 Configuration files
 .TP
-.I /root/.oprofile/daemonrc
-Configuration file for opcontrol
-.TP
 .I @prefix@/share/oprofile/
 Event description files used by OProfile.
-.TP
-.I /var/lib/oprofile/samples/oprofiled.log
-The user-space daemon logfile.
-.TP
-.I /dev/oprofile
-The device filesystem for communication with the Linux kernel module. 
-.TP
-.I /var/lib/oprofile/samples/
-The location of the generated sample files.
 
 .SH VERSION
 .TP
@@ -171,7 +150,6 @@ This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
 .BR @OP_DOCDIR@,
-.BR opcontrol(1),
 .BR opreport(1),
 .BR opannotate(1),
 .BR oparchive(1),

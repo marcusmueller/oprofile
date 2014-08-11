@@ -15,7 +15,6 @@
  */
 
 #include "opjitconv.h"
-#include "opd_printf.h"
 #include "op_file.h"
 #include "op_libiberty.h"
 
@@ -362,10 +361,8 @@ chk_proc_id:
 		goto out;
 	}
 	if (!(anon_dir = find_anon_dir_match(anon_sample_dirs, proc_id))) {
-		/* With the capability of profiling with operf (as well as with
-		 * the legacy oprofile daemon), users will not be using opcontrol
-		 * to remove all jitdump files; instead, opjitconv will remove old
-		 * jitdump files (see _cleanup_jitdumps() for details).  But this cleanup
+		/* When profiling with operf, opjitconv will remove old jitdump
+		 * files (see _cleanup_jitdumps() for details).  But this cleanup
 		 * strategy makes it quite likely that opjitconv will sometimes find
 		 * jitdump files that are not owned by the current user or are in use
 		 * by other operf users, thus, the current profile data would not have

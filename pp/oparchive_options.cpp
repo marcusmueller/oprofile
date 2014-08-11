@@ -122,9 +122,9 @@ void handle_options(options::spec const & spec)
 		exit(EXIT_FAILURE);
 	}
 
-	if (strncmp(op_session_dir, "/var/lib/oprofile", strlen("/var/lib/oprofile")))
+	if (strncmp(op_session_dir, OP_SESSION_DIR_DEFAULT, strlen(OP_SESSION_DIR_DEFAULT)))
 		cerr << "NOTE: The sample data in this archive is located at " << op_session_dir << endl
-		     << "instead of the standard location of /var/lib/oprofile.  Hence, when using opreport" << endl
+		     << "instead of the standard location of " << OP_SESSION_DIR_DEFAULT << ".  Hence, when using opreport" << endl
 		     << "and other post-processing tools on this archive, you must pass the following option:" << endl
 		     << "\t--session-dir=" << op_session_dir << endl;
 }

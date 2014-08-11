@@ -45,12 +45,8 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "PII", "i386/pii", CPU_PII, 2 },
 	{ "PIII", "i386/piii", CPU_PIII, 2 },
 	{ "Athlon", "i386/athlon", CPU_ATHLON, 4 },
-	{ "CPU with timer interrupt", "timer", CPU_TIMER_INT, 1 },
-	{ "CPU with RTC device", "rtc", CPU_RTC, 1 },
+        { "CPU with timer interrupt", "timer", CPU_TIMER_INT, 1 },
 	{ "P4 / Xeon", "i386/p4", CPU_P4, 8 },
-	{ "IA64", "ia64/ia64", CPU_IA64, 4 },
-	{ "Itanium", "ia64/itanium", CPU_IA64_1, 4 },
-	{ "Itanium 2", "ia64/itanium2", CPU_IA64_2, 4 },
 	{ "AMD64 processors", "x86-64/hammer", CPU_HAMMER, 4 },
 	{ "P4 / Xeon with 2 hyper-threads", "i386/p4-ht", CPU_P4_HT2, 4 },
 	{ "Alpha EV4", "alpha/ev4", CPU_AXP_EV4, 2 },
@@ -84,19 +80,15 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Core 2", "i386/core_2", CPU_CORE_2, 2 },
 	{ "ppc64 POWER6", "ppc64/power6", CPU_PPC64_POWER6, 4 },
 	{ "ppc64 970MP", "ppc64/970MP", CPU_PPC64_970MP, 8 },
-	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
 	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
-	{ "ppc64 PA6T", "ppc64/pa6t", CPU_PPC64_PA6T, 6 },
 	{ "ARM 11MPCore", "arm/mpcore", CPU_ARM_MPCORE, 2 },
 	{ "ARM V6 PMU", "arm/armv6", CPU_ARM_V6, 3 },
 	{ "ppc64 POWER5++", "ppc64/power5++", CPU_PPC64_POWER5pp, 6 },
 	{ "e300", "ppc/e300", CPU_PPC_E300, 4 },
-	{ "AVR32", "avr32", CPU_AVR32, 3 },
 	{ "ARM Cortex-A8", "arm/armv7", CPU_ARM_V7, 5 },
  	{ "Intel Architectural Perfmon", "i386/arch_perfmon", CPU_ARCH_PERFMON, 0},
 	{ "AMD64 family11h", "x86-64/family11h", CPU_FAMILY11H, 4 },
 	{ "ppc64 POWER7", "ppc64/power7", CPU_PPC64_POWER7, 6 },
-	{ "ppc64 compat version 1", "ppc64/ibm-compat-v1", CPU_PPC64_IBM_COMPAT_V1, 4 },
    	{ "Intel Core/i7", "i386/core_i7", CPU_CORE_I7, 4 },
    	{ "Intel Atom", "i386/atom", CPU_ATOM, 2 },
 	{ "Loongson2", "mips/loongson2", CPU_MIPS_LOONGSON2, 2 },
@@ -121,8 +113,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A7", "arm/armv7-ca7", CPU_ARM_V7_CA7, 5 },
 	{ "ARM Cortex-A15", "arm/armv7-ca15", CPU_ARM_V7_CA15, 7 },
 	{ "Intel Haswell microarchitecture", "i386/haswell", CPU_HASWELL, 4 },
-	{ "IBM zEnterprise EC12", "s390/zEC12", CPU_S390_ZEC12, 1 },
-	{ "AMD64 generic", "x86-64/generic", CPU_AMD64_GENERIC, 4 },
+	{ "IBM zEnterprise EC12", "s390/zEC12", CPU_S390_ZEC12, 1 },	{ "AMD64 generic", "x86-64/generic", CPU_AMD64_GENERIC, 4 },
 	{ "IBM Power Architected Events V1", "ppc64/architected_events_v1", CPU_PPC64_ARCH_V1, 6 },
 	{ "ppc64 POWER8", "ppc64/power8", CPU_PPC64_POWER8, 6 },
 	{ "e500mc", "ppc/e500mc", CPU_PPC_E500MC, 4 },
@@ -662,7 +653,7 @@ static op_cpu _get_s390_cpu_type(void)
 	return CPU_NO_GOOD;
 }
 
-static op_cpu __get_cpu_type_alt_method(void)
+static op_cpu __get_cpu_type(void)
 {
 	struct utsname uname_info;
 	if (uname(&uname_info) < 0) {
@@ -728,35 +719,11 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 op_cpu op_get_cpu_type(void)
 {
 	int cpu_type = CPU_NO_GOOD;
-	char str[100];
-	FILE * fp;
 
-	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
-	if (!fp) {
-		/* Try 2.6's oprofilefs one instead. */
-		fp = fopen("/dev/oprofile/cpu_type", "r");
-		if (!fp) {
-			if ((cpu_type = __get_cpu_type_alt_method()) == CPU_NO_GOOD) {
-				fprintf(stderr, "Unable to open cpu_type file for reading\n");
-				fprintf(stderr, "Make sure you have done opcontrol --init\n");
-			}
-			return cpu_type;
-		}
+	if ((cpu_type = __get_cpu_type()) == CPU_NO_GOOD) {
+		fprintf(stderr, "Unable to open cpu_type file for reading\n");
+		fprintf(stderr, "Make sure you have done opcontrol --init\n");
 	}
-
-	if (!fgets(str, 99, fp)) {
-		fprintf(stderr, "Could not read cpu type.\n");
-		fclose(fp);
-		return cpu_type;
-	}
-
-	cpu_type = op_get_cpu_number(str);
-
-	if (op_cpu_variations(cpu_type))
-		cpu_type = op_cpu_specific_type(cpu_type);
-
-	fclose(fp);
-
 	return cpu_type;
 }
 
@@ -810,26 +777,8 @@ int op_get_nr_counters(op_cpu cpu_type)
 		return 0;
 
 	cnt = arch_num_counters(cpu_type);
-	if (cnt >= 0)
-		return cnt;
-
-	return op_cpu_has_timer_fs()
-		? cpu_descrs[cpu_type].nr_counters + 1
-		: cpu_descrs[cpu_type].nr_counters;
+	if (cnt < 0)
+		cnt = cpu_descrs[cpu_type].nr_counters;
+	return cnt;
 }
 
-int op_cpu_has_timer_fs(void)
-{
-	static int cached_has_timer_fs_p = -1;
-	FILE * fp;
-
-	if (cached_has_timer_fs_p != -1)
-		return cached_has_timer_fs_p;
-
-	fp = fopen("/dev/oprofile/timer", "r");
-	cached_has_timer_fs_p = !!fp;
-	if (fp)
-		fclose(fp);
-
-	return cached_has_timer_fs_p;
-}

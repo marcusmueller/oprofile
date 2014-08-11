@@ -187,7 +187,7 @@ options::spec get_options(int argc, char const * argv[])
 		if ((stat(options::session_dir.c_str(), &sb) < 0) ||
 				((sb.st_mode & S_IFMT) != S_IFDIR)) {
 			// Use the standard default session dir instead
-			options::session_dir = "/var/lib/oprofile";
+			options::session_dir = OP_SESSION_DIR_DEFAULT;
 		}
 		session_dir_supplied = 0;
 	} else {

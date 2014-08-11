@@ -125,12 +125,11 @@ looking for them in --search-dirs.
 .BI "--session-dir="dir_path
 Use sample database from the specified directory
 .I dir_path
-instead of the default locations. If
+instead of the default location. If
 .I --session-dir
 is not specified, then
 .B opannotate
-will search for samples in
-.I <current_dir>/oprofile_data
+will search for samples in <current_dir>/oprofile_data
 first. If that directory does not exist, the standard session-dir of /var/lib/oprofile is used.
 .br
 .TP
@@ -155,15 +154,9 @@ Show version.
 No special environment variables are recognised by opannotate.
 
 .SH FILES
-.I <current_dir>/oprofile_data/samples
-.RS 7
-Or
-.RE
-.I /var/lib/oprofile/samples/
-.LP
-.RS 7
+.TP
+.I <session_dir>/samples
 The location of the generated sample files.
-.RE
 
 .SH VERSION
 .TP

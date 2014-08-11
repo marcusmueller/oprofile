@@ -43,11 +43,11 @@ Give verbose debugging output.
 Show version.
 
 .SH ENVIRONMENT
-No special environment variables are recognised by opimport
+No special environment variables are recognized by opimport
 
 .SH FILES
 .TP
-.I /var/lib/oprofile/abi
+.I <session_dir>/abi
 The abi file description of the sample database files
 
 .SH VERSION

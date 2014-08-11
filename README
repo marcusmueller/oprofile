@@ -1,17 +1,21 @@
-This is an alpha release version of oprofile, a transparent
-low-overhead system-wide profiler.
+OProfile provides a low-overhead profiler (operf) capable of both
+single-application profiling and system-wide profiling.  There is
+also a simple event counting tool (ocount).
 
 You can find some documentation in the doc/ directory.
 
 Please visit the oprofile website at : http://oprofile.sf.net/
 
-oprofile was written by John Levon <levon@movementarian.org>
-and Philippe Elie <phil.el@wanadoo.fr>.
-
-Maynard Johnson <maynardj@us.ibm.com> is the current maintainer.
+oprofile was originally written by John Levon <levon@movementarian.org>
+and Philippe Elie <phil.el@wanadoo.fr>.  The operf and ocount
+tools were developed by Maynard Johnson <maynardj@us.ibm.com>, who
+is the current maintainer.
 
 Dave Jones <davej@suse.de> provided bug fixes and support for
-the AMD Athlon, and AMD Hammer families of CPUs.
+the AMD Athlon, and AMD Hammer families of CPUs. Suravee.Suthikulpanit@amd.com
+<Suravee.Suthikulpanit@amd.com> contributed various AMD-related patches,
+including Instruction-Based-Sampling support (available only in
+pre-1.0 releases).
 
 Bob Montgomery <bobm@fc.hp.com> provided bug fixes, the initial RTC
 driver and the initial ia64 driver.
@@ -19,18 +23,21 @@ driver and the initial ia64 driver.
 Will Cohen <wcohen@redhat.com> integrated the ia64 driver into the
 oprofile release, and contributed bug fixes and several cleanups.
 
+Will Deacon <will.deacon@arm.com> has contributed patches as well as
+his time to support the ARM architecture.
+
 Graydon Hoare <graydon@redhat.com> provided P4 port, bug fixes and cleanups.
 
 Ralf Baechle <ralf@linux-mips.org> provided the MIPS port.
 
-Other contributors are listed in the ChangeLog.
+Other contributors can be seen via 'git log'.
 
 Building
 --------
 
 Please read the installation instructions in doc/oprofile.html or
 http://oprofile.sourceforge.net/doc/install.html.
-Only 2.6 kernels are supported.
+Only 2.6 kernels (or later) are supported.
 
 Quick start :
 

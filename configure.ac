@@ -240,8 +240,6 @@ LDFLAGS="$LDFLAGS_SAVE"
 AC_SUBST(OP_CPPFLAGS)
 AC_SUBST(OP_LDFLAGS)
 
-AX_CELL_SPU
-
 # C++ tests
 
 AC_LANG_CPLUSPLUS
@@ -262,68 +260,6 @@ AX_TYPEDEFED_NAME(ptrdiff_t, "int" "long", PTRDIFF_T_TYPE)
 AC_SUBST(PTRDIFF_T_TYPE)
 
 AC_PATH_XTRA
-ORIG_X_SAVE_LIBS="$LIBS"
-LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
-X_LIBS="$LIBS"
-AC_SUBST(X_LIBS)
-
-AC_ARG_ENABLE(gui,[  --enable-gui  compile with gui component (qt3|qt4|yes|no),
-		     if not given or set to yes, gui defaults to qt3],, enable_gui=qt3)
-
-if test "x$enable_gui"  = "xqt3"  || test "x$enable_gui"  = "xyes"; then
-	QT_VERSION=3
-	QT_DO_IT_ALL
-	if test -n "$QT_LIB"; then
-		QT_LIBS="$QT_LIB $QT_LDFLAGS"
-	fi
-	QT_CFLAGS="$QT_INCLUDES"
-fi
-
-if test "x$enable_gui"  = "xqt4"; then
-	QT_VERSION=4
-	PKG_CHECK_MODULES(QT, Qt3Support QtGui QtCore ,,[
-	echo "You requested QT4 but its build files are not available. Exiting now."
-	exit
-	])
-	MOC=$(pkg-config --variable=moc_location QtCore)
-	UIC=$(dirname $(pkg-config --variable=uic_location QtCore))/uic3
-	QT_VERSION=$(pkg-config --modversion QtCore)
-
-dnl following are some sanity tests and workarounds for buggy QtCore.pc files
-	if test "x$MOC" = "x"; then
-		echo "WARNING: Your QtCore.pc file is buggy, it doesn't provide the variable 'moc_location'"
-		echo "WARNING: I will try to find it in your PATH ..."
-		AC_CHECK_PROG(MOC, moc, moc)
-		if test "x$MOC" = "x"; then
-			echo "WARNING: You can fix this by adding the location of moc to your path."
-			echo "WARNING: Exiting now."
-			exit
-		fi
-	fi
-
-	if test "x$UIC" = "x3"; then
-		echo "WARNING: Your QtCore.pc file is buggy, it doesn't provide the variable 'uic_location'"
-		echo "WARNING: I will try to find it in your PATH ..."
-		AC_CHECK_PROG(UIChelp, uic3, uic3)
-		if test "x$UIChelp" = "x"; then
-			echo "WARNING: You can fix this by adding the location of uic3 to your path."
-			echo "WARNING: Exiting now."
-			exit
-		else
-			UIC="$UIChelp"
-		fi
-	fi
-
-	flags_has_qt3support=$(echo $QT_CFLAGS | grep QT3_SUPPORT)
-	if test "x$flags_has_qt3support" = "x" ; then
-		echo "WARNING: Your Qt3Support package is buggy; it dosn't include the 'QT3_SUPPORT' flag"
-		echo "WARNING: adding it manually"
-		QT_CFLAGS="$QT_CFLAGS -DQT3_SUPPORT"
-	fi
-fi
-AM_CONDITIONAL(have_qt, test -n "$QT_LIBS")
-
-LIBS="$ORIG_X_SAVE_LIBS"
 
 dnl enable pch for c++
 AC_ARG_ENABLE(pch,
@@ -445,16 +381,13 @@ AC_OUTPUT(Makefile \
 	libregex/tests/Makefile \
 	libregex/stl.pat \
 	libregex/tests/mangled-name \
-	daemon/Makefile \
 	events/Makefile \
 	utils/Makefile \
 	doc/Makefile \
 	doc/xsl/catalog-1.xml \
 	doc/oprofile.1 \
-	doc/opcontrol.1 \
 	doc/ophelp.1 \
 	doc/op-check-perfevents.1 \
-	doc/oprof_start.1 \
 	doc/opreport.1 \
 	doc/opannotate.1 \
 	doc/opgprof.1 \
@@ -466,23 +399,11 @@ AC_OUTPUT(Makefile \
 	libpp/Makefile \
 	opjitconv/Makefile \
 	pp/Makefile \
-	gui/Makefile \
-	gui/ui/Makefile \
 	agents/Makefile \
 	agents/jvmti/Makefile \
 	agents/jvmpi/Makefile)
 
 AX_COPY_IF_CHANGE(doc/xsl/catalog-1.xml, doc/xsl/catalog.xml)
-
-if test "x$enable_gui" = "xno" ; then
-	echo "No GUI will be built as it was explicitly disabled."
-else
-	if test -z "$QT_LIBS"; then
-		echo "Warning: QT version $QT_VERSION was requested but not found. No GUI will be built."
-	else
-		echo "Building GUI with QT $QT_VERSION"
-	 fi
-fi
 
 if ! test "x$enable_account_check" = "xyes"; then
 	:
@@ -525,5 +446,4 @@ if test "$KERNELDIR" != "" && test "$kernel_has_perf_events_support" != "yes"; t
 		echo "Then pass <kernel-hdrs-install-dir> to oprofile's '--with-kernel' configure option."
 	fi
 	echo ""
-	echo "If you run 'make' now, only the legacy ocontrol-based profiler will be built."
 fi

@@ -49,32 +49,8 @@ extern char * stats_filenames[];
  */
 void init_op_config_dirs(char const * session_dir);
 
-//void init_op_stats_filenames(char const * session_dir);
-
 #define OP_SESSION_DIR_DEFAULT "/var/lib/oprofile/"
 
-
-/*@{\name module default/min/max settings */
-
-/** 65536 * sizeof(op_sample) */
-#define OP_DEFAULT_BUF_SIZE 65536
-/**
- * we don't try to wake-up daemon until it remains more than this free entry
- * in eviction buffer
- */
-#define OP_PRE_WATERMARK(buffer_size)			\
-	(((buffer_size) / 8) < OP_MIN_PRE_WATERMARK	\
-		? OP_MIN_PRE_WATERMARK			\
-		: (buffer_size) / 8)
-/** minimal buffer water mark before we try to wakeup daemon */
-#define OP_MIN_PRE_WATERMARK 8192
-/** maximum number of entry in samples eviction buffer */
-#define OP_MAX_BUF_SIZE	1048576
-/** minimum number of entry in samples eviction buffer */
-#define OP_MIN_BUF_SIZE	(32768 + OP_PRE_WATERMARK(32768))
-
-/** maximum sampling rate when using RTC */
-#define OP_MAX_RTC_COUNT	4096
 
 /* 
  * various paths, corresponding to opcontrol, that should be
@@ -83,10 +59,6 @@ void init_op_config_dirs(char const * session_dir);
 extern char op_session_dir[];
 extern char op_samples_dir[];
 extern char op_samples_current_dir[];
-extern char op_lock_file[];
-extern char op_log_file[];
-extern char op_pipe_file[];
-extern char op_dump_status[];
 
 /* Global directory that stores debug files */
 #ifndef DEBUGDIR
@@ -95,9 +67,6 @@ extern char op_dump_status[];
 
 #define OPD_MAGIC "DAE\n"
 #define OPD_VERSION 0x12
-
-#define OP_MIN_CPU_BUF_SIZE 2048
-#define OP_MAX_CPU_BUF_SIZE 131072
 
 #if defined(__cplusplus)
 }

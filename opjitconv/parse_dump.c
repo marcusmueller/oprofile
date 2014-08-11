@@ -16,7 +16,6 @@
 
 #include "opjitconv.h"
 #include "jitdump.h"
-#include "opd_printf.h"
 #include "op_libiberty.h"
 
 #include <string.h>

@@ -51,17 +51,6 @@ static size_t hweight(size_t mask)
 	return count;
 }
 
-static void do_arch_specific_event_help(struct op_event * event)
-{
-	switch (cpu_type) {
-	case CPU_PPC64_CELL:
-		printf("Group %u :", event->val / 100);
-		break;
-	default:
-		break;
-	}
-}
-
 #define LINE_LEN 99
 
 static void word_wrap(int indent, int *column, char *msg)
@@ -96,7 +85,6 @@ static void help_for_event(struct op_event * event)
 	size_t nr_counters;
 	char buf[32];
 
-	do_arch_specific_event_help(event);
 	nr_counters = op_get_nr_counters(cpu_type);
 
 	/* Sanity check */
@@ -273,10 +261,7 @@ static void resolve_events(void)
 			else
 				printf("N/A ");
 		else
-			if (strcmp(selected_events[i]->name, TIMER_EVENT_NAME) == 0)
-				printf("timer ");
-			else
-				printf("%d ", (unsigned int) counter_map[i]);
+			printf("%d ", (unsigned int) counter_map[i]);
 	printf("\n");
 
 	free(counter_map);
@@ -451,10 +436,10 @@ int main(int argc, char const * argv[])
 
 	if (cpu_type == CPU_TIMER_INT) {
 		if (!check_events) {
-			printf("Using timer interrupt.\n"
-			       "Timer mode is only supported by 'opcontrol'. If you intend to use operf or\n"
-			       "ocount, you must first ensure the oprofile kernel module is unloaded\n"
-			       "(using 'opcontrol --deinit'); then try the operation again.\n");
+			printf("CPU type 'timer' was detected, but this is no longer a supported mode for oprofile.\n"
+			       "Ensure the obsolete opcontrol profiler (available in earlier oprofile releases)\n"
+			       "is not running on the system.  To check for this, look for the 'oprofiled'\n"
+			       "process using the 'ps' command.");
 		}
 		exit(EXIT_SUCCESS);
 	}
@@ -573,17 +558,6 @@ int main(int argc, char const * argv[])
 			"This is a limited set of fallback events because oprofile doesn't know your CPU\n";
 		break;
 	
-	case CPU_IA64:
-	case CPU_IA64_1:
-	case CPU_IA64_2:
-		event_doc =
-			"See Intel Itanium Processor Reference Manual\n"
-			"for Software Development (Document 245320-003),\n"
-			"Intel Itanium Processor Reference Manual\n"
-			"for Software Optimization (Document 245473-003),\n"
-			"Intel Itanium 2 Processor Reference Manual\n"
-			"for Software Development and Optimization (Document 251110-001)\n\n";
-		break;
 	case CPU_AXP_EV4:
 	case CPU_AXP_EV5:
 	case CPU_AXP_PCA56:
@@ -676,12 +650,6 @@ int main(int argc, char const * argv[])
 			"Cortex A57 DDI (ARM DDI 0500D, revision r0p2)\n";
 		break;
 
-	case CPU_PPC64_PA6T:
-		event_doc =
-			"See PA6T Power Implementation Features Book IV\n"
-			"Chapter 7 Performance Counters\n";
-		break;
-
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
 	case CPU_PPC64_POWER6:
@@ -690,7 +658,6 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_970:
 	case CPU_PPC64_970MP:
 	case CPU_PPC64_POWER7:
-	case CPU_PPC64_IBM_COMPAT_V1:
 		event_doc =
 			"When using operf, events may be specified without a '_GRP<n>' suffix.\n"
 			"If _GRP<n> (i.e., group number) is not specified, one will be automatically\n"
@@ -706,12 +673,6 @@ int main(int argc, char const * argv[])
 		event_doc =
 			"This processor type is fully supported with operf; opcontrol timer mode may be available.\n"
 			"See Power ISA 2.07 at https://www.power.org/\n\n";
-		break;
-
-	case CPU_PPC64_CELL:
-		event_doc =
-			"Obtain Cell Broadband Engine documentation at:\n"
-			"http://www-306.ibm.com/chips/techlib/techlib.nsf/products/Cell_Broadband_Engine\n";
 		break;
 
 	case CPU_MIPS_20K:
@@ -806,14 +767,6 @@ int main(int argc, char const * argv[])
 			"Downloadable from http://www.freescale.com\n";
 		break;
 
-	case CPU_AVR32:
-		event_doc =
-			"See AVR32 Architecture Manual\n"
-			"Chapter 6: Performance Counters\n"
-			"http://www.atmel.com/dyn/resources/prod_documents/doc32000.pdf\n";
-
-		break;
-
 	case CPU_TILE_TILE64:
 	case CPU_TILE_TILEPRO:
 	case CPU_TILE_TILEGX:
@@ -828,20 +781,17 @@ int main(int argc, char const * argv[])
 	case CPU_S390_Z196:
 	case CPU_S390_ZEC12:
 		event_doc = "IBM System z CPU Measurement Facility\n"
-			"http://www-01.ibm.com/support/docview.wss"
-			"?uid=isg26fcd1cc32246f4c8852574ce0044734a\n";
+				"http://www-01.ibm.com/support/docview.wss"
+				"?uid=isg26fcd1cc32246f4c8852574ce0044734a\n";
 		break;
 
-		case CPU_RTC:
-			break;
-
-		// don't use default, if someone add a cpu he wants a compiler warning
-		// if he forgets to handle it here.
-		case CPU_TIMER_INT:
-		case CPU_NO_GOOD:
-		case MAX_CPU_TYPE:
-			printf("%d is not a valid processor type.\n", cpu_type);
-			exit(EXIT_FAILURE);
+	// don't use default, if someone add a cpu he wants a compiler warning
+	// if he forgets to handle it here.
+	case CPU_TIMER_INT:
+	case CPU_NO_GOOD:
+	case MAX_CPU_TYPE:
+		printf("%d is not a valid processor type.\n", cpu_type);
+		exit(EXIT_FAILURE);
 	}
 
 	sprintf(title, "oprofile: available events for CPU type \"%s\"\n\n", pretty);
@@ -850,7 +800,7 @@ int main(int argc, char const * argv[])
 	else {
 		printf("%s%s", title, event_doc);
 		printf("For architectures using unit masks, you may be able to specify\n"
-		       "unit masks by name.  See 'opcontrol' or 'operf' man page for more details.\n\n");
+		       "unit masks by name.  See 'operf' or 'ocount' man page for more details.\n\n");
 	}
 
 	list_for_each(pos, events) {

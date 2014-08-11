@@ -13,8 +13,6 @@ libop_a_SOURCES = \
 	op_cpu_type.h \
 	op_mangle.c \
 	op_mangle.h \
-	op_get_interface.c \
-	op_interface.h \
 	op_alloc_counter.c \
 	op_alloc_counter.h \
 	op_hw_config.h \

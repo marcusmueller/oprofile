@@ -109,17 +109,17 @@ static void delete_counter_arc(counter_arc_head * ctr_arc, int nr_events)
  * mapping number.
  *
  * Solution is searched through a simple backtracking exploring recursively all
- * possible solution until one is found, prunning is done in O(1) by tracking
+ * possible solution until one is found, pruning is done in O(1) by tracking
  * a bitmask of already allocated counter. Walking through node is done in
  * preorder left to right.
  *
- * In case of extended events (required no phisical counters), the associated
+ * In case of extended events (required no physical counters), the associated
  * counter_map entry will be -1.
  *
- * Possible improvment if neccessary: partition counters in class of counter,
+ * Possible improvement if necessary: partition counters in class of counter,
  * two counter belong to the same class if they allow exactly the same set of
  * event. Now using a variant of the backtrack algo can works on class of
- * counter rather on counter (this is not an improvment if each counter goes
+ * counter rather on counter (this is not an improvement if each counter goes
  * in it's own class)
  */
 static int
@@ -157,47 +157,6 @@ allocate_counter(counter_arc_head const * ctr_arc, int max_depth, int depth,
 	return 0;
 }
 
-/* determine which directories are counter directories
- */
-static int perfcounterdir(const struct dirent * entry)
-{
-	return (isdigit(entry->d_name[0]));
-}
-
-
-/**
- * @param mask pointer where to place bit mask of unavailable counters
- *
- * return >= 0 number of counters that are available
- *        < 0  could not determine number of counters
- *
- */
-static int op_get_counter_mask(u32 * mask)
-{
-	struct dirent **counterlist;
-	int count, i;
-	/* assume nothing is available */
-	u32 available=0;
-
-	count = scandir("/dev/oprofile", &counterlist, perfcounterdir,
-			alphasort);
-	if (count < 0)
-		/* unable to determine bit mask */
-		return -1;
-	/* convert to bit map (0 where counter exists) */
-	for (i=0; i<count; ++i) {
-		available |= 1 << atoi(counterlist[i]->d_name);
-		free(counterlist[i]);
-	}
-	/* Append the timer counter to the mask of hardware counters.  */
-	if (op_cpu_has_timer_fs()) {
-		available |= 1 << (op_get_nr_counters(op_get_cpu_type()) - 1);
-		count++;
-	}
-	*mask=~available;
-	free(counterlist);
-	return count;
-}
 
 size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
                               op_cpu cpu_type)
@@ -205,19 +164,9 @@ size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
 	counter_arc_head * ctr_arc;
 	size_t * counter_map;
 	int i, nr_counters, nr_pmc_events;
-	op_cpu curr_cpu_type;
 	u32 unavailable_counters = 0;
 
-	/* Either ophelp or one of the libop tests may invoke this
-	 * function with a non-native cpu_type.  If so, we should not
-	 * call op_get_counter_mask because that will look for real counter
-	 * information in oprofilefs.
-	 */
-	curr_cpu_type = op_get_cpu_type();
-	if (cpu_type != curr_cpu_type)
-		nr_counters = op_get_nr_counters(cpu_type);
-	else
-		nr_counters = op_get_counter_mask(&unavailable_counters);
+	nr_counters = op_get_nr_counters(cpu_type);
 
 	/* no counters then probably perfmon managing perfmon hw */
 	if (nr_counters <= 0) {
