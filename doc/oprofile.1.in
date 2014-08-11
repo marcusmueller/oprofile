@@ -39,6 +39,7 @@ OProfile can profile the whole system in high detail.
 For a gentle guide to using OProfile, please read the HTML documentation
 listed in SEE ALSO.
 .br
+.SH OPCONTROL
 .SH OPREPORT
 .B opreport
 gives image and symbol-based profile summaries for the whole system or
@@ -134,15 +135,27 @@ tgid: to restrict the results to particular threads within a process.
 This is only useful when using per-process profile separation.
 
 .SH ENVIRONMENT
-No special environment variables are recognised by oprofile.
+No special environment variables are recognized by oprofile.
 
 .SH FILES
 .TP
-.I $HOME/.oprofile/
-Configuration files
+.I @prefix@/share/doc/oprofile/oprofile.html
+OProfile user guide.
+.TP
+.I @prefix@/share/doc/oprofile/opreport.xsd
+Schema file for opreport XML output.
+.TP
+.I @prefix@/share/doc/oprofile/ophelp.xsd
+Schema file for ophelp XML output.
 .TP
 .I @prefix@/share/oprofile/
 Event description files used by OProfile.
+.TP
+.I <session-dir>/samples/operf.log
+The profiler log file.
+.TP
+.I <session-dir>/samples/current
+The location of the generated sample files.
 
 .SH VERSION
 .TP
@@ -155,7 +168,6 @@ This man page is current for @PACKAGE@-@VERSION@.
 .BR oparchive(1),
 .BR opgprof(1),
 .BR gprof(1),
-.BR readprofile(1),
 .BR "CPU vendor architecture manuals"
 
 .SH COPYRIGHT
