@@ -68,15 +68,22 @@ ocount_counter::ocount_counter(operf_event_t & evt,  bool enable_on_exec,
 {
 	memset(&attr, 0, sizeof(attr));
 	attr.size = sizeof(attr);
-	attr.type = PERF_TYPE_RAW;
 	attr.config = evt.evt_code;
+#ifdef __s390__
+	attr.type = PERF_TYPE_HARDWARE;
+	attr.exclude_hv = 0;
+	if (evt.no_kernel && !evt.no_user)
+		attr.config |= 32;
+#else
+	attr.type = PERF_TYPE_RAW;
+	attr.exclude_hv = evt.no_hv;
+#endif
 	attr.inherit = inherit ? 1 : 0;
 	attr.enable_on_exec = enable_on_exec ? 1 : 0;
 	attr.disabled  = attr.enable_on_exec;
 	attr.exclude_idle = 0;
 	attr.exclude_kernel = evt.no_kernel;
 	attr.exclude_user = evt.no_user;
-	attr.exclude_hv = evt.no_hv;
 	// This format allows us to tell user percent of time an event was scheduled
 	// when multiplexing has been done by the kernel.
 	attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED |

@@ -208,7 +208,14 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 		attr.sample_type |= PERF_SAMPLE_CALLCHAIN;
 	if (separate_cpu)
 		attr.sample_type |= PERF_SAMPLE_CPU;
+
+#ifdef __s390__
+	attr.type = PERF_TYPE_HARDWARE;
+	attr.exclude_hv = 0;
+#else
 	attr.type = PERF_TYPE_RAW;
+	attr.exclude_hv = evt.no_hv;
+#endif
 #if ((defined(__i386__) || defined(__x86_64__)) && (HAVE_PERF_PRECISE_IP))
 	if (evt.evt_code & EXTRA_PEBS) {
 		attr.precise_ip = 2;
@@ -223,7 +230,6 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 	attr.disabled  = 1;
 	attr.exclude_idle = 0;
 	attr.exclude_kernel = evt.no_kernel;
-	attr.exclude_hv = evt.no_hv;
 	attr.read_format = PERF_FORMAT_ID;
 	event_name = evt.name;
 	fd = id = -1;

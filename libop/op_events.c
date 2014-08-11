@@ -1252,7 +1252,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_S390_Z10:
 		case CPU_S390_Z196:
 		case CPU_S390_ZEC12:
-			descr->name = "HWSAMPLING";
+			descr->name = "CPU_CYCLES";
 			descr->count = 4127518;
 			break;
 

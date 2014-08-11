@@ -940,6 +940,25 @@ void op_pe_utils::op_process_events_list(set<string> & passed_evts,
 			place++;
 		}
 		free(event_str);
+
+#ifdef __s390__
+		if (do_profiling) {
+			if (strncmp(event.name, "CPU_CYCLES", strlen(event.name)) != 0) {
+				cerr << "Profiling with " << event.name << " is not supported." << endl
+				     << "Only CPU_CYCLES is allowed to use with operf." << endl;
+				exit(EXIT_FAILURE);
+			}
+		} else {
+			if (!event.no_kernel && event.no_user) {
+				cerr << "Counting for just the kernel is not supported." << endl
+				     << "Re-run the command and simply pass the event name " << endl
+				     << "(" << event.name << ") for the event spec, without" << endl
+				     << "unit mask/kernel/user bits." << endl;
+				exit(EXIT_FAILURE);
+			}
+		}
+#endif
+
 		_get_event_code(&event, cpu_type);
 		events.push_back(event);
 	}
