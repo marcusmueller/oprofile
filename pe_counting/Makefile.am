@@ -1,4 +1,4 @@
-LIBS=@LIBERTY_LIBS@ @PFM_LIB@
+LIBS=@LIBERTY_LIBS@ @PFM_LIB@ @RT_LIB@
 if BUILD_FOR_PERF_EVENT
 
 AM_CPPFLAGS = \
@@ -19,7 +19,7 @@ AM_CXXFLAGS = @OP_CXXFLAGS@
 AM_LDFLAGS = @OP_LDFLAGS@
 
 bin_PROGRAMS = ocount
-ocount_LDADD = -lrt ../libpe_utils/libpe_utils.a \
+ocount_LDADD = ../libpe_utils/libpe_utils.a \
 	../libpe_utils/libpe_utils.a \
 	../libop/libop.a \
 	../libutil/libutil.a \

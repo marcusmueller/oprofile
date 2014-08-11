@@ -395,6 +395,12 @@ AM_CONDITIONAL(CHECK_ACCOUNT, test "x$enable_account_check" = "xyes")
 AC_SUBST(OP_CFLAGS)
 AC_SUBST(OP_CXXFLAGS)
 
+AC_CHECK_FUNC(clock_gettime, [], [
+	AC_CHECK_LIB(rt, clock_gettime, RT_LIB="-lrt",
+		AC_MSG_ERROR(Unable to find clock_gettime function; required by ocount))])
+AC_SUBST(RT_LIB)
+
+
 # fixups for config.h
 if test "$prefix" = "NONE"; then
 	my_op_prefix="$ac_default_prefix"
