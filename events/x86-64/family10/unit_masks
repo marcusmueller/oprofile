@@ -13,9 +13,12 @@
 #          Publication# 40546, Revision 3.13, February 2011
 #          (Note: For IBS Derived Performance Events)
 #
-# Revision: 1.4
+# Revision: 1.5
 #
 # ChangeLog: 
+# 	1.5: 11 August 2014
+# 	- Removal of IBS events due to missing support in Operf
+#
 #	1.4: 11 March 2011
 #       - Update to BKDG revision 3.48
 #       - Fix typo in the description for event 0xf244
@@ -377,10 +380,6 @@ name:retired_x87_fp type:bitmask default:0x07
 	0x01 Add/subtract ops
 	0x02 Multiply ops
 	0x04 Divide ops
-name:ibs_op type:bitmask default:0x01
-	0x00 Using IBS OP cycle count mode
-	0x01 Using IBS OP dispatch count mode
-	0x02 Enable IBS OP Memory Access Log 
 name:non_cancelled_l3_read_requests type:bitmask default:0xf7
 	0x01 RbBlk
 	0x02 RbBlkS

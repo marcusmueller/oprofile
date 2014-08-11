@@ -9,13 +9,12 @@
 # Sources: BIOS and Kernel Developer's Guide for AMD Family 10h Processors,
 #          Publication# 31116, Revision 3.48, April 22, 2010
 #
-#          Software Optimization Guide for AMD Family 10h and Family 12h Processors,
-#          Publication# 40546, Revision 3.13, February 2011
-#          (Note: For IBS Derived Performance Events)
-#
-# Revision: 1.4
+# Revision: 1.5
 #
 # ChangeLog: 
+# 	1.5: 11 August 2014
+# 	- Removal of IBS events due to missing support in Operf
+#
 #	1.4: 11 March 2011
 #       - Update to BKDG revision 3.48
 #       - Fix typo in the description for event 0xf244
@@ -179,72 +178,3 @@ event:0x4e1 counters:0,1,2,3 um:l3_cache minimum:500 name:L3_CACHE_MISSES : Numb
 event:0x4e2 counters:0,1,2,3 um:l3_fill minimum:500 name:L3_FILLS_CAUSED_BY_L2_EVICTIONS : Number of L3 fills caused by L2 evictions per core
 event:0x4e3 counters:0,1,2,3 um:l3_evict minimum:500 name:L3_EVICTIONS : Number of L3 cache line evictions by cache state
 event:0x4ed counters:0,1,2,3 um:non_cancelled_l3_read_requests minimum:500 name:NON_CANCELLED_L3_READ_REQUESTS : Non-cancelled L3 Read Requests (Rev D)
-
-###############################
-# IBS FETCH EVENTS
-###############################
-event:0xf000 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_ALL : All IBS fetch samples
-event:0xf001 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_KILLED : IBS fetch killed
-event:0xf002 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_ATTEMPTED : IBS fetch attempted
-event:0xf003 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_COMPLETED : IBS fetch completed
-event:0xf004 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_ABORTED : IBS fetch aborted
-event:0xf005 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_ITLB_HITS : IBS ITLB hit
-event:0xf006 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_L1_ITLB_MISSES_L2_ITLB_HITS : IBS L1 ITLB misses (and L2 ITLB hits)
-event:0xf007 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_L1_ITLB_MISSES_L2_ITLB_MISSES : IBS L1 L2 ITLB miss
-event:0xf008 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_ICACHE_MISSES : IBS Instruction cache misses
-event:0xf009 ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_ICACHE_HITS : IBS Instruction cache hit
-event:0xf00A ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_4K_PAGE : IBS 4K page translation
-event:0xf00B ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_2M_PAGE : IBS 2M page translation
-#
-event:0xf00E ext:ibs_fetch um:zero minimum:50000 name:IBS_FETCH_LATENCY : IBS fetch latency
-
-###############################
-# IBS OP EVENTS
-###############################
-event:0xf100 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_ALL : All IBS op samples
-event:0xf101 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_TAG_TO_RETIRE : IBS tag-to-retire cycles
-event:0xf102 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_COMP_TO_RET : IBS completion-to-retire cycles
-event:0xf103 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_BRANCH_RETIRED : IBS branch op
-event:0xf104 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_MISPREDICTED_BRANCH : IBS mispredicted branch op
-event:0xf105 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_TAKEN_BRANCH : IBS taken branch op
-event:0xf106 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_MISPREDICTED_BRANCH_TAKEN : IBS mispredicted taken branch op
-event:0xf107 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_RETURNS : IBS return op
-event:0xf108 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_MISPREDICTED_RETURNS : IBS mispredicted return op
-event:0xf109 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_RESYNC : IBS resync op
-event:0xf200 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_ALL_LOAD_STORE : IBS all load store ops
-event:0xf201 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_LOAD : IBS load ops
-event:0xf202 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_STORE : IBS store ops
-event:0xf203 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L1_DTLB_HITS : IBS L1 DTLB hit
-event:0xf204 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L1_DTLB_MISS_L2_DTLB_HIT : IBS L1 DTLB misses L2 hits
-event:0xf205 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L1_L2_DTLB_MISS : IBS L1 and L2 DTLB misses
-event:0xf206 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_DATA_CACHE_MISS : IBS data cache misses
-event:0xf207 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_DATA_HITS : IBS data cache hits
-event:0xf208 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_MISALIGNED_DATA_ACC : IBS misaligned data access
-event:0xf209 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_BANK_CONF_LOAD : IBS bank conflict on load op
-event:0xf20A ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_BANK_CONF_STORE : IBS bank conflict on store op
-event:0xf20B ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_FORWARD : IBS store-to-load forwarded
-event:0xf20C ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_CANCELLED : IBS store-to-load cancelled
-event:0xf20D ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_DCUC_MEM_ACC : IBS UC memory access
-event:0xf20E ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_DCWC_MEM_ACC : IBS WC memory access
-event:0xf20F ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_LOCKED : IBS locked operation
-event:0xf210 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_MAB_HIT : IBS MAB hit
-event:0xf211 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L1_DTLB_4K : IBS L1 DTLB 4K page
-event:0xf212 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L1_DTLB_2M : IBS L1 DTLB 2M page
-event:0xf213 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L1_DTLB_1G : IBS L1 DTLB 1G page
-event:0xf215 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L2_DTLB_4K : IBS L2 DTLB 4K page
-event:0xf216 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L2_DTLB_2M : IBS L2 DTLB 2M page
-event:0xf217 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_L2_DTLB_1G : IBS L2 DTLB 1G page
-event:0xf219 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_DC_LOAD_LAT : IBS data cache miss load latency
-event:0xf240 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_LOCAL_ONLY : IBS northbridge local
-event:0xf241 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_REMOTE_ONLY : IBS northbridge remote
-event:0xf242 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_LOCAL_L3 : IBS northbridge local L3
-event:0xf243 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_LOCAL_CACHE : IBS northbridge local core L1 or L2 cache
-event:0xf244 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_REMOTE_CACHE : IBS northbridge remote core L1, L2, L3 cache
-event:0xf245 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_LOCAL_DRAM : IBS northbridge local DRAM
-event:0xf246 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_REMOTE_DRAM : IBS northbridge remote DRAM
-event:0xf247 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_LOCAL_OTHER : IBS northbridge local APIC MMIO Config PCI
-event:0xf248 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_REMOTE_OTHER : IBS northbridge remote APIC MMIO Config PCI
-event:0xf249 ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_CACHE_MODIFIED : IBS northbridge cache modified state
-event:0xf24A ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_CACHE_OWNED : IBS northbridge cache owned state
-event:0xf24B ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_LOCAL_CACHE_LAT : IBS northbridge local cache latency
-event:0xf24C ext:ibs_op um:ibs_op minimum:50000 name:IBS_OP_NB_REMOTE_CACHE_LAT : IBS northbridge remote cache latency

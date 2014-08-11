@@ -10,13 +10,12 @@
 # Sources: BIOS and Kernel Developer's Guide for AMD Family 12h Processors,
 #          Publication# 41131, Revision 1.13, March 01, 2011
 #
-#          Software Optimization Guide for AMD Family 10h and Family 12h Processors,
-#          Publication# 40546, Revision 3.13, February 2011
-#          (Note: For IBS Derived Performance Events)
-#
-# Revision: 1.2
+# Revision: 1.3
 #
 # ChangeLog: 
+# 	1.3: 11 August 2014
+# 	- Remove IBS events due to missing operf support
+#
 #	1.2: 09 March 2011
 # 	- Update with BKDG Rev.1.13 (preliminary)
 #
@@ -266,8 +265,3 @@ name:interrupt_events type:bitmask default:0xff
 	0x20 STARTUP
 	0x40 INT
 	0x80 EOI
-name:ibs_op type:bitmask default:0x01
-	0x00 Using IBS OP cycle count mode
-	0x01 Using IBS OP dispatch count mode
-	0x02 Enable IBS OP Memory Access Log 
-	0x04 Enable IBS OP Branch Target Address Log
