@@ -721,8 +721,10 @@ op_cpu op_get_cpu_type(void)
 	int cpu_type = CPU_NO_GOOD;
 
 	if ((cpu_type = __get_cpu_type()) == CPU_NO_GOOD) {
-		fprintf(stderr, "Unable to open cpu_type file for reading\n");
-		fprintf(stderr, "Make sure you have done opcontrol --init\n");
+		fprintf(stderr, "Unable to obtain cpu_type\n");
+		fprintf(stderr, "Verify that a pre-1.0 version of OProfile is not in use.\n"
+		        "If the /dev/oprofile/cpu_type file exists, locate the pre-1.0 OProfile\n"
+		        "installation, and use its 'opcontrol' command, passing the --deinit option.\n");
 	}
 	return cpu_type;
 }

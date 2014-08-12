@@ -1470,9 +1470,7 @@ int main(int argc, char * const argv[])
 		     << "Note: For example, the obsolete opcontrol profiler (available in earlier oprofile releases)" << endl
 		     << "does not allow other perforrmance tools to run simultaneously. To check for this, look for the" << endl
 		     << "'oprofiled' process using the 'ps' command." << endl;
-		exit(1);
-	}
-	if (rc == ENOSYS) {
+	} else if (rc == ENOSYS) {
 		cerr << "Your kernel does not implement a required syscall"
 		     << " for the operf program." << endl;
 	} else if (rc == ENOENT) {
@@ -1481,10 +1479,9 @@ int main(int argc, char * const argv[])
 	} else if (rc) {
 		cerr << "Unexpected error running operf: " << strerror(rc) << endl;
 	}
-	if (rc) {
-		cerr << "Please use the opcontrol command instead of operf." << endl;
+
+	if (rc)
 		exit(1);
-	}
 
 	cpu_type = op_get_cpu_type();
 	if (cpu_type == CPU_NO_GOOD) {
@@ -1496,8 +1493,9 @@ int main(int argc, char * const argv[])
 	if (cpu_type == CPU_TIMER_INT) {
 		cerr << "CPU type 'timer' was detected, but operf does not support timer mode." << endl
 		     << "Ensure the obsolete opcontrol profiler (available in earlier oprofile releases)" << endl
-		     << "is not running on the system.  To check for this, look for the 'oprofiled'" << endl
-		     << "process using the 'ps' command." << endl;
+		     << "is not running on the system.  To check for this, look for the file" << endl
+		     << "/dev/oprofile/cpu_type; if this file exists, locate the pre-1.0 oprofile" << endl
+		     << "installation, and use its 'opcontrol' command with the --deinit option." << endl;
 		cleanup();
 		exit(1);
 	}

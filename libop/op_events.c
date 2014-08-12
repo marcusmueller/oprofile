@@ -1279,8 +1279,8 @@ static void extra_check(struct op_event *e, char *name, unsigned w)
 	if (!e->unit->um[w].extra) {
 		fprintf(stderr,
 			"Named unit mask (%s) not allowed for event without 'extra:' values.\n"
-			"Please specify the numerical value for the unit mask. See 'opcontrol'\n"
-			"or 'operf' man page for more info.\n", name);
+			"Please specify the numerical value for the unit mask. See the 'operf'\n"
+			"man page for more info.\n", name);
 		exit(EXIT_FAILURE);
 	}
 

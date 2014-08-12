@@ -53,7 +53,7 @@ void init_op_config_dirs(char const * session_dir);
 
 
 /* 
- * various paths, corresponding to opcontrol, that should be
+ * various paths used by various oprofile tools, that should be
  * initialized by init_op_config_dirs() above. 
  */
 extern char op_session_dir[];

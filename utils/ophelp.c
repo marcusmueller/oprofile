@@ -437,9 +437,10 @@ int main(int argc, char const * argv[])
 	if (cpu_type == CPU_TIMER_INT) {
 		if (!check_events) {
 			printf("CPU type 'timer' was detected, but this is no longer a supported mode for oprofile.\n"
-			       "Ensure the obsolete opcontrol profiler (available in earlier oprofile releases)\n"
-			       "is not running on the system.  To check for this, look for the 'oprofiled'\n"
-			       "process using the 'ps' command.");
+			       "Ensure the obsolete opcontrol profiler (available in pre-1.0 oprofile releases)\n"
+			       "is not running on the system.  To check for this, look for the file\n"
+			       "/dev/oprofile/cpu_type; if this file exists, locate the pre-1.0 oprofile\n"
+			       "installation, and use its 'opcontrol' command with the --deinit option.\n");
 		}
 		exit(EXIT_SUCCESS);
 	}
@@ -671,7 +672,7 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_ARCH_V1:
 	case CPU_PPC64_POWER8:
 		event_doc =
-			"This processor type is fully supported with operf; opcontrol timer mode may be available.\n"
+			"This processor type is fully supported with operf.\n"
 			"See Power ISA 2.07 at https://www.power.org/\n\n";
 		break;
 
