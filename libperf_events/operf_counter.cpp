@@ -60,6 +60,15 @@ static const char *__op_magic = "OPFILE";
 
 #define OP_MAGIC	(*(u64 *)__op_magic)
 
+static bool _print_pp_progress(int fd)
+{
+	int msg;
+	if (read(fd, &msg, sizeof(msg)) > 0)
+		return true;
+	else
+		return false;
+}
+
 /* This function for reading an event from the sample data pipe must
  * be robust enough to handle the situation where the operf_record process
  * writes an event record to the pipe in multiple chunks.
@@ -874,11 +883,13 @@ void operf_record::recordPerfData(void)
 }
 
 void operf_read::init(int sample_data_pipe_fd, string input_filename, string samples_loc, op_cpu cputype,
-                      bool systemwide, int _record_write_pipe, int _record_read_pipe)
+                      bool systemwide, int _record_write_pipe, int _record_read_pipe,
+                      int _post_profiling_pipe)
 {
 	sample_data_fd = sample_data_pipe_fd;
 	read_comm_pipe = _record_read_pipe;
 	write_comm_pipe = _record_write_pipe;
+	post_profiling_pipe = _post_profiling_pipe;
 	inputFname = input_filename;
 	sampledir = samples_loc;
 	cpu_type = cputype;
@@ -1085,6 +1096,11 @@ unsigned int operf_read::convertPerfData(void)
 	bool error = false;
 	event_t * event = NULL;
 
+	if (fcntl(post_profiling_pipe, F_SETFL, O_NONBLOCK) < 0) {
+		cerr << "Error: fcntl failed with errno:\n\t" << strerror(errno) << endl;
+		throw runtime_error("Error: Unable to set post_profiling_pipe to non blocking");
+	}
+
 	if (!inputFname.empty()) {
 		info.file_data_offset = opHeader.data_offset;
 		info.file_data_size = opHeader.data_size;
@@ -1119,8 +1135,7 @@ unsigned int operf_read::convertPerfData(void)
 	int num_recs = 0;
 	struct perf_event_header last_header;
 	bool print_progress = !inputFname.empty() && syswide;
-	if (print_progress)
-		cerr << "Converting profile data to OProfile format" << endl;
+	bool printed_progress_msg = false;
 	while (1) {
 		streamsize rec_size = 0;
 		if (!inputFname.empty()) {
@@ -1141,10 +1156,14 @@ unsigned int operf_read::convertPerfData(void)
 		}
 		num_bytes += rec_size;
 		num_recs++;
-		if ((num_recs % 1000000 == 0) && print_progress)
+		if ((num_recs % 1000000 == 0) && (print_progress || _print_pp_progress(post_profiling_pipe))) {
+			if (!printed_progress_msg) {
+				cerr << "\nConverting profile data to OProfile format " << endl;
+				printed_progress_msg = true;
+			}
 			cerr << ".";
+		}
 	}
-
 	if (unlikely(error)) {
 		if (!inputFname.empty()) {
 			cerr << "ERROR: operf_read::convertPerfData quitting. Bad data read from file." << endl;
@@ -1162,7 +1181,7 @@ unsigned int operf_read::convertPerfData(void)
 	if (!error)
 		op_reprocess_unresolved_events(opHeader.h_attrs[0].attr.sample_type, print_progress);
 
-	if (print_progress)
+	if (printed_progress_msg)
 		cerr << endl;
 
 	op_release_resources();

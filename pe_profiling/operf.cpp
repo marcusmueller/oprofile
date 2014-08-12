@@ -110,6 +110,10 @@ static int operf_convert_record_write_pipe[2];
 // The operf_record_convert_write_pipe is used for the record process to send
 // data to the convert process in response to the forked PID data.
 static int operf_record_convert_write_pipe[2];
+// The operf_post_profiling_pipe is used by the main process to inform the operf_read_pid
+// that profiling is done.  The operf_read_pid will then print its progress in
+// finishing the conversion.
+static int operf_post_profiling_pipe[2];
 
 bool ctl_c = false;
 bool pipe_closed = false;
@@ -472,80 +476,46 @@ fail_out:
 	return 0;
 }
 
-static end_code_t _kill_operf_read_pid(end_code_t rc)
+static end_code_t _waitfor_operf_read_pid(end_code_t rc)
 {
-	// Now stop the operf-read process
-	int waitpid_status;
-	struct timeval tv;
-	long long start_time_sec;
-	long long usec_timer;
-	bool keep_trying = true;
-	waitpid_status = 0;
-	gettimeofday(&tv, NULL);
-	start_time_sec = tv.tv_sec;
-	usec_timer = tv.tv_usec;
-	/* We'll initially try the waitpid with WNOHANG once every 100,000 usecs.
-	 * If it hasn't ended within 5 seconds, we'll kill it and do one
-	 * final wait.
-	 */
-	while (keep_trying) {
-		int option = WNOHANG;
-		int wait_rc;
-		gettimeofday(&tv, NULL);
-		if (tv.tv_sec > start_time_sec + 5) {
-			keep_trying = false;
-			option = 0;
-			cerr << "now trying to kill convert pid..." << endl;
+	// Now wait for the operf-read process to finish
+	int wait_rc, waitpid_status, post_processing = 1;
 
-			if (kill(operf_read_pid, SIGUSR1) < 0) {
-				perror("Attempt to stop operf-read process failed");
-				rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
-				break;
-			}
-		} else {
-			/* If we exceed the 100000 usec interval or if the tv_usec
-			 * value has rolled over to restart at 0, then we reset
-			 * the usec_timer to current tv_usec and try waitpid.
-			 */
-			if ((tv.tv_usec % 1000000) > (usec_timer + 100000)
-					|| (tv.tv_usec < usec_timer))
-				usec_timer = tv.tv_usec;
-			else
-				continue;
+	if (write(operf_post_profiling_pipe[1], &post_processing, sizeof(post_processing)) < 0) {
+		perror("Internal error:  Failed to write to operf_post_profiling_pipe");
+		rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
+		return rc;
+	}
+	waitpid_status = 0;
+	if ((wait_rc = waitpid(operf_read_pid, &waitpid_status, 0)) < 0) {
+		if (errno != ECHILD) {
+			perror("waitpid for operf-read process failed");
+			rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
 		}
-		if ((wait_rc = waitpid(operf_read_pid, &waitpid_status, option)) < 0) {
-			keep_trying = false;
-			if (errno != ECHILD) {
-				perror("waitpid for operf-read process failed");
-				rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
-			}
-		} else if (wait_rc) {
-			if (WIFEXITED(waitpid_status)) {
-				keep_trying = false;
-				if (!WEXITSTATUS(waitpid_status)) {
-					cverb << vdebug << "operf-read process returned OK" << endl;
-				} else if (WIFEXITED(waitpid_status)) {
-					/* If user did ctl-c, operf-read may get spurious errors, like
-					 * broken pipe, etc.  We ignore these unless the user asks for
-					 * debug output.
-					 */
-					if (!ctl_c || cverb << vdebug) {
-						cerr <<  "operf-read process ended abnormally.  Status = "
-						     << WEXITSTATUS(waitpid_status) << endl;
-						rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
-					}
-				}
-			}  else if (WIFSIGNALED(waitpid_status)) {
-				keep_trying = false;
+	} else if (wait_rc) {
+		if (WIFEXITED(waitpid_status)) {
+			if (!WEXITSTATUS(waitpid_status)) {
+				cverb << vdebug << "operf-read process returned OK" << endl;
+			} else {
 				/* If user did ctl-c, operf-read may get spurious errors, like
 				 * broken pipe, etc.  We ignore these unless the user asks for
 				 * debug output.
 				 */
 				if (!ctl_c || cverb << vdebug) {
-					cerr << "operf-read process killed by signal "
-					     << WTERMSIG(waitpid_status) << endl;
-					rc = PERF_RECORD_ERROR;
+					cerr <<  "operf-read process ended abnormally.  Status = "
+							<< WEXITSTATUS(waitpid_status) << endl;
+					rc = rc ? PERF_BOTH_ERROR : PERF_READ_ERROR;
 				}
+			}
+		}  else if (WIFSIGNALED(waitpid_status)) {
+			/* If user did ctl-c, operf-read may get spurious errors, like
+			 * broken pipe, etc.  We ignore these unless the user asks for
+			 * debug output.
+			 */
+			if (!ctl_c || cverb << vdebug) {
+				cerr << "operf-read process killed by signal "
+						<< WTERMSIG(waitpid_status) << endl;
+				rc = PERF_RECORD_ERROR;
 			}
 		}
 	}
@@ -630,12 +600,17 @@ static end_code_t _run(void)
 	if (!operf_options::post_conversion) {
 		if (!(!app_started && !operf_options::system_wide)) {
 			cverb << vdebug << "Forking read pid" << endl;
+			if (pipe(operf_post_profiling_pipe) < 0) {
+				perror("Internal error: operf-record could not create pipe");
+				_exit(EXIT_FAILURE);
+			}
 			operf_read_pid = fork();
 			if (operf_read_pid < 0) {
 				perror("Internal error: fork failed");
 				_exit(EXIT_FAILURE);
 			} else if (operf_read_pid == 0) { // child process
 				close(sample_data_pipe[1]);
+				close(operf_post_profiling_pipe[1]);
 				_set_basic_SIGINT_handler_for_child();
 				convert_sample_data();
 				_exit(EXIT_SUCCESS);
@@ -647,6 +622,7 @@ static end_code_t _run(void)
 			close(operf_convert_record_write_pipe[1]);
 			close(operf_record_convert_write_pipe[0]);
 			close(operf_record_convert_write_pipe[1]);
+			close(operf_post_profiling_pipe[0]);
 		}
 	}
 
@@ -753,10 +729,10 @@ again:
 		if (operf_options::post_conversion)
 			rc = _kill_operf_record_pid();
 		else
-			rc = _kill_operf_read_pid(_kill_operf_record_pid());
+			rc = _waitfor_operf_read_pid(_kill_operf_record_pid());
 	} else {
 		if (!operf_options::post_conversion)
-			rc = _kill_operf_read_pid(rc);
+			rc = _waitfor_operf_read_pid(rc);
 	}
 
 	return rc;
@@ -945,7 +921,7 @@ static void convert_sample_data(void)
 	close(operf_convert_record_write_pipe[0]);
 	operfRead.init(inputfd, inputfname, current_sampledir, cpu_type,
 	               operf_options::system_wide, operf_convert_record_write_pipe[1],
-	               operf_record_convert_write_pipe[0]);
+	               operf_record_convert_write_pipe[0], operf_post_profiling_pipe[0]);
 	if ((rc = operfRead.readPerfHeader()) < 0) {
 		if (rc != OP_PERF_HANDLED_ERROR)
 			cerr << "Error: Cannot create read header info for sample data " << endl;
