@@ -385,7 +385,13 @@ bool valid_candidate(string const & base_dir, string const & filename,
 	if (!is_prefix(sub, "/{root}/") && !is_prefix(sub, "/{kern}/"))
 		return false;
 
-	/* When overflows occur in the oprofile kernel driver's sample
+	/** NOTE: This comment and associated code is actually obsolete now,
+	 * since opcontrol and the oprofile kernel driver are no longer
+	 * in use with oprofile (as of release 1.0).  It seems extremely
+	 * unlikely we could encounter the same sort of issue using operf,
+	 * but it doesn't hurt to keep the code to be on the safe side.
+	 *
+	 * When overflows occur in the oprofile kernel driver's sample
 	 * buffers (caused by too high of a sampling rate), it's possible
 	 * for samples to be mis-attributed.  A common scenario is that,
 	 * while profiling process 'abc' running binary 'xzy', the task

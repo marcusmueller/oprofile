@@ -78,9 +78,9 @@ void profile_t::open_sample_file(string const & filename, odb_t & db)
 
 	if (head.version != OPD_VERSION) {
 		ostringstream os;
-		os << "oprofpp: samples files version mismatch, are you "
-		   << "running a daemon and post-profile tools with version "
-		   <<  "mismatch ?\n";
+		os << "oprofpp: samples files version mismatch." << endl
+		   << "Be sure you are running the oprofile post-profile tool that" << endl
+		   << "matches the version of operf used to collect the profile" << endl;
 		throw op_fatal_error(os.str());
 	}
 

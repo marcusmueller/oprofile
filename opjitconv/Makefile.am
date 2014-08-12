@@ -1,6 +1,5 @@
 AM_CPPFLAGS = -I ${top_srcdir}/libopagent  \
 	-I ${top_srcdir}/libutil \
-	-I ${top_srcdir}/daemon \
 	@OP_CPPFLAGS@
 
 AM_CFLAGS = @OP_CFLAGS@
