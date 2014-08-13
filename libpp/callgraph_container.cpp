@@ -485,7 +485,7 @@ void callgraph_container::populate(list<string> const & cg_files,
 
 		bool callee_bfd_ok = true;
 		if (strncmp(callee_file.cg_image.c_str(), KALL_SYM_FILE,
-			    strlen(callee_file.lib_image.c_str())) == 0)
+			    strlen(callee_file.cg_image.c_str())) == 0)
 			callee_bfd = new op_bfd(callee_file.cg_image, extra_found_images);
 
 		else

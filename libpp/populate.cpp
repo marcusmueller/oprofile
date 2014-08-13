@@ -18,7 +18,6 @@
 #include "op_bfd.h"
 #include "op_header.h"
 #include "populate.h"
-#include "populate_for_spu.h"
 
 #include "image_errors.h"
 #include "utility.h"
@@ -62,12 +61,6 @@ populate_for_image(profile_container & samples, inverted_profile const & ip,
 	string_filter const & symbol_filter, bool * has_debug_info)
 {
 	op_bfd *abfd;
-
-	if (is_spu_profile(ip)) {
-		populate_for_spu_image(samples, ip, symbol_filter,
-				       has_debug_info);
-		return;
-	}
 
 	bool ok = ip.error == image_ok;
 

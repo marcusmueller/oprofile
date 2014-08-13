@@ -370,19 +370,24 @@ again:
 	 * we are called within a multi-threaded context */
 	flockfile(dumpfile);
 	/* Write record, symbol name, code (optionally), and (if necessary)
-	 * additonal padding \0 bytes.
+	 * additional padding \0 bytes.
 	 */
 	if (fwrite_unlocked(&rec, sizeof(rec), 1, dumpfile) &&
 	    fwrite_unlocked(symbol_name, sz_symb_name, 1, dumpfile)) {
+		size_t sz = 0;
 		if (code)
-			fwrite_unlocked(code, size, 1, dumpfile);
+			sz = fwrite_unlocked(code, size, 1, dumpfile);
 		if (padding_count)
-			fwrite_unlocked(pad_bytes, padding_count, 1, dumpfile);
+			sz += fwrite_unlocked(pad_bytes, padding_count, 1, dumpfile);
 		/* Always flush to ensure conversion code to elf will see
 		 * data as soon as possible */
 		fflush_unlocked(dumpfile);
 		funlockfile(dumpfile);
 		flock(dumpfd, LOCK_UN);
+		if (sz != 2) {
+			printf("opagent: fwrite_unlocked failed");
+			return -1;
+		}
 		return 0;
 	}
 	fflush_unlocked(dumpfile);

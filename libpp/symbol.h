@@ -62,7 +62,7 @@ struct sample_entry {
 /// associate a symbol with a file location, samples count and vma address
 class symbol_entry {
 public:
-	symbol_entry() :  sym_index(0), size(0), spu_offset(0), vma_adj(0) {}
+	symbol_entry() :  sym_index(0), size(0), vma_adj(0) {}
 	virtual ~symbol_entry() {}
 
 	/// which image this symbol belongs to
@@ -88,8 +88,6 @@ public:
 	 * the start is below it, but the the hint is only used for formatting
 	 */
 	column_flags output_hint(column_flags fl) const;
-	uint64_t spu_offset;
-	image_name_id embedding_filename;
 
 	/**
 	 * The vma_adj is set according to the corresponding op_bfd::vma_adj.

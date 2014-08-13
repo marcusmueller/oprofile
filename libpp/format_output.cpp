@@ -665,26 +665,12 @@ xml_formatter::get_bfd_object(symbol_entry const * symb, op_bfd * & abfd) const
 	bool ok = true;
 
 	string const & image_name = get_image_name(symb->image_name,
-		image_name_storage::int_filename, extra_found_images);
-	if (symb->spu_offset) {
-		// FIXME: what about archive:tmp, actually it's not supported
-		// for spu since oparchive doesn't archive the real file but
-		// in future it would work ?
-		string tmp = get_image_name(symb->embedding_filename, 
-			image_name_storage::int_filename, extra_found_images);
-		if (abfd && abfd->get_filename() == tmp)
-			return true;
-		delete abfd;
-		abfd = new op_bfd(symb->spu_offset, tmp,
-				  symbol_filter, extra_found_images, ok);
-	} else {
-		if (abfd && abfd->get_filename() == image_name)
-			return true;
-		delete abfd;
-		abfd = new op_bfd(image_name, symbol_filter,
-				  extra_found_images, ok);
-
-	}
+	                                           image_name_storage::int_filename, extra_found_images);
+	if (abfd && abfd->get_filename() == image_name)
+		return true;
+	delete abfd;
+	abfd = new op_bfd(image_name, symbol_filter,
+	                  extra_found_images, ok);
 
 	if (!ok) {
 		report_image_error(image_name, image_format_failure,

@@ -66,7 +66,7 @@ extern char op_samples_current_dir[];
 #endif
 
 #define OPD_MAGIC "DAE\n"
-#define OPD_VERSION 0x12
+#define OPD_VERSION 0x13
 
 #if defined(__cplusplus)
 }

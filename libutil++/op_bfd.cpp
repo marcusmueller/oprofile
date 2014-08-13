@@ -356,8 +356,10 @@ void op_bfd::get_kallsym_symbols(symbols_found_t & symbols, ifstream& infile)
 	/* Add symbols */
 	copy(symbols.begin(), symbols.end(), back_inserter(syms));
 
-	cverb << vbfd << "Kallsyms, number of symbols now "
-	      << dec << syms.size() << hex << endl;
+	ostringstream msg;
+	msg << "Kallsyms, number of symbols now "
+	    << dec << syms.size() << hex << endl;
+	cverb << vbfd << msg.str();
 	return;
 }
 
@@ -378,6 +380,7 @@ op_bfd::op_bfd(string const & fname, extra_images const & extra_images)
 {
 	symbols_found_t symbols;
 	ifstream infile;
+	fd =  -1;
 
 	ibfd.abfd = (bfd * ) NULL;
 

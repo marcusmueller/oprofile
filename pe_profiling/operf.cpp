@@ -418,7 +418,16 @@ int start_profiling(void)
 
 fail_out:
 		if (operfRecord)
-			delete operfRecord;
+			try {
+				delete operfRecord;
+			} catch (const runtime_error & re) {
+				// We're already in failure mode here; if we get a runtime_error while
+				// deleting operfRecord, we'll only print it if user requests "-V misc"
+				if (cverb << vmisc) {
+					cerr << "Caught runtime_error: " << re.what() << endl;
+					exit_code = EXIT_FAILURE;
+				}
+			}
 
 		if (!ready){
 			/* ready==0 means we've not yet told parent we're ready,

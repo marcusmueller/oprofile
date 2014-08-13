@@ -109,8 +109,7 @@ mangle_filename(struct operf_sfile * last, struct operf_sfile const * sf, int co
 
 static void fill_header(struct opd_header * header, unsigned long counter,
                         vma_t anon_start, vma_t cg_to_anon_start,
-                        int is_kernel, int cg_to_is_kernel,
-                        int spu_samples, uint64_t embed_offset, time_t mtime)
+                        int is_kernel, int cg_to_is_kernel, time_t mtime)
 {
 	const operf_event_t * event = operfRead.get_event_by_counter(counter);
 
@@ -126,8 +125,6 @@ static void fill_header(struct opd_header * header, unsigned long counter,
 	header->cpu_speed = cpu_speed;
 	header->mtime = mtime;
 	header->anon_start = anon_start;
-	header->spu_profile = spu_samples;
-	header->embedded_offset = embed_offset;
 	header->cg_to_anon_start = cg_to_anon_start;
 }
 
@@ -204,8 +201,7 @@ retry:
 
 	fill_header((struct opd_header *)odb_get_data(file), counter,
 		    sf->is_anon ? sf->start_addr : 0, last_start,
-		    !!sf->kernel, last ? !!last->kernel : 0,
-		    0, 0, mtime);
+		    !!sf->kernel, last ? !!last->kernel : 0, mtime);
 
 out:
 	operf_sfile_put(sf);

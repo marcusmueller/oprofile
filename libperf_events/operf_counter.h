@@ -138,6 +138,7 @@ public:
 	operf_read(std::vector<operf_event_t> & _evts)
 	: sample_data_fd(-1), inputFname(""), evts(_evts), cpu_type(CPU_NO_GOOD)
 	  { valid = syswide = false;
+	  write_comm_pipe = read_comm_pipe = 1;
 	  post_profiling_pipe = -1; }
 	void init(int sample_data_pipe_fd, std::string input_filename, std::string samples_dir, op_cpu cputype,
 	          bool systemwide, int _record_write_pipe, int _record_read_pipe,
