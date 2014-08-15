@@ -559,10 +559,6 @@ int main(int argc, char const * argv[])
 			"This is a limited set of fallback events because oprofile doesn't know your CPU\n";
 		break;
 	
-	case CPU_AXP_EV4:
-	case CPU_AXP_EV5:
-	case CPU_AXP_PCA56:
-	case CPU_AXP_EV6:
 	case CPU_AXP_EV67:
 		event_doc =
 			"See Alpha Architecture Reference Manual\n"

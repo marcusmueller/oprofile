@@ -479,10 +479,6 @@ can be used for <command>ocount</command>, minus the <emphasis>count</emphasis> 
 <tgroup cols='3'>
 <tbody>
 <row><entry>Processor</entry><entry>cpu_type</entry><entry>Default event</entry></row>
-<row><entry>Alpha EV4</entry><entry>alpha/ev4</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha EV5</entry><entry>alpha/ev5</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha PCA56</entry><entry>alpha/pca56</entry><entry>CYCLES:100000:0:1:1</entry></row>
-<row><entry>Alpha EV6</entry><entry>alpha/ev6</entry><entry>CYCLES:100000:0:1:1</entry></row>
 <row><entry>Alpha EV67</entry><entry>alpha/ev67</entry><entry>CYCLES:100000:0:1:1</entry></row>
 <row><entry>ARM/XScale PMU1</entry><entry>arm/xscale1</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>ARM/XScale PMU2</entry><entry>arm/xscale2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>

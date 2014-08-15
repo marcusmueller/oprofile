@@ -959,6 +959,20 @@ void op_pe_utils::op_process_events_list(set<string> & passed_evts,
 		}
 #endif
 
+#ifdef __alpha__
+		// Alpha arch does not support any mode exclusion.  We'll just silently enable
+		// hypervisor, but if either user or kernel mode are excluded by the user, we'll
+		// exit with an error message.
+		event.no_hv = 0;
+		if (event.no_kernel || event.no_user) {
+			cerr << "Mode exclusion is not supported on Alpha." << endl
+			     << "Re-run the command and simply pass the event name " << endl
+			     << "(" << event.name << ") for the event spec, without" << endl
+			     << "unit mask/kernel/user bits." << endl;
+			exit(EXIT_FAILURE);
+		}
+#endif
+
 		_get_event_code(&event, cpu_type);
 		events.push_back(event);
 	}
@@ -1008,8 +1022,11 @@ void op_pe_utils::op_get_default_event(bool do_callgraph)
 		dft_evt.count = descr.count;
 	}
 	dft_evt.evt_um = descr.um;
-	// See comment in op_process_events_list for why we set no_hv to 1
+#ifndef __alpha__
+	// See comment in op_process_events_list for why we set no_hv to 1.
+	// Alpha arch does not support any mode exclusion.
 	dft_evt.no_hv = 1;
+#endif
 	strncpy(dft_evt.name, descr.name, OP_MAX_EVT_NAME_LEN - 1);
 	_get_event_code(&dft_evt, cpu_type);
 	events.push_back(dft_evt);

@@ -49,10 +49,6 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "P4 / Xeon", "i386/p4", CPU_P4, 8 },
 	{ "AMD64 processors", "x86-64/hammer", CPU_HAMMER, 4 },
 	{ "P4 / Xeon with 2 hyper-threads", "i386/p4-ht", CPU_P4_HT2, 4 },
-	{ "Alpha EV4", "alpha/ev4", CPU_AXP_EV4, 2 },
-	{ "Alpha EV5", "alpha/ev5", CPU_AXP_EV5, 3 },
-	{ "Alpha PCA56", "alpha/pca56", CPU_AXP_PCA56, 3 },
-	{ "Alpha EV6", "alpha/ev6", CPU_AXP_EV6, 2 },
 	{ "Alpha EV67", "alpha/ev67", CPU_AXP_EV67, 20 },
 	{ "Pentium M (P6 core)", "i386/p6_mobile", CPU_P6_MOBILE, 2 },
 	{ "ARM/XScale PMU1", "arm/xscale1", CPU_ARM_XSCALE1, 3 },
@@ -341,6 +337,30 @@ static op_cpu _get_ppc64_cpu_type(void)
 	return CPU_NO_GOOD;
 }
 #endif
+
+
+static char *alpha_cpu_models[] = {
+	"EV67", "EV68CB", "EV68AL", "EV68CX", "EV7", "EV79", "EV69", NULL
+};
+
+
+static op_cpu _get_alpha_cpu_type(void)
+{
+	char *cpu_model;
+	char **p;
+	char line[100];
+
+	cpu_model = _get_cpuinfo_cpu_type(line, 100, "cpu model");
+	if (!cpu_model)
+		return CPU_NO_GOOD;
+
+	for (p = alpha_cpu_models; *p; p++) {
+		if (strcmp(cpu_model, *p) == 0)
+			return CPU_AXP_EV67;
+	}
+
+	return CPU_NO_GOOD;
+}
 
 
 static op_cpu _get_arm_cpu_type(void)
@@ -667,6 +687,9 @@ static op_cpu __get_cpu_type(void)
 	if ((strncmp(uname_info.machine, "ppc64", 5) == 0) ||
 			(strncmp(uname_info.machine, "ppc64le", 7) == 0)) {
 		return _get_ppc64_cpu_type();
+	}
+	if (strncmp(uname_info.machine, "alpha", 5) == 0) {
+		return _get_alpha_cpu_type();
 	}
 	if (strncmp(uname_info.machine, "arm", 3) == 0 ||
 	    strncmp(uname_info.machine, "aarch64", 7) == 0) {

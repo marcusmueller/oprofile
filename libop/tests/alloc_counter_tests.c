@@ -18,8 +18,6 @@
 #include "op_cpu_type.h"
 #include "op_events.h"
 
-/* FIXME: alpha description events need 20 but when running test on x86
- * OP_MAX_COUNTERS is 8, so we can't use it */
 #define MAX_EVENTS 20
 
 
@@ -38,17 +36,6 @@ struct allocated_counter {
 	enum failure_type failure;
 };
 
-
-/* not more than MAX_EVENTS string for all these arrays */
-static char const * const events_alpha_ev4_1[] = {
-	"ISSUES:4096:0:1:1",
-	NULL
-};
-
-static char const * const events_alpha_ev4_2[] = {
-	"UNKNOWN_EVENT:4096:0:1:1",
-	NULL
-};
 
 static char const * const events_ppro_1[] = {
 	"CPU_CLK_UNHALTED:4096:0:1:1",
@@ -114,8 +101,6 @@ static char const * const events_mips_34k[] = {
 };
 
 static struct allocated_counter const tests[] = {
-	{ CPU_AXP_EV4, events_alpha_ev4_1, { 0 }, no_failure },
-	{ CPU_AXP_EV4, events_alpha_ev4_2, { -1 }, fail_to_find_event },
 	{ CPU_PPRO, events_ppro_1, { 0 }, no_failure },
 	{ CPU_PPRO, events_ppro_2, { 0, 1 }, no_failure },
 	{ CPU_PPRO, events_ppro_3, { -1 }, fail_to_alloc_counter },

@@ -1165,12 +1165,9 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->um = 0x1;
 			break;
 
-		case CPU_AXP_EV4:
-		case CPU_AXP_EV5:
-		case CPU_AXP_PCA56:
-		case CPU_AXP_EV6:
 		case CPU_AXP_EV67:
 			descr->name = "CYCLES";
+			descr->um = 0x1;
 			break;
 
 		// we could possibly use the CCNT
