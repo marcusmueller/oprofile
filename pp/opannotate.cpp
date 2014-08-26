@@ -466,6 +466,10 @@ void output_objdump_asm(symbol_collection const & symbols,
 	string image =
 		classes.extra_found_images.find_image_path(app_name, error,
 							   true);
+	if (image == "/proc/kallsyms") {
+		cerr << "Cannot annotate pseudo file /proc/kallsyms -- ignoring." << endl;
+		return;
+	}
 
 	// this is only an optimisation, we can either filter output by
 	// directly calling objdump and rely on the symbol filtering or
