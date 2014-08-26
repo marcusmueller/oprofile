@@ -771,11 +771,15 @@ static void _jitconv_complete(int val __attribute__((unused)))
 	if (WIFEXITED(child_status) && (!WEXITSTATUS(child_status))) {
 		cverb << vdebug << "JIT dump processing complete." << endl;
 	} else {
-		 if (WIFSIGNALED(child_status))
-			 cerr << "child received signal " << WTERMSIG(child_status) << endl;
-		 else
+		 if (WIFSIGNALED(child_status)) {
+			 if (ctl_c)
+				 cerr << "JIT conversion stopped by request of user via ctl-c" << endl;
+			 else
+				 cerr << "child received signal " << WTERMSIG(child_status) << endl;
+		 } else {
 			 cerr << "JIT dump processing exited abnormally: "
-			 << WEXITSTATUS(child_status) << endl;
+			      << WEXITSTATUS(child_status) << endl;
+		 }
 	}
 }
 
@@ -882,7 +886,6 @@ static void convert_sample_data(void)
 	int inputfd;
 	string inputfname;
 	int rc = EXIT_SUCCESS;
-	int keep_waiting = 0;
 	string current_sampledir = samples_dir + "/current/";
 	string previous_sampledir = samples_dir + "/previous";
 	string stats_dir = "";
@@ -953,12 +956,8 @@ static void convert_sample_data(void)
 	_set_signals_for_convert();
 	cverb << vdebug << "Calling _do_jitdump_convert" << endl;
 	_do_jitdump_convert();
-	while (jit_conversion_running && (keep_waiting < 2)) {
+	while (jit_conversion_running) {
 		sleep(1);
-		keep_waiting++;
-	}
-	if (jit_conversion_running) {
-		kill(jitconv_pid, SIGKILL);
 	}
 out:
 	if (!operf_options::post_conversion)
