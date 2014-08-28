@@ -374,17 +374,22 @@ again:
 	 */
 	if (fwrite_unlocked(&rec, sizeof(rec), 1, dumpfile) &&
 	    fwrite_unlocked(symbol_name, sz_symb_name, 1, dumpfile)) {
-		size_t sz = 0;
-		if (code)
+		size_t expected_sz, sz;
+		expected_sz = sz = 0;
+		if (code) {
 			sz = fwrite_unlocked(code, size, 1, dumpfile);
-		if (padding_count)
+			expected_sz++;
+		}
+		if (padding_count) {
 			sz += fwrite_unlocked(pad_bytes, padding_count, 1, dumpfile);
+			expected_sz++;
+		}
 		/* Always flush to ensure conversion code to elf will see
 		 * data as soon as possible */
 		fflush_unlocked(dumpfile);
 		funlockfile(dumpfile);
 		flock(dumpfd, LOCK_UN);
-		if (sz != 2) {
+		if (sz != expected_sz) {
 			printf("opagent: fwrite_unlocked failed");
 			return -1;
 		}
