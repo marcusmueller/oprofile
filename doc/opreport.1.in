@@ -130,7 +130,8 @@ This difference is typically very small and can be ignored.
 .TP
 .BI "--threshold / -t [percentage]"
 Only output data for symbols that have more than the given percentage
-of total samples.
+of total samples. For profiles using multiple events, if the threshold is reached
+for any event, then all sample data for the symbol is shown.
 .br
 .TP
 .BI "--verbose / -V [options]"

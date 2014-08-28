@@ -1680,7 +1680,8 @@ List per-symbol information instead of a binary image summary.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
 Only output data for symbols that have more than the given percentage
-of total samples.
+of total samples. For profiles using multiple events, if the threshold is reached
+for any event, then all sample data for the symbol is shown.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
@@ -1886,8 +1887,14 @@ first. If that directory does not exist, the standard session-dir of
 as the session directory.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
-Only output data for symbols that have more than the given percentage
-of total samples.
+For annotated assembly, only output data for symbols that have more than the given percentage
+of total samples. For profiles using multiple events, if the threshold is reached
+for any event, then all sample data for the symbol is shown.
+</para>
+<para>
+For annotated source, only output data for source files that have more than the given percentage
+of total samples. For profiles using multiple events, if the threshold is reached
+for any event, then all sample data for the source file is shown.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.

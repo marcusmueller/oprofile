@@ -139,8 +139,13 @@ for the binaries.
 .br
 .TP
 .BI "--threshold / -t [percentage]"
-Only output data for symbols that have more than the given percentage
-of total samples.
+For annotated assembly, only output data for symbols that have more than the given percentage
+of total samples. For profiles using multiple events, if the threshold is reached
+for any event, then all sample data for the symbol is shown.
+
+For annotated source, only output data for source files that have more than the given percentage
+of total samples. For profiles using multiple events, if the threshold is reached
+for any event, then all sample data for the source file is shown.
 .br
 .TP
 .BI "--verbose / -V [options]"
