@@ -220,10 +220,8 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 
 #ifdef __s390__
 	attr.type = PERF_TYPE_HARDWARE;
-	attr.exclude_hv = 0;
 #else
 	attr.type = PERF_TYPE_RAW;
-	attr.exclude_hv = evt.no_hv;
 #endif
 #if ((defined(__i386__) || defined(__x86_64__)) && (HAVE_PERF_PRECISE_IP))
 	if (evt.evt_code & EXTRA_PEBS) {
@@ -231,7 +229,7 @@ operf_counter::operf_counter(operf_event_t & evt,  bool enable_on_exec, bool do_
 		evt.evt_code ^= EXTRA_PEBS;
 	}
 #endif
-	
+	attr.exclude_hv = evt.no_hv;
 	attr.config = evt.evt_code;
 	attr.sample_period = evt.count;
 	attr.inherit = inherit ? 1 : 0;

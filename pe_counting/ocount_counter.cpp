@@ -71,13 +71,12 @@ ocount_counter::ocount_counter(operf_event_t & evt,  bool enable_on_exec,
 	attr.config = evt.evt_code;
 #ifdef __s390__
 	attr.type = PERF_TYPE_HARDWARE;
-	attr.exclude_hv = 0;
 	if (evt.no_kernel && !evt.no_user)
 		attr.config |= 32;
 #else
 	attr.type = PERF_TYPE_RAW;
-	attr.exclude_hv = evt.no_hv;
 #endif
+	attr.exclude_hv = evt.no_hv;
 	attr.inherit = inherit ? 1 : 0;
 	attr.enable_on_exec = enable_on_exec ? 1 : 0;
 	attr.disabled  = attr.enable_on_exec;
