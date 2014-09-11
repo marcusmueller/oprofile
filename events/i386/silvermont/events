@@ -7,20 +7,18 @@
 # lowered in many cases without ill effect.
 #
 include:i386/arch_perfmon
-event:0x32 counters:0,1 um:l2_prefetcher_throttle minimum:200003 name:l2_prefetcher_throttle :
-event:0x3e counters:0,1 um:one minimum:200003 name:l2_prefetcher_pref_stream_alloc :
-event:0x50 counters:0,1 um:zero minimum:200003 name:l2_prefetch_pend_streams_pref_stream_pend_set :
-event:0x86 counters:0,1 um:nip_stall minimum:200003 name:nip_stall :
-event:0x87 counters:0,1 um:decode_stall minimum:200003 name:decode_stall :
-event:0x96 counters:0,1 um:uip_match minimum:200003 name:uip_match :
+event:0x03 counters:0,1 um:rehabq minimum:200003 name:rehabq :
+event:0x04 counters:0,1 um:mem_uops_retired minimum:200003 name:mem_uops_retired :
+event:0x05 counters:0,1 um:page_walks minimum:200003 name:page_walks :
+event:0x30 counters:0,1 um:zero minimum:200003 name:l2_reject_xq_all :
+event:0x31 counters:0,1 um:zero minimum:200003 name:core_reject_l2q_all :
+event:0x80 counters:0,1 um:icache minimum:200003 name:icache :
 event:0xc2 counters:0,1 um:uops_retired minimum:2000003 name:uops_retired :
-event:0xc3 counters:0,1 um:x10 minimum:200003 name:machine_clears_live_lock_breaker :
-event:0xc4 counters:0,1 um:br_inst_retired minimum:2000003 name:br_inst_retired :
+event:0xc3 counters:0,1 um:machine_clears minimum:200003 name:machine_clears :
+event:0xc4 counters:0,1 um:br_inst_retired minimum:200003 name:br_inst_retired :
 event:0xc5 counters:0,1 um:br_misp_retired minimum:200003 name:br_misp_retired :
 event:0xca counters:0,1 um:no_alloc_cycles minimum:200003 name:no_alloc_cycles :
 event:0xcb counters:0,1 um:rs_full_stall minimum:200003 name:rs_full_stall :
-event:0xcc counters:0,1 um:rs_dispatch_stall minimum:200003 name:rs_dispatch_stall :
-event:0xe6 counters:0,1 um:baclears minimum:2000003 name:baclears :
-event:0xe7 counters:0,1 um:x02 minimum:200003 name:ms_decoded_early_exit :
-event:0xe8 counters:0,1 um:one minimum:200003 name:btclears_all :
-event:0xe9 counters:0,1 um:decode_restriction minimum:200003 name:decode_restriction :
+event:0xcd counters:0,1 um:one minimum:2000003 name:cycles_div_busy_all :
+event:0xe6 counters:0,1 um:baclears minimum:200003 name:baclears :
+event:0xe7 counters:0,1 um:one minimum:200003 name:ms_decoded_ms_entry :
