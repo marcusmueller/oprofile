@@ -89,7 +89,8 @@ typedef enum {
 	CPU_ARM_V7_CA7, /**< ARM Cortex-A7 */
 	CPU_ARM_V7_CA15, /**< ARM Cortex-A15 */
 	CPU_HASWELL, /** < Intel Haswell microarchitecture */
-	CPU_S390_ZEC12, /**< IBM zEnterprise EC12 */	CPU_AMD64_GENERIC, /**< AMD64 Generic */
+	CPU_S390_ZEC12, /**< IBM zEnterprise EC12 */
+	CPU_AMD64_GENERIC, /**< AMD64 Generic */
 	CPU_PPC64_ARCH_V1, /** < IBM Power architected events version 1 */
 	CPU_PPC64_POWER8, /**< ppc64 POWER8 family */
 	CPU_PPC_E500MC, /**< e500mc */
