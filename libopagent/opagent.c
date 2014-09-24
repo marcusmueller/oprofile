@@ -210,7 +210,7 @@ again:
 			usecs_waited += 100;
 			goto again;
 		} else {
-			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			printf("opagent: Unable to obtain lock on JIT dumpfile (#1)\n");
 			fclose(dumpfile);
 			return NULL;
 		}
@@ -282,7 +282,7 @@ int op_close_agent(op_agent_t hdl)
 	rec.timestamp = tv.tv_sec;
 
 	if ((dumpfd = fileno(dumpfile)) < 0) {
-		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile (#1)\n");
 		return -1;
 	}
 again:
@@ -295,7 +295,7 @@ again:
 			usecs_waited += 100;
 			goto again;
 		} else {
-			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			printf("opagent: Unable to obtain lock on JIT dumpfile (#2)\n");
 			return -1;
 		}
 	}
@@ -325,7 +325,7 @@ int op_write_native_code(op_agent_t hdl, char const * symbol_name,
 
 	if (!dumpfile) {
 		errno = EINVAL;
-		fprintf(stderr, "Invalid hdl argument\n");
+		fprintf(stderr, "Invalid hdl argument (#1)\n");
 		return -1;
 	}
 	sz_symb_name = strlen(symbol_name) + 1;
@@ -347,7 +347,7 @@ int op_write_native_code(op_agent_t hdl, char const * symbol_name,
 	rec.timestamp = tv.tv_sec;
 
 	if ((dumpfd = fileno(dumpfile)) < 0) {
-		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile (#2)\n");
 		return -1;
 	}
 again:
@@ -361,7 +361,7 @@ again:
 			usecs_waited += 100;
 			goto again;
 		} else {
-			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			printf("opagent: Unable to obtain lock on JIT dumpfile (#3)\n");
 			return -1;
 		}
 	}
@@ -420,7 +420,7 @@ int op_write_debug_line_info(op_agent_t hdl, void const * code,
 
 	if (!dumpfile) {
 		errno = EINVAL;
-		fprintf(stderr, "Invalid hdl argument\n");
+		fprintf(stderr, "Invalid hdl argument (#2)\n");
 		return -1;
 	}
 	
@@ -441,7 +441,7 @@ int op_write_debug_line_info(op_agent_t hdl, void const * code,
 	rec.timestamp = tv.tv_sec;
 
 	if ((dumpfd = fileno(dumpfile)) < 0) {
-		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile (#3)\n");
 		return -1;
 	}
 again:
@@ -454,7 +454,7 @@ again:
 			usecs_waited += 100;
 			goto again;
 		} else {
-			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			printf("opagent: Unable to obtain lock on JIT dumpfile (#4)\n");
 			return -1;
 		}
 	}
@@ -515,7 +515,7 @@ int op_unload_native_code(op_agent_t hdl, uint64_t vma)
 
 	if (!dumpfile) {
 		errno = EINVAL;
-		fprintf(stderr, "Invalid hdl argument\n");
+		fprintf(stderr, "Invalid hdl argument (#3)\n");
 		return -1;
 	}
 
@@ -529,7 +529,7 @@ int op_unload_native_code(op_agent_t hdl, uint64_t vma)
 	rec.timestamp = tv.tv_sec;
 
 	if ((dumpfd = fileno(dumpfile)) < 0) {
-		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile\n");
+		fprintf(stderr, "opagent: Unable to get file descriptor for JIT dumpfile (#4)\n");
 		return -1;
 	}
 again:
@@ -542,7 +542,7 @@ again:
 			usecs_waited += 100;
 			goto again;
 		} else {
-			printf("opagent: Unable to obtain lock on JIT dumpfile\n");
+			printf("opagent: Unable to obtain lock on JIT dumpfile (#5)\n");
 			return -1;
 		}
 	}
