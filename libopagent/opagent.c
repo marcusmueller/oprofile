@@ -376,7 +376,9 @@ again:
 	    fwrite_unlocked(symbol_name, sz_symb_name, 1, dumpfile)) {
 		size_t expected_sz, sz;
 		expected_sz = sz = 0;
-		if (code) {
+		// Note: Some JVMs always pass size=zero, so it's not enough just to check
+		// if 'code' is non-null.
+		if (code && size) {
 			sz = fwrite_unlocked(code, size, 1, dumpfile);
 			expected_sz++;
 		}
@@ -390,7 +392,7 @@ again:
 		funlockfile(dumpfile);
 		flock(dumpfd, LOCK_UN);
 		if (sz != expected_sz) {
-			printf("opagent: fwrite_unlocked failed");
+			printf("opagent: fwrite_unlocked failed\n");
 			return -1;
 		}
 		return 0;
