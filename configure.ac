@@ -57,7 +57,7 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
-test "$LD" || AC_ERROR(ld not found)
+test "$LD" || AC_MSG_ERROR(ld not found)
 
 # --with-kernel for cross compilation
 AC_ARG_WITH(kernel,
@@ -80,8 +80,6 @@ if test "$KERNELDIR" != ""; then
 		PERF_EVENT_FLAGS=" -I$KERNELDIR/include"
 		AC_SUBST(PERF_EVENT_FLAGS)
 		PERF_EVENT_H="$KERNELDIR/include/linux/perf_event.h"
-	else
-		echo "$KERNELDIR does not exist."
 	fi
 else
 	PERF_EVENT_H="/usr/include/linux/perf_event.h"
@@ -91,6 +89,10 @@ PERF_EVENT_H_EXISTS="no"
 kernel_may_have_perf_events_support="no"
 AX_KERNEL_VERSION(2, 6, 31, <=, kernel_may_have_perf_events_support="yes",
 kernel_has_perf_events_support="no")
+
+if test "$kernel_has_perf_events_support" = "no"; then
+	AC_MSG_ERROR(Your kernel version is older than the required level (2.6.31) to build oprofile.)
+fi
 
 dnl The AX_KERNEL_VERSION macro may return kernel_may_have_perf_events_support="yes",
 dnl indicating a partial answer.  Some architectures do not implement the Performance
@@ -135,66 +137,84 @@ else
 	kernel_has_perf_events_support="no"
 fi
 
+if test "$kernel_has_perf_events_support" != "yes"; then
+	if test "$KERNELDIR" != ""; then
+		echo "ERROR: You requested to build oprofile with '--with-kernel=$KERNELDIR',"
+		if ! test -d $KERNELDIR; then
+			echo "but that directory does not exist."
+		elif test "$PERF_EVENT_H_EXISTS" != "yes"; then
+			echo "but headers were not accessible at the given location."
+			echo "Be sure you have run the following command from within your kernel source tree:"
+			echo "     make headers_install INSTALL_HDR_PATH=<kernel-hdrs-install-dir>"
+			echo "Then pass <kernel-hdrs-install-dir> to oprofile's '--with-kernel' configure option."
+		else
+			echo "but your kernel does not appear to have the necessary support to run oprofile."
+		fi
+	else
+		if test "$PERF_EVENT_H_EXISTS" != "yes"; then
+			echo "Error: perf_event.h not found.  Either install the kernel headers package or"
+			echo "use the --with-kernel option."
+		else
+			echo "Error: Your kernel does not appear to have the necessary support to run oprofile."
+		fi
+	fi
+	AC_MSG_ERROR(Unable to build oprofile. Exiting.)
+fi
+
 AM_CONDITIONAL(BUILD_FOR_PERF_EVENT, test "$kernel_has_perf_events_support" = "yes")
 
-if test "$kernel_has_perf_events_support" = "yes"; then
-	HAVE_PERF_EVENTS='1'
-	AC_MSG_CHECKING([whether PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
-	rm -f test-for-PERF_GUEST
-	AC_LANG_CONFTEST(
-		[AC_LANG_PROGRAM([[#include <linux/perf_event.h>]],
-			[[unsigned int pr_guest_kern = PERF_RECORD_MISC_GUEST_KERNEL;
-			unsigned int pr_guest_user = PERF_RECORD_MISC_GUEST_USER;]])
-		])
-	$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-PERF_GUEST  > /dev/null 2>&1
-	if test -f test-for-PERF_GUEST; then
-		echo "yes"
-		HAVE_PERF_GUEST_MACROS='1'
-	else
-		echo "no"
-		HAVE_PERF_GUEST_MACROS='0'
-	fi
-	AC_DEFINE_UNQUOTED(HAVE_PERF_GUEST_MACROS, $HAVE_PERF_GUEST_MACROS, [PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
-	rm -f test-for-PERF_GUEST*
 
-	AC_MSG_CHECKING([whether precise_ip is defined in perf_event.h])
-	rm -f test-for-precise-ip
-	AC_LANG_CONFTEST(
-		[AC_LANG_PROGRAM([[#include <linux/perf_event.h>]],
-			[[struct perf_event_attr attr;
-			attr.precise_ip = 2;]])
-		])
-	$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-precise-ip  > /dev/null 2>&1
-	if test -f test-for-precise-ip; then
-		echo "yes"
-		HAVE_PERF_PRECISE_IP='1'
-	else
-		echo "no"
-		HAVE_PERF_PRECISE_IP='0'
-	fi
-	AC_DEFINE_UNQUOTED(HAVE_PERF_PRECISE_IP, $HAVE_PERF_PRECISE_IP, [precise_ip is defined in perf_event.h])
-	rm -f test-for-precise-ip*
-
+HAVE_PERF_EVENTS='1'
+AC_MSG_CHECKING([whether PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
+rm -f test-for-PERF_GUEST
+AC_LANG_CONFTEST(
+	[AC_LANG_PROGRAM([[#include <linux/perf_event.h>]],
+		[[unsigned int pr_guest_kern = PERF_RECORD_MISC_GUEST_KERNEL;
+		unsigned int pr_guest_user = PERF_RECORD_MISC_GUEST_USER;]])
+	])
+$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-PERF_GUEST  > /dev/null 2>&1
+if test -f test-for-PERF_GUEST; then
+	echo "yes"
+	HAVE_PERF_GUEST_MACROS='1'
 else
-	HAVE_PERF_EVENTS='0'
-	AC_MSG_RESULT([No perf_events support available; falling back to legacy oprofile])
+	echo "no"
+	HAVE_PERF_GUEST_MACROS='0'
 fi
+AC_DEFINE_UNQUOTED(HAVE_PERF_GUEST_MACROS, $HAVE_PERF_GUEST_MACROS, [PERF_RECORD_MISC_GUEST_KERNEL is defined in perf_event.h])
+rm -f test-for-PERF_GUEST*
+
+AC_MSG_CHECKING([whether precise_ip is defined in perf_event.h])
+rm -f test-for-precise-ip
+AC_LANG_CONFTEST(
+	[AC_LANG_PROGRAM([[#include <linux/perf_event.h>]],
+		[[struct perf_event_attr attr;
+		attr.precise_ip = 2;]])
+	])
+$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-precise-ip  > /dev/null 2>&1
+if test -f test-for-precise-ip; then
+	echo "yes"
+	HAVE_PERF_PRECISE_IP='1'
+else
+	echo "no"
+	HAVE_PERF_PRECISE_IP='0'
+fi
+AC_DEFINE_UNQUOTED(HAVE_PERF_PRECISE_IP, $HAVE_PERF_PRECISE_IP, [precise_ip is defined in perf_event.h])
+rm -f test-for-precise-ip*
+
 
 AC_DEFINE_UNQUOTED(HAVE_PERF_EVENTS, $HAVE_PERF_EVENTS, [Kernel support for perf_events exists])
 AC_CANONICAL_HOST
-if test "$HAVE_PERF_EVENTS" = "1"; then
-	PFM_LIB=
-	if test "$host_cpu" = "powerpc64le" -o "$host_cpu" = "powerpc64"; then
-		AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; may be provided by libpfm devel or papi devel package])])
-		AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1', [
-			AC_CHECK_LIB(pfm, pfm_get_event_name, HAVE_LIBPFM3='1'; HAVE_LIBPFM='1',
-			[AC_MSG_ERROR([libpfm not found; may be provided by libpfm devel or papi devel package])])])
-		PFM_LIB="-lpfm"
-		AC_DEFINE_UNQUOTED(HAVE_LIBPFM3, $HAVE_LIBPFM3, [Define to 1 if using libpfm3; 0 if using newer libpfm])
-		AC_DEFINE_UNQUOTED(HAVE_LIBPFM, $HAVE_LIBPFM, [Define to 1 if libpfm is available])
-	fi
-	AC_SUBST(PFM_LIB)
+PFM_LIB=
+if test "$host_cpu" = "powerpc64le" -o "$host_cpu" = "powerpc64"; then
+	AC_CHECK_HEADER(perfmon/pfmlib.h,,[AC_MSG_ERROR([pfmlib.h not found; may be provided by libpfm devel or papi devel package])])
+	AC_CHECK_LIB(pfm,pfm_get_os_event_encoding, HAVE_LIBPFM3='0'; HAVE_LIBPFM='1', [
+		AC_CHECK_LIB(pfm, pfm_get_event_name, HAVE_LIBPFM3='1'; HAVE_LIBPFM='1',
+		[AC_MSG_ERROR([libpfm not found; may be provided by libpfm devel or papi devel package])])])
+	PFM_LIB="-lpfm"
+	AC_DEFINE_UNQUOTED(HAVE_LIBPFM3, $HAVE_LIBPFM3, [Define to 1 if using libpfm3; 0 if using newer libpfm])
+	AC_DEFINE_UNQUOTED(HAVE_LIBPFM, $HAVE_LIBPFM, [Define to 1 if libpfm is available])
 fi
+AC_SUBST(PFM_LIB)
 
 AC_ARG_WITH(java,
 [  --with-java=java-home        Path to Java home directory (default is "no"; "yes" will use /usr as Java home)],
@@ -424,26 +444,4 @@ elif test "`getent passwd oprofile 2>/dev/null`" == "" || \
 		echo "             group name: 'oprofile'"
 		echo "         The 'oprofile' group must be the default group for the 'oprofile' user."
 	fi
-fi
-
-if  test "$PERF_EVENT_H_EXISTS" != "yes" && test "$kernel_may_have_perf_events_support" = "yes"; then
-	echo "Warning: perf_event.h not found.  Either install the kernel headers package or"
-	echo "use the --with-kernel option if you want the non-root, single application"
-	echo "profiling support provided by operf."
-	echo ""
-	echo "If you run 'make' now, only the legacy ocontrol-based profiler will be built."
-fi
-
-if test "$KERNELDIR" != "" && test "$kernel_has_perf_events_support" != "yes"; then
-	if ! test -d $KERNELDIR; then
-		echo "WARNING: You passed '--with-kernel=$KERNELDIR', but $KERNELDIR"
-		echo "does not exist."
-	else
-		echo "Warning: You requested to build with the '--with-kernel' option, but your kernel"
-		echo "headers were not accessible at the given location. Be sure you have run the following"
-		echo "command from within your kernel source tree:"
-		echo "     make headers_install INSTALL_HDR_PATH=<kernel-hdrs-install-dir>"
-		echo "Then pass <kernel-hdrs-install-dir> to oprofile's '--with-kernel' configure option."
-	fi
-	echo ""
 fi
