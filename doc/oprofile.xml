@@ -310,13 +310,6 @@ is often all you need, but note these arguments to <command>./configure</command
 			</note> 
 		</listitem>
 	</varlistentry>
-	<varlistentry>
-		<term><option>--with-qt-dir/includes/libraries</option></term>
-		<listitem><para>
-			Specify the location of Qt headers and libraries. It defaults to searching in
-			<constant>$QTDIR</constant> if these are not specified.
-		</para></listitem>
-	</varlistentry>
 	<varlistentry id="disable-werror">
 		<term><option>--disable-werror</option></term>
 		<listitem><para>
@@ -2187,7 +2180,7 @@ Show version.
     from the target system.
 <screen>
 #!/bin/bash
-Usage: my-import.sh &lt;input-abi-pathname&gt;
+#Usage: my-import.sh &lt;foreign-abi-fullpathname&gt;
 
 # NOTE: Start from the "samples" directory containing the "current" directory
 # to be imported
@@ -2205,6 +2198,21 @@ the sample data in <filename>profile1</filename>, you would perform the followin
 <screen>
 $cd profile1/var/lib/oprofile/samples
 $my-import.sh `pwd`/../abi
+</screen>
+</para>
+<para>
+If the OProfile ABI is truly different on host and target machines, then the end result of running the
+above script will place the converted (i.e., imported) files into the <filename>current-imported</filename>
+directory.  By default, <command>opreport</command> and other post-profiling tools will look for samples
+in <filename>samples/current</filename> of the specified session directory.  So you should either rename
+<filename>current-imported</filename> to <filename>current</filename> or specify the session specification of
+<command>session:current-imported</command> when running post-profiling tools.
+</para>
+<para>
+If the OProfile ABI is the same on the host and target machines, the <command>my-import.sh</command> script
+will print the following message for each sample file:
+<screen>
+input abi is identical to native. no conversion necessary.
 </screen>
 </para>
 <sect2 id="opimport-details">

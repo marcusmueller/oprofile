@@ -13,12 +13,21 @@ oparchive \- produce archive of oprofile data for offline analysis
 [directory]
 .SH DESCRIPTION
 
+The
 .B oparchive
-generates a directory populated with executable, debug, and oprofile sample
-files. This directory can be move to another machine via tar and analyzed
-without further use of the data collection machine. See oprofile(1) for how
-to write profile specifications.
-
+utility is commonly used for collecting profile data on a "target"
+system for future offline analysis on a different ("host") machine.
+.B oparchive
+creates a directory populated with executables, libraries, debuginfo files, and oprofile sample
+files. This directory can be tar'ed up and moved to another machine to be analyzed
+without further use of the target machine. Using
+.BI opreport
+and other post-profiling tools against archived data requires the use of the
+.I archive:<archived-dir>
+specification. See oprofile(1) for how to write profile specifications.
+A complete description of offline analysis can be found in the chapter titled
+.I Analyzing profile data on another system (oparchive)
+of the OProfile user manual. (See the user manual URL in the "SEE ALSO" section below.)
 .SH OPTIONS
 .TP
 .BI "--help / -? / --usage"
@@ -79,5 +88,8 @@ The location of the generated sample files.
 This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
-.BR @OP_DOCDIR@,
+.BR file://@OP_DOCDIR@oprofile.html#oparchive
+.br
+.BR opimport(1)
+.br
 .BR oprofile(1)

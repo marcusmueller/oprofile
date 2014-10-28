@@ -1,8 +1,20 @@
 .TH OPROFILE 1 "@DATE@" "oprofile @VERSION@"
 .UC 4
 .SH NAME
-oprofile \- a system-wide profiler
+oprofile \- a statistical profiler for Linux systems, capable of profiling all running code
+at low overhead; also included is a set of post-profiling analysis tools, as well as a simple
+event counting tool
 .SH SYNOPSIS
+.br
+.B operf
+[
+.I options
+]
+.br
+.B ocount
+[
+.I options
+]
 .br
 .B opreport
 [
@@ -30,16 +42,21 @@ oprofile \- a system-wide profiler
 .br
 .SH DESCRIPTION
 OProfile is a profiling system for systems running Linux
-2.6 and greater. Profiling runs transparently in the background and profile
-data can be collected at any time. OProfile makes use of the hardware
-performance counters provided on Intel, AMD, and other processors,
-and uses a timer-interrupt based mechanism on CPUs without counters.
-OProfile can profile the whole system in high detail.
+2.6.31 and greater. OProfile makes use of the hardware
+performance counters provided on Intel, AMD, and other processors.
+OProfile can profile a selected program or process or the whole system.
+OProfile can also be used to collect cumulative event counts at the
+application, process, or system level.
 .br
 For a gentle guide to using OProfile, please read the HTML documentation
 listed in SEE ALSO.
 .br
-.SH OPCONTROL
+.SH OPERF
+.B operf
+is a performance profiler tool for Linux.
+.SH OCOUNT
+.B ocount
+is an event counting tool for Linux.
 .SH OPREPORT
 .B opreport
 gives image and symbol-based profile summaries for the whole system or
@@ -55,14 +72,16 @@ produces oprofile archive for offline analysis
 can produce a gprof-format profile for a single binary.
 
 .SH PROFILE SPECIFICATIONS
-All of the post-profiling tools can take profile specifications,
-which is some combination of the following parameters. Enclosing
-part of a profile specification in curly braces { } can be used
+Various optional profile specifications may be used with the
+post-profiling tools. A profile specification is some combination of the parameters
+listed below. (
+.BR Note :
+Enclosing part of a profile specification in curly braces { } can be used
 for differential profiles with
-.B opreport
-; the braces
+.BR opreport ,
+but the braces
 .B must
-be surrounded by whitespace.
+be surrounded by whitespace.)
 
 .TP
 .BI "archive:"archive
@@ -83,7 +102,7 @@ A comma-separated list of sessions to exclude.
 .BI "image:"imagelist
 A comma-separated list of image names to resolve. Each entry may be relative
 path, glob-style name, or full path, e.g.
-opreport 'image:/usr/bin/oprofiled,*op*,./oprofpp'
+opreport 'image:/usr/bin/operf,*op*,./oprofpp'
 .br
 .TP
 .BI "image-exclude:"imagelist
@@ -135,7 +154,7 @@ tgid: to restrict the results to particular threads within a process.
 This is only useful when using per-process profile separation.
 
 .SH ENVIRONMENT
-No special environment variables are recognized by oprofile.
+No special environment variables are recognized by OProfile.
 
 .SH FILES
 .TP
@@ -163,6 +182,8 @@ This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
 .BR @OP_DOCDIR@,
+.BR operf(1),
+.BR ocount(1),
 .BR opreport(1),
 .BR opannotate(1),
 .BR oparchive(1),
