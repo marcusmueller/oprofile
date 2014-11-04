@@ -30,20 +30,20 @@ event:0x300f6 counters:2 um:zero minimum:10000 name:PM_L1_DCACHE_RELOAD_VALID : 
 event:0x200fd counters:1 um:zero minimum:10000 name:PM_L1_ICACHE_MISS : Demand iCache Miss.
 event:0x3e054 counters:2 um:zero minimum:10000 name:PM_LD_MISS_L1 : Load Missed L1.
 event:0x200f6 counters:1 um:zero minimum:10000 name:PM_LSU_DERAT_MISS : DERAT Reloaded (Miss).
-event:0x301e4 counters:2 um:zero minimum:1000 name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted.
-event:0x101e2 counters:0 um:zero minimum:1000 name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken.
-event:0x401e8 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS : Data cache reload L2 miss.
-event:0x201e4 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS : The processor's data cache was reloaded from a localtion other than the local core's L3 due to a marked load.
-event:0x201e0 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load.
-event:0x301e6 counters:2 um:zero minimum:1000 name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes.
-event:0x401e4 counters:3 um:zero minimum:1000 name:PM_MRK_DTLB_MISS : Marked dtlb miss.
-event:0x401e0 counters:3 um:zero minimum:1000 name:PM_MRK_INST_CMPL : marked instruction completed.
-event:0x101e0 counters:0 um:zero minimum:1000 name:PM_MRK_INST_DISP : Marked Instruction dispatched.
-event:0x401e6 counters:3 um:zero minimum:1000 name:PM_MRK_INST_FROM_L3MISS : n/a
-event:0x101e4 counters:0 um:zero minimum:1000 name:PM_MRK_L1_ICACHE_MISS : Marked L1 Icache Miss.
-event:0x101ea counters:0 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID : Marked demand reload.
-event:0x201e2 counters:1 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss counted at exec time.
-event:0x10134 counters:0 um:zero minimum:1000 name:PM_MRK_ST_CMPL : Marked store completed.
+event:0x301e4 counters:2 um:zero minimum:100 name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted.
+event:0x101e2 counters:0 um:zero minimum:100 name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken.
+event:0x401e8 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2MISS : Data cache reload L2 miss.
+event:0x201e4 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3MISS : The processor's data cache was reloaded from a localtion other than the local core's L3 due to a marked load.
+event:0x201e0 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_MEM : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load.
+event:0x301e6 counters:2 um:zero minimum:100 name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes.
+event:0x401e4 counters:3 um:zero minimum:100 name:PM_MRK_DTLB_MISS : Marked dtlb miss.
+event:0x401e0 counters:3 um:zero minimum:100 name:PM_MRK_INST_CMPL : marked instruction completed.
+event:0x101e0 counters:0 um:zero minimum:100 name:PM_MRK_INST_DISP : Marked Instruction dispatched.
+event:0x401e6 counters:3 um:zero minimum:100 name:PM_MRK_INST_FROM_L3MISS : n/a
+event:0x101e4 counters:0 um:zero minimum:100 name:PM_MRK_L1_ICACHE_MISS : Marked L1 Icache Miss.
+event:0x101ea counters:0 um:zero minimum:100 name:PM_MRK_L1_RELOAD_VALID : Marked demand reload.
+event:0x201e2 counters:1 um:zero minimum:100 name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss counted at exec time.
+event:0x10134 counters:0 um:zero minimum:100 name:PM_MRK_ST_CMPL : Marked store completed.
 event:0x600f4 counters:5 um:zero minimum:100000 name:PM_RUN_CYC : Run_cycles.
 event:0x500fa counters:4 um:zero minimum:100000 name:PM_RUN_INST_CMPL : Run_Instructions.
 event:0x400f4 counters:3 um:zero minimum:10000 name:PM_RUN_PURR : Run_PURR.

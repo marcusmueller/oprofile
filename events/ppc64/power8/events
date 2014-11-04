@@ -508,7 +508,7 @@ event:0x83908a counters:2 um:zero minimum:10000 name:PM_L3_CO0_BUSY : lifetime, 
 event:0x28086 counters:1 um:zero minimum:10000 name:PM_L3_CO_L31 : L3 CO to L3.1 OR of port 0 and 1 ( lossy)
 event:0x238088 counters:2 um:zero minimum:10000 name:PM_L3_CO_LCO : Total L3 castouts occurred on LCO
 event:0x28084 counters:1 um:zero minimum:10000 name:PM_L3_CO_MEM : L3 CO to memory OR of port 0 and 1 ( lossy)
-event:0x18082 counters:0 um:zero minimum:10000 name:PM_L3_CO_MEPF : L3 CO of line in Mep state ( includes casthrough
+event:0x18082 counters:0 um:zero minimum:10000 name:PM_L3_CO_MEPF : L3 CO of line in Mep state ( includes casthrough)
 event:0xb19082 counters:0 um:zero minimum:10000 name:PM_L3_GRP_GUESS_CORRECT : Initial scope=group and data from same group (near) (pred successful)
 event:0xb3908a counters:2 um:zero minimum:10000 name:PM_L3_GRP_GUESS_WRONG_HIGH : Initial scope=group but data from local node. Predition too high
 event:0xb39088 counters:2 um:zero minimum:10000 name:PM_L3_GRP_GUESS_WRONG_LOW : Initial scope=group but data from outside group (far or rem). Prediction too Low
@@ -692,163 +692,163 @@ event:0x1c05e counters:0 um:zero minimum:10000 name:PM_MEM_LOC_THRESH_LSU_MED : 
 event:0x2c058 counters:1 um:zero minimum:10000 name:PM_MEM_PREF : Memory prefetch for this lpar.
 event:0x10056 counters:0 um:zero minimum:10000 name:PM_MEM_READ : Reads from Memory from this lpar (includes data/inst/xlate/l1prefetch/inst prefetch).
 event:0x3c05e counters:2 um:zero minimum:10000 name:PM_MEM_RWITM : Memory rwitm for this lpar.
-event:0x3515e counters:2 um:zero minimum:1000 name:PM_MRK_BACK_BR_CMPL : Marked branch instruction completed with a target address less than current instruction address.
-event:0x2013a counters:1 um:zero minimum:1000 name:PM_MRK_BRU_FIN : bru marked instr finish.
-event:0x1016e counters:0 um:zero minimum:1000 name:PM_MRK_BR_CMPL : Branch Instruction completed.
-event:0x3013a counters:2 um:zero minimum:1000 name:PM_MRK_CRU_FIN : IFU non-branch marked instruction finished.
-event:0x4d148 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
-event:0x2d128 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DL2L3_MOD_CYC : Duration in cycles to reload with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
-event:0x3d148 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
-event:0x2c128 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DL2L3_SHR_CYC : Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
-event:0x3d14c counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to a marked load.
-event:0x2c12c counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DL4_CYC : Duration in cycles to reload from another chip's L4 on a different Node or Group (Distant) due to a marked load.
-event:0x4d14c counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to a marked load.
-event:0x2d12c counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_DMEM_CYC : Duration in cycles to reload from another chip's memory on the same Node or Group (Distant) due to a marked load.
-event:0x1d142 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to a marked load.
-event:0x4d146 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to a marked load.
-event:0x2d126 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L21_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's L2 on the same chip due to a marked load.
-event:0x3d146 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to a marked load.
-event:0x2c126 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L21_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's L2 on the same chip due to a marked load.
-event:0x4c12e counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2MISS_CYC : Duration in cycles to reload from a localtion other than the local core's L2  due to a marked load.
-event:0x4c122 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_CYC : Duration in cycles to reload from local core's L2 due to a marked load.
-event:0x3d140 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to a marked load.
-event:0x2c120 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_LDHITST_CYC : Duration in cycles to reload from local core's L2 with load hit store conflict due to a marked load.
-event:0x4d140 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to a marked load.
-event:0x2d120 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_OTHER_CYC : Duration in cycles to reload from local core's L2 with dispatch conflict due to a marked load.
-event:0x2d140 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_MEPF : The processor's data cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked load.
-event:0x4d120 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_MEPF_CYC : Duration in cycles to reload from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked load.
-event:0x1d140 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to a marked load.
-event:0x4c120 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_NO_CONFLICT_CYC : Duration in cycles to reload from local core's L2 without conflict due to a marked load.
-event:0x4d142 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to a marked load.
-event:0x4d144 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to a marked load.
-event:0x2d124 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_ECO_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's ECO L3 on the same chip due to a marked load.
-event:0x3d144 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to a marked load.
-event:0x2c124 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_ECO_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's ECO L3 on the same chip due to a marked load.
-event:0x2d144 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to a marked load.
-event:0x4d124 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's L3 on the same chip due to a marked load.
-event:0x1d146 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to a marked load.
-event:0x4c126 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L31_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's L3 on the same chip due to a marked load.
-event:0x2d12e counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3MISS_CYC : Duration in cycles to reload from a localtion other than the local core's L3  due to a marked load.
-event:0x2d122 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_CYC : Duration in cycles to reload from local core's L3 due to a marked load.
-event:0x3d142 counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to a marked load.
-event:0x2c122 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_DISP_CONFLICT_CYC : Duration in cycles to reload from local core's L3 with dispatch conflict due to a marked load.
-event:0x2d142 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked load.
-event:0x4d122 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_MEPF_CYC : Duration in cycles to reload from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked load.
-event:0x1d144 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to a marked load.
-event:0x4c124 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L3_NO_CONFLICT_CYC : Duration in cycles to reload from local core's L3 without conflict due to a marked load.
-event:0x1d14c counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to a marked load.
-event:0x4c12c counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LL4_CYC : Duration in cycles to reload  from the local chip's L4 cache due to a marked load.
-event:0x2d148 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to a marked load.
-event:0x4d128 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_LMEM_CYC : Duration in cycles to reload  from the local chip's Memory due to a marked load.
-event:0x2d14c counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load.
-event:0x4d12c counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEMORY_CYC : Duration in cycles to reload from a memory location including L4 from local remote or distant due to a marked load.
-event:0x4d14a counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load.
-event:0x2d12a counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_OFF_CHIP_CACHE_CYC : Duration in cycles to reload either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load.
-event:0x1d148 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to a marked load.
-event:0x4c128 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_ON_CHIP_CACHE_CYC : Duration in cycles to reload either shared or modified data from another core's L2/L3 on the same chip due to a marked load.
-event:0x2d146 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
-event:0x4d126 counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL2L3_MOD_CYC : Duration in cycles to reload with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
-event:0x1d14a counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
-event:0x4c12a counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL2L3_SHR_CYC : Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
-event:0x2d14a counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to a marked load.
-event:0x4d12a counters:3 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RL4_CYC : Duration in cycles to reload from another chip's L4 on the same Node or Group ( Remote) due to a marked load.
-event:0x3d14a counters:2 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to a marked load.
-event:0x2c12a counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_RMEM_CYC : Duration in cycles to reload from another chip's memory on the same Node or Group ( Remote) due to a marked load.
-event:0x40118 counters:3 um:zero minimum:1000 name:PM_MRK_DCACHE_RELOAD_INTV : Combined Intervention event.
-event:0x4d154 counters:3 um:zero minimum:1000 name:PM_MRK_DERAT_MISS_16G : Marked Data ERAT Miss (Data TLB Access) page size 16G.
-event:0x3d154 counters:2 um:zero minimum:1000 name:PM_MRK_DERAT_MISS_16M : Marked Data ERAT Miss (Data TLB Access) page size 16M.
-event:0x1d156 counters:0 um:zero minimum:1000 name:PM_MRK_DERAT_MISS_4K : Marked Data ERAT Miss (Data TLB Access) page size 4K.
-event:0x2d154 counters:1 um:zero minimum:1000 name:PM_MRK_DERAT_MISS_64K : Marked Data ERAT Miss (Data TLB Access) page size 64K.
-event:0x20132 counters:1 um:zero minimum:1000 name:PM_MRK_DFU_FIN : Decimal Unit marked Instruction Finish.
-event:0x4f148 counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_DL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked data side request.
-event:0x3f148 counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_DL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked data side request.
-event:0x3f14c counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_DL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on a different Node or Group (Distant) due to a marked data side request.
-event:0x4f14c counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_DMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group (Distant) due to a marked data side request.
-event:0x1f142 counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L2 : A Page Table Entry was loaded into the TLB from local core's L2 due to a marked data side request.
-event:0x4f146 counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L21_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L2 on the same chip due to a marked data side request.
-event:0x3f146 counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L21_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L2 on the same chip due to a marked data side request.
-event:0x1f14e counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L2MISS : A Page Table Entry was loaded into the TLB from a localtion other than the local core's L2 due to a marked data side request.
-event:0x3f140 counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L2_DISP_CONFLICT_LDHITST : A Page Table Entry was loaded into the TLB from local core's L2 with load hit store conflict due to a marked data side request.
-event:0x4f140 counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L2_DISP_CONFLICT_OTHER : A Page Table Entry was loaded into the TLB from local core's L2 with dispatch conflict due to a marked data side request.
-event:0x2f140 counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L2_MEPF : A Page Table Entry was loaded into the TLB from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked data side request.
-event:0x1f140 counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L2_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a marked data side request.
-event:0x4f142 counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L3 : A Page Table Entry was loaded into the TLB from local core's L3 due to a marked data side request.
-event:0x4f144 counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L31_ECO_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's ECO L3 on the same chip due to a marked data side request.
-event:0x3f144 counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L31_ECO_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's ECO L3 on the same chip due to a marked data side request.
-event:0x2f144 counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L31_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L3 on the same chip due to a marked data side request.
-event:0x1f146 counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L31_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L3 on the same chip due to a marked data side request.
-event:0x4f14e counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L3MISS : A Page Table Entry was loaded into the TLB from a localtion other than the local core's L3 due to a marked data side request.
-event:0x3f142 counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L3_DISP_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 with dispatch conflict due to a marked data side request.
-event:0x2f142 counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L3_MEPF : A Page Table Entry was loaded into the TLB from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked data side request.
-event:0x1f144 counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_L3_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 without conflict due to a marked data side request.
-event:0x1f14c counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_LL4 : A Page Table Entry was loaded into the TLB from the local chip's L4 cache due to a marked data side request.
-event:0x2f148 counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_LMEM : A Page Table Entry was loaded into the TLB from the local chip's Memory due to a marked data side request.
-event:0x2f14c counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_MEMORY : A Page Table Entry was loaded into the TLB from a memory location including L4 from local remote or distant due to a marked data side request.
-event:0x4f14a counters:3 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_OFF_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked data side request.
-event:0x1f148 counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_ON_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on the same chip due to a marked data side request.
-event:0x2f146 counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_RL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked data side request.
-event:0x1f14a counters:0 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_RL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked data side request.
-event:0x2f14a counters:1 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_RL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on the same Node or Group ( Remote) due to a marked data side request.
-event:0x3f14a counters:2 um:zero minimum:1000 name:PM_MRK_DPTEG_FROM_RMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group ( Remote) due to a marked data side request.
-event:0x1d158 counters:0 um:zero minimum:1000 name:PM_MRK_DTLB_MISS_16G : Marked Data TLB Miss page size 16G.
-event:0x4d156 counters:3 um:zero minimum:1000 name:PM_MRK_DTLB_MISS_16M : Marked Data TLB Miss page size 16M.
-event:0x2d156 counters:1 um:zero minimum:1000 name:PM_MRK_DTLB_MISS_4K : Marked Data TLB Miss page size 4k.
-event:0x3d156 counters:2 um:zero minimum:1000 name:PM_MRK_DTLB_MISS_64K : Marked Data TLB Miss page size 64K.
-event:0x40154 counters:3 um:zero minimum:1000 name:PM_MRK_FAB_RSP_BKILL : Marked store had to do a bkill.
-event:0x2f150 counters:1 um:zero minimum:1000 name:PM_MRK_FAB_RSP_BKILL_CYC : cycles L2 RC took for a bkill.
-event:0x3015e counters:2 um:zero minimum:1000 name:PM_MRK_FAB_RSP_CLAIM_RTY : Sampled store did a rwitm and got a rty.
-event:0x30154 counters:2 um:zero minimum:1000 name:PM_MRK_FAB_RSP_DCLAIM : Marked store had to do a dclaim.
-event:0x2f152 counters:1 um:zero minimum:1000 name:PM_MRK_FAB_RSP_DCLAIM_CYC : cycles L2 RC took for a dclaim.
-event:0x30156 counters:2 um:zero minimum:1000 name:PM_MRK_FAB_RSP_MATCH : ttype and cresp matched as specified in MMCR1.
-event:0x4f152 counters:3 um:zero minimum:1000 name:PM_MRK_FAB_RSP_MATCH_CYC : cresp/ttype match cycles.
-event:0x4015e counters:3 um:zero minimum:1000 name:PM_MRK_FAB_RSP_RD_RTY : Sampled L2 reads retry count.
-event:0x1015e counters:0 um:zero minimum:1000 name:PM_MRK_FAB_RSP_RD_T_INTV : Sampled Read got a T intervention.
-event:0x4f150 counters:3 um:zero minimum:1000 name:PM_MRK_FAB_RSP_RWITM_CYC : cycles L2 RC took for a rwitm.
-event:0x2015e counters:1 um:zero minimum:1000 name:PM_MRK_FAB_RSP_RWITM_RTY : Sampled store did a rwitm and got a rty.
-event:0x3012e counters:2 um:zero minimum:1000 name:PM_MRK_FILT_MATCH : Marked filter Match.
-event:0x1013c counters:0 um:zero minimum:1000 name:PM_MRK_FIN_STALL_CYC : Marked instruction Finish Stall cycles (marked finish after NTC) (use edge detect to count #).
-event:0x20134 counters:1 um:zero minimum:1000 name:PM_MRK_FXU_FIN : fxu marked instr finish.
+event:0x3515e counters:2 um:zero minimum:100 name:PM_MRK_BACK_BR_CMPL : Marked branch instruction completed with a target address less than current instruction address.
+event:0x2013a counters:1 um:zero minimum:100 name:PM_MRK_BRU_FIN : bru marked instr finish.
+event:0x1016e counters:0 um:zero minimum:100 name:PM_MRK_BR_CMPL : Branch Instruction completed.
+event:0x3013a counters:2 um:zero minimum:100 name:PM_MRK_CRU_FIN : IFU non-branch marked instruction finished.
+event:0x4d148 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
+event:0x2d128 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_DL2L3_MOD_CYC : Duration in cycles to reload with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
+event:0x3d148 counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
+event:0x2c128 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_DL2L3_SHR_CYC : Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load.
+event:0x3d14c counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to a marked load.
+event:0x2c12c counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_DL4_CYC : Duration in cycles to reload from another chip's L4 on a different Node or Group (Distant) due to a marked load.
+event:0x4d14c counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to a marked load.
+event:0x2d12c counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_DMEM_CYC : Duration in cycles to reload from another chip's memory on the same Node or Group (Distant) due to a marked load.
+event:0x1d142 counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to a marked load.
+event:0x4d146 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to a marked load.
+event:0x2d126 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L21_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's L2 on the same chip due to a marked load.
+event:0x3d146 counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to a marked load.
+event:0x2c126 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L21_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's L2 on the same chip due to a marked load.
+event:0x4c12e counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2MISS_CYC : Duration in cycles to reload from a localtion other than the local core's L2  due to a marked load.
+event:0x4c122 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_CYC : Duration in cycles to reload from local core's L2 due to a marked load.
+event:0x3d140 counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to a marked load.
+event:0x2c120 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_LDHITST_CYC : Duration in cycles to reload from local core's L2 with load hit store conflict due to a marked load.
+event:0x4d140 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to a marked load.
+event:0x2d120 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_OTHER_CYC : Duration in cycles to reload from local core's L2 with dispatch conflict due to a marked load.
+event:0x2d140 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_MEPF : The processor's data cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked load.
+event:0x4d120 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_MEPF_CYC : Duration in cycles to reload from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked load.
+event:0x1d140 counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to a marked load.
+event:0x4c120 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L2_NO_CONFLICT_CYC : Duration in cycles to reload from local core's L2 without conflict due to a marked load.
+event:0x4d142 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to a marked load.
+event:0x4d144 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to a marked load.
+event:0x2d124 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_ECO_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's ECO L3 on the same chip due to a marked load.
+event:0x3d144 counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to a marked load.
+event:0x2c124 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_ECO_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's ECO L3 on the same chip due to a marked load.
+event:0x2d144 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to a marked load.
+event:0x4d124 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's L3 on the same chip due to a marked load.
+event:0x1d146 counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to a marked load.
+event:0x4c126 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L31_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's L3 on the same chip due to a marked load.
+event:0x2d12e counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3MISS_CYC : Duration in cycles to reload from a localtion other than the local core's L3  due to a marked load.
+event:0x2d122 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_CYC : Duration in cycles to reload from local core's L3 due to a marked load.
+event:0x3d142 counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to a marked load.
+event:0x2c122 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_DISP_CONFLICT_CYC : Duration in cycles to reload from local core's L3 with dispatch conflict due to a marked load.
+event:0x2d142 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked load.
+event:0x4d122 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_MEPF_CYC : Duration in cycles to reload from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked load.
+event:0x1d144 counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to a marked load.
+event:0x4c124 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_L3_NO_CONFLICT_CYC : Duration in cycles to reload from local core's L3 without conflict due to a marked load.
+event:0x1d14c counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to a marked load.
+event:0x4c12c counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_LL4_CYC : Duration in cycles to reload  from the local chip's L4 cache due to a marked load.
+event:0x2d148 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to a marked load.
+event:0x4d128 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_LMEM_CYC : Duration in cycles to reload  from the local chip's Memory due to a marked load.
+event:0x2d14c counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load.
+event:0x4d12c counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_MEMORY_CYC : Duration in cycles to reload from a memory location including L4 from local remote or distant due to a marked load.
+event:0x4d14a counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load.
+event:0x2d12a counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_OFF_CHIP_CACHE_CYC : Duration in cycles to reload either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load.
+event:0x1d148 counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to a marked load.
+event:0x4c128 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_ON_CHIP_CACHE_CYC : Duration in cycles to reload either shared or modified data from another core's L2/L3 on the same chip due to a marked load.
+event:0x2d146 counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
+event:0x4d126 counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_RL2L3_MOD_CYC : Duration in cycles to reload with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
+event:0x1d14a counters:0 um:zero minimum:100 name:PM_MRK_DATA_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
+event:0x4c12a counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_RL2L3_SHR_CYC : Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load.
+event:0x2d14a counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to a marked load.
+event:0x4d12a counters:3 um:zero minimum:100 name:PM_MRK_DATA_FROM_RL4_CYC : Duration in cycles to reload from another chip's L4 on the same Node or Group ( Remote) due to a marked load.
+event:0x3d14a counters:2 um:zero minimum:100 name:PM_MRK_DATA_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to a marked load.
+event:0x2c12a counters:1 um:zero minimum:100 name:PM_MRK_DATA_FROM_RMEM_CYC : Duration in cycles to reload from another chip's memory on the same Node or Group ( Remote) due to a marked load.
+event:0x40118 counters:3 um:zero minimum:100 name:PM_MRK_DCACHE_RELOAD_INTV : Combined Intervention event.
+event:0x4d154 counters:3 um:zero minimum:100 name:PM_MRK_DERAT_MISS_16G : Marked Data ERAT Miss (Data TLB Access) page size 16G.
+event:0x3d154 counters:2 um:zero minimum:100 name:PM_MRK_DERAT_MISS_16M : Marked Data ERAT Miss (Data TLB Access) page size 16M.
+event:0x1d156 counters:0 um:zero minimum:100 name:PM_MRK_DERAT_MISS_4K : Marked Data ERAT Miss (Data TLB Access) page size 4K.
+event:0x2d154 counters:1 um:zero minimum:100 name:PM_MRK_DERAT_MISS_64K : Marked Data ERAT Miss (Data TLB Access) page size 64K.
+event:0x20132 counters:1 um:zero minimum:100 name:PM_MRK_DFU_FIN : Decimal Unit marked Instruction Finish.
+event:0x4f148 counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_DL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked data side request.
+event:0x3f148 counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_DL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked data side request.
+event:0x3f14c counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_DL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on a different Node or Group (Distant) due to a marked data side request.
+event:0x4f14c counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_DMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group (Distant) due to a marked data side request.
+event:0x1f142 counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L2 : A Page Table Entry was loaded into the TLB from local core's L2 due to a marked data side request.
+event:0x4f146 counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L21_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L2 on the same chip due to a marked data side request.
+event:0x3f146 counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L21_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L2 on the same chip due to a marked data side request.
+event:0x1f14e counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L2MISS : A Page Table Entry was loaded into the TLB from a localtion other than the local core's L2 due to a marked data side request.
+event:0x3f140 counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L2_DISP_CONFLICT_LDHITST : A Page Table Entry was loaded into the TLB from local core's L2 with load hit store conflict due to a marked data side request.
+event:0x4f140 counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L2_DISP_CONFLICT_OTHER : A Page Table Entry was loaded into the TLB from local core's L2 with dispatch conflict due to a marked data side request.
+event:0x2f140 counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L2_MEPF : A Page Table Entry was loaded into the TLB from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked data side request.
+event:0x1f140 counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L2_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a marked data side request.
+event:0x4f142 counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L3 : A Page Table Entry was loaded into the TLB from local core's L3 due to a marked data side request.
+event:0x4f144 counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L31_ECO_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's ECO L3 on the same chip due to a marked data side request.
+event:0x3f144 counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L31_ECO_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's ECO L3 on the same chip due to a marked data side request.
+event:0x2f144 counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L31_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L3 on the same chip due to a marked data side request.
+event:0x1f146 counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L31_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L3 on the same chip due to a marked data side request.
+event:0x4f14e counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L3MISS : A Page Table Entry was loaded into the TLB from a localtion other than the local core's L3 due to a marked data side request.
+event:0x3f142 counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L3_DISP_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 with dispatch conflict due to a marked data side request.
+event:0x2f142 counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L3_MEPF : A Page Table Entry was loaded into the TLB from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked data side request.
+event:0x1f144 counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_L3_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 without conflict due to a marked data side request.
+event:0x1f14c counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_LL4 : A Page Table Entry was loaded into the TLB from the local chip's L4 cache due to a marked data side request.
+event:0x2f148 counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_LMEM : A Page Table Entry was loaded into the TLB from the local chip's Memory due to a marked data side request.
+event:0x2f14c counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_MEMORY : A Page Table Entry was loaded into the TLB from a memory location including L4 from local remote or distant due to a marked data side request.
+event:0x4f14a counters:3 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_OFF_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked data side request.
+event:0x1f148 counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_ON_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on the same chip due to a marked data side request.
+event:0x2f146 counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_RL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked data side request.
+event:0x1f14a counters:0 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_RL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked data side request.
+event:0x2f14a counters:1 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_RL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on the same Node or Group ( Remote) due to a marked data side request.
+event:0x3f14a counters:2 um:zero minimum:100 name:PM_MRK_DPTEG_FROM_RMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group ( Remote) due to a marked data side request.
+event:0x1d158 counters:0 um:zero minimum:100 name:PM_MRK_DTLB_MISS_16G : Marked Data TLB Miss page size 16G.
+event:0x4d156 counters:3 um:zero minimum:100 name:PM_MRK_DTLB_MISS_16M : Marked Data TLB Miss page size 16M.
+event:0x2d156 counters:1 um:zero minimum:100 name:PM_MRK_DTLB_MISS_4K : Marked Data TLB Miss page size 4k.
+event:0x3d156 counters:2 um:zero minimum:100 name:PM_MRK_DTLB_MISS_64K : Marked Data TLB Miss page size 64K.
+event:0x40154 counters:3 um:zero minimum:100 name:PM_MRK_FAB_RSP_BKILL : Marked store had to do a bkill.
+event:0x2f150 counters:1 um:zero minimum:100 name:PM_MRK_FAB_RSP_BKILL_CYC : cycles L2 RC took for a bkill.
+event:0x3015e counters:2 um:zero minimum:100 name:PM_MRK_FAB_RSP_CLAIM_RTY : Sampled store did a rwitm and got a rty.
+event:0x30154 counters:2 um:zero minimum:100 name:PM_MRK_FAB_RSP_DCLAIM : Marked store had to do a dclaim.
+event:0x2f152 counters:1 um:zero minimum:100 name:PM_MRK_FAB_RSP_DCLAIM_CYC : cycles L2 RC took for a dclaim.
+event:0x30156 counters:2 um:zero minimum:100 name:PM_MRK_FAB_RSP_MATCH : ttype and cresp matched as specified in MMCR1.
+event:0x4f152 counters:3 um:zero minimum:100 name:PM_MRK_FAB_RSP_MATCH_CYC : cresp/ttype match cycles.
+event:0x4015e counters:3 um:zero minimum:100 name:PM_MRK_FAB_RSP_RD_RTY : Sampled L2 reads retry count.
+event:0x1015e counters:0 um:zero minimum:100 name:PM_MRK_FAB_RSP_RD_T_INTV : Sampled Read got a T intervention.
+event:0x4f150 counters:3 um:zero minimum:100 name:PM_MRK_FAB_RSP_RWITM_CYC : cycles L2 RC took for a rwitm.
+event:0x2015e counters:1 um:zero minimum:100 name:PM_MRK_FAB_RSP_RWITM_RTY : Sampled store did a rwitm and got a rty.
+event:0x3012e counters:2 um:zero minimum:100 name:PM_MRK_FILT_MATCH : Marked filter Match.
+event:0x1013c counters:0 um:zero minimum:100 name:PM_MRK_FIN_STALL_CYC : Marked instruction Finish Stall cycles (marked finish after NTC) (use edge detect to count #).
+event:0x20134 counters:1 um:zero minimum:100 name:PM_MRK_FXU_FIN : fxu marked instr finish.
 event:0x40130 counters:3 um:zero minimum:1000 name:PM_MRK_GRP_CMPL : marked instruction finished (completed).
-event:0x4013a counters:3 um:zero minimum:1000 name:PM_MRK_GRP_IC_MISS : Marked Group experienced I cache miss.
-event:0x3013c counters:2 um:zero minimum:1000 name:PM_MRK_GRP_NTC : Marked group ntc cycles.
-event:0x20130 counters:1 um:zero minimum:1000 name:PM_MRK_INST_DECODED : marked instruction decoded. Name from ISU?
+event:0x4013a counters:3 um:zero minimum:100 name:PM_MRK_GRP_IC_MISS : Marked Group experienced I cache miss.
+event:0x3013c counters:2 um:zero minimum:100 name:PM_MRK_GRP_NTC : Marked group ntc cycles.
+event:0x20130 counters:1 um:zero minimum:100 name:PM_MRK_INST_DECODED : marked instruction decoded. Name from ISU?
 event:0x30130 counters:2 um:zero minimum:1000 name:PM_MRK_INST_FIN : marked instr finish any unit .
 event:0x10132 counters:0 um:zero minimum:1000 name:PM_MRK_INST_ISSUED : Marked instruction issued.
-event:0x40134 counters:3 um:zero minimum:1000 name:PM_MRK_INST_TIMEO : marked Instruction finish timeout (instruction lost).
-event:0x20114 counters:1 um:zero minimum:1000 name:PM_MRK_L2_RC_DISP : Marked Instruction RC dispatched in L2.
-event:0x3012a counters:2 um:zero minimum:1000 name:PM_MRK_L2_RC_DONE : Marked RC done.
-event:0x40116 counters:3 um:zero minimum:1000 name:PM_MRK_LARX_FIN : Larx finished .
-event:0x1013f counters:0 um:zero minimum:1000 name:PM_MRK_LD_MISS_EXPOSED : Marked Load exposed Miss (use edge detect to count #)
-event:0x1013e counters:0 um:zero minimum:1000 name:PM_MRK_LD_MISS_EXPOSED_CYC : Marked Load exposed Miss (use edge detect to count #).
-event:0x4013e counters:3 um:zero minimum:1000 name:PM_MRK_LD_MISS_L1_CYC : Marked ld latency.
-event:0x40132 counters:3 um:zero minimum:1000 name:PM_MRK_LSU_FIN : lsu marked instr finish.
-event:0xd180 counters:0,1,2,3 um:zero minimum:1000 name:PM_MRK_LSU_FLUSH : Flush: (marked) : All Cases42
-event:0xd188 counters:0,1,2,3 um:zero minimum:1000 name:PM_MRK_LSU_FLUSH_LRQ : Flush: (marked) LRQMarked LRQ flushes
-event:0xd18a counters:0,1,2,3 um:zero minimum:1000 name:PM_MRK_LSU_FLUSH_SRQ : Flush: (marked) SRQMarked SRQ lhs flushes
-event:0xd184 counters:0,1,2,3 um:zero minimum:1000 name:PM_MRK_LSU_FLUSH_ULD : Flush: (marked) Unaligned LoadMarked unaligned load flushes
-event:0xd186 counters:0,1,2,3 um:zero minimum:1000 name:PM_MRK_LSU_FLUSH_UST : Flush: (marked) Unaligned StoreMarked unaligned store flushes
-event:0x40164 counters:3 um:zero minimum:1000 name:PM_MRK_LSU_REJECT : LSU marked reject (up to 2 per cycle).
-event:0x30164 counters:2 um:zero minimum:1000 name:PM_MRK_LSU_REJECT_ERAT_MISS : LSU marked reject due to ERAT (up to 2 per cycle).
-event:0x20112 counters:1 um:zero minimum:1000 name:PM_MRK_NTF_FIN : Marked next to finish instruction finished.
-event:0x1d15e counters:0 um:zero minimum:10000 name:PM_MRK_RUN_CYC : Marked run cycles.
-event:0x1d15a counters:0 um:zero minimum:1000 name:PM_MRK_SRC_PREF_TRACK_EFF : Marked src pref track was effective.
-event:0x3d15a counters:2 um:zero minimum:1000 name:PM_MRK_SRC_PREF_TRACK_INEFF : Prefetch tracked was ineffective for marked src.
-event:0x4d15c counters:3 um:zero minimum:1000 name:PM_MRK_SRC_PREF_TRACK_MOD : Prefetch tracked was moderate for marked src.
-event:0x1d15c counters:0 um:zero minimum:1000 name:PM_MRK_SRC_PREF_TRACK_MOD_L2 : Marked src Prefetch Tracked was moderate (source L2).
-event:0x3d15c counters:2 um:zero minimum:1000 name:PM_MRK_SRC_PREF_TRACK_MOD_L3 : Prefetch tracked was moderate (L3 hit) for marked src.
-event:0x3013e counters:2 um:zero minimum:1000 name:PM_MRK_STALL_CMPLU_CYC : Marked Group Completion Stall cycles (use edge detect to count #).
-event:0x3e158 counters:2 um:zero minimum:1000 name:PM_MRK_STCX_FAIL : marked stcx failed.
-event:0x30134 counters:2 um:zero minimum:1000 name:PM_MRK_ST_CMPL_INT : marked store complete (data home) with intervention.
-event:0x3f150 counters:2 um:zero minimum:1000 name:PM_MRK_ST_DRAIN_TO_L2DISP_CYC : cycles to drain st from core to L2.
-event:0x3012c counters:2 um:zero minimum:1000 name:PM_MRK_ST_FWD : Marked st forwards.
-event:0x1f150 counters:0 um:zero minimum:1000 name:PM_MRK_ST_L2DISP_TO_CMPL_CYC : cycles from L2 rc disp to l2 rc completion.
-event:0x20138 counters:1 um:zero minimum:1000 name:PM_MRK_ST_NEST : Marked store sent to nest.
-event:0x1c15a counters:0 um:zero minimum:1000 name:PM_MRK_TGT_PREF_TRACK_EFF : Marked target pref track was effective.
-event:0x3c15a counters:2 um:zero minimum:1000 name:PM_MRK_TGT_PREF_TRACK_INEFF : Prefetch tracked was ineffective for marked target.
-event:0x4c15c counters:3 um:zero minimum:1000 name:PM_MRK_TGT_PREF_TRACK_MOD : Prefetch tracked was moderate for marked target.
-event:0x1c15c counters:0 um:zero minimum:1000 name:PM_MRK_TGT_PREF_TRACK_MOD_L2 : Marked target Prefetch Tracked was moderate (source L2).
-event:0x3c15c counters:2 um:zero minimum:1000 name:PM_MRK_TGT_PREF_TRACK_MOD_L3 : Prefetch tracked was moderate (L3 hit) for marked target.
-event:0x30132 counters:2 um:zero minimum:1000 name:PM_MRK_VSU_FIN : vsu (fpu) marked instr finish.
+event:0x40134 counters:3 um:zero minimum:100 name:PM_MRK_INST_TIMEO : marked Instruction finish timeout (instruction lost).
+event:0x20114 counters:1 um:zero minimum:100 name:PM_MRK_L2_RC_DISP : Marked Instruction RC dispatched in L2.
+event:0x3012a counters:2 um:zero minimum:100 name:PM_MRK_L2_RC_DONE : Marked RC done.
+event:0x40116 counters:3 um:zero minimum:100 name:PM_MRK_LARX_FIN : Larx finished .
+event:0x1013f counters:0 um:zero minimum:100 name:PM_MRK_LD_MISS_EXPOSED : Marked Load exposed Miss (use edge detect to count #)
+event:0x1013e counters:0 um:zero minimum:100 name:PM_MRK_LD_MISS_EXPOSED_CYC : Marked Load exposed Miss (use edge detect to count #).
+event:0x4013e counters:3 um:zero minimum:100 name:PM_MRK_LD_MISS_L1_CYC : Marked ld latency.
+event:0x40132 counters:3 um:zero minimum:100 name:PM_MRK_LSU_FIN : lsu marked instr finish.
+event:0xd180 counters:0,1,2,3 um:zero minimum:100 name:PM_MRK_LSU_FLUSH : Flush: (marked) : All Cases42
+event:0xd188 counters:0,1,2,3 um:zero minimum:100 name:PM_MRK_LSU_FLUSH_LRQ : Flush: (marked) LRQMarked LRQ flushes
+event:0xd18a counters:0,1,2,3 um:zero minimum:100 name:PM_MRK_LSU_FLUSH_SRQ : Flush: (marked) SRQMarked SRQ lhs flushes
+event:0xd184 counters:0,1,2,3 um:zero minimum:100 name:PM_MRK_LSU_FLUSH_ULD : Flush: (marked) Unaligned LoadMarked unaligned load flushes
+event:0xd186 counters:0,1,2,3 um:zero minimum:100 name:PM_MRK_LSU_FLUSH_UST : Flush: (marked) Unaligned StoreMarked unaligned store flushes
+event:0x40164 counters:3 um:zero minimum:100 name:PM_MRK_LSU_REJECT : LSU marked reject (up to 2 per cycle).
+event:0x30164 counters:2 um:zero minimum:100 name:PM_MRK_LSU_REJECT_ERAT_MISS : LSU marked reject due to ERAT (up to 2 per cycle).
+event:0x20112 counters:1 um:zero minimum:100 name:PM_MRK_NTF_FIN : Marked next to finish instruction finished.
+event:0x1d15e counters:0 um:zero minimum:1000 name:PM_MRK_RUN_CYC : Marked run cycles.
+event:0x1d15a counters:0 um:zero minimum:100 name:PM_MRK_SRC_PREF_TRACK_EFF : Marked src pref track was effective.
+event:0x3d15a counters:2 um:zero minimum:100 name:PM_MRK_SRC_PREF_TRACK_INEFF : Prefetch tracked was ineffective for marked src.
+event:0x4d15c counters:3 um:zero minimum:100 name:PM_MRK_SRC_PREF_TRACK_MOD : Prefetch tracked was moderate for marked src.
+event:0x1d15c counters:0 um:zero minimum:100 name:PM_MRK_SRC_PREF_TRACK_MOD_L2 : Marked src Prefetch Tracked was moderate (source L2).
+event:0x3d15c counters:2 um:zero minimum:100 name:PM_MRK_SRC_PREF_TRACK_MOD_L3 : Prefetch tracked was moderate (L3 hit) for marked src.
+event:0x3013e counters:2 um:zero minimum:100 name:PM_MRK_STALL_CMPLU_CYC : Marked Group Completion Stall cycles (use edge detect to count #).
+event:0x3e158 counters:2 um:zero minimum:100 name:PM_MRK_STCX_FAIL : marked stcx failed.
+event:0x30134 counters:2 um:zero minimum:100 name:PM_MRK_ST_CMPL_INT : marked store complete (data home) with intervention.
+event:0x3f150 counters:2 um:zero minimum:100 name:PM_MRK_ST_DRAIN_TO_L2DISP_CYC : cycles to drain st from core to L2.
+event:0x3012c counters:2 um:zero minimum:100 name:PM_MRK_ST_FWD : Marked st forwards.
+event:0x1f150 counters:0 um:zero minimum:100 name:PM_MRK_ST_L2DISP_TO_CMPL_CYC : cycles from L2 rc disp to l2 rc completion.
+event:0x20138 counters:1 um:zero minimum:100 name:PM_MRK_ST_NEST : Marked store sent to nest.
+event:0x1c15a counters:0 um:zero minimum:100 name:PM_MRK_TGT_PREF_TRACK_EFF : Marked target pref track was effective.
+event:0x3c15a counters:2 um:zero minimum:100 name:PM_MRK_TGT_PREF_TRACK_INEFF : Prefetch tracked was ineffective for marked target.
+event:0x4c15c counters:3 um:zero minimum:100 name:PM_MRK_TGT_PREF_TRACK_MOD : Prefetch tracked was moderate for marked target.
+event:0x1c15c counters:0 um:zero minimum:100 name:PM_MRK_TGT_PREF_TRACK_MOD_L2 : Marked target Prefetch Tracked was moderate (source L2).
+event:0x3c15c counters:2 um:zero minimum:100 name:PM_MRK_TGT_PREF_TRACK_MOD_L3 : Prefetch tracked was moderate (L3 hit) for marked target.
+event:0x30132 counters:2 um:zero minimum:100 name:PM_MRK_VSU_FIN : vsu (fpu) marked instr finish.
 event:0x3d15e counters:2 um:zero minimum:10000 name:PM_MULT_MRK : mult marked instr.
 event:0x20b0 counters:0,1,2,3 um:zero minimum:10000 name:PM_NESTED_TEND : Completion time nested tend
 event:0x3006e counters:2 um:zero minimum:10000 name:PM_NEST_REF_CLK : Nest reference clocks.
