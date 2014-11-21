@@ -498,6 +498,7 @@ static void read_events(char const * file)
 	int seen_event, seen_counters, seen_um, seen_minimum, seen_name, seen_ext;
 	FILE * fp = fopen(file, "r");
 	int tags;
+	int fail = 0;
 
 	if (!fp) {
 		fprintf(stderr, "oprofile: could not open event description file %s\n", file);
@@ -510,6 +511,8 @@ static void read_events(char const * file)
 	line = op_get_line(fp);
 
 	while (line) {
+		int bad_val = 0;
+		u64 tmp_val = 0ULL;
 		if (empty_line(line) || comment_line(line))
 			goto next;
 
@@ -535,11 +538,21 @@ static void read_events(char const * file)
 				if (strchr(value, '.') != NULL)
 					parse_error("invalid event name");
 				event->name = value;
+				if (bad_val) {
+					fprintf(stderr, "Event %s event code (0x%llx) is too big to fit in an int\n",
+					        event->name, tmp_val);
+					fail = 1;
+					bad_val = 0;
+				}
 			} else if (strcmp(name, "event") == 0) {
 				if (seen_event)
 					parse_error("duplicate event: tag");
 				seen_event = 1;
-				event->val = parse_hex(value);
+				tmp_val = parse_long_hex(value);
+				if (tmp_val > 0xffffffff)
+					bad_val = 1;
+				else
+					event->val = (u32)tmp_val;
 				free(value);
 			} else if (strcmp(name, "counters") == 0) {
 				if (seen_counters)
@@ -599,6 +612,8 @@ next:
 	}
 
 	fclose(fp);
+	if (fail)
+		exit(EXIT_FAILURE);
 }
 
 
