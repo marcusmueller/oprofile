@@ -113,7 +113,7 @@ enum op_event_check {
  *
  * \sa op_cpu, OP_EVENTS_OK
  */
-int op_check_events(int ctr, u32 event, u32 um, op_cpu cpu_type);
+int op_check_events(char * name, int ctr, u32 event, u32 um, op_cpu cpu_type);
 
 /**
  * free memory used by any call to above function. Need to be called only once

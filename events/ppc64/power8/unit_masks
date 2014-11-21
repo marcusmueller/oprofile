@@ -5,5 +5,13 @@
 #
 # ppc64 POWER8 possible unit masks
 #
+# NOTE: The 'rc_machine' and 'L1_latency' unit masks are for internal use only,
+#       to workaround oprofile's 32-bit limitation for event codes.
+#       See libpe_utils/op_pe_utils.cpp:_get_event_code for how these codes are
+#       used.
 name:zero type:mandatory default:0x0
 	0x0 No unit mask
+name:rc_machine type:mandatory default:0xde
+	0xde Thresholdable start/stop for rc machine for sampled instruction
+name:L1_latency type:mandatory default:0x67
+	0x67 Thresholdable start/stop for L1 sampled instruction load miss/reload

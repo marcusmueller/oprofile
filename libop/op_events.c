@@ -1081,18 +1081,32 @@ static int _is_um_valid_bitmask(struct op_event * event, u32 passed_um)
 	return retval;
 }
 
-int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
+static int _is_ppc64_cpu_type(op_cpu cpu_type) {
+	char const * cpu_name = op_get_cpu_name(cpu_type);
+	if (strncmp(cpu_name, "ppc64/power", strlen("ppc64/power")) == 0)
+		return 1;
+	else
+		return 0;
+}
+
+int op_check_events(char * evt_name, int ctr, u32 nr, u32 um, op_cpu cpu_type)
 {
 	int ret = OP_INVALID_EVENT;
 	size_t i;
 	u32 ctr_mask = 1 << ctr;
 	struct list_head * pos;
+	int ibm_power_proc = _is_ppc64_cpu_type(cpu_type);
 
 	load_events(cpu_type);
 
 	list_for_each(pos, &events_list) {
 		struct op_event * event = list_entry(pos, struct op_event, event_next);
 		if (event->val != nr)
+			continue;
+
+		// Why do we have to do this, since event codes are supposed to be unique?
+		// See the big comment below.
+		if (ibm_power_proc && strcmp(evt_name, event->name))
 			continue;
 
 		ret = OP_OK_EVENT;
@@ -1108,7 +1122,28 @@ int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 				if (event->unit->um[i].value == um)
 					break;
 			}
-			if (i == event->unit->num)
+			/* A small number of events on the IBM Power8 processor have real event
+			 * codes that are larger than sizeof(int). Rather than change the width of
+			 * the event code everywhere to be a long int (which would include having to
+			 * change the sample file format), we have defined some internal-use-only
+			 * unit masks for those events. In oprofile's power8 events file, we have
+			 * truncated those event codes to integer size, and the truncated bits are
+			 * used as a unit mask value which is ORed into the event code by
+			 * libpe_utils/op_pe_utils.cpp:_get_event_code(). This technique allowed
+			 * us to handle this situation with minimal code perturbation.  The one
+			 * downside is that the truncated event codes are not unique.  So in this
+			 * function, where we're searching for events by 'nr' (i.e., the event code),
+			 * we have to also make sure the name matches.
+			 *
+			 * If the user gives us an event specification such as:
+			 *      PM_L1MISS_LAT_EXC_256:0x0:1:1
+			 * the above code will actually find a non-zero unit mask for this event and
+			 * we'd normally fail at this point since the user passed '0x0' for a unit mask.
+			 * But we don't expose these internal-use-only UMs to the user, so there's
+			 * no way for them to know about it or to try to use it in their event spec;
+			 * thus, we handle it below.
+			 */
+			if ((i == event->unit->num) && !((um == 0) && ibm_power_proc))
 				ret |= OP_INVALID_UM;
 		}
 

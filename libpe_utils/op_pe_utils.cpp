@@ -379,7 +379,7 @@ out:
 static void _get_event_code(operf_event_t * event, op_cpu cpu_type)
 {
 	FILE * fp;
-	char oprof_event_code[9];
+	char oprof_event_code[11];
 	string command;
 	u64 base_code, config;
 	char buf[20];
@@ -412,7 +412,6 @@ static void _get_event_code(operf_event_t * event, op_cpu cpu_type)
 
 
 #if defined(__i386__) || defined(__x86_64__)
-	char mask[OP_MAX_UM_NAME_LEN];
 	// Setup EventSelct[11:8] field for AMD
 	const char * vendor_AMD = "AuthenticAMD";
 	if (op_is_cpu_vendor((char *)vendor_AMD)) {
@@ -422,8 +421,10 @@ static void _get_event_code(operf_event_t * event, op_cpu cpu_type)
 
 	// Setup EventSelct[7:0] field
 	config |= base_code & 0xFFULL;
-
-	// Setup unitmask field
+#endif
+#if defined(__i386__) || defined(__x86_64__) || defined(__powerpc64__)
+	char mask[OP_MAX_UM_NAME_LEN];
+// Setup unitmask field
 handle_named_um:
 	if (event->um_name[0]) {
 		command = OP_BINDIR;
@@ -489,7 +490,12 @@ handle_named_um:
 			strncpy(event->um_name, mask, OP_MAX_UM_NAME_LEN - 1);
 			goto handle_named_um;
 		}
+#if defined(__powerpc64__)
+		config = base_code;
+		config |= ((event->evt_um & 0xFFULL) << 32);
+#else
 		config |= ((event->evt_um & 0xFFULL) << 8);
+#endif
 	} else {
 		config |= ((event->evt_um & 0xFFULL) << 8);
 	}
@@ -505,6 +511,7 @@ handle_named_um:
 		}
 	}
 	event->evt_code = config;
+	cverb << vdebug << "Final event code is " << hex << event->evt_code << endl;
 }
 
 #if PPC64_ARCH

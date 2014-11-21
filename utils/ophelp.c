@@ -180,7 +180,7 @@ static void check_event(struct parsed_event * pev,
 	if (pev->unit_mask_name)
 		ret = 0;
 	else
-		ret = op_check_events(0, event->val, pev->unit_mask, cpu_type);
+		ret = op_check_events(pev->name, 0, event->val, pev->unit_mask, cpu_type);
 
 	if (ret & OP_INVALID_UM) {
 		fprintf(stderr, "Invalid unit mask 0x%x for event %s\n",

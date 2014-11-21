@@ -451,10 +451,10 @@ event:0x30a8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VS0 : VS0 IS
 event:0x30aa counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VS1 : VS1 ISU reject
 event:0x38a8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VSU : ISU
 event:0x30b8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISYNC : Isync count per thread
-event:0x200301ea counters:2 um:zero minimum:10000 name:PM_L1MISS_LAT_EXC_1024 : Reload latency exceeded 1024 cyc
-event:0x200401ec counters:3 um:zero minimum:10000 name:PM_L1MISS_LAT_EXC_2048 : Reload latency exceeded 2048 cyc
-event:0x200101e8 counters:0 um:zero minimum:10000 name:PM_L1MISS_LAT_EXC_256 : Reload latency exceeded 256 cyc
-event:0x200201e6 counters:1 um:zero minimum:10000 name:PM_L1MISS_LAT_EXC_32 : Reload latency exceeded 32 cyc
+event:0x200301ea counters:2 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_1024 : Reload latency exceeded 1024 cyc
+event:0x200401ec counters:3 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_2048 : Reload latency exceeded 2048 cyc
+event:0x200101e8 counters:0 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_256 : Reload latency exceeded 256 cyc
+event:0x200201e6 counters:1 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_32 : Reload latency exceeded 32 cyc
 event:0x26086 counters:1 um:zero minimum:10000 name:PM_L1PF_L2MEMACC : valid when first beat of data comes in for an L1pref where data came from mem(or L4)
 event:0x1002c counters:0 um:zero minimum:10000 name:PM_L1_DCACHE_RELOADED_ALL : L1 data cache reloaded for demand or prefetch .
 event:0x408c counters:0,1,2,3 um:zero minimum:10000 name:PM_L1_DEMAND_WRITE : Instruction Demand sectors wriittent into IL1
@@ -879,10 +879,10 @@ event:0x10054 counters:0 um:zero minimum:10000 name:PM_PUMP_CPRED : Pump predict
 event:0x40052 counters:3 um:zero minimum:10000 name:PM_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate).
 event:0x16081 counters:0 um:zero minimum:10000 name:PM_RC0_ALLOC : 0.0
 event:0x16080 counters:0 um:zero minimum:10000 name:PM_RC0_BUSY : RC mach 0 Busy. Used by PMU to sample ave RC livetime(mach0 used as sample point)
-event:0x200301ea counters:2 um:zero minimum:10000 name:PM_RC_LIFETIME_EXC_1024 : Reload latency exceeded 1024 cyc
-event:0x200401ec counters:3 um:zero minimum:10000 name:PM_RC_LIFETIME_EXC_2048 : Threshold counter exceeded a value of 2048
-event:0x200101e8 counters:0 um:zero minimum:10000 name:PM_RC_LIFETIME_EXC_256 : Threshold counter exceed a count of 256
-event:0x200201e6 counters:1 um:zero minimum:10000 name:PM_RC_LIFETIME_EXC_32 : Reload latency exceeded 32 cyc
+event:0x200301ea counters:2 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_1024 : Reload latency exceeded 1024 cyc
+event:0x200401ec counters:3 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_2048 : Threshold counter exceeded a value of 2048
+event:0x200101e8 counters:0 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_256 : Threshold counter exceed a count of 256
+event:0x200201e6 counters:1 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_32 : Reload latency exceeded 32 cyc
 event:0x36088 counters:2 um:zero minimum:10000 name:PM_RC_USAGE : Continuous 16 cycle(2to1) window where this signals rotates thru sampling each L2 RC machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
 event:0x34808e counters:3 um:zero minimum:10000 name:PM_RD_CLEARING_SC : rd clearing sc
 event:0x34808c counters:3 um:zero minimum:10000 name:PM_RD_FORMING_SC : rd forming sc
