@@ -224,6 +224,8 @@ if test "x$with_java" = "xyes"; then
 	JAVA_HOMEDIR="/usr"
 else if test "x$with_java" = "xno"; then
 	JAVA_HOMEDIR=
+	else
+		JAVA_HOME_SPECIFIED="yes"
 	fi
 fi
 AC_SUBST(JAVA_HOMEDIR)
@@ -232,6 +234,15 @@ if test -n "$JAVA_HOMEDIR"; then
 	AC_CHECK_FILE("$JAVA_HOMEDIR/include/jvmti.h",JVMTI_H_EXISTS="yes",)
 	AC_CHECK_FILE("$JAVA_HOMEDIR/include/jvmpi.h",JVMPI_H_EXISTS="yes",)
 fi
+if test -n "$JAVA_HOME_SPECIFIED"  && test -z "$JVMTI_H_EXISTS" && test -z "$JVMPI_H_EXISTS"; then
+	if test -d "$JAVA_HOMEDIR"; then
+		echo "You specified the "--with-java" option, but neither jvmti.h nor jvmpi.h were found."
+	else
+		echo "You specified the "--with-java" option, but $JAVA_HOMEDIR does not exist."
+	fi
+	exit
+fi
+
 
 AM_CONDITIONAL(BUILD_JVMTI_AGENT, test -n "$JVMTI_H_EXISTS")
 AM_CONDITIONAL(BUILD_JVMPI_AGENT, test -n "$JVMPI_H_EXISTS")
