@@ -33,6 +33,7 @@
 #include <sys/wait.h>
 #include <ftw.h>
 #include <getopt.h>
+#include <time.h>
 #include <iostream>
 #include "operf_utils.h"
 #include "op_pe_utils.h"

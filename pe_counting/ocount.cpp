@@ -28,6 +28,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include <math.h>
+#include <time.h>
 
 #include "op_pe_utils.h"
 #include "ocount_counter.h"
