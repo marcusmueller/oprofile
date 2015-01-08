@@ -819,6 +819,7 @@ static int _process_args(int argc, char * const argv[])
 {
 	int keep_trying = 1;
 	int idx_of_non_options = 0;
+	char * prev_env = getenv("POSIXLY_CORRECT");
 	setenv("POSIXLY_CORRECT", "1", 0);
 	while (keep_trying) {
 		int option_idx = 0;
@@ -853,6 +854,10 @@ static int _process_args(int argc, char * const argv[])
 			break;
 		}
 	}
+
+	if (prev_env == NULL)
+		unsetenv("POSIXLY_CORRECT");
+
 	return idx_of_non_options;
 }
 
