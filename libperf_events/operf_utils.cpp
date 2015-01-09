@@ -295,6 +295,10 @@ static void __handle_mmap_event(event_t * event)
 		                    strlen("//anon")) == 0)) {
 			mapping->is_anon_mapping = true;
 			strcpy(mapping->filename, "anon");
+		} else if ((strncmp(mapping->filename, "/anon_hugepage",
+		                    strlen("/anon_hugepage")) == 0)) {
+			mapping->is_anon_mapping = true;
+			strcpy(mapping->filename, "anon");
 		}
 		mapping->end_addr = (event->mmap.len == 0ULL)? 0ULL : mapping->start_addr + event->mmap.len - 1;
 		mapping->pgoff = event->mmap.pgoff;
