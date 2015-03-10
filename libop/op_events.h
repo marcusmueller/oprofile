@@ -20,6 +20,9 @@ extern "C" {
 #include "op_types.h"
 #include "op_list.h"
 
+#define UMASK_SHIFT 8
+#define UMASK_MASK 0xff
+
 #define EXTRA_EDGE (1U << 18)
 #define EXTRA_MIN_VAL EXTRA_EDGE
 

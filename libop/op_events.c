@@ -238,6 +238,9 @@ static void parse_um_entry(struct op_described_um * entry, char const * line)
 	if (strisprefix(c, "extra:")) {
 		c += 6;
 		entry->extra = parse_extra(c);
+		/* include the regular umask if there are real extra bits */
+		if (entry->extra != EXTRA_NONE)
+			entry->extra |= (entry->value & UMASK_MASK) << UMASK_SHIFT;
 		/* named mask */
 		c = skip_nonws(c);
 		c = skip_ws(c);
