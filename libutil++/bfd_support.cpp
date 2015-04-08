@@ -92,8 +92,8 @@ static bool find_debuginfo_file_by_buildid(unsigned char * buildid, string & deb
 {
 	size_t build_id_fname_size = strlen (DEBUGDIR) + (sizeof "/.build-id/" - 1) + 1
 			+ (2 * build_id_size) + (sizeof ".debug" - 1) + 1;
-	char * buildid_symlink = (char *) xmalloc(build_id_fname_size);
-	char * sptr = buildid_symlink;
+	char * build_id_fname = (char *) xmalloc(build_id_fname_size);
+	char * sptr = build_id_fname;
 	unsigned char * bptr = buildid;
 	bool retval = false;
 	size_t build_id_segment_len = strlen("/.build-id/");
@@ -110,14 +110,12 @@ static bool find_debuginfo_file_by_buildid(unsigned char * buildid, string & deb
 
 	strcpy(sptr, ".debug");
 
-	if (access (buildid_symlink, F_OK) == 0) {
-		debug_filename = op_realpath (buildid_symlink);
-		if (debug_filename.compare(buildid_symlink)) {
-			retval = true;
-			cverb << vbfd << "Using build-id symlink" << endl;
-		}
+	if (access(build_id_fname, R_OK) == 0) {
+		debug_filename = string(build_id_fname);
+		retval = true;
+		cverb << vbfd << "Using build-id file" << endl;
 	}
-	free(buildid_symlink);
+	free(build_id_fname);
 	if (!retval)
 		cverb << vbfd << "build-id file not found; falling back to CRC method." << endl;
 
