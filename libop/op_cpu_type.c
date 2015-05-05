@@ -415,6 +415,11 @@ static op_cpu _get_arm_cpu_type(void)
 		case 0xd03:
 			return op_get_cpu_number("arm/armv8-ca53");
 		}
+	} else if (vendorid == 0x42) {  /* Broadcom Corporation */
+		switch (cpuid) {
+		case 0x00f:
+			return op_get_cpu_number("arm/armv7-ca15");
+		}
 	} else if (vendorid == 0x50) {	/* Applied Micro Circuits Corporation */
 		switch (cpuid) {
 		case 0x000:
