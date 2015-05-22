@@ -201,6 +201,26 @@ static void invalidate_earlybirds(unsigned long long start_time)
 	}
 }
 
+static void invalidate_zero_size_entries(void)
+{
+	u32 i;
+	int flag;
+	struct jitentry * a;
+
+	flag = 0;
+	for (i = 0; i < entry_count; i++) {
+		a = entries_address_ascending[i];
+		if (a->code_size == 0) {
+			invalidate_entry(a);
+			flag = 1;
+		}
+	}
+	if (flag) {
+		resort_address();
+		resort_symbol();
+	}
+}
+
 
 /* select the symbol with the longest life time in the index range */
 static int select_one(int start_idx, int end_idx)
@@ -505,6 +525,7 @@ int resolve_overlaps(unsigned long long start_time)
 	int cnt = 0;
 
 	invalidate_earlybirds(start_time);
+	invalidate_zero_size_entries();
 	while ((rc = scan_overlaps()) && rc != OP_JIT_CONV_FAIL) {
 		resort_address();
 		if (cnt == 0) {
