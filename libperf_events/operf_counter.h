@@ -111,6 +111,7 @@ private:
 	// Array of size 'num_cpus_used_for_perf_event_open * num_pids * num_events'
 	struct pollfd * poll_data;
 	std::vector<struct mmap_data> samples_array;
+	int num_mmaps;
 	int num_cpus;
 	pid_t pid_to_profile;
 	/* When doing --pid or --system-wide profiling, we'll obtain process information

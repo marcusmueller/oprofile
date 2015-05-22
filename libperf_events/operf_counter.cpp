@@ -336,6 +336,7 @@ operf_record::operf_record(int out_fd, bool sys_wide, pid_t the_pid, bool pid_ru
 	evts = events;
 	valid = false;
 	poll_data = NULL;
+	num_mmaps = 0;
 	output_fd = out_fd;
 	read_comm_pipe = _convert_read_pipe;
 	write_comm_pipe = _convert_write_pipe;
@@ -705,7 +706,6 @@ void operf_record::setup()
 			}
 		}
 	}
-	int num_mmaps;
 	if (pid_started && (procs.size() > 1))
 		num_mmaps = procs.size();
 	else
@@ -764,12 +764,11 @@ void operf_record::record_process_info(void)
 int operf_record::_start_recoding_new_thread(pid_t id)
 {
 	string err_msg;
-	int num_mmaps, rc, fd_for_set_output = -1;
+	int rc, fd_for_set_output = -1;
 	struct comm_event ce;
 	u64 sample_id;
 	struct pollfd * old_polldata = poll_data;
 
-	num_mmaps = sizeof(poll_data)/sizeof(poll_data[0]);
 	num_mmaps++;
 	poll_data = new struct pollfd [num_mmaps];
 	// Copy only the existing pollfd objects from the array.  The new pollfd will
