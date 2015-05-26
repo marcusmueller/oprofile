@@ -544,10 +544,13 @@ static op_cpu _get_amd_cpu_type(void)
 	family = cpu_family(eax);
 
 	/* These family does not exist in the past.*/
-	if (family < 0x0f || family == 0x13)
+	if ((family < 0x0f && family != 0x6) || family == 0x13)
 		return ret;
 
 	switch (family) {
+	case 0x6:
+		ret = op_get_cpu_number("i386/athlon");
+		break;
 	case 0x0f:
 		ret = op_get_cpu_number("x86-64/hammer");
 		break;
