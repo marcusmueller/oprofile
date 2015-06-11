@@ -152,9 +152,11 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x3d:
 		case 0x47:
 		case 0x4f:
+		case 0x56:
 			return CPU_BROADWELL;
 		case 0x37:
 		case 0x4d:
+		case 0x4c:
 			return CPU_SILVERMONT;
 		}
 	}
