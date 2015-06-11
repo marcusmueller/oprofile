@@ -31,7 +31,7 @@ name:dtlb_load_misses type:exclusive default:0x1
 	0x20 extra: stlb_hit_4k Load misses that miss the  DTLB and hit the STLB (4K)
 	0xe extra: walk_completed Demand load Miss in all translation lookaside buffer (TLB) levels causes a page walk that completes of any page size.
 	0x60 extra: stlb_hit Load operations that miss the first DTLB level but hit the second and do not cause page walks
-name:uops_issued type:exclusive default:0x1
+name:uops_issued type:exclusive default:any
 	0x1 extra: any This event counts the number of Uops issued by the Resource Allocation Table (RAT) to the reservation station (RS).
 	0x10 extra: flags_merge Number of flags-merge uops being allocated. Such uops considered perf sensitive; added by GSR u-arch.
 	0x20 extra: slow_lea Number of slow LEA uops being allocated. A uop is generally considered SlowLea if it has 3 sources (e.g. 2 sources + immediate) regardless if as a result of LEA instruction or not.
@@ -54,7 +54,7 @@ name:l2_rqsts type:exclusive default:0x21
 	0xe7 extra: all_demand_references Demand requests to L2 cache
 	0x3f extra: miss All requests that miss L2 cache
 	0xff extra: references All L2 requests
-name:l1d_pend_miss type:exclusive default:0x1
+name:l1d_pend_miss type:exclusive default:pending
 	0x1 extra: pending This event counts duration of L1D miss outstanding, that is each cycle number of Fill Buffers (FB) outstanding required by Demand Reads. FB either is held by demand loads, or it is held by non-demand loads and gets hit at least once by demand. The valid outstanding interval is defined until the FB deallocation by one of the following ways: from FB allocation, if FB is allocated by demand; from the demand Hit FB, if it is allocated by hardware or software prefetch. Note: In the L1D, a Demand Read contains cacheable or noncacheable demand loads, including ones causing cache-line splits and reads due to page walks resulted from any request type.
 	0x1 extra:cmask=1 pending_cycles This event counts duration of L1D miss outstanding in cycles.
 name:dtlb_store_misses type:exclusive default:0x1
@@ -77,7 +77,7 @@ name:move_elimination type:exclusive default:0x1
 	0x2 extra: simd_eliminated Number of SIMD Move Elimination candidate uops that were eliminated.
 	0x4 extra: int_not_eliminated Number of integer Move Elimination candidate uops that were not eliminated.
 	0x8 extra: simd_not_eliminated Number of SIMD Move Elimination candidate uops that were not eliminated.
-name:cpl_cycles type:exclusive default:0x1
+name:cpl_cycles type:exclusive default:ring0
 	0x1 extra: ring0 This event counts the unhalted core cycles during which the thread is in the ring 0 privileged mode.
 	0x2 extra: ring123 This event counts unhalted core cycles during which the thread is in rings 1, 2, or 3.
 	0x1 extra:cmask=1,edge ring0_trans This event counts when there is a transition from ring 1,2 or 3 to ring0.
@@ -87,10 +87,10 @@ name:tx_exec type:exclusive default:0x1
 	0x4 extra: misc3 Unfriendly TSX abort triggered by a nest count that is too deep
 	0x8 extra: misc4 RTM region detected inside HLE
 	0x10 extra: misc5 # HLE inside HLE+
-name:rs_events type:exclusive default:0x1
+name:rs_events type:exclusive default:empty_cycles
 	0x1 extra: empty_cycles This event counts cycles during which the reservation station (RS) is empty for the thread. Note: In ST-mode, not active thread should drive 0. This is usually caused by severely costly branch mispredictions, or allocator/FE issues.
 	0x1 extra:cmask=1,inv,edge empty_end Counts end of periods where the Reservation Station (RS) was empty. Could be useful to precisely locate Frontend Latency Bound issues.
-name:offcore_requests_outstanding type:exclusive default:0x1
+name:offcore_requests_outstanding type:exclusive default:demand_data_rd
 	0x1 extra: demand_data_rd This event counts the number of offcore outstanding Demand Data Read transactions in the super queue (SQ) every cycle. A transaction is considered to be in the Offcore outstanding state between L2 miss and transaction completion sent to requestor. See the corresponding Umask under OFFCORE_REQUESTS. Note: A prefetch promoted to Demand is counted from the promotion point.
 	0x2 extra: demand_code_rd This event counts the number of offcore outstanding Code Reads transactions in the super queue every cycle. The "Offcore outstanding" state of the transaction lasts from the L2 miss until the sending transaction completion to requestor (SQ deallocation). See the corresponding Umask under OFFCORE_REQUESTS.
 	0x4 extra: demand_rfo This event counts the number of offcore outstanding RFO (store) transactions in the super queue (SQ) every cycle. A transaction is considered to be in the Offcore outstanding state between L2 miss and transaction completion sent to requestor (SQ de-allocation). See corresponding Umask under OFFCORE_REQUESTS.
@@ -147,14 +147,14 @@ name:br_misp_exec type:exclusive default:0xff
 	0xc1 extra: all_conditional This event counts both taken and not taken speculative and retired mispredicted macro conditional branch instructions.
 	0xc4 extra: all_indirect_jump_non_call_ret This event counts both taken and not taken mispredicted indirect branches excluding calls and returns.
 	0xa0 extra: taken_indirect_near_call Taken speculative and retired mispredicted indirect calls
-name:idq_uops_not_delivered type:exclusive default:0x1
+name:idq_uops_not_delivered type:exclusive default:core
 	0x1 extra: core This event counts the number of uops not delivered to Resource Allocation Table (RAT) per thread adding ?4 ? x? when Resource Allocation Table (RAT) is not stalled and Instruction Decode Queue (IDQ) delivers x uops to Resource Allocation Table (RAT) (where x belongs to {0,1,2,3}). Counting does not cover cases when:  a. IDQ-Resource Allocation Table (RAT) pipe serves the other thread;  b. Resource Allocation Table (RAT) is stalled for the thread (including uop drops and clear BE conditions);   c. Instruction Decode Queue (IDQ) delivers four uops.
 	0x1 extra:cmask=4 cycles_0_uops_deliv_core This event counts, on the per-thread basis, cycles when no uops are delivered to Resource Allocation Table (RAT). IDQ_Uops_Not_Delivered.core =4.
 	0x1 extra:cmask=3 cycles_le_1_uop_deliv_core This event counts, on the per-thread basis, cycles when less than 1 uop is  delivered to Resource Allocation Table (RAT). IDQ_Uops_Not_Delivered.core >=3.
 	0x1 extra:cmask=2 cycles_le_2_uop_deliv_core Cycles with less than 2 uops delivered by the front end
 	0x1 extra:cmask=1 cycles_le_3_uop_deliv_core Cycles with less than 3 uops delivered by the front end
 	0x1 extra:cmask=1,inv cycles_fe_was_ok Counts cycles FE delivered 4 uops or Resource Allocation Table (RAT) was stalling FE.
-name:uops_executed_port type:exclusive default:0x1
+name:uops_executed_port type:exclusive default:port_0
 	0x1 extra:any port_0_core Cycles per core when uops are exectuted in port 0
 	0x2 extra:any port_1_core Cycles per core when uops are exectuted in port 1
 	0x4 extra:any port_2_core Cycles per core when uops are dispatched to port 2
@@ -200,7 +200,7 @@ name:cycle_activity type:exclusive default:0x1
 	0xc extra:cmask=c stalls_l1d_miss Execution stalls while L1 cache miss demand load is outstanding.
 	0x5 extra:cmask=5 stalls_l2_miss Execution stalls while L2 cache miss demand load is outstanding.
 	0x6 extra:cmask=6 stalls_mem_any Execution stalls while memory subsystem has an outstanding load.
-name:lsd type:exclusive default:0x1
+name:lsd type:exclusive default:uops
 	0x1 extra: uops Number of Uops delivered by the LSD. Read more on LSD under LSD_REPLAY.REPLAY
 	0x1 extra:cmask=4 cycles_4_uops Cycles 4 Uops delivered by the LSD, but didn't come from the decoder
 	0x1 extra:cmask=1 cycles_active Cycles Uops delivered by the LSD, but didn't come from the decoder
@@ -209,7 +209,7 @@ name:offcore_requests type:exclusive default:0x1
 	0x2 extra: demand_code_rd This event counts both cacheable and noncachaeble code read requests.
 	0x4 extra: demand_rfo This event counts the demand RFO (read for ownership) requests including regular RFOs, locks, ItoM.
 	0x8 extra: all_data_rd This event counts the demand and prefetch data reads. All Core Data Reads include cacheable "Demands" and L2 prefetchers (not L3 prefetchers). Counting also covers reads due to page walks resulted from any request type.
-name:uops_executed type:exclusive default:0x1
+name:uops_executed type:exclusive default:thread
 	0x1 extra: thread Number of uops to be executed per-thread each cycle.
 	0x2 extra: core Number of uops executed from any thread
 	0x1 extra:cmask=1,inv stall_cycles This event counts cycles during which no uops were dispatched from the Reservation Station (RS) per thread.
@@ -232,20 +232,20 @@ name:other_assists type:exclusive default:0x8
 	0x8 extra: avx_to_sse This is a non-precise version (that is, does not use PEBS) of the event that counts the number of transitions from AVX-256 to legacy SSE when penalty is applicable.
 	0x10 extra: sse_to_avx This is a non-precise version (that is, does not use PEBS) of the event that counts the number of transitions from legacy SSE to AVX-256 when penalty is applicable.
 	0x40 extra: any_wb_assist Number of times any microcode assist is invoked by HW upon uop writeback.
-name:uops_retired type:exclusive default:0x1
+name:uops_retired type:exclusive default:all
 	0x1 extra: all This is a non-precise version (that is, does not use PEBS) of the event that counts all actually retired uops. Counting increments by two for micro-fused uops, and by one for macro-fused and other uops. Maximal increment value for one cycle is eight.
 	0x1 extra: all_pebs Counts all actually retired uops. Counting increments by two for micro-fused uops, and by one for macro-fused and other uops. Maximal increment value for one cycle is eight.
 	0x2 extra: retire_slots This is a non-precise version (that is, does not use PEBS) of the event that counts the number of retirement slots used.
 	0x2 extra: retire_slots_pebs Counts the number of retirement slots used.
 	0x1 extra:cmask=1,inv stall_cycles This is a non-precise version (that is, does not use PEBS) of the event that counts cycles without actually retired uops.
 	0x1 extra:cmask=a,inv total_cycles Number of cycles using always true condition (uops_ret < 16) applied to non PEBS uops retired event.
-name:machine_clears type:exclusive default:0x1
+name:machine_clears type:exclusive default:cycles
 	0x1 extra: cycles This event counts both thread-specific (TS) and all-thread (AT) nukes.
 	0x2 extra: memory_ordering This event counts the number of memory ordering Machine Clears detected. Memory Ordering Machine Clears can result from one of the following: 1. memory disambiguation, 2. external snoop, or 3. cross SMT-HW-thread snoop (stores) hitting load buffer.
 	0x4 extra: smc This event counts self-modifying code (SMC) detected, which causes a machine clear.
 	0x20 extra: maskmov Maskmov false fault - counts number of time ucode passes through Maskmov flow due to instruction's mask being 0 while the flow was completed without raising a fault.
 	0x1 extra:cmask=1,edge count Number of machine clears (nukes) of any type.
-name:br_inst_retired type:exclusive default:0x1
+name:br_inst_retired type:exclusive default:conditional
 	0x1 extra: conditional This is a non-precise version (that is, does not use PEBS) of the event that counts conditional branch instructions retired.
 	0x1 extra: conditional_pebs Counts conditional branch instructions retired.
 	0x2 extra: near_call This is a non-precise version (that is, does not use PEBS) of the event that counts both direct and indirect near call instructions retired.
@@ -257,7 +257,7 @@ name:br_inst_retired type:exclusive default:0x1
 	0x20 extra: near_taken_pebs Counts taken branch instructions retired.
 	0x40 extra: far_branch This is a non-precise version (that is, does not use PEBS) of the event that counts far branch instructions retired.
 	0x4 extra:pebs all_branches_pebs This is a precise version of BR_INST_RETIRED.ALL_BRANCHES that counts all (macro) branch instructions retired.
-name:br_misp_retired type:exclusive default:0x1
+name:br_misp_retired type:exclusive default:conditional
 	0x1 extra: conditional This is a non-precise version (that is, does not use PEBS) of the event that counts mispredicted conditional branch instructions retired.
 	0x1 extra: conditional_pebs Counts mispredicted conditional branch instructions retired.
 	0x4 extra:pebs all_branches_pebs This is a precise version of BR_MISP_RETIRED.ALL_BRANCHES that counts all mispredicted macro branch instructions retired.
@@ -289,7 +289,7 @@ name:fp_assist type:exclusive default:0x1e
 	0x4 extra: x87_input This is a non-precise version (that is, does not use PEBS) of the event that counts x87 floating point (FP) micro-code assist (invalid operation, denormal operand, SNaN operand) when the input value (one of the source operands to an FP instruction) is invalid.
 	0x8 extra: simd_output This is a non-precise version (that is, does not use PEBS) of the event that counts the number of SSE* floating point (FP) micro-code assist (numeric overflow/underflow) when the output value (destination register) is invalid. Counting covers only cases involving penalties that require micro-code assist intervention.
 	0x10 extra: simd_input This is a non-precise version (that is, does not use PEBS) of the event that counts any input SSE* FP assist - invalid operation, denormal operand, dividing by zero, SNaN operand. Counting includes only cases involving penalties that required micro-code assist intervention.
-name:mem_uops_retired type:exclusive default:0x11
+name:mem_uops_retired type:exclusive default:stlb_miss_loads
 	0x11 extra: stlb_miss_loads This is a non-precise version (that is, does not use PEBS) of the event that counts load uops with true STLB miss retired to the architected path. True STLB miss is an uop triggering page walk that gets completed without blocks, and later gets retired. This page walk can end up with or without a fault.
 	0x11 extra: stlb_miss_loads_pebs Counts load uops with true STLB miss retired to the architected path. True STLB miss is an uop triggering page walk that gets completed without blocks, and later gets retired. This page walk can end up with or without a fault.
 	0x12 extra: stlb_miss_stores This is a non-precise version (that is, does not use PEBS) of the event that counts store uops with true STLB miss retired to the architected path. True STLB miss is an uop triggering page walk that gets completed without blocks, and later gets retired. This page walk can end up with or without a fault.
@@ -304,7 +304,7 @@ name:mem_uops_retired type:exclusive default:0x11
 	0x81 extra: all_loads_pebs Counts load uops retired to the architected path with a filter on bits 0 and 1 applied. Note: This event ?ounts AVX-256bit load/store double-pump memory uops as a single uop at retirement. This event also counts SW prefetches.
 	0x82 extra: all_stores This is a non-precise version (that is, does not use PEBS) of the event that counts store uops retired to the architected path with a filter on bits 0 and 1 applied. Note: This event ?ounts AVX-256bit load/store double-pump memory uops as a single uop at retirement.
 	0x82 extra: all_stores_pebs Counts store uops retired to the architected path with a filter on bits 0 and 1 applied. Note: This event ?ounts AVX-256bit load/store double-pump memory uops as a single uop at retirement.
-name:mem_load_uops_retired type:exclusive default:0x1
+name:mem_load_uops_retired type:exclusive default:l1_hit
 	0x1 extra: l1_hit This is a non-precise version (that is, does not use PEBS) of the event that counts retired load uops which data sources were hits in the nearest-level (L1) cache. Note: Only two data-sources of L1/FB are applicable for AVX-256bit  even though the corresponding AVX load could be serviced by a deeper level in the memory hierarchy. Data source is reported for the Low-half load. This event also counts SW prefetches independent of the actual data source
 	0x1 extra: l1_hit_pebs Counts retired load uops which data sources were hits in the nearest-level (L1) cache. Note: Only two data-sources of L1/FB are applicable for AVX-256bit  even though the corresponding AVX load could be serviced by a deeper level in the memory hierarchy. Data source is reported for the Low-half load. This event also counts SW prefetches independent of the actual data source
 	0x2 extra: l2_hit This is a non-precise version (that is, does not use PEBS) of the event that counts retired load uops which data sources were hits in the mid-level (L2) cache.
@@ -319,7 +319,7 @@ name:mem_load_uops_retired type:exclusive default:0x1
 	0x20 extra: l3_miss_pebs Miss in last-level (L3) cache. Excludes Unknown data-source.
 	0x40 extra: hit_lfb This is a non-precise version (that is, does not use PEBS) of the event that counts retired load uops which data sources were load uops missed L1 but hit a fill buffer due to a preceding miss to the same cache line with the data not ready. Note: Only two data-sources of L1/FB are applicable for AVX-256bit  even though the corresponding AVX load could be serviced by a deeper level in the memory hierarchy. Data source is reported for the Low-half load.
 	0x40 extra: hit_lfb_pebs Counts retired load uops which data sources were load uops missed L1 but hit a fill buffer due to a preceding miss to the same cache line with the data not ready. Note: Only two data-sources of L1/FB are applicable for AVX-256bit  even though the corresponding AVX load could be serviced by a deeper level in the memory hierarchy. Data source is reported for the Low-half load.
-name:mem_load_uops_l3_hit_retired type:exclusive default:0x1
+name:mem_load_uops_l3_hit_retired type:exclusive default:xsnp_miss
 	0x1 extra: xsnp_miss This is a non-precise version (that is, does not use PEBS) of the event that counts retired load uops which data sources were L3 Hit and a cross-core snoop missed in the on-pkg core cache.
 	0x1 extra: xsnp_miss_pebs Counts retired load uops which data sources were L3 Hit and a cross-core snoop missed in the on-pkg core cache.
 	0x2 extra: xsnp_hit This is a non-precise version (that is, does not use PEBS) of the event that counts retired load uops which data sources were L3 hit and a cross-core snoop hit in the on-pkg core cache.
@@ -328,7 +328,7 @@ name:mem_load_uops_l3_hit_retired type:exclusive default:0x1
 	0x4 extra: xsnp_hitm_pebs Counts retired load uops which data sources were HitM responses from a core on same socket (shared L3).
 	0x8 extra: xsnp_none This is a non-precise version (that is, does not use PEBS) of the event that counts retired load uops which data sources were hits in the last-level (L3) cache without snoops required.
 	0x8 extra: xsnp_none_pebs Counts retired load uops which data sources were hits in the last-level (L3) cache without snoops required.
-name:mem_load_uops_l3_miss_retired type:exclusive default:0x1
+name:mem_load_uops_l3_miss_retired type:exclusive default:local_dram
 	0x1 extra: local_dram Retired load uop whose Data Source was: local DRAM either Snoop not needed or Snoop Miss (RspI)
 	0x1 extra: local_dram_pebs Retired load uop whose Data Source was: local DRAM either Snoop not needed or Snoop Miss (RspI)
 name:l2_trans type:exclusive default:0x80
