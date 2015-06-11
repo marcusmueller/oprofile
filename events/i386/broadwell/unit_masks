@@ -185,7 +185,7 @@ name:resource_stalls type:exclusive default:0x1
 	0x4 extra: rs This event counts stall cycles caused by absence of eligible entries in the reservation station (RS). This may result from RS overflow, or from RS deallocation because of the RS array Write Port allocation scheme (each RS entry has two write ports instead of four. As a result, empty entries could not be used, although RS is not really full). This counts cycles that the pipeline backend blocked uop delivery from the front end.
 	0x8 extra: sb This event counts stall cycles caused by the store buffer (SB) overflow (excluding draining from synch). This counts cycles that the pipeline backend blocked uop delivery from the front end.
 	0x10 extra: rob This event counts ROB full stall cycles. This counts cycles that the pipeline backend blocked uop delivery from the front end.
-name:cycle_activity type:exclusive default:0x1
+name:cycle_activity type:exclusive default:cycles_l2_pending
 	0x1 extra:cmask=1 cycles_l2_pending Counts number of cycles the CPU has at least one pending  demand* load request missing the L2 cache.
 	0x8 extra:cmask=8 cycles_l1d_pending Counts number of cycles the CPU has at least one pending  demand load request missing the L1 data cache.
 	0x2 extra:cmask=2 cycles_ldm_pending Counts number of cycles the CPU has at least one pending  demand load request (that is cycles with non-completed load waiting for its data from memory subsystem)
