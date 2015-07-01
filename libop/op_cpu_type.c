@@ -121,6 +121,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Intel Broadwell microarchitecture", "i386/broadwell", CPU_BROADWELL, 4 },
 	{ "ARM Cortex-A57", "arm/armv8-ca57", CPU_ARM_V8_CA57, 6},
 	{ "ARM Cortex-A53", "arm/armv8-ca53", CPU_ARM_V8_CA53, 6},
+	{ "Intel Skylake microarchitecture", "i386/skylake", CPU_SKYLAKE, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -737,6 +738,7 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 	case CPU_NEHALEM:
 	case CPU_HASWELL:
 	case CPU_BROADWELL:
+	case CPU_SKYLAKE:
 	case CPU_SILVERMONT:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:

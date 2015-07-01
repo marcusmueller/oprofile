@@ -18,6 +18,7 @@ event_files = \
 	i386/ivybridge/events i386/ivybridge/unit_masks \
 	i386/haswell/events i386/haswell/unit_masks \
 	i386/broadwell/events i386/broadwell/unit_masks \
+	i386/skylake/events i386/skylake/unit_masks \
 	i386/silvermont/events i386/silvermont/unit_masks \
 	ppc64/architected_events_v1/events ppc64/architected_events_v1/unit_masks \
 	ppc64/power4/events ppc64/power4/event_mappings ppc64/power4/unit_masks \

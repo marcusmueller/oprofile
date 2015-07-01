@@ -1,0 +1,62 @@
+#
+# Intel "Skylake" microarchitecture core events.
+#
+# See http://ark.intel.com/ for help in identifying Skylake based CPUs
+#
+# Note the minimum counts are not discovered experimentally and could be likely
+# lowered in many cases without ill effect.
+#
+event:0x00 counters:1 um:inst_retired minimum:2000003 name:inst_retired :
+event:0x00 counters:cpuid um:cpu_clk_unhalted minimum:2000003 name:cpu_clk_unhalted :
+event:0x03 counters:cpuid um:ld_blocks minimum:100003 name:ld_blocks :
+event:0x07 counters:cpuid um:ld_blocks_partial minimum:100003 name:ld_blocks_partial_address_alias :
+event:0x08 counters:cpuid um:dtlb_load_misses minimum:2000003 name:dtlb_load_misses :
+event:0x0d counters:cpuid um:int_misc minimum:2000003 name:int_misc :
+event:0x0e counters:cpuid um:uops_issued minimum:2000003 name:uops_issued :
+event:0x14 counters:cpuid um:arith minimum:2000003 name:arith_divider_active :
+event:0x24 counters:cpuid um:l2_rqsts minimum:200003 name:l2_rqsts :
+event:0x2e counters:cpuid um:longest_lat_cache minimum:100003 name:longest_lat_cache :
+event:0x3c counters:cpuid um:cpu_clk_thread_unhalted minimum:2000003 name:cpu_clk_thread_unhalted :
+event:0x48 counters:cpuid um:l1d_pend_miss minimum:2000003 name:l1d_pend_miss :
+event:0x49 counters:cpuid um:dtlb_store_misses minimum:2000003 name:dtlb_store_misses :
+event:0x4c counters:cpuid um:load_hit_pre minimum:100003 name:load_hit_pre_sw_pf :
+event:0x4f counters:cpuid um:ept minimum:2000003 name:ept_walk_pending :
+event:0x51 counters:cpuid um:l1d minimum:2000003 name:l1d_replacement :
+event:0x54 counters:cpuid um:tx_mem minimum:2000003 name:tx_mem :
+event:0x5d counters:cpuid um:tx_exec minimum:2000003 name:tx_exec :
+event:0x5e counters:cpuid um:rs_events minimum:2000003 name:rs_events :
+event:0x60 counters:cpuid um:offcore_requests_outstanding minimum:2000003 name:offcore_requests_outstanding :
+event:0x63 counters:cpuid um:lock_cycles minimum:2000003 name:lock_cycles_cache_lock_duration :
+event:0x79 counters:cpuid um:idq minimum:2000003 name:idq :
+event:0x80 counters:cpuid um:icache_16b minimum:2000003 name:icache_16b_ifdata_stall :
+event:0x83 counters:cpuid um:icache_64b minimum:200003 name:icache_64b :
+event:0x85 counters:cpuid um:itlb_misses minimum:100003 name:itlb_misses :
+event:0x87 counters:cpuid um:ild_stall minimum:2000003 name:ild_stall_lcp :
+event:0x9c counters:cpuid um:idq_uops_not_delivered minimum:2000003 name:idq_uops_not_delivered :
+event:0xa1 counters:cpuid um:uops_dispatched_port minimum:2000003 name:uops_dispatched_port :
+event:0xa2 counters:cpuid um:resource_stalls minimum:2000003 name:resource_stalls :
+event:0xa3 counters:cpuid um:cycle_activity minimum:2000003 name:cycle_activity :
+event:0xa6 counters:cpuid um:exe_activity minimum:2000003 name:exe_activity :
+event:0xa8 counters:cpuid um:lsd minimum:2000003 name:lsd :
+event:0xab counters:cpuid um:dsb2mite_switches minimum:2000003 name:dsb2mite_switches_penalty_cycles :
+event:0xae counters:cpuid um:itlb minimum:100007 name:itlb_itlb_flush :
+event:0xb0 counters:cpuid um:offcore_requests minimum:100003 name:offcore_requests :
+event:0xb1 counters:cpuid um:uops_executed minimum:2000003 name:uops_executed :
+event:0xb2 counters:cpuid um:offcore_requests_buffer minimum:2000003 name:offcore_requests_buffer_sq_full :
+event:0xbd counters:cpuid um:tlb_flush minimum:100007 name:tlb_flush :
+event:0xc1 counters:cpuid um:other_assists minimum:100003 name:other_assists_any :
+event:0xc2 counters:cpuid um:uops_retired minimum:2000003 name:uops_retired :
+event:0xc3 counters:cpuid um:machine_clears minimum:100003 name:machine_clears :
+event:0xc4 counters:cpuid um:br_inst_retired minimum:400009 name:br_inst_retired :
+event:0xc5 counters:cpuid um:br_misp_retired minimum:400009 name:br_misp_retired :
+event:0xc7 counters:cpuid um:fp_arith_inst_retired minimum:2000003 name:fp_arith_inst_retired :
+event:0xc8 counters:cpuid um:hle_retired minimum:2000003 name:hle_retired :
+event:0xc9 counters:cpuid um:rtm_retired minimum:2000003 name:rtm_retired :
+event:0xca counters:cpuid um:fp_assist minimum:100003 name:fp_assist_any :
+event:0xcb counters:cpuid um:hw_interrupts minimum:100003 name:hw_interrupts_received :
+event:0xd0 counters:0,1,2,3 um:mem_inst_retired minimum:2000003 name:mem_inst_retired :
+event:0xd1 counters:0,1,2,3 um:mem_load_retired minimum:2000003 name:mem_load_retired :
+event:0xd2 counters:0,1,2,3 um:mem_load_l3_hit_retired minimum:100003 name:mem_load_l3_hit_retired :
+event:0xe6 counters:cpuid um:baclears minimum:100003 name:baclears_any :
+event:0xf0 counters:cpuid um:l2_trans minimum:200003 name:l2_trans_l2_wb :
+event:0xf1 counters:cpuid um:l2_lines_in minimum:100003 name:l2_lines_in_all :
