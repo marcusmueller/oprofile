@@ -1200,7 +1200,6 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_NEHALEM:
 		case CPU_HASWELL:
 		case CPU_BROADWELL:
-		case CPU_SKYLAKE:
 		case CPU_SILVERMONT:
 		case CPU_WESTMERE:
 		case CPU_SANDYBRIDGE:
@@ -1211,6 +1210,10 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_FAMILY15H:
 		case CPU_AMD64_GENERIC:
 			descr->name = "CPU_CLK_UNHALTED";
+			break;
+
+		case CPU_SKYLAKE:
+			descr->name = "cpu_clk_unhalted";
 			break;
 
 		case CPU_P4:

@@ -37,16 +37,6 @@ name:offcore_requests_buffer type:mandatory default:0x1
 	0x1 extra: sq_full Offcore requests buffer cannot take more entries for this thread core.
 name:other_assists type:mandatory default:0x3f
 	0x3f extra: any Number of times a microcode assist is invoked by HW other than FP-assist. Examples include AD (page Access Dirty) and AVX* related assists.
-name:inst_retired type:exclusive default:any
-	0x1 extra: any Instructions retired from execution.mem
-	0x0 extra: any_p Number of instructions retired. General Counter   - architectural event
-	0x1 extra:pebs prec_dist Precise instruction retired event with HW to reduce effect of PEBS shadow in IP distribution
-name:cpu_clk_unhalted type:exclusive default:thread
-	0x2 extra: thread Core cycles when the thread is not in halt state
-	0x3 extra: ref_tsc Reference cycles when the core is not in halt state.
-	0x0 extra: thread_p Thread cycles when thread is not in halt state
-	0x2 extra:any thread_any Core cycles when at least one thread on the physical core is not in halt state
-	0x0 extra:any thread_p_any Core cycles when at least one thread on the physical core is not in halt state
 name:ld_blocks type:exclusive default:0x2
 	0x2 extra: store_forward loads blocked by overlapping with store buffer that cannot be forwarded .
 	0x8 extra: no_sr The number of times that split load operations are temporarily blocked because all resources for handling the split accesses are in use
@@ -85,6 +75,12 @@ name:l2_rqsts type:exclusive default:0x21
 name:longest_lat_cache type:exclusive default:0x41
 	0x41 extra: miss Core-originated cacheable demand requests missed L3
 	0x4f extra: reference Core-originated cacheable demand requests that refer to L3
+name:cpu_clk_unhalted type:exclusive default:thread
+	0x2 extra: thread Core cycles when the thread is not in halt state
+	0x3 extra: ref_tsc Reference cycles when the core is not in halt state.
+	0x0 extra: thread_p Thread cycles when thread is not in halt state
+	0x2 extra:any thread_any Core cycles when at least one thread on the physical core is not in halt state
+	0x0 extra:any thread_p_any Core cycles when at least one thread on the physical core is not in halt state
 name:cpu_clk_thread_unhalted type:exclusive default:ref_xclk
 	0x1 extra: ref_xclk Reference cycles when the thread is unhalted (counts at 100 MHz rate)
 	0x2 extra: one_thread_active Count XClk pulses when this thread is unhalted and the other thread is halted.
@@ -119,8 +115,8 @@ name:rs_events type:exclusive default:empty_cycles
 	0x1 extra:cmask=1,inv,edge empty_end Counts end of periods where the Reservation Station (RS) was empty. Could be useful to precisely locate Frontend Latency Bound issues.
 name:offcore_requests_outstanding type:exclusive default:demand_data_rd
 	0x1 extra: demand_data_rd Offcore outstanding Demand Data Read transactions in uncore queue.
-	0x2 extra:cmask=1 demand_code_rd Cycles with offcore outstanding Code Reads transactions in the SuperQueue (SQ), queue to uncore, every cycle.
-	0x4 extra:cmask=1 demand_rfo Offcore outstanding demand rfo reads transactions in SuperQueue (SQ), queue to uncore, every cycle
+	0x2 extra: demand_code_rd Offcore outstanding Code Reads transactions in the SuperQueue (SQ), queue to uncore.
+	0x4 extra: demand_rfo Offcore outstanding demand rfo reads transactions in SuperQueue (SQ), queue to uncore, every cycle
 	0x8 extra: all_data_rd Offcore outstanding cacheable Core Data Read transactions in SuperQueue (SQ), queue to uncore
 	0x10 extra: l3_miss_demand_data_rd Counts number of Offcore outstanding Demand Data Read requests who miss L3 cache in the superQ every cycle.
 	0x1 extra:cmask=1 cycles_with_demand_data_rd Cycles when offcore outstanding Demand Data Read transactions are present in SuperQueue (SQ), queue to uncore
@@ -217,6 +213,10 @@ name:uops_executed type:exclusive default:thread
 name:tlb_flush type:exclusive default:0x1
 	0x1 extra: dtlb_thread DTLB flush attempts of the thread-specific entries
 	0x20 extra: stlb_any STLB flush attempts
+name:inst_retired type:exclusive default:any
+	0x1 extra: any Instructions retired from execution.mem
+	0x0 extra: any_p Number of instructions retired. General Counter   - architectural event
+	0x1 extra:pebs prec_dist Precise instruction retired event with HW to reduce effect of PEBS shadow in IP distribution
 name:uops_retired type:exclusive default:retire_slots
 	0x2 extra: retire_slots Retirement slots used.
 	0x1 extra:cmask=1,inv stall_cycles Cycles without actually retired uops.
@@ -231,6 +231,7 @@ name:br_inst_retired type:exclusive default:all_branches
 	0x1 extra:pebs conditional_pebs Conditional branch instructions retired.
 	0x2 extra: near_call Direct and indirect near call instructions retired.
 	0x2 extra:pebs near_call_pebs Direct and indirect near call instructions retired.
+	0x0 extra:pebs all_branches_pebs All (macro) branch instructions retired.
 	0x8 extra: near_return Return instructions retired.
 	0x8 extra:pebs near_return_pebs Return instructions retired.
 	0x10 extra: not_taken Not taken branch instructions retired.
