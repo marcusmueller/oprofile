@@ -76,8 +76,8 @@ name:longest_lat_cache type:exclusive default:0x41
 	0x41 extra: miss Core-originated cacheable demand requests missed L3
 	0x4f extra: reference Core-originated cacheable demand requests that refer to L3
 name:cpu_clk_unhalted type:exclusive default:thread
-	0x2 extra: thread Core cycles when the thread is not in halt state
-	0x3 extra: ref_tsc Reference cycles when the core is not in halt state.
+	0x0 extra: thread Core cycles when the thread is not in halt state
+	0x1 extra: ref_tsc Reference cycles when the core is not in halt state.
 	0x0 extra: thread_p Thread cycles when thread is not in halt state
 	0x2 extra:any thread_any Core cycles when at least one thread on the physical core is not in halt state
 	0x0 extra:any thread_p_any Core cycles when at least one thread on the physical core is not in halt state
@@ -214,7 +214,7 @@ name:tlb_flush type:exclusive default:0x1
 	0x1 extra: dtlb_thread DTLB flush attempts of the thread-specific entries
 	0x20 extra: stlb_any STLB flush attempts
 name:inst_retired type:exclusive default:any
-	0x1 extra: any Instructions retired from execution.mem
+	0x0 extra: any Instructions retired from execution.mem
 	0x0 extra: any_p Number of instructions retired. General Counter   - architectural event
 	0x1 extra:pebs prec_dist Precise instruction retired event with HW to reduce effect of PEBS shadow in IP distribution
 name:uops_retired type:exclusive default:retire_slots
