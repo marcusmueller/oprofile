@@ -25,6 +25,7 @@ struct operf_mmap {
 	u64 start_addr;
 	u64 end_addr;
 	u64 pgoff;
+	u32 pid;
 	bool is_anon_mapping;
 	bool is_hypervisor;
 	char filename[PATH_MAX];

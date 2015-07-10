@@ -275,7 +275,10 @@ static void __handle_mmap_event(event_t * event)
 	range = all_images_map.equal_range(image_basename);
 	for (it = range.first; it != range.second; it++) {
 		if (((strcmp((*it).second->filename, image_basename.c_str())) == 0)
-				&& ((*it).second->start_addr == event->mmap.start)) {
+		    && ((*it).second->pid == 0 || (*it).second->pid == event->mmap.pid)
+		    && ((*it).second->start_addr <= event->mmap.start
+			&& ((*it).second->end_addr >= event->mmap.start + event->mmap.len)))
+		{
 			mapping = (*it).second;
 			break;
 		}
@@ -291,12 +294,15 @@ static void __handle_mmap_event(event_t * event)
 		 */
 		if (mapping->filename[0] == '[') {
 			mapping->is_anon_mapping = true;
+			mapping->pid = event->mmap.pid;
 		} else if ((strncmp(mapping->filename, "//anon",
 		                    strlen("//anon")) == 0)) {
 			mapping->is_anon_mapping = true;
+			mapping->pid = event->mmap.pid;
 			strcpy(mapping->filename, "anon");
 		} else if ((strncmp(mapping->filename, "/anon_hugepage",
 		                    strlen("/anon_hugepage")) == 0)) {
+			mapping->pid = event->mmap.pid;
 			mapping->is_anon_mapping = true;
 			strcpy(mapping->filename, "anon");
 		}
