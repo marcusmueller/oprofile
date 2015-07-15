@@ -56,9 +56,7 @@ namespace {
 
 vector<string> event_names;
 
-static const char *__op_magic = "OPFILE";
-
-#define OP_MAGIC	(*(u64 *)__op_magic)
+static const char __op_magic[8] = {'O', 'P', 'F', 'I', 'L', 'E', '\0', '\0'};
 
 static bool _print_pp_progress(int fd)
 {
@@ -402,7 +400,7 @@ int operf_record::_write_header_to_file(void)
 		goto err_out;
 
 
-	f_header.magic = OP_MAGIC;
+	memcpy(&f_header.magic, __op_magic, sizeof(f_header.magic));
 	f_header.size = sizeof(f_header);
 	f_header.attr_size = sizeof(f_attr);
 	f_header.attrs.offset = opHeader.attr_offset;
@@ -429,7 +427,7 @@ int operf_record::_write_header_to_pipe(void)
 	struct op_file_attr f_attr;
 	int total;
 
-	f_header.magic = OP_MAGIC;
+	memcpy(&f_header.magic, __op_magic, sizeof(f_header.magic));
 	f_header.size = sizeof(f_header);
 	f_header.attr_size = sizeof(f_attr);
 	f_header.attrs.size = evts.size() * sizeof(f_attr);
