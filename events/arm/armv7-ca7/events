@@ -1,7 +1,6 @@
 # ARM Cortex A7 events
 # From Cortex A7 TRM
 #
-include:arm/armv7-common
 include:arm/armv7-ca5
 
 event:0x60 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_LD : Bus access, read
