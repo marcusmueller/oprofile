@@ -7,6 +7,20 @@
 
 include:ppc64/architected_events_v1
 
+#note 1.   11/12/2015
+#
+# These event requires the cache selector bits to be set to a non-zero
+# value in the processor performance counter setup register.  On Power 8, this
+# register is only writable by the hypervisor.  So the kernel must reject any
+# event where the lower three cache selector bits (bits 22:20) are not equal
+# to 0.  If/when an API is implemented to allow the kernel to request the
+# hypervisor write the register with the required value, these events can be
+# re-added to the list of supported events.  The issue is documented in the
+# powerpc kernel file arch/powerpc/perf/power8-pmu.c in function power8_get_constraint()
+# where the cache bits are ANDed with 0x7 if the unit is between 6 and 9.  If
+# cache bits are not zero, the function returns -1 to reject the event.
+
+
 event:0x1f05e counters:0 um:zero minimum:100000 name:PM_1LPAR_CYC : Number of cycles in single lpar mode.
 event:0x2006e counters:1 um:zero minimum:10000 name:PM_2LPAR_CYC : Number of cycles in 2 lpar mode.
 event:0x4e05e counters:3 um:zero minimum:100000 name:PM_4LPAR_CYC : Number of cycles in 4 LPAR mode.
@@ -89,49 +103,49 @@ event:0x4d012 counters:3 um:zero minimum:10000 name:PM_CMPLU_STALL_VECTOR_LONG :
 event:0x2d012 counters:1 um:zero minimum:10000 name:PM_CMPLU_STALL_VSU : Completion stall due to VSU instruction.
 event:0x16083 counters:0 um:zero minimum:10000 name:PM_CO0_ALLOC : 0.0
 event:0x16082 counters:0 um:zero minimum:10000 name:PM_CO0_BUSY : CO mach 0 Busy. Used by PMU to sample ave RC livetime(mach0 used as sample point)
-event:0x517082 counters:0 um:zero minimum:10000 name:PM_CO_DISP_FAIL : CO dispatch failed due to all CO machines being busy
-event:0x527084 counters:1 um:zero minimum:10000 name:PM_CO_TM_SC_FOOTPRINT : L2 did a cleanifdirty CO to the L3 (ie created an SC line in the L3)
+## note 1 event:0x517082 counters:0 um:zero minimum:10000 name:PM_CO_DISP_FAIL : CO dispatch failed due to all CO machines being busy
+## note 1 event:0x527084 counters:1 um:zero minimum:10000 name:PM_CO_TM_SC_FOOTPRINT : L2 did a cleanifdirty CO to the L3 (ie created an SC line in the L3)
 event:0x3608a counters:2 um:zero minimum:10000 name:PM_CO_USAGE : Continuous 16 cycle(2to1) window where this signals rotates thru sampling each L2 CO machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
 event:0x40066 counters:3 um:zero minimum:10000 name:PM_CRU_FIN : IFU Finished a (non-branch) instruction.
-event:0x61c050 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_CHIP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was chip pump (prediction=correct) for a demand load
-event:0x64c048 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c048 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c04c counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c04c counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c042 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c046 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c046 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c04e counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c040 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c040 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c050 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_CHIP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was chip pump (prediction=correct) for a demand load
+## note 1 event:0x64c048 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c048 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c04c counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c04c counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c042 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c046 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c046 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c04e counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c040 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c040 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
 event:0x62c040 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_MEPF : The processor's data cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c040 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c042 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c044 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c044 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c044 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c046 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c04e counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c042 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c042 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c044 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c04c counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c048 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c04c counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x64c04a counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c048 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c046 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x61c04a counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c04a counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x63c04a counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-event:0x62c050 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was group pump for a demand load
-event:0x62c052 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope OR Final Pump Scope(Group) got data from source that was at smaller scope(Chip) Final pump was group pump and initial pump was chip or final and initial pump was gro
-event:0x61c052 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED_RTY : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope (Chip) Final pump was group pump and initial pump was chip pumpfor a demand load
-event:0x61c054 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for a demand load
-event:0x64c052 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor a demand load
-event:0x63c050 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was system pump for a demand load
-event:0x63c052 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope(Chip/Group) OR Final Pump Scope(system) got data from source that was at smaller scope(Chip/group) Final pump was system pump and initial pump was chip or group or
-event:0x64c050 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED_RTY : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope (Chip or Group) for a demand load
+## note 1 event:0x61c040 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c042 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c044 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c044 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c044 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c046 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c04e counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c042 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c042 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c044 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c04c counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c048 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c04c counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x64c04a counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c048 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c046 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x61c04a counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c04a counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x63c04a counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+## note 1 event:0x62c050 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was group pump for a demand load
+## note 1 event:0x62c052 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope OR Final Pump Scope(Group) got data from source that was at smaller scope(Chip) Final pump was group pump and initial pump was chip or final and initial pump was gro
+## note 1 event:0x61c052 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED_RTY : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope (Chip) Final pump was group pump and initial pump was chip pumpfor a demand load
+## note 1 event:0x61c054 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for a demand load
+## note 1 event:0x64c052 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor a demand load
+## note 1 event:0x63c050 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was system pump for a demand load
+## note 1 event:0x63c052 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope(Chip/Group) OR Final Pump Scope(system) got data from source that was at smaller scope(Chip/group) Final pump was system pump and initial pump was chip or group or
+## note 1 event:0x64c050 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED_RTY : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope (Chip or Group) for a demand load
 event:0x1c050 counters:0 um:zero minimum:10000 name:PM_DATA_CHIP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was chip pump (prediction=correct) for a demand load.
 event:0x4c048 counters:3 um:zero minimum:10000 name:PM_DATA_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1.
 event:0x3c048 counters:2 um:zero minimum:10000 name:PM_DATA_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1.
@@ -430,11 +444,11 @@ event:0x25046 counters:1 um:zero minimum:10000 name:PM_IPTEG_FROM_RL2L3_MOD : A 
 event:0x1504a counters:0 um:zero minimum:10000 name:PM_IPTEG_FROM_RL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a instruction side request.
 event:0x2504a counters:1 um:zero minimum:10000 name:PM_IPTEG_FROM_RL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on the same Node or Group ( Remote) due to a instruction side request.
 event:0x3504a counters:2 um:zero minimum:10000 name:PM_IPTEG_FROM_RMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group ( Remote) due to a instruction side request.
-event:0x617082 counters:0 um:zero minimum:10000 name:PM_ISIDE_DISP : All i-side dispatch attempts
-event:0x627084 counters:1 um:zero minimum:10000 name:PM_ISIDE_DISP_FAIL : All i-side dispatch attempts that failed due to a addr collision with another machine
-event:0x627086 counters:1 um:zero minimum:10000 name:PM_ISIDE_DISP_FAIL_OTHER : All i-side dispatch attempts that failed due to a reason other than addrs collision
+## note 1 event:0x617082 counters:0 um:zero minimum:10000 name:PM_ISIDE_DISP : All i-side dispatch attempts
+## note 1 event:0x627084 counters:1 um:zero minimum:10000 name:PM_ISIDE_DISP_FAIL : All i-side dispatch attempts that failed due to a addr collision with another machine
+## note 1 event:0x627086 counters:1 um:zero minimum:10000 name:PM_ISIDE_DISP_FAIL_OTHER : All i-side dispatch attempts that failed due to a reason other than addrs collision
 event:0x4608e counters:3 um:zero minimum:10000 name:PM_ISIDE_L2MEMACC : valid when first beat of data comes in for an i-side fetch where data came from mem(or L4)
-event:0x44608e counters:3 um:zero minimum:10000 name:PM_ISIDE_MRU_TOUCH : Iside L2 MRU touch
+## note 1 event:0x44608e counters:3 um:zero minimum:10000 name:PM_ISIDE_MRU_TOUCH : Iside L2 MRU touch
 event:0xd096 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISLB_MISS : I SLB Miss.
 event:0x30ac counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_FX0 : FX0 ISU reject
 event:0x30ae counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_FX1 : FX1 ISU reject
@@ -451,107 +465,107 @@ event:0x30a8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VS0 : VS0 IS
 event:0x30aa counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VS1 : VS1 ISU reject
 event:0x38a8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VSU : ISU
 event:0x30b8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISYNC : Isync count per thread
-event:0x200301ea counters:2 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_1024 : Reload latency exceeded 1024 cyc
-event:0x200401ec counters:3 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_2048 : Reload latency exceeded 2048 cyc
-event:0x200101e8 counters:0 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_256 : Reload latency exceeded 256 cyc
-event:0x200201e6 counters:1 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_32 : Reload latency exceeded 32 cyc
+## note1 event:0x200301ea counters:2 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_1024 : Reload latency exceeded 1024 cyc
+## note1 event:0x200401ec counters:3 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_2048 : Reload latency exceeded 2048 cyc
+## note1 event:0x200101e8 counters:0 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_256 : Reload latency exceeded 256 cyc
+## note1 event:0x200201e6 counters:1 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_32 : Reload latency exceeded 32 cyc
 event:0x26086 counters:1 um:zero minimum:10000 name:PM_L1PF_L2MEMACC : valid when first beat of data comes in for an L1pref where data came from mem(or L4)
 event:0x1002c counters:0 um:zero minimum:10000 name:PM_L1_DCACHE_RELOADED_ALL : L1 data cache reloaded for demand or prefetch .
 event:0x408c counters:0,1,2,3 um:zero minimum:10000 name:PM_L1_DEMAND_WRITE : Instruction Demand sectors wriittent into IL1
 event:0x40012 counters:3 um:zero minimum:10000 name:PM_L1_ICACHE_RELOADED_ALL : Counts all Icache reloads includes demand, prefetchm prefetch turned into demand and demand turned into prefetch.
 event:0x30068 counters:2 um:zero minimum:10000 name:PM_L1_ICACHE_RELOADED_PREF : Counts all Icache prefetch reloads ( includes demand turned into prefetch).
-event:0x417080 counters:0 um:zero minimum:10000 name:PM_L2_CASTOUT_MOD : L2 Castouts - Modified (M, Mu, Me)
-event:0x417082 counters:0 um:zero minimum:10000 name:PM_L2_CASTOUT_SHR : L2 Castouts - Shared (T, Te, Si, S)
+## note 1 event:0x417080 counters:0 um:zero minimum:10000 name:PM_L2_CASTOUT_MOD : L2 Castouts - Modified (M, Mu, Me)
+## note 1 event:0x417082 counters:0 um:zero minimum:10000 name:PM_L2_CASTOUT_SHR : L2 Castouts - Shared (T, Te, Si, S)
 event:0x27084 counters:1 um:zero minimum:10000 name:PM_L2_CHIP_PUMP : RC requests that were local on chip pump attempts
-event:0x427086 counters:1 um:zero minimum:10000 name:PM_L2_DC_INV : Dcache invalidates from L2
-event:0x44608c counters:3 um:zero minimum:10000 name:PM_L2_DISP_ALL_L2MISS : All successful Ld/St dispatches for this thread that were an L2miss.
-event:0x64608e counters:3 um:zero minimum:10000 name:PM_L2_GROUP_PUMP : RC requests that were on Node Pump attempts
-event:0x626084 counters:1 um:zero minimum:10000 name:PM_L2_GRP_GUESS_CORRECT : L2 guess grp and guess was correct (data intra-6chip AND ^on-chip)
-event:0x626086 counters:1 um:zero minimum:10000 name:PM_L2_GRP_GUESS_WRONG : L2 guess grp and guess was not correct (ie data on-chip OR beyond-6chip)
-event:0x427084 counters:1 um:zero minimum:10000 name:PM_L2_IC_INV : Icache Invalidates from L2
-event:0x436088 counters:2 um:zero minimum:10000 name:PM_L2_INST : All successful I-side dispatches for this thread   (excludes i_l2mru_tch reqs)
-event:0x43608a counters:2 um:zero minimum:10000 name:PM_L2_INST_MISS : All successful i-side dispatches that were an L2miss for this thread (excludes i_l2mru_tch reqs)
-event:0x416080 counters:0 um:zero minimum:10000 name:PM_L2_LD : All successful D-side Load dispatches for this thread
-event:0x437088 counters:2 um:zero minimum:10000 name:PM_L2_LD_DISP : All successful load dispatches
-event:0x43708a counters:2 um:zero minimum:10000 name:PM_L2_LD_HIT : All successful load dispatches that were L2 hits
-event:0x426084 counters:1 um:zero minimum:10000 name:PM_L2_LD_MISS : All successful D-Side Load dispatches that were an L2miss for this thread
-event:0x616080 counters:0 um:zero minimum:10000 name:PM_L2_LOC_GUESS_CORRECT : L2 guess loc and guess was correct (ie data local)
-event:0x616082 counters:0 um:zero minimum:10000 name:PM_L2_LOC_GUESS_WRONG : L2 guess loc and guess was not correct (ie data not on chip)
-event:0x516080 counters:0 um:zero minimum:10000 name:PM_L2_RCLD_DISP :  L2  RC load dispatch attempt
-event:0x516082 counters:0 um:zero minimum:10000 name:PM_L2_RCLD_DISP_FAIL_ADDR :  L2  RC load dispatch attempt failed due to address collision with RC/CO/SN/SQ
-event:0x526084 counters:1 um:zero minimum:10000 name:PM_L2_RCLD_DISP_FAIL_OTHER :  L2  RC load dispatch attempt failed due to other reasons
-event:0x536088 counters:2 um:zero minimum:10000 name:PM_L2_RCST_DISP :  L2  RC store dispatch attempt
-event:0x53608a counters:2 um:zero minimum:10000 name:PM_L2_RCST_DISP_FAIL_ADDR :  L2  RC store dispatch attempt failed due to address collision with RC/CO/SN/SQ
-event:0x54608c counters:3 um:zero minimum:10000 name:PM_L2_RCST_DISP_FAIL_OTHER :  L2  RC store dispatch attempt failed due to other reasons
-event:0x537088 counters:2 um:zero minimum:10000 name:PM_L2_RC_ST_DONE : RC did st to line that was Tx or Sx
-event:0x63708a counters:2 um:zero minimum:10000 name:PM_L2_RTY_LD : RC retries on PB for any load from core
+## note 1 event:0x427086 counters:1 um:zero minimum:10000 name:PM_L2_DC_INV : Dcache invalidates from L2
+## note 1 event:0x44608c counters:3 um:zero minimum:10000 name:PM_L2_DISP_ALL_L2MISS : All successful Ld/St dispatches for this thread that were an L2miss.
+## note 1 event:0x64608e counters:3 um:zero minimum:10000 name:PM_L2_GROUP_PUMP : RC requests that were on Node Pump attempts
+## note 1 event:0x626084 counters:1 um:zero minimum:10000 name:PM_L2_GRP_GUESS_CORRECT : L2 guess grp and guess was correct (data intra-6chip AND ^on-chip)
+## note 1 event:0x626086 counters:1 um:zero minimum:10000 name:PM_L2_GRP_GUESS_WRONG : L2 guess grp and guess was not correct (ie data on-chip OR beyond-6chip)
+## note 1 event:0x427084 counters:1 um:zero minimum:10000 name:PM_L2_IC_INV : Icache Invalidates from L2
+## note 1 event:0x436088 counters:2 um:zero minimum:10000 name:PM_L2_INST : All successful I-side dispatches for this thread   (excludes i_l2mru_tch reqs)
+## note 1 event:0x43608a counters:2 um:zero minimum:10000 name:PM_L2_INST_MISS : All successful i-side dispatches that were an L2miss for this thread (excludes i_l2mru_tch reqs)
+## note 1 event:0x416080 counters:0 um:zero minimum:10000 name:PM_L2_LD : All successful D-side Load dispatches for this thread
+## note 1 event:0x437088 counters:2 um:zero minimum:10000 name:PM_L2_LD_DISP : All successful load dispatches
+## note 1 event:0x43708a counters:2 um:zero minimum:10000 name:PM_L2_LD_HIT : All successful load dispatches that were L2 hits
+## note 1 event:0x426084 counters:1 um:zero minimum:10000 name:PM_L2_LD_MISS : All successful D-Side Load dispatches that were an L2miss for this thread
+## note 1 event:0x616080 counters:0 um:zero minimum:10000 name:PM_L2_LOC_GUESS_CORRECT : L2 guess loc and guess was correct (ie data local)
+## note 1 event:0x616082 counters:0 um:zero minimum:10000 name:PM_L2_LOC_GUESS_WRONG : L2 guess loc and guess was not correct (ie data not on chip)
+## note 1 event:0x516080 counters:0 um:zero minimum:10000 name:PM_L2_RCLD_DISP :  L2  RC load dispatch attempt
+## note 1 event:0x516082 counters:0 um:zero minimum:10000 name:PM_L2_RCLD_DISP_FAIL_ADDR :  L2  RC load dispatch attempt failed due to address collision with RC/CO/SN/SQ
+## note 1 event:0x526084 counters:1 um:zero minimum:10000 name:PM_L2_RCLD_DISP_FAIL_OTHER :  L2  RC load dispatch attempt failed due to other reasons
+## note 1 event:0x536088 counters:2 um:zero minimum:10000 name:PM_L2_RCST_DISP :  L2  RC store dispatch attempt
+## note 1 event:0x53608a counters:2 um:zero minimum:10000 name:PM_L2_RCST_DISP_FAIL_ADDR :  L2  RC store dispatch attempt failed due to address collision with RC/CO/SN/SQ
+## note 1 event:0x54608c counters:3 um:zero minimum:10000 name:PM_L2_RCST_DISP_FAIL_OTHER :  L2  RC store dispatch attempt failed due to other reasons
+## note 1 event:0x537088 counters:2 um:zero minimum:10000 name:PM_L2_RC_ST_DONE : RC did st to line that was Tx or Sx
+## note 1 event:0x63708a counters:2 um:zero minimum:10000 name:PM_L2_RTY_LD : RC retries on PB for any load from core
 event:0x3708a counters:2 um:zero minimum:10000 name:PM_L2_RTY_ST : RC retries on PB for any store from core
-event:0x54708c counters:3 um:zero minimum:10000 name:PM_L2_SN_M_RD_DONE : SNP dispatched for a read and was M
-event:0x54708e counters:3 um:zero minimum:10000 name:PM_L2_SN_M_WR_DONE : SNP dispatched for a write and was M
-event:0x53708a counters:2 um:zero minimum:10000 name:PM_L2_SN_SX_I_DONE : SNP dispatched and went from Sx or Tx to Ix
+## note 1 event:0x54708c counters:3 um:zero minimum:10000 name:PM_L2_SN_M_RD_DONE : SNP dispatched for a read and was M
+## note 1 event:0x54708e counters:3 um:zero minimum:10000 name:PM_L2_SN_M_WR_DONE : SNP dispatched for a write and was M
+## note 1 event:0x53708a counters:2 um:zero minimum:10000 name:PM_L2_SN_SX_I_DONE : SNP dispatched and went from Sx or Tx to Ix
 event:0x17080 counters:0 um:zero minimum:10000 name:PM_L2_ST : All successful D-side store dispatches for this thread
-event:0x44708c counters:3 um:zero minimum:10000 name:PM_L2_ST_DISP : All successful store dispatches
-event:0x44708e counters:3 um:zero minimum:10000 name:PM_L2_ST_HIT : All successful store dispatches that were L2Hits
+## note 1 event:0x44708c counters:3 um:zero minimum:10000 name:PM_L2_ST_DISP : All successful store dispatches
+## note 1 event:0x44708e counters:3 um:zero minimum:10000 name:PM_L2_ST_HIT : All successful store dispatches that were L2Hits
 event:0x17082 counters:0 um:zero minimum:10000 name:PM_L2_ST_MISS : All successful D-side store dispatches for this thread that were L2 Miss
-event:0x636088 counters:2 um:zero minimum:10000 name:PM_L2_SYS_GUESS_CORRECT : L2 guess sys and guess was correct (ie data beyond-6chip)
-event:0x63608a counters:2 um:zero minimum:10000 name:PM_L2_SYS_GUESS_WRONG : L2 guess sys and guess was not correct (ie data ^beyond-6chip)
+## note 1 event:0x636088 counters:2 um:zero minimum:10000 name:PM_L2_SYS_GUESS_CORRECT : L2 guess sys and guess was correct (ie data beyond-6chip)
+## note 1 event:0x63608a counters:2 um:zero minimum:10000 name:PM_L2_SYS_GUESS_WRONG : L2 guess sys and guess was not correct (ie data ^beyond-6chip)
 event:0x37088 counters:2 um:zero minimum:10000 name:PM_L2_SYS_PUMP : RC requests that were system pump attempts
 event:0x1e05e counters:0 um:zero minimum:10000 name:PM_L2_TM_REQ_ABORT : TM abort.
 event:0x3e05c counters:2 um:zero minimum:10000 name:PM_L2_TM_ST_ABORT_SISTER : TM marked store abort.
-event:0x23808a counters:2 um:zero minimum:10000 name:PM_L3_CINJ : l3 ci of cache inject
-event:0x128084 counters:1 um:zero minimum:10000 name:PM_L3_CI_HIT : L3 Castins Hit (total count
-event:0x128086 counters:1 um:zero minimum:10000 name:PM_L3_CI_MISS : L3 castins miss (total count
+## note1 event:0x23808a counters:2 um:zero minimum:10000 name:PM_L3_CINJ : l3 ci of cache inject
+## note1 event:0x128084 counters:1 um:zero minimum:10000 name:PM_L3_CI_HIT : L3 Castins Hit (total count
+## note1 event:0x128086 counters:1 um:zero minimum:10000 name:PM_L3_CI_MISS : L3 castins miss (total count
 event:0x819082 counters:0 um:zero minimum:10000 name:PM_L3_CI_USAGE : rotating sample of 16 CI or CO actives
-event:0x438088 counters:2 um:zero minimum:10000 name:PM_L3_CO : l3 castout occuring ( does not include casthrough or log writes (cinj/dmaw)
+## note 1 event:0x438088 counters:2 um:zero minimum:10000 name:PM_L3_CO : l3 castout occuring ( does not include casthrough or log writes (cinj/dmaw)
 event:0x83908b counters:2 um:zero minimum:10000 name:PM_L3_CO0_ALLOC : 0.0
 event:0x83908a counters:2 um:zero minimum:10000 name:PM_L3_CO0_BUSY : lifetime, sample of CO machine 0 valid
 event:0x28086 counters:1 um:zero minimum:10000 name:PM_L3_CO_L31 : L3 CO to L3.1 OR of port 0 and 1 ( lossy)
-event:0x238088 counters:2 um:zero minimum:10000 name:PM_L3_CO_LCO : Total L3 castouts occurred on LCO
+## note1 event:0x238088 counters:2 um:zero minimum:10000 name:PM_L3_CO_LCO : Total L3 castouts occurred on LCO
 event:0x28084 counters:1 um:zero minimum:10000 name:PM_L3_CO_MEM : L3 CO to memory OR of port 0 and 1 ( lossy)
 event:0x18082 counters:0 um:zero minimum:10000 name:PM_L3_CO_MEPF : L3 CO of line in Mep state ( includes casthrough)
-event:0xb19082 counters:0 um:zero minimum:10000 name:PM_L3_GRP_GUESS_CORRECT : Initial scope=group and data from same group (near) (pred successful)
-event:0xb3908a counters:2 um:zero minimum:10000 name:PM_L3_GRP_GUESS_WRONG_HIGH : Initial scope=group but data from local node. Predition too high
-event:0xb39088 counters:2 um:zero minimum:10000 name:PM_L3_GRP_GUESS_WRONG_LOW : Initial scope=group but data from outside group (far or rem). Prediction too Low
-event:0x218080 counters:0 um:zero minimum:10000 name:PM_L3_HIT : L3 Hits
-event:0x138088 counters:2 um:zero minimum:10000 name:PM_L3_L2_CO_HIT : L2 castout hits
-event:0x13808a counters:2 um:zero minimum:10000 name:PM_L3_L2_CO_MISS : L2 castout miss
-event:0x14808c counters:3 um:zero minimum:10000 name:PM_L3_LAT_CI_HIT : L3 Lateral Castins Hit
-event:0x14808e counters:3 um:zero minimum:10000 name:PM_L3_LAT_CI_MISS : L3 Lateral Castins Miss
-event:0x228084 counters:1 um:zero minimum:10000 name:PM_L3_LD_HIT : L3 demand LD Hits
-event:0x228086 counters:1 um:zero minimum:10000 name:PM_L3_LD_MISS : L3 demand LD Miss
+## note 1 event:0xb19082 counters:0 um:zero minimum:10000 name:PM_L3_GRP_GUESS_CORRECT : Initial scope=group and data from same group (near) (pred successful)
+## note 1 event:0xb3908a counters:2 um:zero minimum:10000 name:PM_L3_GRP_GUESS_WRONG_HIGH : Initial scope=group but data from local node. Predition too high
+## note 1 event:0xb39088 counters:2 um:zero minimum:10000 name:PM_L3_GRP_GUESS_WRONG_LOW : Initial scope=group but data from outside group (far or rem). Prediction too Low
+## note 1 event:0x218080 counters:0 um:zero minimum:10000 name:PM_L3_HIT : L3 Hits
+## note 1 event:0x138088 counters:2 um:zero minimum:10000 name:PM_L3_L2_CO_HIT : L2 castout hits
+## note 1 event:0x13808a counters:2 um:zero minimum:10000 name:PM_L3_L2_CO_MISS : L2 castout miss
+## note 1 event:0x14808c counters:3 um:zero minimum:10000 name:PM_L3_LAT_CI_HIT : L3 Lateral Castins Hit
+## note 1 event:0x14808e counters:3 um:zero minimum:10000 name:PM_L3_LAT_CI_MISS : L3 Lateral Castins Miss
+## note 1 event:0x228084 counters:1 um:zero minimum:10000 name:PM_L3_LD_HIT : L3 demand LD Hits
+## note 1 event:0x228086 counters:1 um:zero minimum:10000 name:PM_L3_LD_MISS : L3 demand LD Miss
 event:0x1e052 counters:0 um:zero minimum:10000 name:PM_L3_LD_PREF : L3 Load Prefetches.
-event:0xb19080 counters:0 um:zero minimum:10000 name:PM_L3_LOC_GUESS_CORRECT : initial scope=node/chip and data from local node (local) (pred successful)
-event:0xb29086 counters:1 um:zero minimum:10000 name:PM_L3_LOC_GUESS_WRONG : Initial scope=node but data from out side local node (near or far or rem). Prediction too Low
-event:0x218082 counters:0 um:zero minimum:10000 name:PM_L3_MISS : L3 Misses
-event:0x54808c counters:3 um:zero minimum:10000 name:PM_L3_P0_CO_L31 : l3 CO to L3.1 (lco) port 0
-event:0x538088 counters:2 um:zero minimum:10000 name:PM_L3_P0_CO_MEM : l3 CO to memory port 0
-event:0x929084 counters:1 um:zero minimum:10000 name:PM_L3_P0_CO_RTY : L3 CO received retry port 0
-event:0xa29084 counters:1 um:zero minimum:10000 name:PM_L3_P0_GRP_PUMP : L3 pf sent with grp scope port 0
-event:0x528084 counters:1 um:zero minimum:10000 name:PM_L3_P0_LCO_DATA : lco sent with data port 0
-event:0x518080 counters:0 um:zero minimum:10000 name:PM_L3_P0_LCO_NO_DATA : dataless l3 lco sent port 0
-event:0xa4908c counters:3 um:zero minimum:10000 name:PM_L3_P0_LCO_RTY : L3 LCO received retry port 0
-event:0xa19080 counters:0 um:zero minimum:10000 name:PM_L3_P0_NODE_PUMP : L3 pf sent with nodal scope port 0
-event:0x919080 counters:0 um:zero minimum:10000 name:PM_L3_P0_PF_RTY : L3 PF received retry port 0
-event:0x939088 counters:2 um:zero minimum:10000 name:PM_L3_P0_SN_HIT : L3 snoop hit port 0
-event:0x118080 counters:0 um:zero minimum:10000 name:PM_L3_P0_SN_INV : Port0 snooper detects someone doing a store to a line thats Sx
-event:0x94908c counters:3 um:zero minimum:10000 name:PM_L3_P0_SN_MISS : L3 snoop miss port 0
-event:0xa39088 counters:2 um:zero minimum:10000 name:PM_L3_P0_SYS_PUMP : L3 pf sent with sys scope port 0
-event:0x54808e counters:3 um:zero minimum:10000 name:PM_L3_P1_CO_L31 : l3 CO to L3.1 (lco) port 1
-event:0x53808a counters:2 um:zero minimum:10000 name:PM_L3_P1_CO_MEM : l3 CO to memory port 1
-event:0x929086 counters:1 um:zero minimum:10000 name:PM_L3_P1_CO_RTY : L3 CO received retry port 1
-event:0xa29086 counters:1 um:zero minimum:10000 name:PM_L3_P1_GRP_PUMP : L3 pf sent with grp scope port 1
-event:0x528086 counters:1 um:zero minimum:10000 name:PM_L3_P1_LCO_DATA : lco sent with data port 1
-event:0x518082 counters:0 um:zero minimum:10000 name:PM_L3_P1_LCO_NO_DATA : dataless l3 lco sent port 1
-event:0xa4908e counters:3 um:zero minimum:10000 name:PM_L3_P1_LCO_RTY : L3 LCO received retry port 1
-event:0xa19082 counters:0 um:zero minimum:10000 name:PM_L3_P1_NODE_PUMP : L3 pf sent with nodal scope port 1
-event:0x919082 counters:0 um:zero minimum:10000 name:PM_L3_P1_PF_RTY : L3 PF received retry port 1
-event:0x93908a counters:2 um:zero minimum:10000 name:PM_L3_P1_SN_HIT : L3 snoop hit port 1
-event:0x118082 counters:0 um:zero minimum:10000 name:PM_L3_P1_SN_INV : Port1 snooper detects someone doing a store to a line thats Sx
-event:0x94908e counters:3 um:zero minimum:10000 name:PM_L3_P1_SN_MISS : L3 snoop miss port 1
-event:0xa3908a counters:2 um:zero minimum:10000 name:PM_L3_P1_SYS_PUMP : L3 pf sent with sys scope port 1
+## note 1 event:0xb19080 counters:0 um:zero minimum:10000 name:PM_L3_LOC_GUESS_CORRECT : initial scope=node/chip and data from local node (local) (pred successful)
+## note 1 event:0xb29086 counters:1 um:zero minimum:10000 name:PM_L3_LOC_GUESS_WRONG : Initial scope=node but data from out side local node (near or far or rem). Prediction too Low
+## note 1 event:0x218082 counters:0 um:zero minimum:10000 name:PM_L3_MISS : L3 Misses
+## note 1 event:0x54808c counters:3 um:zero minimum:10000 name:PM_L3_P0_CO_L31 : l3 CO to L3.1 (lco) port 0
+## note 1 event:0x538088 counters:2 um:zero minimum:10000 name:PM_L3_P0_CO_MEM : l3 CO to memory port 0
+## note 1 event:0x929084 counters:1 um:zero minimum:10000 name:PM_L3_P0_CO_RTY : L3 CO received retry port 0
+## note 1 event:0xa29084 counters:1 um:zero minimum:10000 name:PM_L3_P0_GRP_PUMP : L3 pf sent with grp scope port 0
+## note 1 event:0x528084 counters:1 um:zero minimum:10000 name:PM_L3_P0_LCO_DATA : lco sent with data port 0
+## note 1 event:0x518080 counters:0 um:zero minimum:10000 name:PM_L3_P0_LCO_NO_DATA : dataless l3 lco sent port 0
+## note 1 event:0xa4908c counters:3 um:zero minimum:10000 name:PM_L3_P0_LCO_RTY : L3 LCO received retry port 0
+## note 1 event:0xa19080 counters:0 um:zero minimum:10000 name:PM_L3_P0_NODE_PUMP : L3 pf sent with nodal scope port 0
+## note 1 event:0x919080 counters:0 um:zero minimum:10000 name:PM_L3_P0_PF_RTY : L3 PF received retry port 0
+## note 1 event:0x939088 counters:2 um:zero minimum:10000 name:PM_L3_P0_SN_HIT : L3 snoop hit port 0
+## note 1 event:0x118080 counters:0 um:zero minimum:10000 name:PM_L3_P0_SN_INV : Port0 snooper detects someone doing a store to a line thats Sx
+## note 1 event:0x94908c counters:3 um:zero minimum:10000 name:PM_L3_P0_SN_MISS : L3 snoop miss port 0
+## note 1 event:0xa39088 counters:2 um:zero minimum:10000 name:PM_L3_P0_SYS_PUMP : L3 pf sent with sys scope port 0
+## note 1 event:0x54808e counters:3 um:zero minimum:10000 name:PM_L3_P1_CO_L31 : l3 CO to L3.1 (lco) port 1
+## note 1 event:0x53808a counters:2 um:zero minimum:10000 name:PM_L3_P1_CO_MEM : l3 CO to memory port 1
+## note 1 event:0x929086 counters:1 um:zero minimum:10000 name:PM_L3_P1_CO_RTY : L3 CO received retry port 1
+## note 1 event:0xa29086 counters:1 um:zero minimum:10000 name:PM_L3_P1_GRP_PUMP : L3 pf sent with grp scope port 1
+## note 1 event:0x528086 counters:1 um:zero minimum:10000 name:PM_L3_P1_LCO_DATA : lco sent with data port 1
+## note 1 event:0x518082 counters:0 um:zero minimum:10000 name:PM_L3_P1_LCO_NO_DATA : dataless l3 lco sent port 1
+## note 1 event:0xa4908e counters:3 um:zero minimum:10000 name:PM_L3_P1_LCO_RTY : L3 LCO received retry port 1
+## note 1 event:0xa19082 counters:0 um:zero minimum:10000 name:PM_L3_P1_NODE_PUMP : L3 pf sent with nodal scope port 1
+## note 1 event:0x919082 counters:0 um:zero minimum:10000 name:PM_L3_P1_PF_RTY : L3 PF received retry port 1
+## note 1 event:0x93908a counters:2 um:zero minimum:10000 name:PM_L3_P1_SN_HIT : L3 snoop hit port 1
+## note 1 event:0x118082 counters:0 um:zero minimum:10000 name:PM_L3_P1_SN_INV : Port1 snooper detects someone doing a store to a line thats Sx
+## note 1 event:0x94908e counters:3 um:zero minimum:10000 name:PM_L3_P1_SN_MISS : L3 snoop miss port 1
+## note 1 event:0xa3908a counters:2 um:zero minimum:10000 name:PM_L3_P1_SYS_PUMP : L3 pf sent with sys scope port 1
 event:0x84908d counters:3 um:zero minimum:10000 name:PM_L3_PF0_ALLOC : 0.0
 event:0x84908c counters:3 um:zero minimum:10000 name:PM_L3_PF0_BUSY : lifetime, sample of PF machine 0 valid
-event:0x428084 counters:1 um:zero minimum:10000 name:PM_L3_PF_HIT_L3 : l3 pf hit in l3
+## note 1 event:0x428084 counters:1 um:zero minimum:10000 name:PM_L3_PF_HIT_L3 : l3 pf hit in l3
 event:0x18080 counters:0 um:zero minimum:10000 name:PM_L3_PF_MISS_L3 : L3 Prefetch missed in L3
 event:0x3808a counters:2 um:zero minimum:10000 name:PM_L3_PF_OFF_CHIP_CACHE : L3 Prefetch from Off chip cache
 event:0x4808e counters:3 um:zero minimum:10000 name:PM_L3_PF_OFF_CHIP_MEM : L3 Prefetch from Off chip memory
@@ -567,12 +581,12 @@ event:0x839088 counters:2 um:zero minimum:10000 name:PM_L3_SN0_BUSY : lifetime, 
 event:0x819080 counters:0 um:zero minimum:10000 name:PM_L3_SN_USAGE : rotating sample of 8 snoop valids
 event:0x2e052 counters:1 um:zero minimum:10000 name:PM_L3_ST_PREF : L3 store Prefetches.
 event:0x3e052 counters:2 um:zero minimum:10000 name:PM_L3_SW_PREF : Data stream touchto L3.
-event:0xb29084 counters:1 um:zero minimum:10000 name:PM_L3_SYS_GUESS_CORRECT : Initial scope=system and data from outside group (far or rem)(pred successful)
-event:0xb4908c counters:3 um:zero minimum:10000 name:PM_L3_SYS_GUESS_WRONG : Initial scope=system but data from local or near. Predction too high
-event:0x24808e counters:3 um:zero minimum:10000 name:PM_L3_TRANS_PF : L3 Transient prefetch
+## note 1 event:0xb29084 counters:1 um:zero minimum:10000 name:PM_L3_SYS_GUESS_CORRECT : Initial scope=system and data from outside group (far or rem)(pred successful)
+## note 1 event:0xb4908c counters:3 um:zero minimum:10000 name:PM_L3_SYS_GUESS_WRONG : Initial scope=system but data from local or near. Predction too high
+## note 1 event:0x24808e counters:3 um:zero minimum:10000 name:PM_L3_TRANS_PF : L3 Transient prefetch
 event:0x18081 counters:0 um:zero minimum:10000 name:PM_L3_WI0_ALLOC : 0.0
-event:0x418080 counters:0 um:zero minimum:10000 name:PM_L3_WI0_BUSY : lifetime, sample of Write Inject machine 0 valid
-event:0x418082 counters:0 um:zero minimum:10000 name:PM_L3_WI_USAGE : rotating sample of 8 WI actives
+## note 1 event:0x418080 counters:0 um:zero minimum:10000 name:PM_L3_WI0_BUSY : lifetime, sample of Write Inject machine 0 valid
+## note 1 event:0x418082 counters:0 um:zero minimum:10000 name:PM_L3_WI_USAGE : rotating sample of 8 WI actives
 event:0x3c058 counters:2 um:zero minimum:10000 name:PM_LARX_FIN : Larx finished .
 event:0x1002e counters:0 um:zero minimum:10000 name:PM_LD_CMPL : count of Loads completed.
 event:0x10062 counters:0 um:zero minimum:10000 name:PM_LD_L3MISS_PEND_CYC : Cycles L3 miss was pending for this thread.
@@ -853,7 +867,7 @@ event:0x3d15e counters:2 um:zero minimum:10000 name:PM_MULT_MRK : mult marked in
 event:0x20b0 counters:0,1,2,3 um:zero minimum:10000 name:PM_NESTED_TEND : Completion time nested tend
 event:0x3006e counters:2 um:zero minimum:10000 name:PM_NEST_REF_CLK : Nest reference clocks.
 event:0x20b6 counters:0,1,2,3 um:zero minimum:10000 name:PM_NON_FAV_TBEGIN : Dispatch time non favored tbegin
-event:0x328084 counters:1 um:zero minimum:10000 name:PM_NON_TM_RST_SC : non tm snp rst tm sc
+## note 1 event:0x328084 counters:1 um:zero minimum:10000 name:PM_NON_TM_RST_SC : non tm snp rst tm sc
 event:0x2001a counters:1 um:zero minimum:10000 name:PM_NTCG_ALL_FIN : Ccycles after all instructions have finished to group completed.
 event:0x20ac counters:0,1,2,3 um:zero minimum:10000 name:PM_OUTER_TBEGIN : Completion time outer tbegin
 event:0x20ae counters:0,1,2,3 um:zero minimum:10000 name:PM_OUTER_TEND : Completion time outer tend
@@ -879,14 +893,14 @@ event:0x10054 counters:0 um:zero minimum:10000 name:PM_PUMP_CPRED : Pump predict
 event:0x40052 counters:3 um:zero minimum:10000 name:PM_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate).
 event:0x16081 counters:0 um:zero minimum:10000 name:PM_RC0_ALLOC : 0.0
 event:0x16080 counters:0 um:zero minimum:10000 name:PM_RC0_BUSY : RC mach 0 Busy. Used by PMU to sample ave RC livetime(mach0 used as sample point)
-event:0x200301ea counters:2 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_1024 : Reload latency exceeded 1024 cyc
-event:0x200401ec counters:3 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_2048 : Threshold counter exceeded a value of 2048
-event:0x200101e8 counters:0 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_256 : Threshold counter exceed a count of 256
-event:0x200201e6 counters:1 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_32 : Reload latency exceeded 32 cyc
+## note 1 event:0x200301ea counters:2 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_1024 : Reload latency exceeded 1024 cyc
+## note 1 event:0x200401ec counters:3 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_2048 : Threshold counter exceeded a value of 2048
+## note 1 event:0x200101e8 counters:0 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_256 : Threshold counter exceed a count of 256
+## note 1 event:0x200201e6 counters:1 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_32 : Reload latency exceeded 32 cyc
 event:0x36088 counters:2 um:zero minimum:10000 name:PM_RC_USAGE : Continuous 16 cycle(2to1) window where this signals rotates thru sampling each L2 RC machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
-event:0x34808e counters:3 um:zero minimum:10000 name:PM_RD_CLEARING_SC : rd clearing sc
-event:0x34808c counters:3 um:zero minimum:10000 name:PM_RD_FORMING_SC : rd forming sc
-event:0x428086 counters:1 um:zero minimum:10000 name:PM_RD_HIT_PF : rd machine hit l3 pf machine
+## note 1 event:0x34808e counters:3 um:zero minimum:10000 name:PM_RD_CLEARING_SC : rd clearing sc
+## note 1 event:0x34808c counters:3 um:zero minimum:10000 name:PM_RD_FORMING_SC : rd forming sc
+## note 1 event:0x428086 counters:1 um:zero minimum:10000 name:PM_RD_HIT_PF : rd machine hit l3 pf machine
 event:0x20004 counters:1 um:zero minimum:10000 name:PM_REAL_SRQ_FULL : Out of real srq entries.
 event:0x3006c counters:2 um:zero minimum:10000 name:PM_RUN_CYC_SMT2_MODE : Cycles run latch is set and core is in SMT2 mode.
 event:0x2006a counters:1 um:zero minimum:10000 name:PM_RUN_CYC_SMT2_SHRD_MODE : Cycles run latch is set and core is in SMT2-shared mode.
@@ -902,13 +916,13 @@ event:0x5090 counters:0,1,2,3 um:zero minimum:10000 name:PM_SHL_ST_DISABLE : Sto
 event:0x26085 counters:1 um:zero minimum:10000 name:PM_SN0_ALLOC : 0.0
 event:0x26084 counters:1 um:zero minimum:10000 name:PM_SN0_BUSY : SN mach 0 Busy. Used by PMU to sample ave RC livetime(mach0 used as sample point)
 event:0xd0b2 counters:0,1,2,3 um:zero minimum:10000 name:PM_SNOOP_TLBIE : TLBIE snoopSnoop TLBIE
-event:0x338088 counters:2 um:zero minimum:10000 name:PM_SNP_TM_HIT_M :  snp tm st hit m mu
-event:0x33808a counters:2 um:zero minimum:10000 name:PM_SNP_TM_HIT_T : snp tm_st_hit t tn te
+## note 1 event:0x338088 counters:2 um:zero minimum:10000 name:PM_SNP_TM_HIT_M :  snp tm st hit m mu
+## note 1 event:0x33808a counters:2 um:zero minimum:10000 name:PM_SNP_TM_HIT_T : snp tm_st_hit t tn te
 event:0x4608c counters:3 um:zero minimum:10000 name:PM_SN_USAGE : Continuous 16 cycle(2to1) window where this signals rotates thru sampling each L2 SN machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
 event:0x10028 counters:0 um:zero minimum:10000 name:PM_STALL_END_GCT_EMPTY : Count ended because GCT went empty.
 event:0x1e058 counters:0 um:zero minimum:10000 name:PM_STCX_FAIL : stcx failed .
 event:0xc090 counters:0,1,2,3 um:zero minimum:10000 name:PM_STCX_LSU : STCX executed reported at sent to nest42
-event:0x717080 counters:0 um:zero minimum:10000 name:PM_ST_CAUSED_FAIL : Non TM St caused any thread to fail
+## note 1 event:0x717080 counters:0 um:zero minimum:10000 name:PM_ST_CAUSED_FAIL : Non TM St caused any thread to fail
 event:0x20016 counters:1 um:zero minimum:10000 name:PM_ST_CMPL : Store completion count.
 event:0x20018 counters:1 um:zero minimum:10000 name:PM_ST_FWD : Store forwards that finished.
 event:0x0 counters:0,1,2,3 um:zero minimum:10000 name:PM_SUSPENDED : Counter OFF.
@@ -941,8 +955,8 @@ event:0x4016e counters:3 um:zero minimum:10000 name:PM_THRESH_NOT_MET : Threshol
 event:0x30058 counters:2 um:zero minimum:10000 name:PM_TLBIE_FIN : tlbie finished.
 event:0x20066 counters:1 um:zero minimum:10000 name:PM_TLB_MISS : TLB Miss (I + D).
 event:0x20b8 counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_BEGIN_ALL : Tm any tbegin
-event:0x318082 counters:0 um:zero minimum:10000 name:PM_TM_CAM_OVERFLOW : l3 tm cam overflow during L2 co of SC
-event:0x74708c counters:3 um:zero minimum:10000 name:PM_TM_CAP_OVERFLOW : TM Footprint Capactiy Overflow
+## note 1 event:0x318082 counters:0 um:zero minimum:10000 name:PM_TM_CAM_OVERFLOW : l3 tm cam overflow during L2 co of SC
+## note 1 event:0x74708c counters:3 um:zero minimum:10000 name:PM_TM_CAP_OVERFLOW : TM Footprint Capactiy Overflow
 event:0x20ba counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_END_ALL : Tm any tend
 event:0x3086 counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_FAIL_CONF_NON_TM : TEXAS fail reason @ completion
 event:0x3088 counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_FAIL_CON_TM : TEXAS fail reason @ completion
@@ -952,13 +966,13 @@ event:0xe0b8 counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_FAIL_NON_TX_CONFL
 event:0x308a counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_FAIL_SELF : TEXAS fail reason @ completion
 event:0xe0b4 counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_FAIL_TLBIE : TLBIE hit bloom filter42
 event:0xe0b6 counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_FAIL_TX_CONFLICT : Transactional conflict from LSU, whatever gets reported to texas 42
-event:0x727086 counters:1 um:zero minimum:10000 name:PM_TM_FAV_CAUSED_FAIL : TM Load (fav) caused another thread to fail
-event:0x717082 counters:0 um:zero minimum:10000 name:PM_TM_LD_CAUSED_FAIL : Non TM Ld caused any thread to fail
-event:0x727084 counters:1 um:zero minimum:10000 name:PM_TM_LD_CONF : TM Load (fav or non-fav) ran into conflict (failed)
-event:0x328086 counters:1 um:zero minimum:10000 name:PM_TM_RST_SC : tm snp rst tm sc
-event:0x318080 counters:0 um:zero minimum:10000 name:PM_TM_SC_CO : l3 castout tm Sc line
-event:0x73708a counters:2 um:zero minimum:10000 name:PM_TM_ST_CAUSED_FAIL : TM Store (fav or non-fav) caused another thread to fail
-event:0x737088 counters:2 um:zero minimum:10000 name:PM_TM_ST_CONF : TM Store (fav or non-fav) ran into conflict (failed)
+## note 1 event:0x727086 counters:1 um:zero minimum:10000 name:PM_TM_FAV_CAUSED_FAIL : TM Load (fav) caused another thread to fail
+## note 1 event:0x717082 counters:0 um:zero minimum:10000 name:PM_TM_LD_CAUSED_FAIL : Non TM Ld caused any thread to fail
+## note 1 event:0x727084 counters:1 um:zero minimum:10000 name:PM_TM_LD_CONF : TM Load (fav or non-fav) ran into conflict (failed)
+## note 1 event:0x328086 counters:1 um:zero minimum:10000 name:PM_TM_RST_SC : tm snp rst tm sc
+## note 1 event:0x318080 counters:0 um:zero minimum:10000 name:PM_TM_SC_CO : l3 castout tm Sc line
+## note 1 event:0x73708a counters:2 um:zero minimum:10000 name:PM_TM_ST_CAUSED_FAIL : TM Store (fav or non-fav) caused another thread to fail
+## note 1 event:0x737088 counters:2 um:zero minimum:10000 name:PM_TM_ST_CONF : TM Store (fav or non-fav) ran into conflict (failed)
 event:0x20bc counters:0,1,2,3 um:zero minimum:10000 name:PM_TM_TBEGIN : Tm nested tbegin
 event:0x10060 counters:0 um:zero minimum:10000 name:PM_TM_TRANS_RUN_CYC : run cycles in transactional state.
 event:0x30060 counters:2 um:zero minimum:10000 name:PM_TM_TRANS_RUN_INST : Instructions completed in transactional state.
