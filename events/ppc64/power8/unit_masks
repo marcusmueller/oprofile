@@ -9,9 +9,26 @@
 #       to workaround oprofile's 32-bit limitation for event codes.
 #       See libpe_utils/op_pe_utils.cpp:_get_event_code for how these codes are
 #       used.
+#
+#note 1.   11/12/2015
+#
+# Some event requires the cache selector bits to be set to a non-zero
+# value in the processor performance counter setup register.  On Power 8, this
+# register is only writable by the hypervisor.  So the kernel must reject any
+# event where the lower three cache selector bits (bits 22:20) are not equal
+# to 0.  If/when an API is implemented to allow the kernel to request the
+# hypervisor write the register with the required value, these events can be
+# re-added to the list of supported events.  The issue is documented in the
+# powerpc kernel file arch/powerpc/perf/power8-pmu.c in function power8_get_constraint()
+# where the cache bits are ANDed with 0x7 if the unit is between 6 and 9.  If
+# cache bits are not zero, the function returns -1 to reject the event.
+#
+# The associated unit masks for these problem events are unused and also need
+# to be commented out.
+#
 name:zero type:mandatory default:0x0
 	0x0 No unit mask
-name:rc_machine type:mandatory default:0xde
-	0xde Thresholdable start/stop for rc machine for sampled instruction
-name:L1_latency type:mandatory default:0x67
-	0x67 Thresholdable start/stop for L1 sampled instruction load miss/reload
+## note 1 name:rc_machine type:mandatory default:0xde
+## note 1 	0xde Thresholdable start/stop for rc machine for sampled instruction
+## note 1 name:L1_latency type:mandatory default:0x67
+## note 1 	0x67 Thresholdable start/stop for L1 sampled instruction load miss/reload
