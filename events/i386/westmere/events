@@ -48,7 +48,7 @@ event:0x87 counters:0,1,2,3 um:ild_stall minimum:2000000 name:ILD_STALL : Any In
 event:0x88 counters:0,1,2,3 um:br_inst_exec minimum:200000 name:BR_INST_EXEC : Branch instructions executed
 event:0x89 counters:0,1,2,3 um:br_misp_exec minimum:20000 name:BR_MISP_EXEC : Mispredicted branches executed
 event:0xa2 counters:0,1,2,3 um:resource_stalls minimum:2000000 name:RESOURCE_STALLS : Resource related stall cycles
-event:0xa6 counters:0,1,2,3 um:x01 minimum:2000000 name:MACRO_INSTS : Macro-fused instructions decoded
+event:0xa6 counters:0,1,2,3 um:x01 minimum:2000000 name:MACRO_INSTS_FUSED : Macro-fused instructions decoded
 event:0xa7 counters:0,1,2,3 um:x01 minimum:2000000 name:BACLEAR_FORCE_IQ : Instruction queue forced BACLEAR
 event:0xa8 counters:0,1,2,3 um:x01 minimum:2000000 name:LSD : Cycles when uops were delivered by the LSD
 event:0xae counters:0,1,2,3 um:x01 minimum:2000000 name:ITLB_FLUSH : ITLB flushes
