@@ -1,4 +1,4 @@
-#
+
 #  Copyright OProfile authors
 #  Copyright (c) International Business Machines, 2013.
 #  Contributed by Maynard Johnson <maynardj@us.ibm.com>.
@@ -7,7 +7,7 @@
 
 include:ppc64/architected_events_v1
 
-#note 1.   11/12/2015
+# note 1.   11/12/2015
 #
 # These event requires the cache selector bits to be set to a non-zero
 # value in the processor performance counter setup register.  On Power 8, this
@@ -19,7 +19,12 @@ include:ppc64/architected_events_v1
 # powerpc kernel file arch/powerpc/perf/power8-pmu.c in function power8_get_constraint()
 # where the cache bits are ANDed with 0x7 if the unit is between 6 and 9.  If
 # cache bits are not zero, the function returns -1 to reject the event.
-
+#
+# note 2.
+#
+# To use all of the events listed in this file, you must have OProfile
+# complied with the libpfm 4.6 or newer library.  Libpfm 4.5 supports a
+# subset of these events.
 
 event:0x1f05e counters:0 um:zero minimum:100000 name:PM_1LPAR_CYC : Number of cycles in single lpar mode.
 event:0x2006e counters:1 um:zero minimum:10000 name:PM_2LPAR_CYC : Number of cycles in 2 lpar mode.
@@ -107,45 +112,45 @@ event:0x16082 counters:0 um:zero minimum:10000 name:PM_CO0_BUSY : CO mach 0 Busy
 ## note 1 event:0x527084 counters:1 um:zero minimum:10000 name:PM_CO_TM_SC_FOOTPRINT : L2 did a cleanifdirty CO to the L3 (ie created an SC line in the L3)
 event:0x3608a counters:2 um:zero minimum:10000 name:PM_CO_USAGE : Continuous 16 cycle(2to1) window where this signals rotates thru sampling each L2 CO machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
 event:0x40066 counters:3 um:zero minimum:10000 name:PM_CRU_FIN : IFU Finished a (non-branch) instruction.
-## note 1 event:0x61c050 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_CHIP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was chip pump (prediction=correct) for a demand load
-## note 1 event:0x64c048 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c048 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c04c counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c04c counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c042 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c046 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c046 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c04e counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c040 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c040 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c050 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_CHIP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was chip pump (prediction=correct) for a demand load
+event:0x64c048 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c048 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c04c counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c04c counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c042 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c046 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c046 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c04e counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L2 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c040 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c040 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
 event:0x62c040 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_MEPF : The processor's data cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c040 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c042 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c044 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c044 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c044 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c046 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c04e counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c042 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c042 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c044 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c04c counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c048 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c04c counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x64c04a counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c048 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c046 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x61c04a counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c04a counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x63c04a counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
-## note 1 event:0x62c050 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was group pump for a demand load
-## note 1 event:0x62c052 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope OR Final Pump Scope(Group) got data from source that was at smaller scope(Chip) Final pump was group pump and initial pump was chip or final and initial pump was gro
-## note 1 event:0x61c052 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED_RTY : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope (Chip) Final pump was group pump and initial pump was chip pumpfor a demand load
-## note 1 event:0x61c054 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for a demand load
-## note 1 event:0x64c052 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor a demand load
-## note 1 event:0x63c050 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was system pump for a demand load
-## note 1 event:0x63c052 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope(Chip/Group) OR Final Pump Scope(system) got data from source that was at smaller scope(Chip/group) Final pump was system pump and initial pump was chip or group or
-## note 1 event:0x64c050 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED_RTY : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope (Chip or Group) for a demand load
+event:0x61c040 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c042 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c044 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c044 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c044 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c046 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c04e counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3MISS_MOD : The processor's data cache was reloaded from a localtion other than the local core's L3 due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c042 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c042 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c044 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c04c counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c048 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c04c counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x64c04a counters:3 um:zero minimum:10000 name:PM_DATA_ALL_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c048 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c046 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x61c04a counters:0 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c04a counters:1 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x63c04a counters:2 um:zero minimum:10000 name:PM_DATA_ALL_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1
+event:0x62c050 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was group pump for a demand load
+event:0x62c052 counters:1 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope OR Final Pump Scope(Group) got data from source that was at smaller scope(Chip) Final pump was group pump and initial pump was chip or final and initial pump was gro
+event:0x61c052 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_GRP_PUMP_MPRED_RTY : Final Pump Scope(Group) to get data sourced, ended up larger than Initial Pump Scope (Chip) Final pump was group pump and initial pump was chip pumpfor a demand load
+event:0x61c054 counters:0 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for a demand load
+event:0x64c052 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor a demand load
+event:0x63c050 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was system pump for a demand load
+event:0x63c052 counters:2 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope(Chip/Group) OR Final Pump Scope(system) got data from source that was at smaller scope(Chip/group) Final pump was system pump and initial pump was chip or group or
+event:0x64c050 counters:3 um:zero minimum:10000 name:PM_DATA_ALL_SYS_PUMP_MPRED_RTY : Final Pump Scope(system) to get data sourced, ended up larger than Initial Pump Scope (Chip or Group) for a demand load
 event:0x1c050 counters:0 um:zero minimum:10000 name:PM_DATA_CHIP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was chip pump (prediction=correct) for a demand load.
 event:0x4c048 counters:3 um:zero minimum:10000 name:PM_DATA_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1.
 event:0x3c048 counters:2 um:zero minimum:10000 name:PM_DATA_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to either only demand loads or demand loads plus prefetches if MMCR1[16] is 1.
@@ -465,10 +470,10 @@ event:0x30a8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VS0 : VS0 IS
 event:0x30aa counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VS1 : VS1 ISU reject
 event:0x38a8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_VSU : ISU
 event:0x30b8 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISYNC : Isync count per thread
-## note1 event:0x200301ea counters:2 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_1024 : Reload latency exceeded 1024 cyc
-## note1 event:0x200401ec counters:3 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_2048 : Reload latency exceeded 2048 cyc
-## note1 event:0x200101e8 counters:0 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_256 : Reload latency exceeded 256 cyc
-## note1 event:0x200201e6 counters:1 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_32 : Reload latency exceeded 32 cyc
+event:0x200301ea counters:2 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_1024 : Reload latency exceeded 1024 cyc
+event:0x200401ec counters:3 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_2048 : Reload latency exceeded 2048 cyc
+event:0x200101e8 counters:0 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_256 : Reload latency exceeded 256 cyc
+event:0x200201e6 counters:1 um:L1_latency minimum:10000 name:PM_L1MISS_LAT_EXC_32 : Reload latency exceeded 32 cyc
 event:0x26086 counters:1 um:zero minimum:10000 name:PM_L1PF_L2MEMACC : valid when first beat of data comes in for an L1pref where data came from mem(or L4)
 event:0x1002c counters:0 um:zero minimum:10000 name:PM_L1_DCACHE_RELOADED_ALL : L1 data cache reloaded for demand or prefetch .
 event:0x408c counters:0,1,2,3 um:zero minimum:10000 name:PM_L1_DEMAND_WRITE : Instruction Demand sectors wriittent into IL1
@@ -512,15 +517,15 @@ event:0x17082 counters:0 um:zero minimum:10000 name:PM_L2_ST_MISS : All successf
 event:0x37088 counters:2 um:zero minimum:10000 name:PM_L2_SYS_PUMP : RC requests that were system pump attempts
 event:0x1e05e counters:0 um:zero minimum:10000 name:PM_L2_TM_REQ_ABORT : TM abort.
 event:0x3e05c counters:2 um:zero minimum:10000 name:PM_L2_TM_ST_ABORT_SISTER : TM marked store abort.
-## note1 event:0x23808a counters:2 um:zero minimum:10000 name:PM_L3_CINJ : l3 ci of cache inject
-## note1 event:0x128084 counters:1 um:zero minimum:10000 name:PM_L3_CI_HIT : L3 Castins Hit (total count
-## note1 event:0x128086 counters:1 um:zero minimum:10000 name:PM_L3_CI_MISS : L3 castins miss (total count
+## note 1 event:0x23808a counters:2 um:zero minimum:10000 name:PM_L3_CINJ : l3 ci of cache inject
+## note 1 event:0x128084 counters:1 um:zero minimum:10000 name:PM_L3_CI_HIT : L3 Castins Hit (total count
+## note 1 event:0x128086 counters:1 um:zero minimum:10000 name:PM_L3_CI_MISS : L3 castins miss (total count
 event:0x819082 counters:0 um:zero minimum:10000 name:PM_L3_CI_USAGE : rotating sample of 16 CI or CO actives
 ## note 1 event:0x438088 counters:2 um:zero minimum:10000 name:PM_L3_CO : l3 castout occuring ( does not include casthrough or log writes (cinj/dmaw)
 event:0x83908b counters:2 um:zero minimum:10000 name:PM_L3_CO0_ALLOC : 0.0
 event:0x83908a counters:2 um:zero minimum:10000 name:PM_L3_CO0_BUSY : lifetime, sample of CO machine 0 valid
 event:0x28086 counters:1 um:zero minimum:10000 name:PM_L3_CO_L31 : L3 CO to L3.1 OR of port 0 and 1 ( lossy)
-## note1 event:0x238088 counters:2 um:zero minimum:10000 name:PM_L3_CO_LCO : Total L3 castouts occurred on LCO
+## note 1 event:0x238088 counters:2 um:zero minimum:10000 name:PM_L3_CO_LCO : Total L3 castouts occurred on LCO
 event:0x28084 counters:1 um:zero minimum:10000 name:PM_L3_CO_MEM : L3 CO to memory OR of port 0 and 1 ( lossy)
 event:0x18082 counters:0 um:zero minimum:10000 name:PM_L3_CO_MEPF : L3 CO of line in Mep state ( includes casthrough)
 ## note 1 event:0xb19082 counters:0 um:zero minimum:10000 name:PM_L3_GRP_GUESS_CORRECT : Initial scope=group and data from same group (near) (pred successful)
@@ -893,10 +898,10 @@ event:0x10054 counters:0 um:zero minimum:10000 name:PM_PUMP_CPRED : Pump predict
 event:0x40052 counters:3 um:zero minimum:10000 name:PM_PUMP_MPRED : Pump Mis prediction Counts across all types of pumpsfor all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate).
 event:0x16081 counters:0 um:zero minimum:10000 name:PM_RC0_ALLOC : 0.0
 event:0x16080 counters:0 um:zero minimum:10000 name:PM_RC0_BUSY : RC mach 0 Busy. Used by PMU to sample ave RC livetime(mach0 used as sample point)
-## note 1 event:0x200301ea counters:2 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_1024 : Reload latency exceeded 1024 cyc
-## note 1 event:0x200401ec counters:3 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_2048 : Threshold counter exceeded a value of 2048
-## note 1 event:0x200101e8 counters:0 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_256 : Threshold counter exceed a count of 256
-## note 1 event:0x200201e6 counters:1 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_32 : Reload latency exceeded 32 cyc
+event:0x200301ea counters:2 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_1024 : Reload latency exceeded 1024 cyc
+event:0x200401ec counters:3 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_2048 : Threshold counter exceeded a value of 2048
+event:0x200101e8 counters:0 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_256 : Threshold counter exceed a count of 256
+event:0x200201e6 counters:1 um:rc_machine minimum:10000 name:PM_RC_LIFETIME_EXC_32 : Reload latency exceeded 32 cyc
 event:0x36088 counters:2 um:zero minimum:10000 name:PM_RC_USAGE : Continuous 16 cycle(2to1) window where this signals rotates thru sampling each L2 RC machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
 ## note 1 event:0x34808e counters:3 um:zero minimum:10000 name:PM_RD_CLEARING_SC : rd clearing sc
 ## note 1 event:0x34808c counters:3 um:zero minimum:10000 name:PM_RD_FORMING_SC : rd forming sc
