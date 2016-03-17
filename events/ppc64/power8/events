@@ -455,13 +455,13 @@ event:0x3504a counters:2 um:zero minimum:10000 name:PM_IPTEG_FROM_RMEM : A Page 
 event:0x4608e counters:3 um:zero minimum:10000 name:PM_ISIDE_L2MEMACC : valid when first beat of data comes in for an i-side fetch where data came from mem(or L4)
 ## note 1 event:0x44608e counters:3 um:zero minimum:10000 name:PM_ISIDE_MRU_TOUCH : Iside L2 MRU touch
 event:0xd096 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISLB_MISS : I SLB Miss.
-event:0x30ac counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_FX0 : FX0 ISU reject
-event:0x30ae counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_FX1 : FX1 ISU reject
+event:0x30ac counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_FX0 : FX0 ISU reject
+event:0x30ae counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_FX1 : FX1 ISU reject
 event:0x38ac counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_FXU : ISU
-event:0x30b0 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_LS0 : LS0 ISU reject
-event:0x30b2 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_LS1 : LS1 ISU reject
-event:0x30b4 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_LS2 : LS2 ISU reject
-event:0x30b6 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REF_LS3 : LS3 ISU reject
+event:0x30b0 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_LS0 : LS0 ISU reject
+event:0x30b2 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_LS1 : LS1 ISU reject
+event:0x30b4 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_LS2 : LS2 ISU reject
+event:0x30b6 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJ_LS3 : LS3 ISU reject
 event:0x309c counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJECTS_ALL : All isu rejects could be more than 1 per cycle
 event:0x30a2 counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJECT_RES_NA : ISU reject due to resource not available
 event:0x309e counters:0,1,2,3 um:zero minimum:10000 name:PM_ISU_REJECT_SAR_BYPASS : Reject because of SAR bypass
