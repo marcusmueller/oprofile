@@ -87,8 +87,9 @@ bool track_new_forks;
 
 
 #define DEFAULT_OPERF_OUTFILE "operf.data"
-#define KERN_ADDR_SPACE_START_SYMBOL  "_text"
+#define KERN_ADDR_SPACE_START_SYMBOL  "_stext"
 #define KERN_ADDR_SPACE_END_SYMBOL    "_etext"
+#define KERN_ADDR_SPACE_START_SYMBOL_OBSOLETE  "_text"
 
 static operf_record * operfRecord = NULL;
 static char * app_name_SAVE = NULL;
@@ -1141,6 +1142,22 @@ static bool _process_kallsyms(void)
 		iss >> type;
 		iss >> name;
 
+		/* accept _text as the start symbol only in case there is no _stext
+		 * because _stext has higher priority
+		*/
+		if (start_addr_str.empty()) {
+			if (strncmp(name.c_str(), KERN_ADDR_SPACE_START_SYMBOL_OBSOLETE,
+					strlen(name.c_str())) == 0) {
+				/* found the symbol for the start of the kernel
+				 * address space.
+				*/
+				start_addr_str.assign(address_str);
+			}
+		}
+
+		/* if _stext is found, it will overwrite the _text if it has been
+		 * already found
+		*/
 		if (strncmp(name.c_str(), KERN_ADDR_SPACE_START_SYMBOL,
 			    strlen(name.c_str())) == 0) {
 			/* found the symbol for the start of the kernel
