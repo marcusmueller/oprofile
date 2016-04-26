@@ -162,6 +162,9 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x4d:
 		case 0x4c:
 			return CPU_SILVERMONT;
+		case 0x5c:
+		case 0x5f:
+			return CPU_GOLDMONT;
 		}
 	}
 	return cpu_type;

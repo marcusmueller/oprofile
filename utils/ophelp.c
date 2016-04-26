@@ -544,6 +544,7 @@ int main(int argc, char const * argv[])
 	case CPU_BROADWELL:
 	case CPU_SKYLAKE:
 	case CPU_SILVERMONT:
+	case CPU_GOLDMONT:
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
 	case CPU_IVYBRIDGE:
