@@ -157,6 +157,8 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x4e:
 		case 0x5e:
 		case 0x55:
+		case 0x8e:
+		case 0x9e:
 			return CPU_SKYLAKE;
 		case 0x37:
 		case 0x4d:
