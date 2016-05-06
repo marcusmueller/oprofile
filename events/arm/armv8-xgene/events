@@ -2,6 +2,121 @@
 # Copyright (c) Red Hat, 2014.
 # Contributed by William Cohen <wcohen@redhat.com>
 #
-# Basic ARM V8 events
+# Applied Micro X-Gene events
 #
-include:arm/armv8-pmuv3-common
+# The X-Gene processor excludes a few of the basic ARMv8 architected events.
+# Thus, need to explicitly list them rather than include
+# arm/armv8-pmuv3-common
+
+# The basic ARMv8 architect events supported by X-Gene
+event:0x00 um:zero minimum:500 name:SW_INCR : Instruction architecturally executed, condition code check pass, software increment
+event:0x01 um:zero minimum:5000 name:L1I_CACHE_REFILL : Level 1 instruction cache refill
+event:0x02 um:zero minimum:5000 name:L1I_TLB_REFILL : Level 1 instruction TLB refill
+event:0x03 um:zero minimum:5000 name:L1D_CACHE_REFILL : Level 1 data cache refill
+event:0x04 um:zero minimum:5000 name:L1D_CACHE : Level 1 data cache access
+event:0x05 um:zero minimum:5000 name:L1D_TLB_REFILL : Level 1 data TLB refill
+# event:0x06 um:zero minimum:100000 name:LD_RETIRED : Instruction architecturally executed, condition code check pass, load
+# event:0x07 um:zero minimum:100000 name:ST_RETIRED : Instruction architecturally executed, condition code check pass, store
+event:0x08 um:zero minimum:100000 name:INST_RETIRED : Instruction architecturally executed
+event:0x09 um:zero minimum:500 name:EXC_TAKEN : Exception taken
+event:0x0A um:zero minimum:500 name:EXC_RETURN : Instruction architecturally executed, condition code check pass, exception return
+event:0x0B um:zero minimum:500 name:CID_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, write to CONTEXTIDR
+# event:0x0C um:zero minimum:5000 name:PC_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, software change of the PC
+# event:0x0D um:zero minimum:5000 name:BR_IMMED_RETIRED : Instruction architecturally executed, immediate branch
+# event:0x0E um:zero minimum:5000 name:BR_RETURN_RETIRED : Instruction architecturally executed, condition code check pass, procedure return
+# event:0x0F um:zero minimum:500 name:UNALIGNED_LDST_RETIRED : Instruction architecturally executed, condition code check pass, unaligned load or store
+event:0x10 um:zero minimum:5000 name:BR_MIS_PRED : Mispredicted or not predicted branch speculatively executed
+event:0x11 um:zero minimum:100000 name:CPU_CYCLES : Cycle
+event:0x12 um:zero minimum:5000 name:BR_PRED : Predictable branch speculatively executed
+event:0x13 um:zero minimum:100000 name:MEM_ACCESS : Data memory access
+event:0x14 um:zero minimum:5000 name:L1I_CACHE : Level 1 instruction cache access
+# event:0x15 um:zero minimum:5000 name:L1D_CACHE_WB : Level 1 data cache write-back
+event:0x16 um:zero minimum:5000 name:L2D_CACHE : Level 2 data cache access
+event:0x17 um:zero minimum:5000 name:L2D_CACHE_REFILL : Level 2 data cache refill
+event:0x18 um:zero minimum:5000 name:L2D_CACHE_WB : Level 2 data cache write-back
+event:0x19 um:zero minimum:5000 name:BUS_ACCESS : Bus access
+event:0x1A um:zero minimum:500 name:MEMORY_ERROR : Local memory error
+event:0x1B um:zero minimum:100000 name:INST_SPEC : Operation speculatively executed
+event:0x1C um:zero minimum:5000 name:TTBR_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, write to TTBR
+# event:0x1D um:zero minimum:5000 name:BUS_CYCLES : Bus cycle
+# event:0x1F um:zero minimum:5000 name:L1D_CACHE_ALLOCATE : Level 1 data cache allocation without refill
+# event:0x20 um:zero minimum:5000 name:L2D_CACHE_ALLOCATE : Level 2 data cache allocation without refill
+# X-Gene specific events
+event:0x040 um:zero minimum:10007 name:L1D_CACHE_LD : L1 data cache access - Read
+event:0x041 um:zero minimum:10007 name:L1D_CACHE_ST : L1 data cache access - Write
+event:0x042 um:zero minimum:10007 name:L1D_CACHE_REFILL_LD : L1 data cache refill - Read
+event:0x048 um:zero minimum:10007 name:L1D_CACHE_INVAL : L1 data cache invalidate
+event:0x04C um:zero minimum:10007 name:L1D_TLB_REFILL_LD : L1 data TLB refill - Read
+event:0x04D um:zero minimum:10007 name:L1D_TLB_REFILL_ST : L1 data TLB refill - Write
+event:0x050 um:zero minimum:10007 name:L2D_CACHE_LD : L2 data cache access - Read
+event:0x051 um:zero minimum:10007 name:L2D_CACHE_ST : L2 data cache access - Write
+event:0x052 um:zero minimum:10007 name:L2D_CACHE_REFILL_LD : L2 data cache refill - Read
+event:0x053 um:zero minimum:10007 name:L2D_CACHE_REFILL_ST : L2 data cache refill - Write
+event:0x056 um:zero minimum:10007 name:L2D_CACHE_WB_VICTIM : L2 data cache write-back - victim
+event:0x057 um:zero minimum:10007 name:L2D_CACHE_WB_CLEAN : L2 data cache write-back - Cleaning and coherency
+event:0x058 um:zero minimum:10007 name:L2D_CACHE_INVAL : L2 data cache invalidate
+event:0x060 um:zero minimum:10007 name:BUS_ACCESS_LD : Bus access - Read
+event:0x061 um:zero minimum:10007 name:BUS_ACCESS_ST : Bus access - Write
+event:0x062 um:zero minimum:10007 name:BUS_ACCESS_SHARED : Bus access - Normal, cacheable, sharable
+event:0x063 um:zero minimum:10007 name:BUS_ACCESS_NOT_SHARED : Bus access - Not normal, cacheable, sharable
+event:0x064 um:zero minimum:10007 name:BUS_ACCESS_NORMAL : Bus access - Normal
+event:0x065 um:zero minimum:10007 name:BUS_ACCESS_PERIPH : Bus access - Peripheral
+event:0x066 um:zero minimum:10007 name:MEM_ACCESS_LD : Data memory access - Read
+event:0x067 um:zero minimum:10007 name:MEM_ACCESS_ST : Data memory access - write
+event:0x068 um:zero minimum:10007 name:UNALIGNED_LD_SPEC : Unaligned access - Read
+event:0x069 um:zero minimum:10007 name:UNALIGNED_ST_SPEC : Unaligned access - Write
+event:0x06A um:zero minimum:10007 name:UNALIGNED_LDST_SPEC : Unaligned access
+event:0x06C um:zero minimum:10007 name:LDREX_SPEC : Exclusive operation speculatively executed - Load exclusive
+event:0x06D um:zero minimum:10007 name:STREX_PASS_SPEC : Exclusive operation speculative executed - Store exclusive pass
+event:0x06E um:zero minimum:10007 name:STREX_FAIL_SPEC : Exclusive operation speculative executed - Store exclusive fail
+event:0x06F um:zero minimum:10007 name:STREX_SPEC : Exclusive operation speculatively executed - Store exclusive
+event:0x070 um:zero minimum:10007 name:LD_SPEC : Operation speculatively executed - Load
+event:0x071 um:zero minimum:10007 name:ST_SPEC : Operation speculatively executed - Store
+event:0x072 um:zero minimum:10007 name:LDST_SPEC : Operation speculatively executed - Load or store
+event:0x073 um:zero minimum:10007 name:DP_SPEC : Operation speculatively executed - Integer data processing
+event:0x074 um:zero minimum:10007 name:ASE_SPEC : Operation speculatively executed - Advanced SIMD
+event:0x075 um:zero minimum:10007 name:VFP_SPEC : Operation speculatively executed - FP
+event:0x076 um:zero minimum:10007 name:PC_WRITE_SPEC : Operation speculatively executed - Software change of PC
+event:0x078 um:zero minimum:10007 name:BR_IMMED_SPEC : Branch speculative executed - Immediate branch
+event:0x079 um:zero minimum:10007 name:BR_RETURN_SPEC : Branch speculative executed - Procedure return
+event:0x07A um:zero minimum:10007 name:BR_INDIRECT_SPEC : Branch speculative executed - Indirect branch
+event:0x07C um:zero minimum:10007 name:ISB_SPEC : Barrier speculatively executed - ISB
+event:0x07D um:zero minimum:10007 name:DSB_SPEC : Barrier speculatively executed - DSB
+event:0x07E um:zero minimum:10007 name:DMB_SPEC : Barrier speculatively executed - DMB
+event:0x081 um:zero minimum:10007 name:EXC_UNDEF : Exception taken, other synchronous
+event:0x082 um:zero minimum:10007 name:EXC_SVC : Exception taken, Supervisor Call
+event:0x083 um:zero minimum:10007 name:EXC_PABORT : Exception taken, Instruction Abort
+event:0x084 um:zero minimum:10007 name:EXC_DABORT : Exception taken, Data Abort or SError
+event:0x086 um:zero minimum:10007 name:EXC_IRQ : Exception taken, IRQ
+event:0x087 um:zero minimum:10007 name:EXC_FIQ : Exception taken, FIQ
+event:0x08A um:zero minimum:10007 name:EXC_HVC : Exception taken, Hypervisor Call
+event:0x08B um:zero minimum:10007 name:EXC_TRAP_PABORT : Exception taken, Instruction Abort not taken locally
+event:0x08C um:zero minimum:10007 name:EXC_TRAP_DABORT : Exception taken, Data Abort or SError not taken locally
+event:0x08D um:zero minimum:10007 name:EXC_TRAP_OTHER : Exception taken, other traps not taken locally
+event:0x08E um:zero minimum:10007 name:EXC_TRAP_IRQ : Exception taken, IRQ not taken locally
+event:0x08F um:zero minimum:10007 name:EXC_TRAP_FIQ : Exception taken, FIQ not taken locally
+event:0x090 um:zero minimum:10007 name:RC_LD_SPEC : Release consistency instruction speculatively executed - Load Acquire
+event:0x091 um:zero minimum:10007 name:RC_ST_SPEC : Release consistency instruction speculatively executed - Store Release
+event:0x100 um:zero minimum:10007 name:NOP_SPEC : Operation speculatively executed - NOP
+event:0x101 um:zero minimum:10007 name:FSU_CLOCK_OFF_CYCLES : FSU clocking gated off cycle
+event:0x102 um:zero minimum:10007 name:BTB_MIS_PRED : BTB misprediction
+event:0x103 um:zero minimum:10007 name:ITB_MISS : ITB miss
+event:0x104 um:zero minimum:10007 name:DTB_MISS : DTB miss
+event:0x105 um:zero minimum:10007 name:L1D_CACHE_LATE_MISS : L1 data cache late miss
+event:0x106 um:zero minimum:10007 name:L1D_CACHE_PREFETCH : L1 data cache prefetch request
+event:0x107 um:zero minimum:10007 name:L2D_CACHE_PREFETCH : L2 data prefetch request
+event:0x108 um:zero minimum:10007 name:DECODE_STALL : Decode starved for instruction cycle
+event:0x109 um:zero minimum:10007 name:DISPATCH_STALL : Op dispatch stalled cycle
+event:0x10A um:zero minimum:10007 name:IXA_STALL : IXA Op non-issue
+event:0x10B um:zero minimum:10007 name:IXB_STALL : IXB Op non-issue
+event:0x10C um:zero minimum:10007 name:BX_STALL : BX Op non-issue
+event:0x10D um:zero minimum:10007 name:LX_STALL : LX Op non-issue
+event:0x10E um:zero minimum:10007 name:SX_STALL : SX Op non-issue
+event:0x10F um:zero minimum:10007 name:FX_STALL : FX Op non-issue
+event:0x110 um:zero minimum:10007 name:WAIT_CYCLES : Wait state cycle
+event:0x111 um:zero minimum:10007 name:L1_STAGE2_TLB_REFILL : L1 stage-2 TLB refill
+event:0x112 um:zero minimum:10007 name:PAGE_WALK_L0_STAGE1_HIT : Page Walk Cache level-0 stage-1 hit
+event:0x113 um:zero minimum:10007 name:PAGE_WALK_L1_STAGE1_HIT : Page Walk Cache level-1 stage-1 hit
+event:0x114 um:zero minimum:10007 name:PAGE_WALK_L2_STAGE1_HIT : Page Walk Cache level-2 stage-1 hit
+event:0x115 um:zero minimum:10007 name:PAGE_WALK_L1_STAGE2_HIT : Page Walk Cache level-1 stage-2 hit
+event:0x116 um:zero minimum:10007 name:PAGE_WALK_L2_STAGE2_HIT : Page Walk Cache level-2 stage-2 hit
