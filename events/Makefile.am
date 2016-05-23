@@ -81,7 +81,8 @@ event_files = \
 	tile/tilegx/events tile/tilegx/unit_masks \
 	s390/z10/events s390/z10/unit_masks \
 	s390/z196/events s390/z196/unit_masks \
-	s390/zEC12/events s390/zEC12/unit_masks
+	s390/zEC12/events s390/zEC12/unit_masks \
+	s390/z13/events s390/z13/unit_masks
 
 install-data-local:
 	for i in ${event_files} ; do \

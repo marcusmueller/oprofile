@@ -779,6 +779,7 @@ int main(int argc, char const * argv[])
 	case CPU_S390_Z10:
 	case CPU_S390_Z196:
 	case CPU_S390_ZEC12:
+	case CPU_S390_Z13:
 		event_doc = "IBM System z CPU Measurement Facility\n"
 				"http://www-01.ibm.com/support/docview.wss"
 				"?uid=isg26fcd1cc32246f4c8852574ce0044734a\n";
