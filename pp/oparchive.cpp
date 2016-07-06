@@ -232,6 +232,19 @@ int oparchive(options::spec const & spec)
 		}
 	}
 
+	/* place samples and other related material in easily found default directory */
+	string dest_session_dir = options::outdirectory + string(OP_SESSION_DIR_DEFAULT);
+	string dest_samples_dir = dest_session_dir + string("samples");
+
+	/* dest_session_dir is parent of dest_samples and will also created */
+
+	if (!options::list_files &&
+	    create_path(dest_samples_dir.c_str())) {
+		cerr << "Unable to create directory for "
+		     <<	dest_samples_dir << "." << endl;
+		exit (EXIT_FAILURE);
+	}
+
 	/* copy over each of the sample files */
 	list<string>::iterator sit = sample_files.begin();
 	list<string>::iterator const send = sample_files.end();
@@ -245,9 +258,13 @@ int oparchive(options::spec const & spec)
 
 	for (; sit != send; ++sit) {
 		string sample_name = *sit;
+		/* determine the session name of sample file */
+		int offset = sample_name.find('{');
+		string base_samples_dir = sample_name.substr(0, offset-1);
+		string session = basename(base_samples_dir.c_str());
 		/* Get rid of the the archive_path from the name */
-		string sample_base = sample_name.substr(archive_path.size());
-		string sample_archive_file = options::outdirectory + sample_base;
+		string sample_base = sample_name.substr(offset);
+		string sample_archive_file = dest_samples_dir + "/" + session + "/" + sample_base;
 		
 		cverb << vdebug << sample_name << endl;
 		cverb << vdebug << " destp " << sample_archive_file << endl;
@@ -268,19 +285,19 @@ int oparchive(options::spec const & spec)
 		cerr << "Unable to to obtain realpath for " << op_session_dir << endl;
 		exit (EXIT_FAILURE);
 	}
-	string abi_name = string(real_session_dir) + "/abi";
-	copy_one_file(image_ok, archive_path + abi_name,
-	              options::outdirectory + abi_name);
+	string abi_name = string(real_session_dir) + string("/abi");
+	string dest_abi_name = dest_session_dir + string("/abi");
+	copy_one_file(image_ok, archive_path + abi_name, dest_abi_name);
 
 	/* copy over the <session-dir>/samples/oprofiled.log file */
-	string log_name = string(real_session_dir) + string("/samples") + "/oprofiled.log";
-	copy_one_file(image_ok, archive_path + log_name,
-	              options::outdirectory + log_name);
+	string log_name = string(real_session_dir) + string("/samples") + string("/oprofiled.log");
+	string dest_log_name = dest_samples_dir + string("/oprofiled.log");
+	copy_one_file(image_ok, archive_path + log_name, dest_log_name);
 
 	/* copy over the <session-dir>/samples/operf.log file */
-	log_name = string(real_session_dir) + string("/samples") + "/operf.log";
-	copy_one_file(image_ok, archive_path + log_name,
-	              options::outdirectory + log_name);
+	log_name = string(real_session_dir) + string("/samples") + string("/operf.log");
+	dest_log_name = dest_samples_dir + string("/operf.log");
+	copy_one_file(image_ok, archive_path + log_name, dest_log_name);
 
 	free(real_session_dir);
 

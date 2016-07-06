@@ -102,6 +102,8 @@ void profile_spec::set_image_or_lib_name(string const & str)
 void profile_spec::parse_archive_path(string const & str)
 {
 	archive_path = op_realpath(str);
+	/* Need to force session directory default location in the archive */
+	init_op_config_dirs(OP_SESSION_DIR_DEFAULT);
 }
 
 
