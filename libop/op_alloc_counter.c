@@ -171,7 +171,7 @@ size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
 	/* no counters then probably perfmon managing perfmon hw */
 	if (nr_counters <= 0) {
 		nr_counters = op_get_nr_counters(cpu_type);
-		unavailable_counters = (~0) << nr_counters;
+		unavailable_counters = (~0U) << nr_counters;
 	}
 
 	/* Check to see if we have enough physical counters to map events*/
