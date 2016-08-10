@@ -257,16 +257,6 @@ bool start_counting(void)
 		proc_list = ocount_options::processes;
 	}
 
-	if (startApp) {
-		// Tell app_PID to start the app
-		cverb << vdebug << "telling child to start app" << endl;
-		if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
-			perror("Internal error on start_app_pipe");
-			return false;
-		}
-		app_started = true;
-	}
-
 	orecord = new ocount_record(runmode, events, ocount_options::display_interval ? true : false);
 	bool ret;
 	switch (runmode) {
@@ -298,6 +288,16 @@ bool start_counting(void)
 		 */
 		cverb << vdebug << "ocount record init failed" << endl;
 		ret = false;
+	}
+
+	if (startApp && ret != false) {
+		// Tell app_PID to start the app
+		cverb << vdebug << "telling child to start app" << endl;
+		if (write(start_app_pipe[1], &startup, sizeof(startup)) < 0) {
+			perror("Internal error on start_app_pipe");
+			return false;
+		}
+		app_started = true;
 	}
 
 	return ret;
