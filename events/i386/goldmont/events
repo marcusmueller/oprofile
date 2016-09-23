@@ -6,7 +6,7 @@
 # Note the minimum counts are not discovered experimentally and could be likely
 # lowered in many cases without ill effect.
 #
-event:0x00 counters:cpuid um:cpu_clk_unhalted minimum:2000003 name:cpu_clk_unhalted :
+event:0x3c counters:cpuid um:cpu_clk_unhalted minimum:2000003 name:cpu_clk_unhalted :
 event:0x03 counters:cpuid um:ld_blocks minimum:200003 name:ld_blocks :
 event:0x05 counters:cpuid um:page_walks minimum:200003 name:page_walks :
 event:0x0e counters:cpuid um:uops_issued minimum:200003 name:uops_issued_any :
