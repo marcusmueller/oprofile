@@ -668,20 +668,19 @@ static op_cpu _get_s390_cpu_type(void)
 		return CPU_NO_GOOD;
 
 	ptr += sizeof(prefix) - 1;
-	if (sscanf(ptr, "%u", &model) != 1)
-		return CPU_NO_GOOD;
+	model = strtol(ptr, NULL, 16);
 
 	switch (model) {
-	case 2097:
-	case 2098:
+	case 0x2097:
+	case 0x2098:
 		return CPU_S390_Z10;
-	case 2817:
-	case 2818:
+	case 0x2817:
+	case 0x2818:
 		return CPU_S390_Z196;
-	case 2827:
-	case 2828:
+	case 0x2827:
+	case 0x2828:
 		return CPU_S390_ZEC12;
-	case 2964:
+	case 0x2964:
 		return CPU_S390_Z13;
 	}
 	return CPU_NO_GOOD;
