@@ -124,6 +124,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Intel Skylake microarchitecture", "i386/skylake", CPU_SKYLAKE, 4 },
 	{ "Intel Goldmont microarchitecture", "i386/goldmont", CPU_GOLDMONT, 4 },
 	{ "IBM z13", "s390/z13", CPU_S390_Z13, 1 },
+	{ "ARM Cortex-A17", "arm/armv7-ca17", CPU_ARM_V7_CA17, 7 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -413,6 +414,8 @@ static op_cpu _get_arm_cpu_type(void)
 			return op_get_cpu_number("arm/armv7-ca9");
 		case 0xc0f:
 			return op_get_cpu_number("arm/armv7-ca15");
+		case 0xc0e:
+			return op_get_cpu_number("arm/armv7-ca17");
 		case 0xd07:
 			return op_get_cpu_number("arm/armv8-ca57");
 		case 0xd03:

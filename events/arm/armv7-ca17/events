@@ -1,0 +1,77 @@
+# ARM Cortex A17 events
+# From Cortex A17 TRM
+#
+include:arm/armv7-common
+
+event:0x40 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_LD : Level 1 data cache access, read
+event:0x41 counters:1,2,3,4,5,6 um:zero minimum:500 name:L1D_CACHE_ST : Level 1 data cache access, write
+
+event:0x50 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_LD : Level 2 data cache access, read
+event:0x51 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_ST : Level 2 data cache access, write
+
+event:0x56 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_WB_VICTIM : Level 2 data cache write-back, victim
+event:0x57 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_WB_CLEAN : Level 2 data cache write-back, cleaning and coherency
+event:0x58 counters:1,2,3,4,5,6 um:zero minimum:500 name:L2D_CACHE_INVAL : Level 2 data cache invalidate
+
+event:0x62 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_SHARED : Bus access, normal, cacheable, shareable
+event:0x63 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_NOT_SHARED : Bus access, not normal, cacheable, shareable
+event:0x64 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_NORMAL : Bus access, normal
+event:0x65 counters:1,2,3,4,5,6 um:zero minimum:500 name:BUS_ACCESS_PERIPH : Bus access, peripheral
+event:0x66 counters:1,2,3,4,5,6 um:zero minimum:500 name:MEM_ACCESS_LD : Data memory access, read
+event:0x67 counters:1,2,3,4,5,6 um:zero minimum:500 name:MEM_ACCESS_ST : Data memory access, write
+event:0x68 counters:1,2,3,4,5,6 um:zero minimum:500 name:UNALIGNED_LD_SPEC : Unaligned access, read
+event:0x69 counters:1,2,3,4,5,6 um:zero minimum:500 name:UNALIGNED_ST_SPEC : Unaligned access, write
+event:0x6A counters:1,2,3,4,5,6 um:zero minimum:500 name:UNALIGNED_LDST_SPEC : Unaligned access
+
+event:0x6C counters:1,2,3,4,5,6 um:zero minimum:500 name:LDREX_SPEC : ldrex instruction speculatively executed
+event:0x6E counters:1,2,3,4,5,6 um:zero minimum:500 name:STREX_FAIL_SPEC : strex instruction speculatively executed, fail
+event:0x6F counters:1,2,3,4,5,6 um:zero minimum:500 name:STREX_SPEC : strex instruction speculatively executed
+
+event:0x70 counters:1,2,3,4,5,6 um:zero minimum:500 name:LD_SPEC : Load instruction speculatively executed
+event:0x71 counters:1,2,3,4,5,6 um:zero minimum:500 name:ST_SPEC : Store instruction speculatively executed
+event:0x72 counters:1,2,3,4,5,6 um:zero minimum:500 name:LDST_SPEC : Load or store instruction speculatively executed
+event:0x73 counters:1,2,3,4,5,6 um:zero minimum:500 name:DP_SPEC : Data processing instruction speculatively executed
+event:0x74 counters:1,2,3,4,5,6 um:zero minimum:500 name:ASE_SPEC : Advanced SIMD extension instruction speculatively executed
+event:0x75 counters:1,2,3,4,5,6 um:zero minimum:500 name:VFP_SPEC : Floating-point extension instruction speculatively executed
+event:0x76 counters:1,2,3,4,5,6 um:zero minimum:500 name:PC_WRITE_SPEC : Software change of the PC instruction speculatively executed
+
+event:0x78 counters:1,2,3,4,5,6 um:zero minimum:500 name:BR_IMMED_SPEC : Immediate branch instruction speculatively executed
+event:0x79 counters:1,2,3,4,5,6 um:zero minimum:500 name:BR_RETURN_SPEC : Procedure return instruction speculatively executed
+event:0x7A counters:1,2,3,4,5,6 um:zero minimum:500 name:BR_INDIRECT_SPEC : Indirect branch instruction speculatively executed
+
+event:0x7C counters:1,2,3,4,5,6 um:zero minimum:500 name:ISB_SPEC : ISB barrier instruction speculatively executed
+event:0x7D counters:1,2,3,4,5,6 um:zero minimum:500 name:DSB_SPEC : DSB barrier instruction speculatively executed
+event:0x7E counters:1,2,3,4,5,6 um:zero minimum:500 name:DMB_SPEC : DMB barrier instruction speculatively executed
+
+event:0x81 counters:1,2,3,4,5,6 um:zero minimum:500 name:EXC_UNDEF : Exception taken, Undefined Instruction
+event:0x8A counters:1,2,3,4,5,6 um:zero minimum:500 name:EXC_HVC : Exception taken, Hypervisor Call
+
+event:0xC0 counters:1,2,3,4,5,6 um:zero minimum:500 name:LF_STALL : Linefill caused an instruction side stall
+event:0xC1 counters:1,2,3,4,5,6 um:zero minimum:500 name:PTW_STALL : Translation table walk caused an instruction side stall
+event:0xC2 counters:1,2,3,4,5,6 um:zero minimum:500 name:I_TAG_RAM_RD : Number of set of 4 ways read in the instruction cache - Tag RAM
+event:0xC3 counters:1,2,3,4,5,6 um:zero minimum:500 name:I_DATA_RAM_RD : Number of ways read in the instruction cache - Data RAM
+event:0xC4 counters:1,2,3,4,5,6 um:zero minimum:500 name:I_BTAC_RAM_RD : Number of ways read in the instruction BTAC RAM
+
+event:0xCA counters:1,2,3,4,5,6 um:zero minimum:500 name:DATA_SNOOP : Data snooped from other processor
+
+event:0xD3 counters:1,2,3,4,5,6 um:zero minimum:500 name:D_LSU_SLOT_FULL : Duration during which all slots in the Load-Store Unit are busy
+event:0xD8 counters:1,2,3,4,5,6 um:zero minimum:500 name:LS_IQ_FULL : Duration during which all slots in the Load-Store Issue queue are busy
+event:0xD9 counters:1,2,3,4,5,6 um:zero minimum:500 name:DP_IQ_FULL : Duration during which all slots in the Data Processing issue queue are busy.
+event:0xDA counters:1,2,3,4,5,6 um:zero minimum:500 name:DE_IQ_FULL : Duration during which all slots in the Data Engine issue queue are busy
+event:0xDB counters:1,2,3,4,5,6 um:zero minimum:500 name:FLUSH_DE_NEON : Number of NEON instruction which fail their condition code and lead to a flush of the DE pipe
+event:0xDC counters:1,2,3,4,5,6 um:zero minimum:500 name:EXC_TRAP_HYP : Number of Trap to hypervisor
+event:0xDE counters:1,2,3,4,5,6 um:zero minimum:500 name:ETM_EXT_OUT0 : PTM EXTOUT 0
+event:0xDF counters:1,2,3,4,5,6 um:zero minimum:500 name:ETM_EXT_OUT1 : PTM EXTOUT 1
+
+event:0xE0 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW : Duration during which the MMU handle a translation table walk.
+event:0xE1 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW_ST1 : Duration during which the MMU handle a Stage1 translation table walk
+event:0xE2 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW_ST2 : Duration during which the MMU handle a Stage2 translation table walk
+event:0xE3 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW_LSU : Duration during which the MMU handle a translation table walk requested by the Load Store Unit
+event:0xE4 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW_ISIDE : Duration during which the MMU handle a translation table walk requested by the Instruction side
+event:0xE5 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW_PLD : 	Duration during which the MMU handle a translation table walk requested by a Preload instruction or Prefetch request
+event:0xE6 counters:1,2,3,4,5,6 um:zero minimum:500 name:MMU_PTW_CP15 : Duration during which the MMU handle a translation table walk requested by a CP15 operation
+event:0xE7 counters:1,2,3,4,5,6 um:zero minimum:500 name:PLD_UTLB_REFILL : Level 1 PLD TLB refill
+event:0xE8 counters:1,2,3,4,5,6 um:zero minimum:500 name:CP15_UTLB_REFILL : Level 1 CP15 TLB refil
+event:0xE9 counters:1,2,3,4,5,6 um:zero minimum:500 name:UTLB_FLUSH : Level 1 TLB flus
+event:0xEA counters:1,2,3,4,5,6 um:zero minimum:500 name:TLB_ACCESS : Level 2 TLB access
+event:0xEB counters:1,2,3,4,5,6 um:zero minimum:500 name:TLB_MISS : Level 2 TLB miss
