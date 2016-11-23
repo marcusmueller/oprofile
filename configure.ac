@@ -320,7 +320,6 @@ AX_CFLAGS_OPTION(OP_CFLAGS,[-Wall])
 AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-Wall])
 AX_CFLAGS_OPTION(OP_CFLAGS,[-fno-common])
 AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-fno-common])
-AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-ftemplate-depth-50])
 AX_CFLAGS_OPTION(OP_CFLAGS,[-Wdeclaration-after-statement])
 
 dnl enable option to use GCC test coverage
