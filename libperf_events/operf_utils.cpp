@@ -1150,7 +1150,7 @@ static int _get_one_process_info(bool sys_wide, pid_t pid, operf_record * pr)
 	pid_t tgid = 0;
 	size_t size = 0;
 	DIR *tids;
-	struct dirent dirent, *next;
+	struct dirent *dirent;
 	int ret = 0;
 
 	snprintf(fname, sizeof(fname), "/proc/%d/status", pid);
@@ -1216,9 +1216,9 @@ static int _get_one_process_info(bool sys_wide, pid_t pid, operf_record * pr)
 		goto out;
 	}
 
-	while (!readdir_r(tids, &dirent, &next) && next) {
+	while ((dirent = readdir(tids))) {
 		char *end;
-		pid = strtol(dirent.d_name, &end, 10);
+		pid = strtol(dirent->d_name, &end, 10);
 		if (*end)
 			continue;
 
@@ -1249,7 +1249,7 @@ int OP_perf_utils::op_get_process_info(bool system_wide, pid_t pid, operf_record
 		ret = _get_one_process_info(system_wide, pid, pr);
 	} else {
 		DIR *pids;
-		struct dirent dirent, *next;
+		struct dirent *dirent;
 
 		pids = opendir("/proc");
 		if (pids == NULL) {
@@ -1257,9 +1257,9 @@ int OP_perf_utils::op_get_process_info(bool system_wide, pid_t pid, operf_record
 			return -1;
 		}
 
-		while (!readdir_r(pids, &dirent, &next) && next) {
+		while ((dirent = readdir(pids))) {
 			char *end;
-			pid = strtol(dirent.d_name, &end, 10);
+			pid = strtol(dirent->d_name, &end, 10);
 			if (*end)
 				continue;
 			if ((ret = _get_one_process_info(system_wide, pid, pr)) < 0)

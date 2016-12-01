@@ -739,7 +739,7 @@ int ocount_record::_get_one_process_info(pid_t pid)
 {
 	char fname[PATH_MAX];
 	DIR *tids;
-	struct dirent dirent, *next;
+	struct dirent *dirent;
 	int ret = 0;
 
 	add_process(pid);
@@ -754,9 +754,9 @@ int ocount_record::_get_one_process_info(pid_t pid)
 			goto out;
 		}
 
-		while (!readdir_r(tids, &dirent, &next) && next) {
+		while ((dirent = readdir(tids))) {
 			char *end;
-			pid = strtol(dirent.d_name, &end, 10);
+			pid = strtol(dirent->d_name, &end, 10);
 			if (*end)
 				continue;
 			add_process(pid);
