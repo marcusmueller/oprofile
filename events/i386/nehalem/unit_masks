@@ -37,7 +37,7 @@ name:mem_inst_retired type:bitmask default:0x01
 	0x02 extra: stores Counts the number of instructions with an architecturally-visible store retired on the architected path
 name:mem_store_retired type:mandatory default:0x01
 	0x01 extra: dtlb_miss The event counts the number of retired stores that missed the DTLB
-name:uops_issued type:bitmask default:0x01
+name:uops_issued type:bitmask default:any
 	0x01 extra: any Counts the number of Uops issued by the Register Allocation Table to the Reservation Station, i
 	0x01 extra: stalled_cycles Counts the number of cycles no Uops issued by the Register Allocation Table to the Reservation Station, i
 	0x02 extra: fused Counts the number of fused Uops that were issued from the Register Allocation Table to the Reservation Station

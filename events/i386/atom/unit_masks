@@ -15,7 +15,7 @@ name:data_tlb_misses type:bitmask default:0x07
 	0x05 extra: dtlb_miss_ld DTLB misses due to load operations
 	0x09 extra: l0_dtlb_miss_ld L0_DTLB misses due to load operations
 	0x06 extra: dtlb_miss_st DTLB misses due to store operations
-name:page_walks type:bitmask default:0x03
+name:page_walks type:bitmask default:walks
 	0x03 extra: walks Number of page-walks executed
 	0x03 extra: cycles Duration of page-walks in core cycles
 name:x87_comp_ops_exe type:bitmask default:0x81
