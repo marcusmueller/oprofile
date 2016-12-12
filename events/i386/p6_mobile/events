@@ -106,7 +106,7 @@ event:0x94 counters:0,1 um:zero minimum:3000 name:BR_IND_CALL_EXEC : Indirect CA
 # Decoder
 event:0xce counters:0,1 um:zero minimum:3000 name:EMON_SIMD_INSTR_RETIRED : Number of retired MMX instructions
 event:0xd3 counters:0,1 um:zero minimum:3000 name:EMON_SYNCH_UOPS : Sync micro-ops
-event:0xd7 counters:0,1 um:zero minimum:3000 name:EMON_SYNCH_UOPS : Total number of micro-ops
+event:0xd7 counters:0,1 um:zero minimum:3000 name:EMON_ESP_UOPS : Total number of micro-ops
 event:0xda counters:0,1 um:fused minimum:3000 name:EMON_FUSED_UOPS_RET : Number of retired fused micro-ops
 event:0xdb counters:0,1 um:zero minimum:3000 name:EMON_UNFUSION : Number of unfusion events in the ROB, happened on a FP exception to a fused uOp
 #

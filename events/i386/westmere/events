@@ -57,9 +57,9 @@ event:0xb1 counters:0,1,2,3 um:uops_executed minimum:2000000 name:UOPS_EXECUTED 
 event:0xb2 counters:0,1,2,3 um:x01 minimum:100000 name:OFFCORE_REQUESTS_SQ_FULL : Offcore requests blocked due to Super Queue full
 event:0xb3 counters:0 um:snoopq_requests_outstanding minimum:2000000 name:SNOOPQ_REQUESTS_OUTSTANDING : Outstanding snoop code requests
 event:0xb4 counters:0,1,2,3 um:snoopq_requests minimum:100000 name:SNOOPQ_REQUESTS : Snoop code requests
-event:0xb7 counters:2 um:x01 minimum:100000 name:OFFCORE_RESPONSE_ANY_DATA : REQUEST = ANY_DATA read and RESPONSE = ANY_CACHE_DRAM
+event:0xb7 counters:2 um:x01 minimum:100000 name:OFFCORE_RESPONSE_ANY_DATA_0 : REQUEST = ANY_DATA read and RESPONSE = ANY_CACHE_DRAM
 event:0xb8 counters:0,1,2,3 um:snoop_response minimum:100000 name:SNOOP_RESPONSE : Thread responded HIT to snoop
-event:0xbb counters:1 um:x01 minimum:100000 name:OFFCORE_RESPONSE_ANY_DATA : REQUEST = ANY_DATA read and RESPONSE = ANY_CACHE_DRAM
+event:0xbb counters:1 um:x01 minimum:100000 name:OFFCORE_RESPONSE_ANY_DATA_1 : REQUEST = ANY_DATA read and RESPONSE = ANY_CACHE_DRAM
 event:0xc0 counters:0,1,2,3 um:inst_retired minimum:2000000 name:INST_RETIRED : Instructions retired (Programmable counter and Precise Event)
 event:0xc2 counters:0,1,2,3 um:uops_retired minimum:2000000 name:UOPS_RETIRED : Cycles Uops are being retired
 event:0xc3 counters:0,1,2,3 um:machine_clears minimum:20000 name:MACHINE_CLEARS : Cycles machine clear asserted

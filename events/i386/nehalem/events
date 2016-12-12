@@ -7,7 +7,7 @@
 # Note the minimum counts are not discovered experimentally and could be likely
 # lowered in many cases without ill effect.
 #
-event:0x3c counters:0,1,2,3 um:zero minimum:6000 name:CPU_CLK_UNHALTED : Clock cycles when not halted
+#event:0x3c counters:0,1,2,3 um:zero minimum:6000 name:CPU_CLK_UNHALTED : Clock cycles when not halted
 event:0x3c counters:0,1,2,3 um:one minimum:6000 name:UNHALTED_REFERENCE_CYCLES : Unhalted reference cycles
 event:0x2e counters:0,1,2,3 um:x41 minimum:6000 name:LLC_MISSES : Last level cache demand requests from this core that missed the LLC
 event:0x2e counters:0,1,2,3 um:x4f minimum:6000 name:LLC_REFS : Last level cache demand requests from this core
