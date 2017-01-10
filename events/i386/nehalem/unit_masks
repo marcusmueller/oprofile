@@ -39,7 +39,7 @@ name:mem_store_retired type:mandatory default:0x01
 	0x01 extra: dtlb_miss The event counts the number of retired stores that missed the DTLB
 name:uops_issued type:bitmask default:any
 	0x01 extra: any Counts the number of Uops issued by the Register Allocation Table to the Reservation Station, i
-	0x01 extra: stalled_cycles Counts the number of cycles no Uops issued by the Register Allocation Table to the Reservation Station, i
+	0x01 extra:cmask=1,inv stalled_cycles Counts the number of cycles no Uops issued by the Register Allocation Table to the Reservation Station, i
 	0x02 extra: fused Counts the number of fused Uops that were issued from the Register Allocation Table to the Reservation Station
 name:mem_uncore_retired type:bitmask default:0x02
 	0x02 extra: other_core_l2_hitm Counts number of memory load instructions retired where the memory reference hit modified data in a sibling core residing on the same socket
