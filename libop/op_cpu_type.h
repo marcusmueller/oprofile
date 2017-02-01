@@ -108,6 +108,14 @@ typedef enum {
 	MAX_CPU_TYPE
 } op_cpu;
 
+/* A macro to be used for ppc64 architecture-specific code.  The '__powerpc__' macro
+ * is defined for both ppc64 and ppc32 architectures, so we must further qualify by
+ * including the 'HAVE_LIBPFM' macro, since that macro will be defined only for ppc64.
+ */
+#if  defined(HAVE_LIBPFM) && ((defined(__powerpc__) || defined(__powerpc64__)))
+#define PPC64_ARCH 1
+#endif
+
 /**
  * the CPU lowest common denominator
  *

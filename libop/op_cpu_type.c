@@ -27,12 +27,6 @@
 #include "op_cpu_type.h"
 #include "op_hw_specific.h"
 
-/* A macro to be used for ppc64 architecture-specific code.  The '__powerpc__' macro
- * is defined for both ppc64 and ppc32 architectures, so we must further qualify by
- * including the 'HAVE_LIBPFM' macro, since that macro will be defined only for ppc64.
- */
-#define PPC64_ARCH (HAVE_LIBPFM) && ((defined(__powerpc__) || defined(__powerpc64__)))
-
 struct cpu_descr {
 	char const * pretty;
 	char const * name;
