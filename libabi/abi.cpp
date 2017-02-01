@@ -35,7 +35,7 @@ abi::abi()
 }
 
 
-int abi::need(string const key) const throw (abi_exception)
+int abi::need(string const key) const
 {
 	if (slots.find(key) != slots.end())
 		return slots.find(key)->second;
