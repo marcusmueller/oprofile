@@ -174,6 +174,8 @@ int op_pe_utils::op_check_perf_events_cap(bool use_cpu_minus_one)
         memset(&attr, 0, sizeof(attr));
         attr.size = sizeof(attr);
         attr.sample_type = PERF_SAMPLE_IP;
+	/* avoid kernel events so test works when perf_event_paranoid = 2 */
+	attr.exclude_kernel =1;
 
 	pid = getpid();
 	syscall(__NR_perf_event_open, &attr, pid, cpu_to_try, -1, 0);
