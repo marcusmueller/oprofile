@@ -29,7 +29,7 @@ class abi {
 public:
 	abi();
 
-	int need(std::string const key) const throw (abi_exception);
+	int need(std::string const key) const;
 
 	bool operator==(abi const & other) const;
 	friend std::ostream & operator<<(std::ostream & o, abi const & abi);

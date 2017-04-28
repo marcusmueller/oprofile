@@ -793,7 +793,7 @@ output_symbol_details(symbol_entry const * symb,
 			field_datum datum(*symb, it->second, 0, c, 
 					  extra_found_images, 0.0);
 			output_attribute(str, datum, ff_vma, VMA);
-			if (ff_linenr_info) {
+			if (flags & ff_linenr_info) {
 				string sym_file;
 				size_t sym_line;
 				string samp_file;

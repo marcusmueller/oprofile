@@ -77,8 +77,8 @@ void extractor::extract(T & targ, void const * src_,
                         char const * sz, char const * off)
 {
 	unsigned char const * src = static_cast<unsigned char const *>(src_)
-		+ theabi.need(off);
-	size_t nbytes = theabi.need(sz);
+		+ theabi.need(string(off));
+	size_t nbytes = theabi.need(string(sz));
 
 	targ = 0;
 	if (nbytes == 0)
@@ -109,7 +109,7 @@ void extractor::extract(T & targ, void const * src_,
 
 
 void import_from_abi(abi const & abi, void const * srcv,
-                     size_t len, odb_t * dest) throw (abi_exception)
+                     size_t len, odb_t * dest)
 {
 	struct opd_header * head =
 		static_cast<opd_header *>(odb_get_data(dest));

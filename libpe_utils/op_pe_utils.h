@@ -26,12 +26,6 @@
 #define OP_MAX_EVENTS 24
 #define CALLGRAPH_MIN_COUNT_SCALE 15
 
-/* A macro to be used for ppc64 architecture-specific code.  The '__powerpc__' macro
- * is defined for both ppc64 and ppc32 architectures, so we must further qualify by
- * including the 'HAVE_LIBPFM' macro, since that macro will be defined only for ppc64.
- */
-#define PPC64_ARCH (HAVE_LIBPFM) && ((defined(__powerpc__) || defined(__powerpc64__)))
-
 // Candidates for refactoring of operf
 namespace op_pe_utils {
 

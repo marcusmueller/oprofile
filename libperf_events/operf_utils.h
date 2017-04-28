@@ -21,6 +21,7 @@
 #include "config.h"
 #include "op_config.h"
 #include "op_types.h"
+#include "op_cpu_type.h"
 #include "operf_event.h"
 #include <signal.h>
 
@@ -46,12 +47,6 @@ extern bool throttled;
 #endif
 
 #define OP_MAX_EVENTS 24
-
-/* A macro to be used for ppc64 architecture-specific code.  The '__powerpc__' macro
- * is defined for both ppc64 and ppc32 architectures, so we must further qualify by
- * including the 'HAVE_LIBPFM' macro, since that macro will be defined only for ppc64.
- */
-#define PPC64_ARCH (HAVE_LIBPFM) && ((defined(__powerpc__) || defined(__powerpc64__)))
 
 # define likely(x)	__builtin_expect(!!(x), 1)
 # define unlikely(x)	__builtin_expect(!!(x), 0)
