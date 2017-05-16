@@ -1,0 +1,26 @@
+#
+# Intel "Knights Landing" microarchitecture core events.
+#
+# See http://ark.intel.com/ for help in identifying Knights Landing CPUs
+#
+# Note the minimum counts are not discovered experimentally and could be likely
+# lowered in many cases without ill effect.
+#
+include:i386/arch_perfmon
+event:0x03 counters:cpuid um:recycleq minimum:20000 name:recycleq : Counts the number of retired load or store micro-ops that get pushed into the Recycle Queue
+event:0x04 counters:cpuid um:mem_uops_retired minimum:100000 name:mem_uops_retired : Counts the number of memory micro-ops retired.
+event:0x05 counters:cpuid um:page_walks minimum:500 name:page_walks : Counts the number of core cycles for page walks
+event:0x30 counters:cpuid um:l2_requests_reject minimum:500 name:l2_requests_reject : Counts the number of MEC requests from the L2Q that reference a cache line were rejected.
+event:0x31 counters:cpuid um:core_reject_l2q minimum:100 name:core_reject_l2q : Number of requests not accepted into the L2Q because of any L2 queue reject condition.
+event:0x80 counters:cpuid um:icache minimum:100000 name:icache : Instruction fetches
+event:0x86 counters:cpuid um:fetch_stall minimum:100000 name:fetch_stall : Counts the number of core cycles the instruction fetch pipe was stalls
+event:0x2e counters:cpuid um:l2_requests minimum:10000 name:l2_requests : L2 cache requests
+event:0xc2 counters:cpuid um:uops_retired minimum:100000 name:uops_retired : Retired uops
+event:0xc3 counters:cpuid um:machine_clears minimum:500 name:machine_clears : Counts the number of times that the machine clears at retire.
+event:0xc4 counters:cpuid um:br_inst_retired minimum:50000 name:br_inst_retired : Counts the number of branch instructions retired
+event:0xc5 counters:cpuid um:br_misp_retired minimum:5000 name:br_misp_retired : Counts the number of mispredicted branch instructions retired
+event:0xca counters:cpuid um:no_alloc_cycles minimum:500000 name:no_alloc_cycles : Counts the number of core cycles when no micro-ops are allocated
+event:0xcb counters:cpuid um:rs_full_stall minimum:100000 name:rs_full_stall : Counts the number of core cycles when the allocate stalls because the required RS is full.
+event:0xcd counters:cpuid um:cycles_div_busy minimum:1000 name:cycles_div_busy : Number of core cycles when divider is busy
+event:0xe6 counters:cpuid um:baclears minimum:10000 name:baclears : Counts the number of times Branch Target Buffer (BTB) prediction was corrected by a later branch predictor
+event:0xe7 counters:cpuid um:ms_decoded minimum:10000 name:ms_decoded : Microcode sequencer decode entrypoints

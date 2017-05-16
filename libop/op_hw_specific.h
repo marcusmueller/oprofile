@@ -167,6 +167,9 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x5c:
 		case 0x5f:
 			return CPU_GOLDMONT;
+		case 0x57:
+		case 0x85:
+			return CPU_KNIGHTSLANDING;
 		}
 	}
 	return cpu_type;

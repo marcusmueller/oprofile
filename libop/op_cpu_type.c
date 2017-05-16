@@ -120,6 +120,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "IBM z13", "s390/z13", CPU_S390_Z13, 1 },
 	{ "ARM Cortex-A17", "arm/armv7-ca17", CPU_ARM_V7_CA17, 7 },
 	{ "ppc64 POWER9", "ppc64/power9", CPU_PPC64_POWER9, 6 },
+	{ "Intel Knights Landing", "i386/knightslanding", CPU_KNIGHTSLANDING, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -752,6 +753,7 @@ op_cpu op_cpu_base_type(op_cpu cpu_type)
 	case CPU_WESTMERE:
 	case CPU_SANDYBRIDGE:
 	case CPU_IVYBRIDGE:
+	case CPU_KNIGHTSLANDING:
 		return CPU_ARCH_PERFMON;
 	default:
 		/* assume processor in a class by itself */

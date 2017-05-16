@@ -1,0 +1,91 @@
+#
+# Unit masks for the Intel "Knights Landing" micro architecture
+#
+# See http://ark.intel.com/ for help in identifying Knights Landing CPUs
+#
+include:i386/arch_perfmon
+name:recycleq type:exclusive default:any_ld
+	0x01 extra:pebs ld_block_st_forward Counts the number of occurrences a retired load gets blocked because its address partially overlaps with a store.
+	0x02 extra: ld_block_std_notready Counts the number of occurrences a retired load gets blocked because its address overlaps with a store whose data is not ready.
+	0x04 extra: st_splits Counts the number of occurrences a retired store that is a cache line split. Each split should be counted only once.
+	0x08 extra:pebs ld_splits Counts the number of occurrences a retired load that is a cache line split. Each split should be counted only once.
+	0x10 extra: lock Counts all the retired locked loads. It does not include stores because we would double count if we count stores.
+	0x20 extra: sta_full Counts the store micro-ops retired that were pushed in the rehad queue because the store address buffer is full.
+	0x40 extra: any_ld Counts any retired load that was pushed into the recycle queue for any reason.
+	0x80 extra: any_st Counts any retired store that was pushed into the recycle queue for any reason.
+name:mem_uops_retired type:exclusive default:any_loads
+	0x01 extra: l1_miss_loads Counts the number of load micro-ops retired that miss in L1 D cache.
+	0x02 extra:pebs l2_hit_loads Counts the number of load micro-ops retired that hit in the L2.
+	0x04 extra:pebs l2_miss_loads Counts the number of load micro-ops retired that miss in the L2.
+	0x08 extra:pebs dtlb_miss_loads Counts the number of load micro-ops retired that cause a DTLB miss.
+	0x10 extra: utlb_miss_loads Counts the number of load micro-ops retired that caused micro TLB miss.
+	0x20 extra:pebs hitm Counts the loads retired that get the data from the other core in the same tile in M state.
+	0x40 extra: any_loads Counts all the load micro-ops retired.
+	0x80 extra: any_stores Counts all the store micro-ops retired.
+name:page_walks type:exclusive default:walks
+	0x01 extra:edge d_side_walks Counts the total D-side page walks that are completed or started. The page walks started in the speculative path will also be counted.
+	0x01 extra: d_side_cycles Counts the total number of core cycles for all the D-side page walks. The cycles for page walks started in speculative path will also be included.
+	0x02 extra:edge i_side_walks Counts the total I-side page walks that are completed.
+	0x02 extra: i_side_cycles Counts the total number of core cycles for all the I-side page walks. The cycles for page walks started in speculative path will also be included.
+	0x03 extra:edge walks Counts the total page walks completed (I-side and D-side)
+	0x03 extra: cycles Counts the total number of core cycles for all the page walks. The cycles for page walks started in speculative path will also be included.
+name:l2_requests_reject type:mandatory default:all
+	0x00 extra: all Counts the number of MEC requests from the L2Q that reference a cache line excluding SW prefetches filling only to L2 cache and L1 evictions (automatically exlcudes L2HWP, UC, WC) that were rejected - Multiple repeated rejects should be counted multiple times.
+name:core_reject_l2q type:mandatory default:all
+	0x00 extra: all  Counts the number of MEC requests that were not accepted into the L2Q because of any L2  queue reject condition. There is no concept of at-ret here. It might include requests due to instructions in the speculative path
+name:icache type:exclusive default:accesses
+	0x3 extra: accesses All instruction fetches including uncacheable
+	0x1 extra: hits All instruction fetches that hit instruction cache
+	0x2 extra: misses All instruction fetches that missed instruction cache (produced a memory request); counted only once, not once per outstanding cycle
+name:fetch_stall type:exclusive default:icache_fill_pending_cycles
+	0x01 extra: icache_fill_pending_cycles Counts the number of core cycles the fetch stalls because of an icache miss. This is a cumulative count of core cycles the fetch stalled for all icache misses
+	0x01 extra:edge icache_fill_pending_edge Counts the number of times it happens that fetch stalls because of an icache miss.
+name:l2_requests type:exclusive default:reference
+	0x41 extra: miss Counts the total number of L2 cache misses.
+	0x4f extra: reference Counts the total number of L2 cache references.
+name:uops_retired type:exclusive default:all
+	0x01 extra: ms Counts the number of uops retired that are from complex flows issued by the micro-sequencer
+	0x10 extra: all Counts the number of uops retired
+	0x20 extra: scalar_simd Counts the number of scalar SSE, AVX, AVX2, AVX-512 micro-ops except for loads (memory-to-register mov-type micro ops), division, sqrt.
+	0x40 extra: packed_simd Counts the number of packed SSE, AVX, AVX2, AVX-512 micro-ops (both floating point and integer) except for loads (memory-to-register mov-type micro-ops), packed byte and word multiplies.
+name:machine_clears type:exclusive default:all
+	0x01 extra: smc Counts the number of times that the machine clears due to program modifying data within 1K of a recently fetched code page.
+	0x02 extra: memory_ordering Counts the number of times the machine clears due to memory ordering hazards.
+	0x04 extra: fp_assist Counts the number of floating operations retired that required microcode assists
+	0x08 extra: all Counts all machine clears
+name:br_inst_retired type:exclusive default:any
+	0x00 extra:pebs any Counts the number of branch instructions retired
+	0x7e extra:pebs jcc Counts the number of branch instructions retired that were conditional jumps.
+	0xfe extra:pebs taken_jcc Counts the number of branch instructions retired that were conditional jumps and predicted taken.
+	0xf9 extra:pebs call Counts the number of near CALL branch instructions retired.
+	0xfd extra:pebs rel_call Counts the number of near relative CALL branch instructions retired.
+	0xfb extra:pebs ind_call Counts the number of near indirect CALL branch instructions retired.
+	0xf7 extra:pebs return Counts the number of near RET branch instructions retired.
+	0xeb extra:pebs non_return_ind Counts the number of branch instructions retired that were near indirect CALL or near indirect JMP.
+	0xbf extra:pebs far_branch Counts the number of far branch instructions retired.
+name:br_misp_retired type:exclusive default:any
+	0x00 extra:pebs any All mispredicted branches
+	0x7e extra:pebs jcc Number of mispredicted conditional branch instructions retired
+	0xfe extra:pebs taken_jcc Number of mispredicted taken conditional branch instructions retired
+	0xf9 extra:pebs call Counts the number of mispredicted near CALL branch instructions retired.
+	0xfd extra:pebs rel_call Counts the number of mispredicted near relative CALL branch instructions retired.
+	0xfb extra:pebs ind_call Number of mispredicted indirect call branch instructions retired
+	0xf7 extra:pebs return Number of mispredicted return branch instructions retired
+	0xeb extra:pebs non_return_ind Number of mispredicted non-return branch instructions retired
+	0xbf extra:pebs far_branch Counts the number of mispredicted far branch instructions retired.
+name:no_alloc_cycles type:exclusive default:all
+	0x01 extra: rob_full Counts the number of core cycles when no micro-ops are allocated and the ROB is full
+	0x02 extra: mispredicts Counts the number of core cycles when no micro-ops are allocated and the alloc pipe is stalled waiting for a mispredicted branch to retire.
+	0x20 extra: rat_stall Counts the number of core cycles when no micro-ops are allocated and a RATstall (caused by reservation station full) is asserted.
+	0x7f extra: all Counts the total number of core cycles when no micro-ops are allocated for any reason.
+name:rs_full_stall type:exclusive default:all
+	0x01 extra: mec Counts the number of core cycles when allocation pipeline is stalled and is waiting for a free MEC reservation station entry.
+	0x1f extra: all Counts the total number of core cycles the Alloc pipeline is stalled when any one of the reservation stations is full.
+name:cycles_div_busy type:mandatory default:all
+	0x01 extra: all Cycles the number of core cycles when divider is busy, does not imply a stall waiting for the divider
+name:baclears type:exclusive default:all
+	0x01 extra: all Counts the number of times front-end resteers for any branch as a result of another branch handling mechanism in the front-end.
+	0x08 extra: return Counts the number of times the front-end resteers for RET branches as a result of another branch handling mechanism in the front-end.
+	0x10 extra: cond Counts the number of times the front-end resteers for conditional branches as a result of another branch handling mechanism in the front-end.
+name:ms_decoded type:mandatory default:ms_entry
+	0x01 extra: ms_entry Counts the number of times the MSROM starts a flow of uops.

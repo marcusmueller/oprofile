@@ -554,6 +554,12 @@ int main(int argc, char const * argv[])
 			"Intel Architecture Optimization Reference Manual\n\n";
 		break;
 
+	case CPU_KNIGHTSLANDING:
+		event_doc =
+			"See Intel Xeon Phi(TM) Processor Performance Monitoring Reference and\n"
+			"Intel Architecture Optimization Reference Manual\n\n";
+		break;
+
 	case CPU_ARCH_PERFMON:
 		event_doc =
 			"See Intel 64 and IA-32 Architectures Software Developer's Manual\n"
