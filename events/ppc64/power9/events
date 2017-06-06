@@ -6,3 +6,987 @@
 #  IBM POWER9 Events
 
 include:ppc64/architected_events_v1
+
+# This table has been automatically generated with a preliminary list of
+# events, and is subject to verification and update.
+# Last Refresh. ( will schmidt , Jun 06,2017  ).
+
+# Abbreviation hints:
+# BHS - Branch History Table
+# DARQ - Data and Address Recycle/Recirculation Queue
+# ERAT - Effective to Real Address Translation
+# FAB - Fabric
+# HPT - Hardware Page Table
+# IBUFF - Instruction Fetch Buffer
+# IFAR - Instruction Fetch Address Register
+# LHS/LDHITST -Load Hit Store
+# MEPF - PreFetch.
+# NTC - Next To Complete
+# NTF - Next To Finish.
+# PMU - Performance Monitor Unit
+# RIS - Random Instruction Sampling
+# rty - retry
+# TAGE - Tagged Geometric History Length predictor (branch prediction)
+# TM - Transactional Memory
+
+
+event:0x0000045050 counters:3       um:zero minimum:10000  name:PM_1FLOP_CMPL : one flop (fadd, fmul, fsub, fcmp, fsel, fabs, fnabs, fres, fsqrte, fneg) operation completed
+event:0x00000100F2 counters:0       um:zero minimum:10000  name:PM_1PLUS_PPC_CMPL : 1 or more ppc insts finished
+event:0x00000400F2 counters:3       um:zero minimum:10000  name:PM_1PLUS_PPC_DISP : Cycles at least one Instr Dispatched
+event:0x000004D052 counters:3       um:zero minimum:10000  name:PM_2FLOP_CMPL : DP vector version of fmul, fsub, fcmp, fsel, fabs, fnabs, fres ,fsqrte, fneg 
+event:0x0000045052 counters:3       um:zero minimum:10000  name:PM_4FLOP_CMPL : 4 FLOP instruction completed
+event:0x000004D054 counters:3       um:zero minimum:10000  name:PM_8FLOP_CMPL : 8 FLOP instruction completed
+event:0x00000100FA counters:0       um:zero minimum:10000  name:PM_ANY_THRD_RUN_CYC : Cycles in which at least one thread has the run latch set
+event:0x000002505E counters:1       um:zero minimum:10000  name:PM_BACK_BR_CMPL : Branch instruction completed with a target address less than current instruction address
+event:0x0000004880 counters:0,1,2,3 um:zero minimum:10000  name:PM_BANK_CONFLICT : Read blocked due to interleave conflict. The ifar logic will detect an interleave conflict and kill the data that was read that cycle.
+event:0x000003005C counters:2       um:zero minimum:10000  name:PM_BFU_BUSY : Cycles in which all 4 Binary Floating Point units are busy. The BFU is running at capacity
+event:0x0000020036 counters:1       um:zero minimum:10000  name:PM_BR_2PATH : Branches that are not strongly biased
+event:0x0000040036 counters:3       um:zero minimum:10000  name:PM_BR_2PATH : Branches that are not strongly biased
+event:0x000004D05E counters:3       um:zero minimum:10000  name:PM_BR_CMPL : Any Branch instruction completed
+event:0x000000489C counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_CORECT_PRED_TAKEN_CMPL : Conditional Branch Completed in which the HW correctly predicted the direction as taken. Counted at completion time
+event:0x00000040AC counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_MPRED_CCACHE : Conditional Branch Completed that was Mispredicted due to the Count Cache Target Prediction
+event:0x00000400F6 counters:3       um:zero minimum:10000  name:PM_BR_MPRED_CMPL : Number of Branch Mispredicts
+event:0x00000048AC counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_MPRED_LSTACK : Conditional Branch Completed that was Mispredicted due to the Link Stack Target Prediction
+event:0x00000048B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_MPRED_PCACHE : Conditional Branch Completed that was Mispredicted due to pattern cache prediction
+event:0x00000040B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_MPRED_TAKEN_CR : A Conditional Branch that resolved to taken was mispredicted as not taken (due to the BHT Direction Prediction).
+event:0x00000048B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_MPRED_TAKEN_TA : Conditional Branch Completed that was Mispredicted due to the Target Address Prediction from the Count Cache or Link Stack. Only XL-form branches that resolved Taken set this event.
+event:0x000000409C counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_PRED : Conditional Branch Executed in which the HW predicted the Direction or Target. Includes taken and not taken and is counted at execution time
+event:0x00000040A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_PRED_CCACHE : Conditional Branch Completed that used the Count Cache for Target Prediction
+event:0x00000040A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_PRED_LSTACK : Conditional Branch Completed that used the Link Stack for Target Prediction
+event:0x00000048A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_PRED_PCACHE : Conditional branch completed that used pattern cache prediction
+event:0x00000040B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_PRED_TA : Conditional Branch Completed that had its target address predicted. Only XL-form branches set this event. This equal the sum of CCACHE, LSTACK, and PCACHE
+event:0x00000040B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_PRED_TAKEN_CR : Conditional Branch that had its direction predicted. I-form branches do not set this event. In addition, B-form branches which do not use the BHT do not set this event - these are branches with BO-field set to 'always taken' and branches
+event:0x00000200FA counters:1       um:zero minimum:10000  name:PM_BR_TAKEN_CMPL : New event for Branch Taken
+event:0x0000010068 counters:0       um:zero minimum:10000  name:PM_BRU_FIN : Branch Instruction Finished
+event:0x00000040A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_BR_UNCOND : Unconditional Branch Completed. HW branch prediction was not used for this branch. This can be an I-form branch, a B-form branch with BO-field set to branch always, or a B-form branch which was covenrted to a Resolve.
+event:0x00000050B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_BTAC_BAD_RESULT : BTAC thinks branch will be taken but it is either predicted not-taken by the BHT, or the target address is wrong (less common). In both cases, a redirect will happen
+event:0x00000058B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_BTAC_GOOD_RESULT : BTAC predicts a taken branch and the BHT agrees, and the target address is correct
+event:0x0000010050 counters:0       um:zero minimum:10000  name:PM_CHIP_PUMP_CPRED : Initial and Final Pump Scope was chip pump (prediction=correct) for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x000000208C counters:0,1,2,3 um:zero minimum:10000  name:PM_CLB_HELD : CLB (control logic block - indicates quadword fetch block) Hold: Any Reason
+event:0x000001E054 counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL : Nothing completed and ICT not empty
+event:0x000001E05A counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_ANY_SYNC : Cycles in which the NTC sync instruction (isync, lwsync or hwsync) is not allowed to complete
+event:0x000004D018 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_BRU : Completion stall due to a Branch Unit
+event:0x000004C01E counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_CRYPTO : Finish stall because the NTF instruction was routed to the crypto execution pipe and was waiting to finish
+event:0x000002C012 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_DCACHE_MISS : Finish stall because the NTF instruction was a load that missed the L1 and was waiting for the data to return from the nest
+event:0x000001005A counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_DFLONG : Finish stall because the NTF instruction was a multi-cycle instruction issued to the Decimal Floating Point execution pipe and waiting to finish. Includes decimal floating point instructions + 128 bit binary floating point instructions. Qualified by multicycle
+event:0x000002D012 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_DFU : Finish stall because the NTF instruction was issued to the Decimal Floating Point execution pipe and waiting to finish. Includes decimal floating point instructions + 128 bit binary floating point instructions. Not qualified by multicycle
+event:0x000002C018 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_DMISS_L21_L31 : Completion stall by Dcache miss which resolved on chip ( excluding local L2/L3)
+event:0x000001003C counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_DMISS_L2L3 : Completion stall by Dcache miss which resolved in L2/L3
+event:0x000004C016 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_DMISS_L2L3_CONFLICT : Completion stall due to cache miss that resolves in the L2 or L3 with a conflict
+event:0x000004C01A counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_DMISS_L3MISS : Completion stall due to cache miss resolving missed the L3
+event:0x0000030038 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_DMISS_LMEM : Completion stall due to cache miss that resolves in local memory
+event:0x000002C01C counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_DMISS_REMOTE : Completion stall by Dcache miss which resolved from remote chip (cache or memory)
+event:0x000001005C counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_DP : Finish stall because the NTF instruction was a scalar instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format. Not qualified multicycle. Qualified by NOT vector
+event:0x000003405C counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_DPLONG : Finish stall because the NTF instruction was a scalar multi-cycle instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format. Qualified by NOT vector AND multicycle
+event:0x000004D01A counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_EIEIO : Finish stall because the NTF instruction is an EIEIO waiting for response from L2
+event:0x0000030004 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_EMQ_FULL : Finish stall because the next to finish instruction suffered an ERAT miss and the EMQ was full
+event:0x000004C012 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_ERAT_MISS : Finish stall because the NTF instruction was a load or store that suffered a translation miss
+event:0x000003003A counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_EXCEPTION : Cycles in which the NTC instruction is not allowed to complete because it was interrupted by ANY exception, which has to be serviced before the instruction can complete
+event:0x000002D018 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_EXEC_UNIT : Completion stall due to execution units (FXU/VSU/CRU)
+event:0x000001E056 counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_FLUSH_ANY_THREAD : Cycles in which the NTC instruction is not allowed to complete because any of the 4 threads in the same core suffered a flush, which blocks completion
+event:0x000004D016 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_FXLONG : Completion stall due to a long latency scalar fixed point instruction (division, square root)
+event:0x000002D016 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_FXU : Finish stall due to a scalar fixed point or CR instruction in the execution pipeline. These instructions get routed to the ALU, ALU2, and DIV pipes
+event:0x0000030036 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_HWSYNC : completion stall due to hwsync
+event:0x000001002A counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_LARX : Finish stall because the NTF instruction was a larx waiting to be satisfied
+event:0x000002C01A counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_LHS : Finish stall because the NTF instruction was a load that hit on an older store and it was waiting for store data
+event:0x000004C014 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_LMQ_FULL : Finish stall because the NTF instruction was a load that missed in the L1 and the LMQ was unable to accept this load miss request because it was full
+event:0x000004D014 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_LOAD_FINISH : Finish stall because the NTF instruction was a load instruction with all its dependencies satisfied just going through the LSU pipe to finish
+event:0x000002D014 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_LRQ_FULL : Finish stall because the NTF instruction was a load that was held in LSAQ (load-store address queue) because the LRQ (load-reorder queue) was full
+event:0x0000010004 counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_LRQ_OTHER : Finish stall due to LRQ miscellaneous reasons, lost arbitration to LMQ slot, bank collisions, set prediction cleanup, set prediction multihit and others
+event:0x000004E016 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_LSAQ_ARB : Finish stall because the NTF instruction was a load or store that was held in LSAQ because an older instruction from SRQ or LRQ won arbitration to the LSU pipe when this instruction tried to launch
+event:0x000002C010 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_LSU : Completion stall by LSU instruction
+event:0x000001003A counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_LSU_FIN : Finish stall because the NTF instruction was an LSU op (other than a load or a store) with all its dependencies met and just going through the LSU pipe to finish
+event:0x000002E01A counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_LSU_FLUSH_NEXT : Completion stall of one cycle because the LSU requested to flush the next iop in the sequence. It takes 1 cycle for the ISU to process this request before the LSU instruction is allowed to complete
+event:0x0000034056 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_LSU_MFSPR : Finish stall because the NTF instruction was a mfspr instruction targeting an LSU SPR and it was waiting for the register data to be returned
+event:0x0000010036 counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_LWSYNC : completion stall due to lwsync
+event:0x000004E012 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_MTFPSCR : Completion stall because the ISU is updating the register and notifying the Effective Address Table (EAT)
+event:0x000001E05C counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_NESTED_TBEGIN : Completion stall because the ISU is updating the TEXASR to keep track of the nested tbegin. This is a short delay, and it includes ROT
+event:0x000003003C counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_NESTED_TEND : Completion stall because the ISU is updating the TEXASR to keep track of the nested tend and decrement the TEXASR nested level. This is a short delay
+event:0x000004E018 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_NTC_DISP_FIN : Finish stall because the NTF instruction was one that must finish at dispatch.
+event:0x000002E01E counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_NTC_FLUSH : Completion stall due to ntc flush
+event:0x0000030006 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_OTHER_CMPL : Instructions the core completed while this tread was stalled
+event:0x000002C016 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_PASTE : Finish stall because the NTF instruction was a paste waiting for response from L2
+event:0x000003000A counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_PM : Finish stall because the NTF instruction was issued to the Permute execution pipe and waiting to finish. Includes permute and decimal fixed point instructions (128 bit BCD arithmetic) + a few 128 bit fixpoint add/subtract instructions with carry. Not qualified by vector or multicycle
+event:0x000001E052 counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_SLB : Finish stall because the NTF instruction was awaiting L2 response for an SLB
+event:0x0000030028 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_SPEC_FINISH : Finish stall while waiting for the non-speculative finish of either a stcx waiting for its result or a load waiting for non-critical sectors of data and ECC
+event:0x0000030016 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_SRQ_FULL : Finish stall because the NTF instruction was a store that was held in LSAQ because the SRQ was full
+event:0x000002D01C counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_STCX : Finish stall because the NTF instruction was a stcx waiting for response from L2
+event:0x000004C01C counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_ST_FWD : Completion stall due to store forward
+event:0x0000030026 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_STORE_DATA : Finish stall because the next to finish instruction was a store waiting on data
+event:0x0000030014 counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_STORE_FIN_ARB : Finish stall because the NTF instruction was a store waiting for a slot in the store finish pipe. This means the instruction is ready to finish but there are instructions ahead of it, using the finish pipe
+event:0x000002C014 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_STORE_FINISH : Finish stall because the NTF instruction was a store with all its dependencies met, just waiting to go through the LSU pipe to finish
+event:0x000004C010 counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_STORE_PIPE_ARB : Finish stall because the NTF instruction was a store waiting for the next relaunch opportunity after an internal reject. This means the instruction is ready to relaunch and tried once but lost arbitration
+event:0x000002C01E counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_SYNC_PMU_INT : Cycles in which the NTC instruction is waiting for a synchronous PMU interrupt
+event:0x000001E050 counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_TEND : Finish stall because the NTF instruction was a tend instruction awaiting response from L2
+event:0x000001001C counters:0       um:zero minimum:10000  name:PM_CMPLU_STALL_THRD : Completion Stalled because the thread was blocked
+event:0x000002E01C counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_TLBIE : Finish stall because the NTF instruction was a tlbie waiting for response from L2
+event:0x000004405C counters:3       um:zero minimum:10000  name:PM_CMPLU_STALL_VDP : Finish stall because the NTF instruction was a vector instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format. Not qualified multicycle. Qualified by vector
+event:0x000003C05A counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_VDPLONG : Finish stall because the NTF instruction was a scalar multi-cycle instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format. Qualified by NOT vector AND multicycle
+event:0x000002E018 counters:1       um:zero minimum:10000  name:PM_CMPLU_STALL_VFXLONG : Completion stall due to a long latency vector fixed point instruction (division, square root)
+event:0x000003C05C counters:2       um:zero minimum:10000  name:PM_CMPLU_STALL_VFXU : Finish stall due to a vector fixed point instruction in the execution pipeline. These instructions get routed to the ALU, ALU2, and DIV pipes
+event:0x000003608C counters:2       um:zero minimum:10000  name:PM_CO0_BUSY : CO mach 0 Busy. Used by PMU to sample ave CO lifetime (mach0 used as sample point)
+event:0x000004608C counters:3       um:zero minimum:10000  name:PM_CO0_BUSY : CO mach 0 Busy. Used by PMU to sample ave CO lifetime (mach0 used as sample point)
+event:0x0000016886 counters:0       um:zero minimum:10000  name:PM_CO_DISP_FAIL : CO dispatch failed due to all CO machines being busy
+event:0x0000026086 counters:1       um:zero minimum:10000  name:PM_CO_TM_SC_FOOTPRINT : L2 did a cleanifdirty CO to the L3 (ie created an SC line in the L3) OR L2 TM_store hit dirty HPC line and L3 indicated SC line formed in L3 on RDR bus
+event:0x000002688C counters:1       um:zero minimum:10000  name:PM_CO_USAGE : Continuous 16 cycle (2to1) window where this signals rotates thru sampling each CO machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
+event:0x000001001E counters:0       um:zero minimum:10000  name:PM_CYC : Processor cycles
+event:0x000002001E counters:1       um:zero minimum:10000  name:PM_CYC : Processor cycles
+event:0x000003001E counters:2       um:zero minimum:10000  name:PM_CYC : Processor cycles
+event:0x000004001E counters:3       um:zero minimum:10000  name:PM_CYC : Processor cycles
+event:0x000004D04A counters:3       um:zero minimum:10000  name:PM_DARQ0_0_3_ENTRIES : Cycles in which 3 or less DARQ entries (out of 12) are in use
+event:0x000001D058 counters:0       um:zero minimum:10000  name:PM_DARQ0_10_12_ENTRIES : Cycles in which 10 or more DARQ entries (out of 12) are in use
+event:0x000003504E counters:2       um:zero minimum:10000  name:PM_DARQ0_4_6_ENTRIES : Cycles in which 4, 5, or 6 DARQ entries (out of 12) are in use
+event:0x000002E050 counters:1       um:zero minimum:10000  name:PM_DARQ0_7_9_ENTRIES : Cycles in which 7,8, or 9 DARQ entries (out of 12) are in use
+event:0x000004C122 counters:3       um:zero minimum:10000  name:PM_DARQ1_0_3_ENTRIES : Cycles in which 3 or fewer DARQ1 entries (out of 12) are in use
+event:0x0000020058 counters:1       um:zero minimum:10000  name:PM_DARQ1_10_12_ENTRIES : Cycles in which 10 or more DARQ1 entries (out of 12) are in use
+event:0x000003E050 counters:2       um:zero minimum:10000  name:PM_DARQ1_4_6_ENTRIES : Cycles in which 4, 5, or 6 DARQ1 entries (out of 12) are in use
+event:0x000002005A counters:1       um:zero minimum:10000  name:PM_DARQ1_7_9_ENTRIES : Cycles in which 7 to 9 DARQ1 entries (out of 12) are in use
+event:0x000004405E counters:3       um:zero minimum:10000  name:PM_DARQ_STORE_REJECT : The DARQ attempted to transmit a store into an LSAQ or SRQ entry but It was rejected. Divide by PM_DARQ_STORE_XMIT to get reject ratio
+event:0x0000030064 counters:2       um:zero minimum:10000  name:PM_DARQ_STORE_XMIT : The DARQ attempted to transmit a store into an LSAQ or SRQ entry. Includes rejects. Not qualified by thread, so it includes counts for the whole core
+event:0x000001C050 counters:0       um:zero minimum:10000  name:PM_DATA_CHIP_PUMP_CPRED : Initial and Final Pump Scope was chip pump (prediction=correct) for a demand load
+event:0x000004C048 counters:3       um:zero minimum:10000  name:PM_DATA_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a demand load
+event:0x000003C048 counters:2       um:zero minimum:10000  name:PM_DATA_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a demand load
+event:0x000003C04C counters:2       um:zero minimum:10000  name:PM_DATA_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to a demand load
+event:0x000004C04C counters:3       um:zero minimum:10000  name:PM_DATA_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to a demand load
+event:0x000001C042 counters:0       um:zero minimum:10000  name:PM_DATA_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to a demand load
+event:0x000004C046 counters:3       um:zero minimum:10000  name:PM_DATA_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to a demand load
+event:0x000003C046 counters:2       um:zero minimum:10000  name:PM_DATA_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to a demand load
+event:0x000003C040 counters:2       um:zero minimum:10000  name:PM_DATA_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to a demand load
+event:0x000004C040 counters:3       um:zero minimum:10000  name:PM_DATA_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to a demand load
+event:0x000002C040 counters:1       um:zero minimum:10000  name:PM_DATA_FROM_L2_MEPF : The processor's data cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state due to a demand load
+event:0x00000200FE counters:1       um:zero minimum:10000  name:PM_DATA_FROM_L2MISS : Demand LD - L2 Miss (not L2 hit)
+event:0x000001C04E counters:0       um:zero minimum:10000  name:PM_DATA_FROM_L2MISS_MOD : The processor's data cache was reloaded from a location other than the local core's L2 due to a demand load
+event:0x000001C040 counters:0       um:zero minimum:10000  name:PM_DATA_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to a demand load
+event:0x000004C042 counters:3       um:zero minimum:10000  name:PM_DATA_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to a demand load
+event:0x000004C044 counters:3       um:zero minimum:10000  name:PM_DATA_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to a demand load
+event:0x000003C044 counters:2       um:zero minimum:10000  name:PM_DATA_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to a demand load
+event:0x000002C044 counters:1       um:zero minimum:10000  name:PM_DATA_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to a demand load
+event:0x000001C046 counters:0       um:zero minimum:10000  name:PM_DATA_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to a demand load
+event:0x000003C042 counters:2       um:zero minimum:10000  name:PM_DATA_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to a demand load
+event:0x000002C042 counters:1       um:zero minimum:10000  name:PM_DATA_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state due to a demand load
+event:0x00000300FE counters:2       um:zero minimum:10000  name:PM_DATA_FROM_L3MISS : Demand LD - L3 Miss (not L2 hit and not L3 hit)
+event:0x000004C04E counters:3       um:zero minimum:10000  name:PM_DATA_FROM_L3MISS_MOD : The processor's data cache was reloaded from a location other than the local core's L3 due to a demand load
+event:0x000001C044 counters:0       um:zero minimum:10000  name:PM_DATA_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to a demand load
+event:0x000001C04C counters:0       um:zero minimum:10000  name:PM_DATA_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to a demand load
+event:0x000002C048 counters:1       um:zero minimum:10000  name:PM_DATA_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to a demand load
+event:0x00000400FE counters:3       um:zero minimum:10000  name:PM_DATA_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a demand load
+event:0x000004C04A counters:3       um:zero minimum:10000  name:PM_DATA_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a demand load
+event:0x000001C048 counters:0       um:zero minimum:10000  name:PM_DATA_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to a demand load
+event:0x000002C046 counters:1       um:zero minimum:10000  name:PM_DATA_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a demand load
+event:0x000001C04A counters:0       um:zero minimum:10000  name:PM_DATA_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a demand load
+event:0x000002C04A counters:1       um:zero minimum:10000  name:PM_DATA_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to a demand load
+event:0x000003C04A counters:2       um:zero minimum:10000  name:PM_DATA_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to a demand load
+event:0x000002C050 counters:1       um:zero minimum:10000  name:PM_DATA_GRP_PUMP_CPRED : Initial and Final Pump Scope was group pump (prediction=correct) for a demand load
+event:0x000002C052 counters:1       um:zero minimum:10000  name:PM_DATA_GRP_PUMP_MPRED : Final Pump Scope (Group) ended up either larger or smaller than Initial Pump Scope for a demand load
+event:0x000001C052 counters:0       um:zero minimum:10000  name:PM_DATA_GRP_PUMP_MPRED_RTY : Final Pump Scope (Group) ended up larger than Initial Pump Scope (Chip) for a demand load
+event:0x000001C054 counters:0       um:zero minimum:10000  name:PM_DATA_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for a demand load
+event:0x000004C052 counters:3       um:zero minimum:10000  name:PM_DATA_PUMP_MPRED : Pump misprediction. Counts across all types of pumps for a demand load
+event:0x000000F0A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_DATA_STORE : All ops that drain from s2q to L2 containing data
+event:0x000003C050 counters:2       um:zero minimum:10000  name:PM_DATA_SYS_PUMP_CPRED : Initial and Final Pump Scope was system pump (prediction=correct) for a demand load
+event:0x000003C052 counters:2       um:zero minimum:10000  name:PM_DATA_SYS_PUMP_MPRED : Final Pump Scope (system) mispredicted. Either the original scope was too small (Chip/Group) or the original scope was System and it should have been smaller. Counts for a demand load
+event:0x000004C050 counters:3       um:zero minimum:10000  name:PM_DATA_SYS_PUMP_MPRED_RTY : Final Pump Scope (system) ended up larger than Initial Pump Scope (Chip/Group) for a demand load
+event:0x000003001A counters:2       um:zero minimum:10000  name:PM_DATA_TABLEWALK_CYC : Data Tablewalk Cycles. Could be 1 or 2 active tablewalks. Includes data prefetches.
+event:0x000000F8AC counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_DEALLOC_NO_CONF : A demand load referenced a line in an active fuzzy prefetch stream. The stream could have been allocated through the hardware prefetch mechanism or through software.Fuzzy stream confirm (out of order effects, or pf cant keep up)
+event:0x000000F0A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_CONF : A demand load referenced a line in an active prefetch stream. The stream could have been allocated through the hardware prefetch mechanism or through software. Includes forwards and backwards streams
+event:0x000000F0B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_CONS_ALLOC : Prefetch stream allocated in the conservative phase by either the hardware prefetch mechanism or software prefetch
+event:0x000000F8A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_FUZZY_CONF : A demand load referenced a line in an active fuzzy prefetch stream. The stream could have been allocated through the hardware prefetch mechanism or through software.Fuzzy stream confirm (out of order effects, or pf cant keep up)
+event:0x000000F0A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_HW_ALLOC : Prefetch stream allocated by the hardware prefetch mechanism
+event:0x000000F0AC counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_STRIDED_CONF : A demand load referenced a line in an active strided prefetch stream. The stream could have been allocated through the hardware prefetch mechanism or through software.
+event:0x000000F8A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_SW_ALLOC : Prefetch stream allocated by software prefetching
+event:0x000000F8B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_DC_PREF_XCONS_ALLOC : Prefetch stream allocated in the Ultra conservative phase by either the hardware prefetch mechanism or software prefetch
+event:0x00000048B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_DECODE_FUSION_CONST_GEN : 32-bit constant generation
+event:0x0000005084 counters:0,1,2,3 um:zero minimum:10000  name:PM_DECODE_FUSION_EXT_ADD : 32-bit extended addition
+event:0x00000048A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_DECODE_FUSION_LD_ST_DISP : 32-bit displacement D-form and 16-bit displacement X-form
+event:0x0000005088 counters:0,1,2,3 um:zero minimum:10000  name:PM_DECODE_FUSION_OP_PRESERV : Destructive op operand preservation
+event:0x00000058A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_DECODE_HOLD_ICT_FULL : Counts the number of cycles in which the IFU was not able to decode and transmit one or more instructions because all itags were in use. This means the ICT is full for this thread
+event:0x0000005884 counters:0,1,2,3 um:zero minimum:10000  name:PM_DECODE_LANES_NOT_AVAIL : Decode has something to transmit but dispatch lanes are not available
+event:0x000004C054 counters:3       um:zero minimum:10000  name:PM_DERAT_MISS_16G : Data ERAT Miss (Data TLB Access) page size 16G
+event:0x000003C054 counters:2       um:zero minimum:10000  name:PM_DERAT_MISS_16M : Data ERAT Miss (Data TLB Access) page size 16M
+event:0x000002C05A counters:1       um:zero minimum:10000  name:PM_DERAT_MISS_1G : Data ERAT Miss (Data TLB Access) page size 1G. Implies radix translation
+event:0x000001C05A counters:0       um:zero minimum:10000  name:PM_DERAT_MISS_2M : Data ERAT Miss (Data TLB Access) page size 2M. Implies radix translation
+event:0x000001C056 counters:0       um:zero minimum:10000  name:PM_DERAT_MISS_4K : Data ERAT Miss (Data TLB Access) page size 4K
+event:0x000002C054 counters:1       um:zero minimum:10000  name:PM_DERAT_MISS_64K : Data ERAT Miss (Data TLB Access) page size 64K
+event:0x000004D04C counters:3       um:zero minimum:10000  name:PM_DFU_BUSY : Cycles in which all 4 Decimal Floating Point units are busy. The DFU is running at capacity
+event:0x000000288C counters:0,1,2,3 um:zero minimum:10000  name:PM_DISP_CLB_HELD_BAL : Dispatch/CLB Hold: Balance Flush
+event:0x0000002090 counters:0,1,2,3 um:zero minimum:10000  name:PM_DISP_CLB_HELD_SB : Dispatch/CLB Hold: Scoreboard
+event:0x0000002890 counters:0,1,2,3 um:zero minimum:10000  name:PM_DISP_CLB_HELD_TLBIE : Dispatch Hold: Due to TLBIE
+event:0x0000010006 counters:0       um:zero minimum:10000  name:PM_DISP_HELD : Dispatch Held
+event:0x000003D05C counters:2       um:zero minimum:10000  name:PM_DISP_HELD_HB_FULL : Dispatch held due to History Buffer full. Could be GPR/VSR/VMR/FPR/CR/XVF
+event:0x0000020006 counters:1       um:zero minimum:10000  name:PM_DISP_HELD_ISSQ_FULL : Dispatch held due to Issue q full. Includes issue queue and branch queue
+event:0x000004003C counters:3       um:zero minimum:10000  name:PM_DISP_HELD_SYNC_HOLD : Cycles in which dispatch is held because of a synchronizing instruction in the pipeline
+event:0x00000028B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_DISP_HELD_TBEGIN : This outer tbegin transaction cannot be dispatched until the previous tend instruction completes
+event:0x0000030008 counters:2       um:zero minimum:10000  name:PM_DISP_STARVED : Dispatched Starved
+event:0x000004D05C counters:3       um:zero minimum:10000  name:PM_DP_QP_FLOP_CMPL : Double-Precion or Quad-Precision instruction completed
+event:0x000004E048 counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_DL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003E048 counters:2       um:zero minimum:10000  name:PM_DPTEG_FROM_DL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003E04C counters:2       um:zero minimum:10000  name:PM_DPTEG_FROM_DL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on a different Node or Group (Distant) due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004E04C counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_DMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group (Distant) due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E042 counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_L2 : A Page Table Entry was loaded into the TLB from local core's L2 due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004E046 counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_L21_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L2 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003E046 counters:2       um:zero minimum:10000  name:PM_DPTEG_FROM_L21_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L2 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E040 counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_L2_MEPF : A Page Table Entry was loaded into the TLB from local core's L2 hit without dispatch conflicts on Mepf state. due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E04E counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_L2MISS : A Page Table Entry was loaded into the TLB from a location other than the local core's L2 due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E040 counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_L2_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004E042 counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_L3 : A Page Table Entry was loaded into the TLB from local core's L3 due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004E044 counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_L31_ECO_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's ECO L3 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003E044 counters:2       um:zero minimum:10000  name:PM_DPTEG_FROM_L31_ECO_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's ECO L3 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E044 counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_L31_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L3 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E046 counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_L31_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L3 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003E042 counters:2       um:zero minimum:10000  name:PM_DPTEG_FROM_L3_DISP_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 with dispatch conflict due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E042 counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_L3_MEPF : A Page Table Entry was loaded into the TLB from local core's L3 without dispatch conflicts hit on Mepf state. due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004E04E counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_L3MISS : A Page Table Entry was loaded into the TLB from a location other than the local core's L3 due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E044 counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_L3_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 without conflict due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E04C counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_LL4 : A Page Table Entry was loaded into the TLB from the local chip's L4 cache due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E048 counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_LMEM : A Page Table Entry was loaded into the TLB from the local chip's Memory due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E04C counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_MEMORY : A Page Table Entry was loaded into the TLB from a memory location including L4 from local remote or distant due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004E04A counters:3       um:zero minimum:10000  name:PM_DPTEG_FROM_OFF_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E048 counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_ON_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on the same chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E046 counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_RL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001E04A counters:0       um:zero minimum:10000  name:PM_DPTEG_FROM_RL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002E04A counters:1       um:zero minimum:10000  name:PM_DPTEG_FROM_RL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on the same Node or Group ( Remote) due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003E04A counters:2       um:zero minimum:10000  name:PM_DPTEG_FROM_RMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group ( Remote) due to a data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x0000036092 counters:2       um:zero minimum:10000  name:PM_DSIDE_L2MEMACC : Valid when first beat of data comes in for an D-side fetch where data came EXCLUSIVELY from memory (excluding hpcread64 accesses), i.e., total memory accesses by RCs
+event:0x0000026884 counters:1       um:zero minimum:10000  name:PM_DSIDE_MRU_TOUCH : D-side L2 MRU touch sent to L2
+event:0x0000036892 counters:2       um:zero minimum:10000  name:PM_DSIDE_OTHER_64B_L2MEMACC : Valid when first beat of data comes in for an D-side fetch where data came EXCLUSIVELY from memory that was for hpc_read64, (RC had to fetch other 64B of a line from MC) i.e., number of times RC had to go to memory to get 'missing' 64B
+event:0x000000D0A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_DSLB_MISS : Data SLB Miss - Total of all segment sizes
+event:0x0000010016 counters:0       um:zero minimum:10000  name:PM_DSLB_MISS : gate_and(sd_pc_c0_comp_valid AND sd_pc_c0_comp_thread(0:1)=tid,sd_pc_c0_comp_ppc_count(0:3)) + gate_and(sd_pc_c1_comp_valid AND sd_pc_c1_comp_thread(0:1)=tid,sd_pc_c1_comp_ppc_count(0:3))
+event:0x00000300FC counters:2       um:zero minimum:10000  name:PM_DTLB_MISS : Data PTEG reload
+event:0x000001C058 counters:0       um:zero minimum:10000  name:PM_DTLB_MISS_16G : Data TLB Miss page size 16G
+event:0x000004C056 counters:3       um:zero minimum:10000  name:PM_DTLB_MISS_16M : Data TLB Miss page size 16M
+event:0x000004C05A counters:3       um:zero minimum:10000  name:PM_DTLB_MISS_1G : Data TLB reload (after a miss) page size 1G. Implies radix translation was used
+event:0x000001C05C counters:0       um:zero minimum:10000  name:PM_DTLB_MISS_2M : Data TLB reload (after a miss) page size 2M. Implies radix translation was used
+event:0x000002C056 counters:1       um:zero minimum:10000  name:PM_DTLB_MISS_4K : Data TLB Miss page size 4k
+event:0x000003C056 counters:2       um:zero minimum:10000  name:PM_DTLB_MISS_64K : Data TLB Miss page size 64K
+event:0x00000050A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_EAT_FORCE_MISPRED : XL-form branch was mispredicted due to the predicted target address missing from EAT. The EAT forces a mispredict in this case since there is no predicated target to validate. This is a rare case that may occur when the EAT is full and a branch is issued
+event:0x0000004084 counters:0,1,2,3 um:zero minimum:10000  name:PM_EAT_FULL_CYC : Cycles No room in EAT
+event:0x0000002080 counters:0,1,2,3 um:zero minimum:10000  name:PM_EE_OFF_EXT_INT : CyclesMSR[EE] is off and external interrupts are active
+event:0x00000200F8 counters:1       um:zero minimum:10000  name:PM_EXT_INT : external interrupt
+event:0x000004505E counters:3       um:zero minimum:10000  name:PM_FLOP_CMPL : Floating Point Operation Finished
+event:0x00000400F8 counters:3       um:zero minimum:10000  name:PM_FLUSH : Flush (any type)
+event:0x0000030012 counters:2       um:zero minimum:10000  name:PM_FLUSH_COMPLETION : The instruction that was next to complete did not complete because it suffered a flush
+event:0x0000002880 counters:0,1,2,3 um:zero minimum:10000  name:PM_FLUSH_DISP : Dispatch flush
+event:0x0000002088 counters:0,1,2,3 um:zero minimum:10000  name:PM_FLUSH_DISP_SB : Dispatch Flush: Scoreboard
+event:0x0000002888 counters:0,1,2,3 um:zero minimum:10000  name:PM_FLUSH_DISP_TLBIE : Dispatch Flush: TLBIE
+event:0x0000002084 counters:0,1,2,3 um:zero minimum:10000  name:PM_FLUSH_HB_RESTORE_CYC : Cycles in which no new instructions can be dispatched to the ICT after a flush. History buffer recovery
+event:0x00000058A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_FLUSH_LSU : LSU flushes. Includes all lsu flushes
+event:0x00000050A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_FLUSH_MPRED : Branch mispredict flushes. Includes target and address misprecition
+event:0x0000045054 counters:3       um:zero minimum:10000  name:PM_FMA_CMPL : two flops operation completed (fmadd, fnmadd, fmsub, fnmsub) Scalar instructions only. 
+event:0x000000509C counters:0,1,2,3 um:zero minimum:10000  name:PM_FORCED_NOP : Instruction was forced to execute as a nop because it was found to behave like a nop (have no effect) at decode time
+event:0x000003000C counters:2       um:zero minimum:10000  name:PM_FREQ_DOWN : Power Management: Below Threshold B
+event:0x000004000C counters:3       um:zero minimum:10000  name:PM_FREQ_UP : Power Management: Above Threshold A
+event:0x000003000E counters:2       um:zero minimum:10000  name:PM_FXU_1PLUS_BUSY : At least one of the 4 FXU units is busy
+event:0x000002000E counters:1       um:zero minimum:10000  name:PM_FXU_BUSY : Cycles in which all 4 FXUs are busy. The FXU is running at capacity
+event:0x0000040004 counters:3       um:zero minimum:10000  name:PM_FXU_FIN : The fixed point unit Unit finished an instruction. Instructions that finish may not necessary complete.
+event:0x0000024052 counters:1       um:zero minimum:10000  name:PM_FXU_IDLE : Cycles in which FXU0, FXU1, FXU2, and FXU3 are all idle
+event:0x0000020050 counters:1       um:zero minimum:10000  name:PM_GRP_PUMP_CPRED : Initial and Final Pump Scope and data sourced across this scope was group pump for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x0000020052 counters:1       um:zero minimum:10000  name:PM_GRP_PUMP_MPRED : Final Pump Scope (Group) ended up either larger or smaller than Initial Pump Scope for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x0000010052 counters:0       um:zero minimum:10000  name:PM_GRP_PUMP_MPRED_RTY : Final Pump Scope (Group) ended up larger than Initial Pump Scope (Chip) for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x000002000A counters:1       um:zero minimum:10000  name:PM_HV_CYC : Cycles in which msr_hv is high. Note that this event does not take msr_pr into consideration
+event:0x00000050A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_HWSYNC : Hwsync instruction decoded and transferred
+event:0x0000004884 counters:0,1,2,3 um:zero minimum:10000  name:PM_IBUF_FULL_CYC : Cycles No room in ibuff
+event:0x0000010018 counters:0       um:zero minimum:10000  name:PM_IC_DEMAND_CYC : Final Pump Scope (Group) ended up larger than Initial Pump Scope (Chip) for a demand load
+event:0x0000004098 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_DEMAND_L2_BHT_REDIRECT : L2 I cache demand request due to BHT redirect, branch redirect ( 2 bubbles 3 cycles)
+event:0x0000004898 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_DEMAND_L2_BR_REDIRECT : L2 I cache demand request due to branch Mispredict ( 15 cycle path)
+event:0x0000004088 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_DEMAND_REQ : Demand Instruction fetch request
+event:0x0000005888 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_INVALIDATE : Ic line invalidated
+event:0x0000045058 counters:3       um:zero minimum:10000  name:PM_IC_MISS_CMPL : Non-speculative icache miss, counted at completion
+event:0x0000005094 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_MISS_ICBI : threaded version, IC Misses where we got EA dir hit but no sector valids were on. ICBI took line out
+event:0x0000004890 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_PREF_CANCEL_HIT : Prefetch Canceled due to icache hit
+event:0x0000004094 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_PREF_CANCEL_L2 : L2 Squashed a demand or prefetch request
+event:0x0000004090 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_PREF_CANCEL_PAGE : Prefetch Canceled due to page boundary
+event:0x0000004888 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_PREF_REQ : Instruction prefetch requests
+event:0x000000488C counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_PREF_WRITE : Instruction prefetch written into IL1
+event:0x0000004894 counters:0,1,2,3 um:zero minimum:10000  name:PM_IC_RELOAD_PRIVATE : Reloading line was brought in private for a specific thread. Most lines are brought in shared for all eight threads. If RA does not match then invalidates and then brings it shared to other thread. In P7 line brought in private , then line was invalidat
+event:0x0000020008 counters:1       um:zero minimum:10000  name:PM_ICT_EMPTY_CYC : Cycles in which the ICT is completely empty. No itags are assigned to any thread
+event:0x000004D01E counters:3       um:zero minimum:10000  name:PM_ICT_NOSLOT_BR_MPRED : Ict empty for this thread due to branch mispred
+event:0x0000034058 counters:2       um:zero minimum:10000  name:PM_ICT_NOSLOT_BR_MPRED_ICMISS : Ict empty for this thread due to Icache Miss and branch mispred
+event:0x00000100F8 counters:0       um:zero minimum:10000  name:PM_ICT_NOSLOT_CYC : Number of cycles the ICT has no itags assigned to this thread
+event:0x000004E01A counters:3       um:zero minimum:10000  name:PM_ICT_NOSLOT_DISP_HELD : Cycles in which the NTC instruction is held at dispatch for any reason
+event:0x0000030018 counters:2       um:zero minimum:10000  name:PM_ICT_NOSLOT_DISP_HELD_HB_FULL : Ict empty for this thread due to dispatch holds because the History Buffer was full. Could be GPR/VSR/VMR/FPR/CR/XVF
+event:0x000002D01E counters:1       um:zero minimum:10000  name:PM_ICT_NOSLOT_DISP_HELD_ISSQ : Ict empty for this thread due to dispatch hold on this thread due to Issue q full, BRQ full, XVCF Full, Count cache, Link, Tar full
+event:0x000004D01C counters:3       um:zero minimum:10000  name:PM_ICT_NOSLOT_DISP_HELD_SYNC : Dispatch held due to a synchronizing instruction at dispatch
+event:0x0000010064 counters:0       um:zero minimum:10000  name:PM_ICT_NOSLOT_DISP_HELD_TBEGIN : the NTC instruction is being held at dispatch because it is a tbegin instruction and there is an older tbegin in the pipeline that must complete before the younger tbegin can dispatch
+event:0x000003E052 counters:2       um:zero minimum:10000  name:PM_ICT_NOSLOT_IC_L3 : Ict empty for this thread due to icache misses that were sourced from the local L3
+event:0x000004E010 counters:3       um:zero minimum:10000  name:PM_ICT_NOSLOT_IC_L3MISS : Ict empty for this thread due to icache misses that were sourced from beyond the local L3. The source could be local/remote/distant memory or another core's cache
+event:0x000002D01A counters:1       um:zero minimum:10000  name:PM_ICT_NOSLOT_IC_MISS : Ict empty for this thread due to Icache Miss
+event:0x00000100F6 counters:0       um:zero minimum:10000  name:PM_IERAT_RELOAD : Number of I-ERAT reloads
+event:0x000004006A counters:3       um:zero minimum:10000  name:PM_IERAT_RELOAD_16M : IERAT Reloaded (Miss) for a 16M page
+event:0x0000020064 counters:1       um:zero minimum:10000  name:PM_IERAT_RELOAD_4K : IERAT reloaded (after a miss) for 4K pages
+event:0x000003006A counters:2       um:zero minimum:10000  name:PM_IERAT_RELOAD_64K : IERAT Reloaded (Miss) for a 64k page
+event:0x000003405E counters:2       um:zero minimum:10000  name:PM_IFETCH_THROTTLE : Cycles in which Instruction fetch throttle was active.
+event:0x0000014050 counters:0       um:zero minimum:10000  name:PM_INST_CHIP_PUMP_CPRED : Initial and Final Pump Scope was chip pump (prediction=correct) for an instruction fetch
+event:0x0000010002 counters:0       um:zero minimum:100000 name:PM_INST_CMPL : Number of PowerPC Instructions that completed.
+event:0x0000020002 counters:1       um:zero minimum:100000 name:PM_INST_CMPL : Number of PowerPC Instructions that completed.
+event:0x0000030002 counters:2       um:zero minimum:100000 name:PM_INST_CMPL : Number of PowerPC Instructions that completed.
+event:0x0000040002 counters:3       um:zero minimum:100000 name:PM_INST_CMPL : Number of PowerPC Instructions that completed.
+event:0x00000200F2 counters:1       um:zero minimum:10000  name:PM_INST_DISP : # PPC Dispatched
+event:0x00000300F2 counters:2       um:zero minimum:10000  name:PM_INST_DISP : # PPC Dispatched
+event:0x0000044048 counters:3       um:zero minimum:10000  name:PM_INST_FROM_DL2L3_MOD : The processor's Instruction cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to an instruction fetch (not prefetch)
+event:0x0000034048 counters:2       um:zero minimum:10000  name:PM_INST_FROM_DL2L3_SHR : The processor's Instruction cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to an instruction fetch (not prefetch)
+event:0x000003404C counters:2       um:zero minimum:10000  name:PM_INST_FROM_DL4 : The processor's Instruction cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to an instruction fetch (not prefetch)
+event:0x000004404C counters:3       um:zero minimum:10000  name:PM_INST_FROM_DMEM : The processor's Instruction cache was reloaded from another chip's memory on the same Node or Group (Distant) due to an instruction fetch (not prefetch)
+event:0x0000004080 counters:0,1,2,3 um:zero minimum:10000  name:PM_INST_FROM_L1 : Instruction fetches from L1. L1 instruction hit
+event:0x0000014042 counters:0       um:zero minimum:10000  name:PM_INST_FROM_L2 : The processor's Instruction cache was reloaded from local core's L2 due to an instruction fetch (not prefetch)
+event:0x0000044046 counters:3       um:zero minimum:10000  name:PM_INST_FROM_L21_MOD : The processor's Instruction cache was reloaded with Modified (M) data from another core's L2 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000034046 counters:2       um:zero minimum:10000  name:PM_INST_FROM_L21_SHR : The processor's Instruction cache was reloaded with Shared (S) data from another core's L2 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000034040 counters:2       um:zero minimum:10000  name:PM_INST_FROM_L2_DISP_CONFLICT_LDHITST : The processor's Instruction cache was reloaded from local core's L2 with load hit store conflict due to an instruction fetch (not prefetch)
+event:0x0000044040 counters:3       um:zero minimum:10000  name:PM_INST_FROM_L2_DISP_CONFLICT_OTHER : The processor's Instruction cache was reloaded from local core's L2 with dispatch conflict due to an instruction fetch (not prefetch)
+event:0x0000024040 counters:1       um:zero minimum:10000  name:PM_INST_FROM_L2_MEPF : The processor's Instruction cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state. due to an instruction fetch (not prefetch)
+event:0x000001404E counters:0       um:zero minimum:10000  name:PM_INST_FROM_L2MISS : The processor's Instruction cache was reloaded from a location other than the local core's L2 due to an instruction fetch (not prefetch)
+event:0x0000014040 counters:0       um:zero minimum:10000  name:PM_INST_FROM_L2_NO_CONFLICT : The processor's Instruction cache was reloaded from local core's L2 without conflict due to an instruction fetch (not prefetch)
+event:0x0000044042 counters:3       um:zero minimum:10000  name:PM_INST_FROM_L3 : The processor's Instruction cache was reloaded from local core's L3 due to an instruction fetch (not prefetch)
+event:0x0000044044 counters:3       um:zero minimum:10000  name:PM_INST_FROM_L31_ECO_MOD : The processor's Instruction cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000034044 counters:2       um:zero minimum:10000  name:PM_INST_FROM_L31_ECO_SHR : The processor's Instruction cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000024044 counters:1       um:zero minimum:10000  name:PM_INST_FROM_L31_MOD : The processor's Instruction cache was reloaded with Modified (M) data from another core's L3 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000014046 counters:0       um:zero minimum:10000  name:PM_INST_FROM_L31_SHR : The processor's Instruction cache was reloaded with Shared (S) data from another core's L3 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000034042 counters:2       um:zero minimum:10000  name:PM_INST_FROM_L3_DISP_CONFLICT : The processor's Instruction cache was reloaded from local core's L3 with dispatch conflict due to an instruction fetch (not prefetch)
+event:0x0000024042 counters:1       um:zero minimum:10000  name:PM_INST_FROM_L3_MEPF : The processor's Instruction cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state. due to an instruction fetch (not prefetch)
+event:0x00000300FA counters:2       um:zero minimum:10000  name:PM_INST_FROM_L3MISS : Marked instruction was reloaded from a location beyond the local chiplet
+event:0x000004404E counters:3       um:zero minimum:10000  name:PM_INST_FROM_L3MISS_MOD : The processor's Instruction cache was reloaded from a location other than the local core's L3 due to a instruction fetch
+event:0x0000014044 counters:0       um:zero minimum:10000  name:PM_INST_FROM_L3_NO_CONFLICT : The processor's Instruction cache was reloaded from local core's L3 without conflict due to an instruction fetch (not prefetch)
+event:0x000001404C counters:0       um:zero minimum:10000  name:PM_INST_FROM_LL4 : The processor's Instruction cache was reloaded from the local chip's L4 cache due to an instruction fetch (not prefetch)
+event:0x0000024048 counters:1       um:zero minimum:10000  name:PM_INST_FROM_LMEM : The processor's Instruction cache was reloaded from the local chip's Memory due to an instruction fetch (not prefetch)
+event:0x000002404C counters:1       um:zero minimum:10000  name:PM_INST_FROM_MEMORY : The processor's Instruction cache was reloaded from a memory location including L4 from local remote or distant due to an instruction fetch (not prefetch)
+event:0x000004404A counters:3       um:zero minimum:10000  name:PM_INST_FROM_OFF_CHIP_CACHE : The processor's Instruction cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to an instruction fetch (not prefetch)
+event:0x0000014048 counters:0       um:zero minimum:10000  name:PM_INST_FROM_ON_CHIP_CACHE : The processor's Instruction cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to an instruction fetch (not prefetch)
+event:0x0000024046 counters:1       um:zero minimum:10000  name:PM_INST_FROM_RL2L3_MOD : The processor's Instruction cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to an instruction fetch (not prefetch)
+event:0x000001404A counters:0       um:zero minimum:10000  name:PM_INST_FROM_RL2L3_SHR : The processor's Instruction cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to an instruction fetch (not prefetch)
+event:0x000002404A counters:1       um:zero minimum:10000  name:PM_INST_FROM_RL4 : The processor's Instruction cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to an instruction fetch (not prefetch)
+event:0x000003404A counters:2       um:zero minimum:10000  name:PM_INST_FROM_RMEM : The processor's Instruction cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to an instruction fetch (not prefetch)
+event:0x000002C05C counters:1       um:zero minimum:10000  name:PM_INST_GRP_PUMP_CPRED : Initial and Final Pump Scope was group pump (prediction=correct) for an instruction fetch (demand only)
+event:0x000002C05E counters:1       um:zero minimum:10000  name:PM_INST_GRP_PUMP_MPRED : Final Pump Scope (Group) ended up either larger or smaller than Initial Pump Scope for an instruction fetch (demand only)
+event:0x0000014052 counters:0       um:zero minimum:10000  name:PM_INST_GRP_PUMP_MPRED_RTY : Final Pump Scope (Group) ended up larger than Initial Pump Scope (Chip) for an instruction fetch
+event:0x000004001C counters:3       um:zero minimum:10000  name:PM_INST_IMC_MATCH_CMPL : IMC Match Count
+event:0x0000014054 counters:0       um:zero minimum:10000  name:PM_INST_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for an instruction fetch
+event:0x0000044052 counters:3       um:zero minimum:10000  name:PM_INST_PUMP_MPRED : Pump misprediction. Counts across all types of pumps for an instruction fetch
+event:0x0000034050 counters:2       um:zero minimum:10000  name:PM_INST_SYS_PUMP_CPRED : Initial and Final Pump Scope was system pump (prediction=correct) for an instruction fetch
+event:0x0000034052 counters:2       um:zero minimum:10000  name:PM_INST_SYS_PUMP_MPRED : Final Pump Scope (system) mispredicted. Either the original scope was too small (Chip/Group) or the original scope was System and it should have been smaller. Counts for an instruction fetch
+event:0x0000044050 counters:3       um:zero minimum:10000  name:PM_INST_SYS_PUMP_MPRED_RTY : Final Pump Scope (system) ended up larger than Initial Pump Scope (Chip/Group) for an instruction fetch
+event:0x0000024050 counters:1       um:zero minimum:100000 name:PM_IOPS_CMPL : Internal Operations completed
+event:0x0000045048 counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_DL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a instruction side request
+event:0x0000035048 counters:2       um:zero minimum:10000  name:PM_IPTEG_FROM_DL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a instruction side request
+event:0x000003504C counters:2       um:zero minimum:10000  name:PM_IPTEG_FROM_DL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on a different Node or Group (Distant) due to a instruction side request
+event:0x000004504C counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_DMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group (Distant) due to a instruction side request
+event:0x0000015042 counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_L2 : A Page Table Entry was loaded into the TLB from local core's L2 due to a instruction side request
+event:0x0000045046 counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_L21_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L2 on the same chip due to a instruction side request
+event:0x0000035046 counters:2       um:zero minimum:10000  name:PM_IPTEG_FROM_L21_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L2 on the same chip due to a instruction side request
+event:0x0000025040 counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_L2_MEPF : A Page Table Entry was loaded into the TLB from local core's L2 hit without dispatch conflicts on Mepf state. due to a instruction side request
+event:0x000001504E counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_L2MISS : A Page Table Entry was loaded into the TLB from a location other than the local core's L2 due to a instruction side request
+event:0x0000015040 counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_L2_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a instruction side request
+event:0x0000045042 counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_L3 : A Page Table Entry was loaded into the TLB from local core's L3 due to a instruction side request
+event:0x0000045044 counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_L31_ECO_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's ECO L3 on the same chip due to a instruction side request
+event:0x0000035044 counters:2       um:zero minimum:10000  name:PM_IPTEG_FROM_L31_ECO_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's ECO L3 on the same chip due to a instruction side request
+event:0x0000025044 counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_L31_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L3 on the same chip due to a instruction side request
+event:0x0000015046 counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_L31_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L3 on the same chip due to a instruction side request
+event:0x0000035042 counters:2       um:zero minimum:10000  name:PM_IPTEG_FROM_L3_DISP_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 with dispatch conflict due to a instruction side request
+event:0x0000025042 counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_L3_MEPF : A Page Table Entry was loaded into the TLB from local core's L3 without dispatch conflicts hit on Mepf state. due to a instruction side request
+event:0x000004504E counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_L3MISS : A Page Table Entry was loaded into the TLB from a location other than the local core's L3 due to a instruction side request
+event:0x0000015044 counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_L3_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 without conflict due to a instruction side request
+event:0x000001504C counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_LL4 : A Page Table Entry was loaded into the TLB from the local chip's L4 cache due to a instruction side request
+event:0x0000025048 counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_LMEM : A Page Table Entry was loaded into the TLB from the local chip's Memory due to a instruction side request
+event:0x000002504C counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_MEMORY : A Page Table Entry was loaded into the TLB from a memory location including L4 from local remote or distant due to a instruction side request
+event:0x000004504A counters:3       um:zero minimum:10000  name:PM_IPTEG_FROM_OFF_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a instruction side request
+event:0x0000015048 counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_ON_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on the same chip due to a instruction side request
+event:0x0000025046 counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_RL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a instruction side request
+event:0x000001504A counters:0       um:zero minimum:10000  name:PM_IPTEG_FROM_RL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a instruction side request
+event:0x000002504A counters:1       um:zero minimum:10000  name:PM_IPTEG_FROM_RL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on the same Node or Group ( Remote) due to a instruction side request
+event:0x000003504A counters:2       um:zero minimum:10000  name:PM_IPTEG_FROM_RMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group ( Remote) due to a instruction side request
+event:0x000001688A counters:0       um:zero minimum:10000  name:PM_ISIDE_DISP : All I-side dispatch attempts for this thread (excludes i_l2mru_tch_reqs)
+event:0x000002608A counters:1       um:zero minimum:10000  name:PM_ISIDE_DISP_FAIL_ADDR : All I-side dispatch attempts for this thread that failed due to a addr collision with another machine (excludes i_l2mru_tch_reqs)
+event:0x000002688A counters:1       um:zero minimum:10000  name:PM_ISIDE_DISP_FAIL_OTHER : All I-side dispatch attempts for this thread that failed due to a reason other than addrs collision (excludes i_l2mru_tch_reqs)
+event:0x0000026890 counters:1       um:zero minimum:10000  name:PM_ISIDE_L2MEMACC : Valid when first beat of data comes in for an I-side fetch where data came from memory
+event:0x0000046880 counters:3       um:zero minimum:10000  name:PM_ISIDE_MRU_TOUCH : I-side L2 MRU touch sent to L2 for this thread
+event:0x000000D8A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_ISLB_MISS : Instruction SLB Miss - Total of all segment sizes
+event:0x0000040006 counters:3       um:zero minimum:10000  name:PM_ISLB_MISS : Number of ISLB misses for this thread
+event:0x000003005A counters:2       um:zero minimum:10000  name:PM_ISQ_0_8_ENTRIES : Cycles in which 8 or less Issue Queue entries are in use. This is a shared event, not per thread
+event:0x000004000A counters:3       um:zero minimum:10000  name:PM_ISQ_36_44_ENTRIES : Cycles in which 36 or more Issue Queue entries are in use. This is a shared event, not per thread. There are 44 issue queue entries across 4 slices in the whole core
+event:0x0000003080 counters:0,1,2,3 um:zero minimum:10000  name:PM_ISU0_ISS_HOLD_ALL : All ISU rejects
+event:0x0000003084 counters:0,1,2,3 um:zero minimum:10000  name:PM_ISU1_ISS_HOLD_ALL : All ISU rejects
+event:0x0000003880 counters:0,1,2,3 um:zero minimum:10000  name:PM_ISU2_ISS_HOLD_ALL : All ISU rejects
+event:0x0000003884 counters:0,1,2,3 um:zero minimum:10000  name:PM_ISU3_ISS_HOLD_ALL : All ISU rejects
+event:0x0000002884 counters:0,1,2,3 um:zero minimum:10000  name:PM_ISYNC : Isync completion count per thread
+event:0x00000400FC counters:3       um:zero minimum:10000  name:PM_ITLB_MISS : ITLB Reloaded. Counts 1 per ITLB miss for HPT but multiple for radix depending on number of levels traveresed
+event:0x000001002C counters:0       um:zero minimum:10000  name:PM_L1_DCACHE_RELOADED_ALL : L1 data cache reloaded for demand. If MMCR1[16] is 1, prefetches will be included as well
+event:0x00000300F6 counters:2       um:zero minimum:10000  name:PM_L1_DCACHE_RELOAD_VALID : DL1 reloaded due to Demand Load
+event:0x000000408C counters:0,1,2,3 um:zero minimum:10000  name:PM_L1_DEMAND_WRITE : Instruction Demand sectors written into IL1
+event:0x00000200FD counters:1       um:zero minimum:10000  name:PM_L1_ICACHE_MISS : Demand iCache Miss
+event:0x0000040012 counters:3       um:zero minimum:10000  name:PM_L1_ICACHE_RELOADED_ALL : Counts all Icache reloads includes demand, prefetch, prefetch turned into demand and demand turned into prefetch
+event:0x0000030068 counters:2       um:zero minimum:10000  name:PM_L1_ICACHE_RELOADED_PREF : Counts all Icache prefetch reloads ( includes demand turned into prefetch)
+event:0x0000016890 counters:0       um:zero minimum:10000  name:PM_L1PF_L2MEMACC : Valid when first beat of data comes in for an L1PF where data came from memory
+event:0x0000020054 counters:1       um:zero minimum:10000  name:PM_L1_PREF : A data line was written to the L1 due to a hardware or software prefetch
+event:0x000000E880 counters:0,1,2,3 um:zero minimum:10000  name:PM_L1_SW_PREF : Software L1 Prefetches, including SW Transient Prefetches
+event:0x0000016082 counters:0       um:zero minimum:10000  name:PM_L2_CASTOUT_MOD : L2 Castouts - Modified (M,Mu,Me)
+event:0x0000016882 counters:0       um:zero minimum:10000  name:PM_L2_CASTOUT_SHR : L2 Castouts - Shared (Tx,Sx)
+event:0x0000046088 counters:3       um:zero minimum:10000  name:PM_L2_CHIP_PUMP : RC requests that were local (aka chip) pump attempts
+event:0x0000026882 counters:1       um:zero minimum:10000  name:PM_L2_DC_INV : D-cache invalidates sent over the reload bus to the core
+event:0x0000046080 counters:3       um:zero minimum:10000  name:PM_L2_DISP_ALL_L2MISS : All successful Ld/St dispatches for this thread that were an L2 miss (excludes i_l2mru_tch_reqs)
+event:0x0000046888 counters:3       um:zero minimum:10000  name:PM_L2_GROUP_PUMP : RC requests that were on group (aka nodel) pump attempts
+event:0x0000026088 counters:1       um:zero minimum:10000  name:PM_L2_GRP_GUESS_CORRECT : L2 guess grp (GS or NNS) and guess was correct (data intra-group AND ^on-chip)
+event:0x0000026888 counters:1       um:zero minimum:10000  name:PM_L2_GRP_GUESS_WRONG : L2 guess grp (GS or NNS) and guess was not correct (ie data on-chip OR beyond-group)
+event:0x0000026082 counters:1       um:zero minimum:10000  name:PM_L2_IC_INV : I-cache Invalidates sent over the realod bus to the core
+event:0x0000036080 counters:2       um:zero minimum:10000  name:PM_L2_INST : All successful I-side dispatches for this thread (excludes i_l2mru_tch reqs)
+event:0x000003609E counters:2       um:zero minimum:10000  name:PM_L2_INST : All successful I-side dispatches for this thread (excludes i_l2mru_tch reqs)
+event:0x0000036880 counters:2       um:zero minimum:10000  name:PM_L2_INST_MISS : All successful I-side dispatches that were an L2 miss for this thread (excludes i_l2mru_tch reqs)
+event:0x000004609E counters:3       um:zero minimum:10000  name:PM_L2_INST_MISS : All successful I-side dispatches that were an L2 miss for this thread (excludes i_l2mru_tch reqs)
+event:0x0000016080 counters:0       um:zero minimum:10000  name:PM_L2_LD : All successful D-side Load dispatches for this thread (L2 miss + L2 hits)
+event:0x000001609E counters:0       um:zero minimum:10000  name:PM_L2_LD_DISP : All successful D-side load dispatches for this thread (L2 miss + L2 hits)
+event:0x0000036082 counters:2       um:zero minimum:10000  name:PM_L2_LD_DISP : All successful I-or-D side load dispatches for this thread (excludes i_l2mru_tch_reqs)
+event:0x000002609E counters:1       um:zero minimum:10000  name:PM_L2_LD_HIT : All successful D-side load dispatches that were L2 hits for this thread
+event:0x0000036882 counters:2       um:zero minimum:10000  name:PM_L2_LD_HIT : All successful I-or-D side load dispatches for this thread that were L2 hits (excludes i_l2mru_tch_reqs)
+event:0x0000026080 counters:1       um:zero minimum:10000  name:PM_L2_LD_MISS : All successful D-Side Load dispatches that were an L2 miss for this thread
+event:0x0000016092 counters:0       um:zero minimum:10000  name:PM_L2_LD_MISS_128B : All successful D-side load dispatches that were an L2 miss (NOT Sx,Tx,Mx) for this thread and the RC calculated the request should be for 128B (i.e., M=0)
+event:0x0000026092 counters:1       um:zero minimum:10000  name:PM_L2_LD_MISS_64B : All successful D-side load dispatches that were an L2 miss (NOT Sx,Tx,Mx) for this thread and the RC calculated the request should be for 64B(i.e., M=1)
+event:0x0000016088 counters:0       um:zero minimum:10000  name:PM_L2_LOC_GUESS_CORRECT : L2 guess local (LNS) and guess was correct (ie data local)
+event:0x0000016888 counters:0       um:zero minimum:10000  name:PM_L2_LOC_GUESS_WRONG : L2 guess local (LNS) and guess was not correct (ie data not on chip)
+event:0x0000016084 counters:0       um:zero minimum:10000  name:PM_L2_RCLD_DISP : All I-or-D side load dispatch attempts for this thread (excludes i_l2mru_tch_reqs)
+event:0x0000016884 counters:0       um:zero minimum:10000  name:PM_L2_RCLD_DISP_FAIL_ADDR : All I-od-D side load dispatch attempts for this thread that failed due to address collision with RC/CO/SN/SQ machine (excludes i_l2mru_tch_reqs)
+event:0x0000026084 counters:1       um:zero minimum:10000  name:PM_L2_RCLD_DISP_FAIL_OTHER : All I-or-D side load dispatch attempts for this thread that failed due to reason other than address collision (excludes i_l2mru_tch_reqs)
+event:0x0000036084 counters:2       um:zero minimum:10000  name:PM_L2_RCST_DISP : All D-side store dispatch attempts for this thread
+event:0x0000036884 counters:2       um:zero minimum:10000  name:PM_L2_RCST_DISP_FAIL_ADDR : All D-side store dispatch attempts for this thread that failed due to address collision with RC/CO/SN/SQ
+event:0x0000046084 counters:3       um:zero minimum:10000  name:PM_L2_RCST_DISP_FAIL_OTHER : All D-side store dispatch attempts for this thread that failed due to reason other than address collision
+event:0x0000036086 counters:2       um:zero minimum:10000  name:PM_L2_RC_ST_DONE : RC did store to line that was Tx or Sx
+event:0x000003688A counters:2       um:zero minimum:10000  name:PM_L2_RTY_LD : RC retries on PB for any load from core (excludes DCBFs)
+event:0x000003689E counters:2       um:zero minimum:10000  name:PM_L2_RTY_LD : RC retries on PB for any load from core (excludes DCBFs)
+event:0x000003608A counters:2       um:zero minimum:10000  name:PM_L2_RTY_ST : RC retries on PB for any store from core (excludes DCBFs)
+event:0x000004689E counters:3       um:zero minimum:10000  name:PM_L2_RTY_ST : RC retries on PB for any store from core (excludes DCBFs)
+event:0x0000046086 counters:3       um:zero minimum:10000  name:PM_L2_SN_M_RD_DONE : SNP dispatched for a read and was M (true M)
+event:0x0000016086 counters:0       um:zero minimum:10000  name:PM_L2_SN_M_WR_DONE : SNP dispatched for a write and was M (true M)
+event:0x0000046886 counters:3       um:zero minimum:10000  name:PM_L2_SN_M_WR_DONE : SNP dispatched for a write and was M (true M)
+event:0x0000036886 counters:2       um:zero minimum:10000  name:PM_L2_SN_SX_I_DONE : SNP dispatched and went from Sx to Ix
+event:0x0000016880 counters:0       um:zero minimum:10000  name:PM_L2_ST : All successful D-side store dispatches for this thread (L2 miss + L2 hits)
+event:0x000001689E counters:0       um:zero minimum:10000  name:PM_L2_ST_DISP : All successful D-side store dispatches for this thread (L2 miss + L2 hits)
+event:0x0000046082 counters:3       um:zero minimum:10000  name:PM_L2_ST_DISP : All successful D-side store dispatches for this thread
+event:0x000002689E counters:1       um:zero minimum:10000  name:PM_L2_ST_HIT : All successful D-side store dispatches that were L2 hits for this thread
+event:0x0000046882 counters:3       um:zero minimum:10000  name:PM_L2_ST_HIT : All successful D-side store dispatches for this thread that were L2 hits
+event:0x0000026880 counters:1       um:zero minimum:10000  name:PM_L2_ST_MISS : All successful D-Side Store dispatches that were an L2 miss for this thread
+event:0x0000016892 counters:0       um:zero minimum:10000  name:PM_L2_ST_MISS_128B : All successful D-side store dispatches that were an L2 miss (NOT Sx,Tx,Mx) for this thread and the RC calculated the request should be for 128B (i.e., M=0)
+event:0x0000026892 counters:1       um:zero minimum:10000  name:PM_L2_ST_MISS_64B : All successful D-side store dispatches that were an L2 miss (NOT Sx,Tx,Mx) for this thread and the RC calculated the request should be for 64B (i.e., M=1)
+event:0x0000036088 counters:2       um:zero minimum:10000  name:PM_L2_SYS_GUESS_CORRECT : L2 guess system (VGS or RNS) and guess was correct (ie data beyond-group)
+event:0x0000036888 counters:2       um:zero minimum:10000  name:PM_L2_SYS_GUESS_WRONG : L2 guess system (VGS or RNS) and guess was not correct (ie data ^beyond-group)
+event:0x000004688A counters:3       um:zero minimum:10000  name:PM_L2_SYS_PUMP : RC requests that were system pump attempts
+event:0x00000260A2 counters:1       um:zero minimum:10000  name:PM_L3_CI_HIT : L3 Castins Hit (total count)
+event:0x00000268A2 counters:1       um:zero minimum:10000  name:PM_L3_CI_MISS : L3 castins miss (total count)
+event:0x00000368A4 counters:2       um:zero minimum:10000  name:PM_L3_CINJ : L3 castin of cache inject
+event:0x00000168AC counters:0       um:zero minimum:10000  name:PM_L3_CI_USAGE : Rotating sample of 16 CI or CO actives
+event:0x00000360A8 counters:2       um:zero minimum:10000  name:PM_L3_CO : L3 castout occurring (does not include casthrough or log writes (cinj/dmaw))
+event:0x00000368AC counters:2       um:zero minimum:10000  name:PM_L3_CO0_BUSY : Lifetime, sample of CO machine 0 valid
+event:0x00000468AC counters:3       um:zero minimum:10000  name:PM_L3_CO0_BUSY : Lifetime, sample of CO machine 0 valid
+event:0x00000268A0 counters:1       um:zero minimum:10000  name:PM_L3_CO_L31 : L3 CO to L3.1 OR of port 0 and 1 (lossy = may undercount if two cresps come in the same cyc)
+event:0x00000360A4 counters:2       um:zero minimum:10000  name:PM_L3_CO_LCO : Total L3 COs occurred on LCO L3.1 (good cresp, may end up in mem on a retry)
+event:0x00000260A0 counters:1       um:zero minimum:10000  name:PM_L3_CO_MEM : L3 CO to memory OR of port 0 and 1 (lossy = may undercount if two cresp come in the same cyc)
+event:0x00000168A0 counters:0       um:zero minimum:10000  name:PM_L3_CO_MEPF : L3 CO of line in Mep state (includes casthrough to memory). The Mepf state indicates that a line was brought in to satisfy an L3 prefetch request
+event:0x000003E05E counters:2       um:zero minimum:10000  name:PM_L3_CO_MEPF : L3 castouts in Mepf state for this thread
+event:0x00000168B2 counters:0       um:zero minimum:10000  name:PM_L3_GRP_GUESS_CORRECT : Initial scope=group (GS or NNS) and data from same group (near) (pred successful)
+event:0x00000368B2 counters:2       um:zero minimum:10000  name:PM_L3_GRP_GUESS_WRONG_HIGH : Initial scope=group (GS or NNS) but data from local node. Prediction too high
+event:0x00000360B2 counters:2       um:zero minimum:10000  name:PM_L3_GRP_GUESS_WRONG_LOW : Initial scope=group (GS or NNS) but data from outside group (far or rem). Prediction too Low
+event:0x00000160A4 counters:0       um:zero minimum:10000  name:PM_L3_HIT : L3 Hits (L2 miss hitting L3, including data/instrn/xlate)
+event:0x00000360A2 counters:2       um:zero minimum:10000  name:PM_L3_L2_CO_HIT : L2 CO hits
+event:0x00000368A2 counters:2       um:zero minimum:10000  name:PM_L3_L2_CO_MISS : L2 CO miss
+event:0x00000460A2 counters:3       um:zero minimum:10000  name:PM_L3_LAT_CI_HIT : L3 Lateral Castins Hit
+event:0x00000468A2 counters:3       um:zero minimum:10000  name:PM_L3_LAT_CI_MISS : L3 Lateral Castins Miss
+event:0x00000260A4 counters:1       um:zero minimum:10000  name:PM_L3_LD_HIT : L3 Hits for demand LDs
+event:0x00000268A4 counters:1       um:zero minimum:10000  name:PM_L3_LD_MISS : L3 Misses for demand LDs
+event:0x000000F0B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_L3_LD_PREF : L3 load prefetch, sourced from a hardware or software stream, was sent to the nest
+event:0x00000160B2 counters:0       um:zero minimum:10000  name:PM_L3_LOC_GUESS_CORRECT : initial scope=node/chip (LNS) and data from local node (local) (pred successful) - always PFs only
+event:0x00000268B2 counters:1       um:zero minimum:10000  name:PM_L3_LOC_GUESS_WRONG : Initial scope=node (LNS) but data from out side local node (near or far or rem). Prediction too Low
+event:0x00000168A4 counters:0       um:zero minimum:10000  name:PM_L3_MISS : L3 Misses (L2 miss also missing L3, including data/instrn/xlate)
+event:0x00000460AA counters:3       um:zero minimum:10000  name:PM_L3_P0_CO_L31 : L3 CO to L3.1 (LCO) port 0 with or without data
+event:0x00000360AA counters:2       um:zero minimum:10000  name:PM_L3_P0_CO_MEM : L3 CO to memory port 0 with or without data
+event:0x00000360AE counters:2       um:zero minimum:10000  name:PM_L3_P0_CO_RTY : L3 CO received retry port 0 (memory only), every retry counted
+event:0x00000460AE counters:3       um:zero minimum:10000  name:PM_L3_P0_CO_RTY : L3 CO received retry port 2 (memory only), every retry counted
+event:0x00000260B0 counters:1       um:zero minimum:10000  name:PM_L3_P0_GRP_PUMP : L3 PF sent with grp scope port 0, counts even retried requests
+event:0x00000260AA counters:1       um:zero minimum:10000  name:PM_L3_P0_LCO_DATA : LCO sent with data port 0
+event:0x00000160AA counters:0       um:zero minimum:10000  name:PM_L3_P0_LCO_NO_DATA : Dataless L3 LCO sent port 0
+event:0x00000160B4 counters:0       um:zero minimum:10000  name:PM_L3_P0_LCO_RTY : L3 initiated LCO received retry on port 0 (can try 4 times)
+event:0x00000160B0 counters:0       um:zero minimum:10000  name:PM_L3_P0_NODE_PUMP : L3 PF sent with nodal scope port 0, counts even retried requests
+event:0x00000160AE counters:0       um:zero minimum:10000  name:PM_L3_P0_PF_RTY : L3 PF received retry port 0, every retry counted
+event:0x00000260AE counters:1       um:zero minimum:10000  name:PM_L3_P0_PF_RTY : L3 PF received retry port 2, every retry counted
+event:0x00000360B0 counters:2       um:zero minimum:10000  name:PM_L3_P0_SYS_PUMP : L3 PF sent with sys scope port 0, counts even retried requests
+event:0x00000468AA counters:3       um:zero minimum:10000  name:PM_L3_P1_CO_L31 : L3 CO to L3.1 (LCO) port 1 with or without data
+event:0x00000368AA counters:2       um:zero minimum:10000  name:PM_L3_P1_CO_MEM : L3 CO to memory port 1 with or without data
+event:0x00000368AE counters:2       um:zero minimum:10000  name:PM_L3_P1_CO_RTY : L3 CO received retry port 1 (memory only), every retry counted
+event:0x00000468AE counters:3       um:zero minimum:10000  name:PM_L3_P1_CO_RTY : L3 CO received retry port 3 (memory only), every retry counted
+event:0x00000268B0 counters:1       um:zero minimum:10000  name:PM_L3_P1_GRP_PUMP : L3 PF sent with grp scope port 1, counts even retried requests
+event:0x00000268AA counters:1       um:zero minimum:10000  name:PM_L3_P1_LCO_DATA : LCO sent with data port 1
+event:0x00000168AA counters:0       um:zero minimum:10000  name:PM_L3_P1_LCO_NO_DATA : Dataless L3 LCO sent port 1
+event:0x00000168B4 counters:0       um:zero minimum:10000  name:PM_L3_P1_LCO_RTY : L3 initiated LCO received retry on port 1 (can try 4 times)
+event:0x00000168B0 counters:0       um:zero minimum:10000  name:PM_L3_P1_NODE_PUMP : L3 PF sent with nodal scope port 1, counts even retried requests
+event:0x00000168AE counters:0       um:zero minimum:10000  name:PM_L3_P1_PF_RTY : L3 PF received retry port 1, every retry counted
+event:0x00000268AE counters:1       um:zero minimum:10000  name:PM_L3_P1_PF_RTY : L3 PF received retry port 3, every retry counted
+event:0x00000368B0 counters:2       um:zero minimum:10000  name:PM_L3_P1_SYS_PUMP : L3 PF sent with sys scope port 1, counts even retried requests
+event:0x00000260B4 counters:1       um:zero minimum:10000  name:PM_L3_P2_LCO_RTY : L3 initiated LCO received retry on port 2 (can try 4 times)
+event:0x00000268B4 counters:1       um:zero minimum:10000  name:PM_L3_P3_LCO_RTY : L3 initiated LCO received retry on port 3 (can try 4 times)
+event:0x00000360B4 counters:2       um:zero minimum:10000  name:PM_L3_PF0_BUSY : Lifetime, sample of PF machine 0 valid
+event:0x00000460B4 counters:3       um:zero minimum:10000  name:PM_L3_PF0_BUSY : Lifetime, sample of PF machine 0 valid
+event:0x00000260A8 counters:1       um:zero minimum:10000  name:PM_L3_PF_HIT_L3 : L3 PF hit in L3 (abandoned)
+event:0x00000160A0 counters:0       um:zero minimum:10000  name:PM_L3_PF_MISS_L3 : L3 PF missed in L3
+event:0x00000368A0 counters:2       um:zero minimum:10000  name:PM_L3_PF_OFF_CHIP_CACHE : L3 PF from Off chip cache
+event:0x00000468A0 counters:3       um:zero minimum:10000  name:PM_L3_PF_OFF_CHIP_MEM : L3 PF from Off chip memory
+event:0x00000360A0 counters:2       um:zero minimum:10000  name:PM_L3_PF_ON_CHIP_CACHE : L3 PF from On chip cache
+event:0x00000460A0 counters:3       um:zero minimum:10000  name:PM_L3_PF_ON_CHIP_MEM : L3 PF from On chip memory
+event:0x00000260AC counters:1       um:zero minimum:10000  name:PM_L3_PF_USAGE : Rotating sample of 32 PF actives
+event:0x00000368B4 counters:2       um:zero minimum:10000  name:PM_L3_RD0_BUSY : Lifetime, sample of RD machine 0 valid
+event:0x00000468B4 counters:3       um:zero minimum:10000  name:PM_L3_RD0_BUSY : Lifetime, sample of RD machine 0 valid
+event:0x00000268AC counters:1       um:zero minimum:10000  name:PM_L3_RD_USAGE : Rotating sample of 16 RD actives
+event:0x00000360AC counters:2       um:zero minimum:10000  name:PM_L3_SN0_BUSY : Lifetime, sample of snooper machine 0 valid
+event:0x00000460AC counters:3       um:zero minimum:10000  name:PM_L3_SN0_BUSY : Lifetime, sample of snooper machine 0 valid
+event:0x00000160AC counters:0       um:zero minimum:10000  name:PM_L3_SN_USAGE : Rotating sample of 16 snoop valids
+event:0x000000F8B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_L3_SW_PREF : L3 load prefetch, sourced from a software prefetch stream, was sent to the nest
+event:0x00000260B2 counters:1       um:zero minimum:10000  name:PM_L3_SYS_GUESS_CORRECT : Initial scope=system (VGS or RNS) and data from outside group (far or rem)(pred successful)
+event:0x00000460B2 counters:3       um:zero minimum:10000  name:PM_L3_SYS_GUESS_WRONG : Initial scope=system (VGS or RNS) but data from local or near. Prediction too high
+event:0x00000468A4 counters:3       um:zero minimum:10000  name:PM_L3_TRANS_PF : L3 Transient prefetch received from L2
+event:0x00000160B6 counters:0       um:zero minimum:10000  name:PM_L3_WI0_BUSY : Rotating sample of 8 WI valid
+event:0x00000260B6 counters:1       um:zero minimum:10000  name:PM_L3_WI0_BUSY : Rotating sample of 8 WI valid (duplicate)
+event:0x00000168A8 counters:0       um:zero minimum:10000  name:PM_L3_WI_USAGE : Lifetime, sample of Write Inject machine 0 valid
+event:0x000003C058 counters:2       um:zero minimum:10000  name:PM_LARX_FIN : Larx finished
+event:0x000004003E counters:3       um:zero minimum:10000  name:PM_LD_CMPL : count of Loads completed
+event:0x0000010062 counters:0       um:zero minimum:10000  name:PM_LD_L3MISS_PEND_CYC : Cycles L3 miss was pending for this thread
+event:0x000003E054 counters:2       um:zero minimum:10000  name:PM_LD_MISS_L1 : Load Missed L1, counted at execution time (can be greater than loads finished). LMQ merges are not included in this count. i.e. if a load instruction misses on an address that is already allocated on the LMQ, this event will not increment for that load). Note that this count is per slice, so if a load spans multiple slices this event will increment multiple times for a single load.
+event:0x00000400F0 counters:3       um:zero minimum:10000  name:PM_LD_MISS_L1 : Load Missed L1, counted at execution time (can be greater than loads finished). LMQ merges are not included in this count. i.e. if a load instruction misses on an address that is already allocated on the LMQ, this event will not increment for that load). Note that this count is per slice, so if a load spans multiple slices this event will increment multiple times for a single load.
+event:0x000002C04E counters:1       um:zero minimum:10000  name:PM_LD_MISS_L1_FIN : Number of load instructions that finished with an L1 miss. Note that even if a load spans multiple slices this event will increment only once per load op.
+event:0x00000100FC counters:0       um:zero minimum:10000  name:PM_LD_REF_L1 : All L1 D cache load references counted at finish, gated by reject
+event:0x00000058A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LINK_STACK_CORRECT : Link stack predicts right address
+event:0x0000005898 counters:0,1,2,3 um:zero minimum:10000  name:PM_LINK_STACK_INVALID_PTR : It is most often caused by certain types of flush where the pointer is not available. Can result in the data in the link stack becoming unusable.
+event:0x0000005098 counters:0,1,2,3 um:zero minimum:10000  name:PM_LINK_STACK_WRONG_ADD_PRED : Link stack predicts wrong address, because of link stack design limitation or software violating the coding conventions
+event:0x000002E05E counters:1       um:zero minimum:10000  name:PM_LMQ_EMPTY_CYC : Cycles in which the LMQ has no pending load misses for this thread
+event:0x000001002E counters:0       um:zero minimum:10000  name:PM_LMQ_MERGE : A demand miss collides with a prefetch for the same line
+event:0x000002E05A counters:1       um:zero minimum:10000  name:PM_LRQ_REJECT : Internal LSU reject from LRQ. Rejects cause the load to go back to LRQ, but it stays contained within the LSU once it gets issued. This event counts the number of times the LRQ attempts to relaunch an instruction after a reject. Any load can suffer multiple rejects
+event:0x000000D090 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_DC_COLLISIONS : Read-write data cache collisions
+event:0x000000E084 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_ERAT_MISS_PREF : LS0 Erat miss due to prefetch
+event:0x000000C09C counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_LAUNCH_HELD_PREF : Number of times a load or store instruction was unable to launch/relaunch because a high priority prefetch used that relaunch cycle
+event:0x000000E0BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_PTE_TABLEWALK_CYC : Cycles when a tablewalk is pending on this thread on table 0
+event:0x000000E0B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_TM_DISALLOW : A TM-ineligible instruction tries to execute inside a transaction and the LSU disallows it
+event:0x000000C094 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_UNALIGNED_LD : Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size. If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000F0B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS0_UNALIGNED_ST : Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size. If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000D890 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_DC_COLLISIONS : Read-write data cache collisions
+event:0x000000E884 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_ERAT_MISS_PREF : LS1 Erat miss due to prefetch
+event:0x000000C89C counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_LAUNCH_HELD_PREF : Number of times a load or store instruction was unable to launch/relaunch because a high priority prefetch used that relaunch cycle
+event:0x000000E8BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_PTE_TABLEWALK_CYC : Cycles when a tablewalk is pending on this thread on table 1
+event:0x000000E8B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_TM_DISALLOW : A TM-ineligible instruction tries to execute inside a transaction and the LSU disallows it
+event:0x000000C894 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_UNALIGNED_LD : Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size. If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000F8B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS1_UNALIGNED_ST : Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size. If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000D094 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS2_DC_COLLISIONS : Read-write data cache collisions
+event:0x000000E088 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS2_ERAT_MISS_PREF : LS0 Erat miss due to prefetch
+event:0x000000E0B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS2_TM_DISALLOW : A TM-ineligible instruction tries to execute inside a transaction and the LSU disallows it
+event:0x000000C098 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS2_UNALIGNED_LD : Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size. If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000F0BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LS2_UNALIGNED_ST : Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size. If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000D894 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS3_DC_COLLISIONS : Read-write data cache collisions
+event:0x000000E888 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS3_ERAT_MISS_PREF : LS1 Erat miss due to prefetch
+event:0x000000E8B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS3_TM_DISALLOW : A TM-ineligible instruction tries to execute inside a transaction and the LSU disallows it
+event:0x000000C898 counters:0,1,2,3 um:zero minimum:10000  name:PM_LS3_UNALIGNED_LD : Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size. If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000F8BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LS3_UNALIGNED_ST : Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size. If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty
+event:0x000000D0BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_1_LRQF_FULL_CYC : Counts the number of cycles the LRQF is full. LRQF is the queue that holds loads between finish and completion. If it fills up, instructions stay in LRQ until completion, potentially backing up the LRQ
+event:0x000000E08C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_ERAT_HIT : Primary ERAT hit. There is no secondary ERAT
+event:0x000000C0A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_FALSE_LHS : False LHS match detected
+event:0x000000F090 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_L1_CAM_CANCEL : ls0 l1 tm cam cancel
+event:0x000000D088 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_LDMX_FIN : New P9 instruction LDMX. The definition of this new PMU event is (from the ldmx RFC02491): "The thread has executed an ldmx instruction that accessed a doubleword that contains an effective address within an enabled section of the Load Monitored region." This event, therefore, should not occur if the FSCR has disabled the load monitored facility (FSCR[52]) or disabled the EBB facility (FSCR[56]).
+event:0x000000D8B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_LMQ_S0_VALID : Slot 0 of LMQ valid
+event:0x000000D8B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_LRQ_S0_VALID_CYC : Slot 0 of LRQ valid
+event:0x000000D080 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_SET_MPRED : Set prediction(set-p) miss. The entry was not found in the Set prediction table
+event:0x000000D0B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_SRQ_S0_VALID_CYC : Slot 0 of SRQ valid
+event:0x000000F088 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_STORE_REJECT : All internal store rejects cause the instruction to go back to the SRQ and go to sleep until woken up to try again after the condition has been met
+event:0x000000E094 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_TM_L1_HIT : Load tm hit in L1
+event:0x000000E09C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU0_TM_L1_MISS : Load tm L1 miss
+event:0x000000E88C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_ERAT_HIT : Primary ERAT hit. There is no secondary ERAT
+event:0x000000C8A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_FALSE_LHS : False LHS match detected
+event:0x000000F890 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_L1_CAM_CANCEL : ls1 l1 tm cam cancel
+event:0x000000D888 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_LDMX_FIN : New P9 instruction LDMX. The definition of this new PMU event is (from the ldmx RFC02491): "The thread has executed an ldmx instruction that accessed a doubleword that contains an effective address within an enabled section of the Load Monitored region." This event, therefore, should not occur if the FSCR has disabled the load monitored facility (FSCR[52]) or disabled the EBB facility (FSCR[56]).
+event:0x000000D880 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_SET_MPRED : Set prediction(set-p) miss. The entry was not found in the Set prediction table
+event:0x000000F888 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_STORE_REJECT : All internal store rejects cause the instruction to go back to the SRQ and go to sleep until woken up to try again after the condition has been met
+event:0x000000E894 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_TM_L1_HIT : Load tm hit in L1
+event:0x000000E89C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU1_TM_L1_MISS : Load tm L1 miss
+event:0x000000D8BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_3_LRQF_FULL_CYC : Counts the number of cycles the LRQF is full. LRQF is the queue that holds loads between finish and completion. If it fills up, instructions stay in LRQ until completion, potentially backing up the LRQ
+event:0x000000E090 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_ERAT_HIT : Primary ERAT hit. There is no secondary ERAT
+event:0x000000C0A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_FALSE_LHS : False LHS match detected
+event:0x000000F094 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_L1_CAM_CANCEL : ls2 l1 tm cam cancel
+event:0x000000D08C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_LDMX_FIN : New P9 instruction LDMX. The definition of this new PMU event is (from the ldmx RFC02491): "The thread has executed an ldmx instruction that accessed a doubleword that contains an effective address within an enabled section of the Load Monitored region." This event, therefore, should not occur if the FSCR has disabled the load monitored facility (FSCR[52]) or disabled the EBB facility (FSCR[56]).
+event:0x000000D084 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_SET_MPRED : Set prediction(set-p) miss. The entry was not found in the Set prediction table
+event:0x000000F08C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_STORE_REJECT : All internal store rejects cause the instruction to go back to the SRQ and go to sleep until woken up to try again after the condition has been met
+event:0x000000E098 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_TM_L1_HIT : Load tm hit in L1
+event:0x000000E0A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU2_TM_L1_MISS : Load tm L1 miss
+event:0x000000E890 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_ERAT_HIT : Primary ERAT hit. There is no secondary ERAT
+event:0x000000C8A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_FALSE_LHS : False LHS match detected
+event:0x000000F894 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_L1_CAM_CANCEL : ls3 l1 tm cam cancel
+event:0x000000D88C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_LDMX_FIN : New P9 instruction LDMX. The definition of this new PMU event is (from the ldmx RFC02491): "The thread has executed an ldmx instruction that accessed a doubleword that contains an effective address within an enabled section of the Load Monitored region." This event, therefore, should not occur if the FSCR has disabled the load monitored facility (FSCR[52]) or disabled the EBB facility (FSCR[56]).
+event:0x000000D884 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_SET_MPRED : Set prediction(set-p) miss. The entry was not found in the Set prediction table
+event:0x000000F88C counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_STORE_REJECT : All internal store rejects cause the instruction to go back to the SRQ and go to sleep until woken up to try again after the condition has been met
+event:0x000000E898 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_TM_L1_HIT : Load tm hit in L1
+event:0x000000E8A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU3_TM_L1_MISS : Load tm L1 miss
+event:0x00000200F6 counters:1       um:zero minimum:10000  name:PM_LSU_DERAT_MISS : DERAT Reloaded due to a DERAT miss
+event:0x0000030066 counters:2       um:zero minimum:10000  name:PM_LSU_FIN : LSU Finished a PPC instruction (up to 4 per cycle)
+event:0x000000C8A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_ATOMIC : Quad-word loads (lq) are considered atomic because they always span at least 2 slices. If a snoop or store from another thread changes the data the load is accessing between the 2 or 3 pieces of the lq instruction, the lq will be flushed
+event:0x000000C0A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_CI : Load was not issued to LSU as a cache inhibited (non-cacheable) load but it was later determined to be cache inhibited
+event:0x000000C0AC counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_EMSH : An ERAT miss was detected after a set-p hit. Erat tracker indicates fail due to tlbmiss and the instruction gets flushed because the instruction was working on the wrong address
+event:0x000000C8B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_LARX_STCX : A larx is flushed because an older larx has an LMQ reservation for the same thread. A stcx is flushed because an older stcx is in the LMQ. The flush happens when the older larx/stcx relaunches
+event:0x000000C8B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_LHL_SHL : The instruction was flushed because of a sequential load/store consistency. If a load or store hits on an older load that has either been snooped (for loads) or has stale data (for stores).
+event:0x000000C8B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_LHS : Effective Address alias flush : no EA match but Real Address match. If the data has not yet been returned for this load, the instruction will just be rejected, but if it has returned data, it will be flushed
+event:0x00000020B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_NEXT : LSU flush next reported at flush time. Sometimes these also come with an exception
+event:0x000000C0BC counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_OTHER : Other LSU flushes including: Sync (sync ack from L2 caused search of LRQ for oldest snooped load, This will either signal a Precise Flush of the oldest snooped loa or a Flush Next PPC)
+event:0x000000C8AC counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_RELAUNCH_MISS : If a load that has already returned data and has to relaunch for any reason then gets a miss (erat, setp, data cache), it will often be flushed at relaunch time because the data might be inconsistent
+event:0x000000C0B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_SAO : A load-hit-load condition with Strong Address Ordering will have address compare disabled and flush
+event:0x000000C0B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_UE : Correctable ECC error on reload data, reported at critical data forward time
+event:0x000000C0B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_FLUSH_WRK_ARND : LSU workaround flush. These flushes are setup with programmable scan only latches to perform various actions when the flush macro receives a trigger from the dbg macros. These actions include things like flushing the next op encountered for a particular thread or flushing the next op that is NTC op that is encountered on a particular slice. The kind of flush that the workaround is setup to perform is highly variable.
+event:0x000000D0B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_LMQ_FULL_CYC : Counts the number of cycles the LMQ is full
+event:0x000002003E counters:1       um:zero minimum:10000  name:PM_LSU_LMQ_SRQ_EMPTY_CYC : Cycles in which the LSU is empty for all threads (lmq and srq are completely empty)
+event:0x000000C890 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_NCST : Asserts when a i=1 store op is sent to the nest. No record of issue pipe (LS0/LS1) is maintained so this is for both pipes. Probably don't need separate LS0 and LS1
+event:0x000002E05C counters:1       um:zero minimum:10000  name:PM_LSU_REJECT_ERAT_MISS : LSU Reject due to ERAT (up to 4 per cycles)
+event:0x000004E05C counters:3       um:zero minimum:10000  name:PM_LSU_REJECT_LHS : LSU Reject due to LHS (up to 4 per cycle)
+event:0x000003001C counters:2       um:zero minimum:10000  name:PM_LSU_REJECT_LMQ_FULL : LSU Reject due to LMQ full (up to 4 per cycles)
+event:0x000001001A counters:0       um:zero minimum:10000  name:PM_LSU_SRQ_FULL_CYC : Cycles in which the Store Queue is full on all 4 slices. This is event is not per thread. All the threads will see the same count for this core resource
+event:0x000000C090 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_STCX : STCX sent to nest, i.e. total
+event:0x000000F080 counters:0,1,2,3 um:zero minimum:10000  name:PM_LSU_STCX_FAIL : LSU_STCX_FAIL
+event:0x0000005894 counters:0,1,2,3 um:zero minimum:10000  name:PM_LWSYNC : Lwsync instruction decoded and transferred
+event:0x000004505C counters:3       um:zero minimum:10000  name:PM_MATH_FLOP_CMPL : Math flop instruction completed
+event:0x000004C058 counters:3       um:zero minimum:10000  name:PM_MEM_CO : Memory castouts from this thread
+event:0x0000010058 counters:0       um:zero minimum:10000  name:PM_MEM_LOC_THRESH_IFU : Local Memory above threshold for IFU speculation control
+event:0x0000040056 counters:3       um:zero minimum:10000  name:PM_MEM_LOC_THRESH_LSU_HIGH : Local memory above threshold for LSU medium
+event:0x000001C05E counters:0       um:zero minimum:10000  name:PM_MEM_LOC_THRESH_LSU_MED : Local memory above threshold for data prefetch
+event:0x000002C058 counters:1       um:zero minimum:10000  name:PM_MEM_PREF : Memory prefetch for this thread. Includes L4
+event:0x0000010056 counters:0       um:zero minimum:10000  name:PM_MEM_READ : Reads from Memory from this thread (includes data/inst/xlate/l1prefetch/inst prefetch). Includes L4
+event:0x000003C05E counters:2       um:zero minimum:10000  name:PM_MEM_RWITM : Memory Read With Intent to Modify for this thread
+event:0x000003515E counters:2       um:zero minimum:100    name:PM_MRK_BACK_BR_CMPL : Marked branch instruction completed with a target address less than current instruction address
+event:0x0000010138 counters:0       um:zero minimum:100    name:PM_MRK_BR_2PATH : marked branches which are not strongly biased
+event:0x000001016E counters:0       um:zero minimum:100    name:PM_MRK_BR_CMPL : Branch Instruction completed
+event:0x00000301E4 counters:2       um:zero minimum:100    name:PM_MRK_BR_MPRED_CMPL : Marked Branch Mispredicted
+event:0x00000101E2 counters:0       um:zero minimum:100    name:PM_MRK_BR_TAKEN_CMPL : Marked Branch Taken completed
+event:0x000002013A counters:1       um:zero minimum:100    name:PM_MRK_BRU_FIN : bru marked instr finish
+event:0x000003D14E counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_DL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load
+event:0x000004D12E counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_DL2L3_MOD_CYC : Duration in cycles to reload with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load
+event:0x000001D150 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_DL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load
+event:0x000002C128 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_DL2L3_SHR_CYC : Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked load
+event:0x000001D152 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_DL4 : The processor's data cache was reloaded from another chip's L4 on a different Node or Group (Distant) due to a marked load
+event:0x000002C12C counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_DL4_CYC : Duration in cycles to reload from another chip's L4 on a different Node or Group (Distant) due to a marked load
+event:0x000003D14C counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_DMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group (Distant) due to a marked load
+event:0x000004E11E counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_DMEM_CYC : Duration in cycles to reload from another chip's memory on the same Node or Group (Distant) due to a marked load
+event:0x000002C126 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2 : The processor's data cache was reloaded from local core's L2 due to a marked load
+event:0x000004D146 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L21_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L2 on the same chip due to a marked load
+event:0x000003D148 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L21_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's L2 on the same chip due to a marked load
+event:0x000002D14E counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L21_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L2 on the same chip due to a marked load
+event:0x000001D154 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L21_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's L2 on the same chip due to a marked load
+event:0x0000014156 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_CYC : Duration in cycles to reload from local core's L2 due to a marked load
+event:0x000002D148 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_LDHITST : The processor's data cache was reloaded from local core's L2 with load hit store conflict due to a marked load
+event:0x000001415A counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_LDHITST_CYC : Duration in cycles to reload from local core's L2 with load hit store conflict due to a marked load
+event:0x000002C124 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_OTHER : The processor's data cache was reloaded from local core's L2 with dispatch conflict due to a marked load
+event:0x000003D140 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_DISP_CONFLICT_OTHER_CYC : Duration in cycles to reload from local core's L2 with dispatch conflict due to a marked load
+event:0x000004C120 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_MEPF : The processor's data cache was reloaded from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked load
+event:0x000003D144 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_MEPF_CYC : Duration in cycles to reload from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked load
+event:0x00000401E8 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2MISS : The processor's data cache was reloaded from a location other than the local core's L2 due to a marked load
+event:0x0000035152 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2MISS_CYC : Duration in cycles to reload from a location other than the local core's L2 due to a marked load
+event:0x000002C120 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_NO_CONFLICT : The processor's data cache was reloaded from local core's L2 without conflict due to a marked load
+event:0x0000014158 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L2_NO_CONFLICT_CYC : Duration in cycles to reload from local core's L2 without conflict due to a marked load
+event:0x000004D142 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3 : The processor's data cache was reloaded from local core's L3 due to a marked load
+event:0x000004D144 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_ECO_MOD : The processor's data cache was reloaded with Modified (M) data from another core's ECO L3 on the same chip due to a marked load
+event:0x0000035158 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_ECO_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's ECO L3 on the same chip due to a marked load
+event:0x000002D14C counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_ECO_SHR : The processor's data cache was reloaded with Shared (S) data from another core's ECO L3 on the same chip due to a marked load
+event:0x000001D142 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_ECO_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's ECO L3 on the same chip due to a marked load
+event:0x000002D144 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_MOD : The processor's data cache was reloaded with Modified (M) data from another core's L3 on the same chip due to a marked load
+event:0x000001D140 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_MOD_CYC : Duration in cycles to reload with Modified (M) data from another core's L3 on the same chip due to a marked load
+event:0x000004D124 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_SHR : The processor's data cache was reloaded with Shared (S) data from another core's L3 on the same chip due to a marked load
+event:0x0000035156 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L31_SHR_CYC : Duration in cycles to reload with Shared (S) data from another core's L3 on the same chip due to a marked load
+event:0x0000035154 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_CYC : Duration in cycles to reload from local core's L3 due to a marked load
+event:0x000001D144 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_DISP_CONFLICT : The processor's data cache was reloaded from local core's L3 with dispatch conflict due to a marked load
+event:0x000002C122 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_DISP_CONFLICT_CYC : Duration in cycles to reload from local core's L3 with dispatch conflict due to a marked load
+event:0x000002D142 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_MEPF : The processor's data cache was reloaded from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked load
+event:0x000001415C counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_MEPF_CYC : Duration in cycles to reload from local core's L3 without dispatch conflicts hit on Mepf state due to a marked load
+event:0x00000201E4 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3MISS : The processor's data cache was reloaded from a location other than the local core's L3 due to a marked load
+event:0x000001415E counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3MISS_CYC : Duration in cycles to reload from a location other than the local core's L3 due to a marked load
+event:0x000003D146 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_NO_CONFLICT : The processor's data cache was reloaded from local core's L3 without conflict due to a marked load
+event:0x000004C124 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_L3_NO_CONFLICT_CYC : Duration in cycles to reload from local core's L3 without conflict due to a marked load
+event:0x000001D14C counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_LL4 : The processor's data cache was reloaded from the local chip's L4 cache due to a marked load
+event:0x000002C12E counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_LL4_CYC : Duration in cycles to reload from the local chip's L4 cache due to a marked load
+event:0x000003D142 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_LMEM : The processor's data cache was reloaded from the local chip's Memory due to a marked load
+event:0x000004D128 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_LMEM_CYC : Duration in cycles to reload from the local chip's Memory due to a marked load
+event:0x00000201E0 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_MEMORY : The processor's data cache was reloaded from a memory location including L4 from local remote or distant due to a marked load
+event:0x000001D146 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_MEMORY_CYC : Duration in cycles to reload from a memory location including L4 from local remote or distant due to a marked load
+event:0x000002D120 counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_OFF_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load
+event:0x000001D14E counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_OFF_CHIP_CACHE_CYC : Duration in cycles to reload either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load
+event:0x000004D140 counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_ON_CHIP_CACHE : The processor's data cache was reloaded either shared or modified data from another core's L2/L3 on the same chip due to a marked load
+event:0x000003515A counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_ON_CHIP_CACHE_CYC : Duration in cycles to reload either shared or modified data from another core's L2/L3 on the same chip due to a marked load
+event:0x000001D14A counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_RL2L3_MOD : The processor's data cache was reloaded with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load
+event:0x000002D14A counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_RL2L3_MOD_CYC : Duration in cycles to reload with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load
+event:0x0000035150 counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_RL2L3_SHR : The processor's data cache was reloaded with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load
+event:0x000004C12A counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_RL2L3_SHR_CYC : Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load
+event:0x000003515C counters:2       um:zero minimum:100    name:PM_MRK_DATA_FROM_RL4 : The processor's data cache was reloaded from another chip's L4 on the same Node or Group ( Remote) due to a marked load
+event:0x000004D12A counters:3       um:zero minimum:100    name:PM_MRK_DATA_FROM_RL4_CYC : Duration in cycles to reload from another chip's L4 on the same Node or Group ( Remote) due to a marked load
+event:0x000001D148 counters:0       um:zero minimum:100    name:PM_MRK_DATA_FROM_RMEM : The processor's data cache was reloaded from another chip's memory on the same Node or Group ( Remote) due to a marked load
+event:0x000002C12A counters:1       um:zero minimum:100    name:PM_MRK_DATA_FROM_RMEM_CYC : Duration in cycles to reload from another chip's memory on the same Node or Group ( Remote) due to a marked load
+event:0x0000040118 counters:3       um:zero minimum:100    name:PM_MRK_DCACHE_RELOAD_INTV : Combined Intervention event
+event:0x00000301E6 counters:2       um:zero minimum:100    name:PM_MRK_DERAT_MISS : Erat Miss (TLB Access) All page sizes
+event:0x000004C15C counters:3       um:zero minimum:100    name:PM_MRK_DERAT_MISS_16G : Marked Data ERAT Miss (Data TLB Access) page size 16G
+event:0x000003D154 counters:2       um:zero minimum:100    name:PM_MRK_DERAT_MISS_16M : Marked Data ERAT Miss (Data TLB Access) page size 16M
+event:0x000003D152 counters:2       um:zero minimum:100    name:PM_MRK_DERAT_MISS_1G : Marked Data ERAT Miss (Data TLB Access) page size 1G. Implies radix translation
+event:0x000002D152 counters:1       um:zero minimum:100    name:PM_MRK_DERAT_MISS_2M : Marked Data ERAT Miss (Data TLB Access) page size 2M. Implies radix translation
+event:0x000002D150 counters:1       um:zero minimum:100    name:PM_MRK_DERAT_MISS_4K : Marked Data ERAT Miss (Data TLB Access) page size 4K
+event:0x000002D154 counters:1       um:zero minimum:100    name:PM_MRK_DERAT_MISS_64K : Marked Data ERAT Miss (Data TLB Access) page size 64K
+event:0x0000020132 counters:1       um:zero minimum:100    name:PM_MRK_DFU_FIN : Decimal Unit marked Instruction Finish
+event:0x000004F148 counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_DL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003F148 counters:2       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_DL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on a different Node or Group (Distant), as this chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003F14C counters:2       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_DL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on a different Node or Group (Distant) due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004F14C counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_DMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group (Distant) due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F142 counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L2 : A Page Table Entry was loaded into the TLB from local core's L2 due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004F146 counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L21_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L2 on the same chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003F146 counters:2       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L21_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L2 on the same chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F140 counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L2_MEPF : A Page Table Entry was loaded into the TLB from local core's L2 hit without dispatch conflicts on Mepf state. due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F14E counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L2MISS : A Page Table Entry was loaded into the TLB from a location other than the local core's L2 due to a marked data side request.. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F140 counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L2_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004F142 counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L3 : A Page Table Entry was loaded into the TLB from local core's L3 due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004F144 counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L31_ECO_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's ECO L3 on the same chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003F144 counters:2       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L31_ECO_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's ECO L3 on the same chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F144 counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L31_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L3 on the same chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F146 counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L31_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another core's L3 on the same chip due to a marked data side request.. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003F142 counters:2       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L3_DISP_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 with dispatch conflict due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F142 counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L3_MEPF : A Page Table Entry was loaded into the TLB from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004F14E counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L3MISS : A Page Table Entry was loaded into the TLB from a location other than the local core's L3 due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F144 counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_L3_NO_CONFLICT : A Page Table Entry was loaded into the TLB from local core's L3 without conflict due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F14C counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_LL4 : A Page Table Entry was loaded into the TLB from the local chip's L4 cache due to a marked data side request.. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F148 counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_LMEM : A Page Table Entry was loaded into the TLB from the local chip's Memory due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F14C counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_MEMORY : A Page Table Entry was loaded into the TLB from a memory location including L4 from local remote or distant due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000004F14A counters:3       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_OFF_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F148 counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_ON_CHIP_CACHE : A Page Table Entry was loaded into the TLB either shared or modified data from another core's L2/L3 on the same chip due to a marked data side request.. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F146 counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_RL2L3_MOD : A Page Table Entry was loaded into the TLB with Modified (M) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000001F14A counters:0       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_RL2L3_SHR : A Page Table Entry was loaded into the TLB with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked data side request.. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000002F14A counters:1       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_RL4 : A Page Table Entry was loaded into the TLB from another chip's L4 on the same Node or Group ( Remote) due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x000003F14A counters:2       um:zero minimum:100    name:PM_MRK_DPTEG_FROM_RMEM : A Page Table Entry was loaded into the TLB from another chip's memory on the same Node or Group ( Remote) due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included
+event:0x00000401E4 counters:3       um:zero minimum:100    name:PM_MRK_DTLB_MISS : Marked dtlb miss
+event:0x000002D15E counters:1       um:zero minimum:100    name:PM_MRK_DTLB_MISS_16G : Marked Data TLB Miss page size 16G
+event:0x000004C15E counters:3       um:zero minimum:100    name:PM_MRK_DTLB_MISS_16M : Marked Data TLB Miss page size 16M
+event:0x000001D15C counters:0       um:zero minimum:100    name:PM_MRK_DTLB_MISS_1G : Marked Data TLB reload (after a miss) page size 2M. Implies radix translation was used
+event:0x000002D156 counters:1       um:zero minimum:100    name:PM_MRK_DTLB_MISS_4K : Marked Data TLB Miss page size 4k
+event:0x000003D156 counters:2       um:zero minimum:100    name:PM_MRK_DTLB_MISS_64K : Marked Data TLB Miss page size 64K
+event:0x0000040154 counters:3       um:zero minimum:100    name:PM_MRK_FAB_RSP_BKILL : Marked store had to do a bkill
+event:0x000001F152 counters:0       um:zero minimum:100    name:PM_MRK_FAB_RSP_BKILL_CYC : cycles L2 RC took for a bkill
+event:0x000003015E counters:2       um:zero minimum:100    name:PM_MRK_FAB_RSP_CLAIM_RTY : Sampled store did a rwitm and got a rty
+event:0x0000030154 counters:2       um:zero minimum:100    name:PM_MRK_FAB_RSP_DCLAIM : Marked store had to do a dclaim
+event:0x000002F152 counters:1       um:zero minimum:100    name:PM_MRK_FAB_RSP_DCLAIM_CYC : cycles L2 RC took for a dclaim
+event:0x000004015E counters:3       um:zero minimum:100    name:PM_MRK_FAB_RSP_RD_RTY : Sampled L2 reads retry count
+event:0x000001015E counters:0       um:zero minimum:100    name:PM_MRK_FAB_RSP_RD_T_INTV : Sampled Read got a T intervention
+event:0x000004F150 counters:3       um:zero minimum:100    name:PM_MRK_FAB_RSP_RWITM_CYC : cycles L2 RC took for a rwitm
+event:0x000002015E counters:1       um:zero minimum:100    name:PM_MRK_FAB_RSP_RWITM_RTY : Sampled store did a rwitm and got a rty
+event:0x0000020134 counters:1       um:zero minimum:100    name:PM_MRK_FXU_FIN : fxu marked instr finish
+event:0x000004013A counters:3       um:zero minimum:100    name:PM_MRK_IC_MISS : Marked instruction experienced I cache miss
+event:0x0000024058 counters:1       um:zero minimum:100    name:PM_MRK_INST : An instruction was marked. Includes both Random Instruction Sampling (RIS) at decode time and Random Event Sampling (RES) at the time the configured event happens
+event:0x00000401E0 counters:3       um:zero minimum:1000   name:PM_MRK_INST_CMPL : marked instruction completed
+event:0x0000020130 counters:1       um:zero minimum:1000   name:PM_MRK_INST_DECODED : An instruction was marked at decode time. Random Instruction Sampling (RIS) only
+event:0x00000101E0 counters:0       um:zero minimum:1000   name:PM_MRK_INST_DISP : The thread has dispatched a randomly sampled marked instruction
+event:0x0000030130 counters:2       um:zero minimum:1000   name:PM_MRK_INST_FIN : marked instruction finished
+event:0x00000401E6 counters:3       um:zero minimum:1000   name:PM_MRK_INST_FROM_L3MISS : Marked instruction was reloaded from a location beyond the local chiplet
+event:0x0000010132 counters:0       um:zero minimum:1000   name:PM_MRK_INST_ISSUED : Marked instruction issued
+event:0x0000040134 counters:3       um:zero minimum:1000   name:PM_MRK_INST_TIMEO : marked Instruction finish timeout (instruction lost)
+event:0x00000101E4 counters:0       um:zero minimum:100    name:PM_MRK_L1_ICACHE_MISS : sampled Instruction suffered an icache Miss
+event:0x00000101EA counters:0       um:zero minimum:100    name:PM_MRK_L1_RELOAD_VALID : Marked demand reload
+event:0x0000020114 counters:1       um:zero minimum:100    name:PM_MRK_L2_RC_DISP : Marked Instruction RC dispatched in L2
+event:0x000003012A counters:2       um:zero minimum:100    name:PM_MRK_L2_RC_DONE : Marked RC done
+event:0x000001E15E counters:0       um:zero minimum:100    name:PM_MRK_L2_TM_REQ_ABORT : TM abort
+event:0x000003E15C counters:2       um:zero minimum:100    name:PM_MRK_L2_TM_ST_ABORT_SISTER : TM marked store abort for this thread
+event:0x0000040116 counters:3       um:zero minimum:100    name:PM_MRK_LARX_FIN : Larx finished
+event:0x000001013E counters:0       um:zero minimum:100    name:PM_MRK_LD_MISS_EXPOSED_CYC : Marked Load exposed Miss (use edge detect to count #)
+event:0x00000201E2 counters:1       um:zero minimum:100    name:PM_MRK_LD_MISS_L1 : Marked DL1 Demand Miss counted at exec time. Note that this count is per slice, so if a load spans multiple slices this event will increment multiple times for a single load.
+event:0x000001D056 counters:0       um:zero minimum:100    name:PM_MRK_LD_MISS_L1_CYC : Marked ld latency
+event:0x0000030162 counters:2       um:zero minimum:100    name:PM_MRK_LSU_DERAT_MISS : Marked derat reload (miss) for any page size
+event:0x0000040132 counters:3       um:zero minimum:100    name:PM_MRK_LSU_FIN : lsu marked instr PPC finish
+event:0x000000D098 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_ATOMIC : Quad-word loads (lq) are considered atomic because they always span at least 2 slices. If a snoop or store from another thread changes the data the load is accessing between the 2 or 3 pieces of the lq instruction, the lq will be flushed
+event:0x000000D898 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_EMSH : An ERAT miss was detected after a set-p hit. Erat tracker indicates fail due to tlbmiss and the instruction gets flushed because the instruction was working on the wrong address
+event:0x000000D8A4 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_LARX_STCX : A larx is flushed because an older larx has an LMQ reservation for the same thread. A stcx is flushed because an older stcx is in the LMQ. The flush happens when the older larx/stcx relaunches
+event:0x000000D8A0 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_LHL_SHL : The instruction was flushed because of a sequential load/store consistency. If a load or store hits on an older load that has either been snooped (for loads) or has stale data (for stores).
+event:0x000000D0A0 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_LHS : Effective Address alias flush : no EA match but Real Address match. If the data has not yet been returned for this load, the instruction will just be rejected, but if it has returned data, it will be flushed
+event:0x000000D09C counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_RELAUNCH_MISS : If a load that has already returned data and has to relaunch for any reason then gets a miss (erat, setp, data cache), it will often be flushed at relaunch time because the data might be inconsistent
+event:0x000000D0A4 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_SAO : A load-hit-load condition with Strong Address Ordering will have address compare disabled and flush
+event:0x000000D89C counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_LSU_FLUSH_UE : Correctable ECC error on reload data, reported at critical data forward time
+event:0x000002011C counters:1       um:zero minimum:100    name:PM_MRK_NTC_CYC : Cycles during which the marked instruction is next to complete (completion is held up because the marked instruction hasn't completed yet)
+event:0x0000020112 counters:1       um:zero minimum:100    name:PM_MRK_NTF_FIN : Marked next to finish instruction finished
+event:0x000001F05E counters:0       um:zero minimum:100    name:PM_MRK_PROBE_NOP_CMPL : Marked probeNops completed
+event:0x000001D15E counters:0       um:zero minimum:1000   name:PM_MRK_RUN_CYC : Run cycles in which a marked instruction is in the pipeline
+event:0x000003013E counters:2       um:zero minimum:100    name:PM_MRK_STALL_CMPLU_CYC : Number of cycles the marked instruction is experiencing a stall while it is next to complete (NTC)
+event:0x00000301E2 counters:2       um:zero minimum:100    name:PM_MRK_ST_CMPL : Marked store completed and sent to nest
+event:0x0000030134 counters:2       um:zero minimum:100    name:PM_MRK_ST_CMPL_INT : marked store finished with intervention
+event:0x000003E158 counters:2       um:zero minimum:100    name:PM_MRK_STCX_FAIL : marked stcx failed
+event:0x0000024056 counters:1       um:zero minimum:100    name:PM_MRK_STCX_FIN : Number of marked stcx instructions finished. This includes instructions in the speculative path of a branch that may be flushed
+event:0x0000010134 counters:0       um:zero minimum:100    name:PM_MRK_ST_DONE_L2 : marked store completed in L2 ( RC machine done)
+event:0x000003F150 counters:2       um:zero minimum:100    name:PM_MRK_ST_DRAIN_TO_L2DISP_CYC : cycles to drain st from core to L2
+event:0x000003012C counters:2       um:zero minimum:100    name:PM_MRK_ST_FWD : Marked st forwards
+event:0x000001F150 counters:0       um:zero minimum:100    name:PM_MRK_ST_L2DISP_TO_CMPL_CYC : cycles from L2 rc disp to l2 rc completion
+event:0x0000020138 counters:1       um:zero minimum:100    name:PM_MRK_ST_NEST : Marked store sent to nest
+event:0x00000028A4 counters:0,1,2,3 um:zero minimum:100    name:PM_MRK_TEND_FAIL : Nested or not nested tend failed for a marked tend instruction
+event:0x0000030132 counters:2       um:zero minimum:100    name:PM_MRK_VSU_FIN : VSU marked instr finish
+event:0x000003D15E counters:2       um:zero minimum:10000  name:PM_MULT_MRK : mult marked instr
+event:0x000003006E counters:2       um:zero minimum:10000  name:PM_NEST_REF_CLK : Multiply by 4 to obtain the number of PB cycles
+event:0x000000F8A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_NON_DATA_STORE : All ops that drain from s2q to L2 and contain no data
+event:0x000004D056 counters:3       um:zero minimum:10000  name:PM_NON_FMA_FLOP_CMPL : Non FMA instruction completed
+event:0x000004D05A counters:3       um:zero minimum:10000  name:PM_NON_MATH_FLOP_CMPL : Non FLOP operation completed
+event:0x00000260A6 counters:1       um:zero minimum:10000  name:PM_NON_TM_RST_SC : Non-TM snp rst TM SC
+event:0x000002001A counters:1       um:zero minimum:10000  name:PM_NTC_ALL_FIN : Cycles after all instructions have finished to group completed
+event:0x000002405A counters:1       um:zero minimum:10000  name:PM_NTC_FIN : Cycles in which the oldest instruction in the pipeline (NTC) finishes. This event is used to account for cycles in which work is being completed in the CPI stack
+event:0x000002E016 counters:1       um:zero minimum:10000  name:PM_NTC_ISSUE_HELD_ARB : The NTC instruction is being held at dispatch because it lost arbitration onto the issue pipe to another instruction (from the same thread or a different thread)
+event:0x000001006A counters:0       um:zero minimum:10000  name:PM_NTC_ISSUE_HELD_DARQ_FULL : The NTC instruction is being held at dispatch because there are no slots in the DARQ for it
+event:0x000003D05A counters:2       um:zero minimum:10000  name:PM_NTC_ISSUE_HELD_OTHER : The NTC instruction is being held at dispatch during regular pipeline cycles, or because the VSU is busy with multi-cycle instructions, or because of a write-back collision with VSU
+event:0x0000034054 counters:2       um:zero minimum:10000  name:PM_PARTIAL_ST_FIN : Any store finished by an LSU slice
+event:0x0000020010 counters:1       um:zero minimum:10000  name:PM_PMC1_OVERFLOW : Overflow from counter 1
+event:0x000004D02C counters:3       um:zero minimum:10000  name:PM_PMC1_REWIND : PMC1_REWIND
+event:0x000004D010 counters:3       um:zero minimum:10000  name:PM_PMC1_SAVED : PMC1 Rewind Value saved
+event:0x0000030010 counters:2       um:zero minimum:10000  name:PM_PMC2_OVERFLOW : Overflow from counter 2
+event:0x0000030020 counters:2       um:zero minimum:10000  name:PM_PMC2_REWIND : PMC2 Rewind Event (did not match condition)
+event:0x0000010022 counters:0       um:zero minimum:10000  name:PM_PMC2_SAVED : PMC2 Rewind Value saved
+event:0x0000040010 counters:3       um:zero minimum:10000  name:PM_PMC3_OVERFLOW : Overflow from counter 3
+event:0x000001000A counters:0       um:zero minimum:10000  name:PM_PMC3_REWIND : PMC3 rewind event. A rewind happens when a speculative event (such as latency or CPI stack) is selected on PMC3 and the stall reason or reload source did not match the one programmed in PMC3. When this occurs, the count in PMC3 will not change.
+event:0x000004D012 counters:3       um:zero minimum:10000  name:PM_PMC3_SAVED : PMC3 Rewind Value saved
+event:0x0000010010 counters:0       um:zero minimum:10000  name:PM_PMC4_OVERFLOW : Overflow from counter 4
+event:0x0000010020 counters:0       um:zero minimum:10000  name:PM_PMC4_REWIND : PMC4 Rewind Event
+event:0x0000030022 counters:2       um:zero minimum:10000  name:PM_PMC4_SAVED : PMC4 Rewind Value saved (matched condition)
+event:0x0000010024 counters:0       um:zero minimum:10000  name:PM_PMC5_OVERFLOW : Overflow from counter 5
+event:0x0000030024 counters:2       um:zero minimum:10000  name:PM_PMC6_OVERFLOW : Overflow from counter 6
+event:0x0000040014 counters:3       um:zero minimum:10000  name:PM_PROBE_NOP_DISP : ProbeNops dispatched
+event:0x000000F084 counters:0,1,2,3 um:zero minimum:10000  name:PM_PTE_PREFETCH : PTE prefetches
+event:0x000000589C counters:0,1,2,3 um:zero minimum:10000  name:PM_PTESYNC : ptesync instruction counted when the instruction is decoded and transmitted
+event:0x0000010054 counters:0       um:zero minimum:10000  name:PM_PUMP_CPRED : Pump prediction correct. Counts across all types of pumps for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x0000040052 counters:3       um:zero minimum:10000  name:PM_PUMP_MPRED : Pump misprediction. Counts across all types of pumps for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x000001F056 counters:0       um:zero minimum:10000  name:PM_RADIX_PWC_L1_HIT : A radix translation attempt missed in the TLB and only the first level page walk cache was a hit.
+event:0x000002D026 counters:1       um:zero minimum:10000  name:PM_RADIX_PWC_L1_PDE_FROM_L2 : A Page Directory Entry was reloaded to a level 1 page walk cache from the core's L2 data cache
+event:0x000003F058 counters:2       um:zero minimum:10000  name:PM_RADIX_PWC_L1_PDE_FROM_L3 : A Page Directory Entry was reloaded to a level 1 page walk cache from the core's L3 data cache
+event:0x000004F056 counters:3       um:zero minimum:10000  name:PM_RADIX_PWC_L1_PDE_FROM_L3MISS : A Page Directory Entry was reloaded to a level 1 page walk cache from beyond the core's L3 data cache. The source could be local/remote/distant memory or another core's cache
+event:0x000002D024 counters:1       um:zero minimum:10000  name:PM_RADIX_PWC_L2_HIT : A radix translation attempt missed in the TLB but hit on both the first and second levels of page walk cache.
+event:0x000002D028 counters:1       um:zero minimum:10000  name:PM_RADIX_PWC_L2_PDE_FROM_L2 : A Page Directory Entry was reloaded to a level 2 page walk cache from the core's L2 data cache
+event:0x000003F05A counters:2       um:zero minimum:10000  name:PM_RADIX_PWC_L2_PDE_FROM_L3 : A Page Directory Entry was reloaded to a level 2 page walk cache from the core's L3 data cache
+event:0x000001F058 counters:0       um:zero minimum:10000  name:PM_RADIX_PWC_L2_PTE_FROM_L2 : A Page Table Entry was reloaded to a level 2 page walk cache from the core's L2 data cache. This implies that level 3 and level 4 PWC accesses were not necessary for this translation
+event:0x000004F058 counters:3       um:zero minimum:10000  name:PM_RADIX_PWC_L2_PTE_FROM_L3 : A Page Table Entry was reloaded to a level 2 page walk cache from the core's L3 data cache. This implies that level 3 and level 4 PWC accesses were not necessary for this translation
+event:0x000004F05C counters:3       um:zero minimum:10000  name:PM_RADIX_PWC_L2_PTE_FROM_L3MISS : A Page Table Entry was reloaded to a level 2 page walk cache from beyond the core's L3 data cache. This implies that level 3 and level 4 PWC accesses were not necessary for this translation. The source could be local/remote/distant memory or another core's cache
+event:0x000003F056 counters:2       um:zero minimum:10000  name:PM_RADIX_PWC_L3_HIT : A radix translation attempt missed in the TLB but hit on the first, second, and third levels of page walk cache.
+event:0x000002D02A counters:1       um:zero minimum:10000  name:PM_RADIX_PWC_L3_PDE_FROM_L2 : A Page Directory Entry was reloaded to a level 3 page walk cache from the core's L2 data cache
+event:0x000001F15C counters:0       um:zero minimum:10000  name:PM_RADIX_PWC_L3_PDE_FROM_L3 : A Page Directory Entry was reloaded to a level 3 page walk cache from the core's L3 data cache
+event:0x000002D02E counters:1       um:zero minimum:10000  name:PM_RADIX_PWC_L3_PTE_FROM_L2 : A Page Table Entry was reloaded to a level 3 page walk cache from the core's L2 data cache. This implies that a level 4 PWC access was not necessary for this translation
+event:0x000003F05E counters:2       um:zero minimum:10000  name:PM_RADIX_PWC_L3_PTE_FROM_L3 : A Page Table Entry was reloaded to a level 3 page walk cache from the core's L3 data cache. This implies that a level 4 PWC access was not necessary for this translation
+event:0x000004F05E counters:3       um:zero minimum:10000  name:PM_RADIX_PWC_L3_PTE_FROM_L3MISS : A Page Table Entry was reloaded to a level 3 page walk cache from beyond the core's L3 data cache. This implies that a level 4 PWC access was not necessary for this translation. The source could be local/remote/distant memory or another core's cache
+event:0x000001F05A counters:0       um:zero minimum:10000  name:PM_RADIX_PWC_L4_PTE_FROM_L2 : A Page Table Entry was reloaded to a level 4 page walk cache from the core's L2 data cache. This is the deepest level of PWC possible for a translation
+event:0x000004F05A counters:3       um:zero minimum:10000  name:PM_RADIX_PWC_L4_PTE_FROM_L3 : A Page Table Entry was reloaded to a level 4 page walk cache from the core's L3 data cache. This is the deepest level of PWC possible for a translation
+event:0x000003F054 counters:2       um:zero minimum:10000  name:PM_RADIX_PWC_L4_PTE_FROM_L3MISS : A Page Table Entry was reloaded to a level 4 page walk cache from beyond the core's L3 data cache. This is the deepest level of PWC possible for a translation. The source could be local/remote/distant memory or another core's cache
+event:0x000004F054 counters:3       um:zero minimum:10000  name:PM_RADIX_PWC_MISS : A radix translation attempt missed in the TLB and all levels of page walk cache.
+event:0x000001608C counters:0       um:zero minimum:10000  name:PM_RC0_BUSY : RC mach 0 Busy. Used by PMU to sample ave RC lifetime (mach0 used as sample point)
+event:0x000002608C counters:1       um:zero minimum:10000  name:PM_RC0_BUSY : RC mach 0 Busy. Used by PMU to sample ave RC lifetime (mach0 used as sample point)
+event:0x000001688C counters:0       um:zero minimum:10000  name:PM_RC_USAGE : Continuous 16 cycle (2to1) window where this signals rotates thru sampling each RC machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
+event:0x00000468A6 counters:3       um:zero minimum:10000  name:PM_RD_CLEARING_SC : Read clearing SC
+event:0x00000460A6 counters:3       um:zero minimum:10000  name:PM_RD_FORMING_SC : Read forming SC
+event:0x00000268A8 counters:1       um:zero minimum:10000  name:PM_RD_HIT_PF : RD machine hit L3 PF machine
+event:0x0000000 counters:5       um:zero minimum:10000  name:PM_RUN_CYC : Run_cycles
+event:0x00000200F4 counters:1       um:zero minimum:10000  name:PM_RUN_CYC : Run_cycles
+event:0x000003006C counters:2       um:zero minimum:100000 name:PM_RUN_CYC_SMT2_MODE : Cycles in which this thread's run latch is set and the core is in SMT2 mode
+event:0x000002006C counters:1       um:zero minimum:100000 name:PM_RUN_CYC_SMT4_MODE : Cycles in which this thread's run latch is set and the core is in SMT4 mode
+event:0x000001006C counters:0       um:zero minimum:100000 name:PM_RUN_CYC_ST_MODE : Cycles run latch is set and core is in ST mode
+event:0x0000000 counters:4       um:zero minimum:10000  name:PM_RUN_INST_CMPL : Run_Instructions
+event:0x00000400FA counters:3       um:zero minimum:10000  name:PM_RUN_INST_CMPL : Run_Instructions
+event:0x00000400F4 counters:3       um:zero minimum:10000  name:PM_RUN_PURR : Run_PURR
+event:0x0000010008 counters:0       um:zero minimum:10000  name:PM_RUN_SPURR : Run SPURR
+event:0x000000E080 counters:0,1,2,3 um:zero minimum:10000  name:PM_S2Q_FULL : Cycles during which the S2Q is full
+event:0x0000045056 counters:3       um:zero minimum:10000  name:PM_SCALAR_FLOP_CMPL : Scalar flop operation completed
+event:0x000000508C counters:0,1,2,3 um:zero minimum:10000  name:PM_SHL_CREATED : Store-Hit-Load Table Entry Created
+event:0x000000588C counters:0,1,2,3 um:zero minimum:10000  name:PM_SHL_ST_DEP_CREATED : Store-Hit-Load Table Read Hit with entry Enabled
+event:0x0000005090 counters:0,1,2,3 um:zero minimum:10000  name:PM_SHL_ST_DISABLE : Store-Hit-Load Table Read Hit with entry Disabled (entry was disabled due to the entry shown to not prevent the flush)
+event:0x000000F09C counters:0,1,2,3 um:zero minimum:10000  name:PM_SLB_TABLEWALK_CYC : Cycles when a tablewalk is pending on this thread on the SLB table
+event:0x0000016090 counters:0       um:zero minimum:10000  name:PM_SN0_BUSY : SN mach 0 Busy. Used by PMU to sample ave SN lifetime (mach0 used as sample point)
+event:0x0000026090 counters:1       um:zero minimum:10000  name:PM_SN0_BUSY : SN mach 0 Busy. Used by PMU to sample ave SN lifetime (mach0 used as sample point)
+event:0x00000460A8 counters:3       um:zero minimum:10000  name:PM_SN_HIT : Any port snooper hit L3. Up to 4 can happen in a cycle but we only count 1
+event:0x00000368A8 counters:2       um:zero minimum:10000  name:PM_SN_INVL : Any port snooper detects a store to a line in the Sx state and invalidates the line. Up to 4 can happen in a cycle but we only count 1
+event:0x00000468A8 counters:3       um:zero minimum:10000  name:PM_SN_MISS : Any port snooper L3 miss or collision. Up to 4 can happen in a cycle but we only count 1
+event:0x000000F880 counters:0,1,2,3 um:zero minimum:10000  name:PM_SNOOP_TLBIE : TLBIE snoop
+event:0x00000360A6 counters:2       um:zero minimum:10000  name:PM_SNP_TM_HIT_M : Snp TM st hit M/Mu
+event:0x00000368A6 counters:2       um:zero minimum:10000  name:PM_SNP_TM_HIT_T : Snp TM sthit T/Tn/Te
+event:0x000003688C counters:2       um:zero minimum:10000  name:PM_SN_USAGE : Continuous 16 cycle (2to1) window where this signals rotates thru sampling each SN machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running
+event:0x0000040062 counters:3       um:zero minimum:10000  name:PM_SPACEHOLDER_0x0000040062 : SPACE_HOLDER for event 0x0000040062
+event:0x0000040064 counters:3       um:zero minimum:10000  name:PM_SPACEHOLDER_0x0000040064 : SPACE_HOLDER for event 0x0000040064
+event:0x000004505A counters:3       um:zero minimum:10000  name:PM_SP_FLOP_CMPL : SP instruction completed
+event:0x0000040008 counters:3       um:zero minimum:10000  name:PM_SRQ_EMPTY_CYC : Cycles in which the SRQ has at least one (out of four) empty slice
+event:0x000000D0AC counters:0,1,2,3 um:zero minimum:10000  name:PM_SRQ_SYNC_CYC : A sync is in the S2Q (edge detect to count)
+event:0x0000010028 counters:0       um:zero minimum:10000  name:PM_STALL_END_ICT_EMPTY : The number a times the core transitioned from a stall to ICT-empty for this thread
+event:0x000001608E counters:0       um:zero minimum:10000  name:PM_ST_CAUSED_FAIL : Non-TM Store caused any thread to fail
+event:0x00000200F0 counters:1       um:zero minimum:10000  name:PM_ST_CMPL : Stores completed from S2Q (2nd-level store queue).
+event:0x000001E058 counters:0       um:zero minimum:10000  name:PM_STCX_FAIL : stcx failed
+event:0x000002E014 counters:1       um:zero minimum:10000  name:PM_STCX_FIN : Number of stcx instructions finished. This includes instructions in the speculative path of a branch that may be flushed
+event:0x000000C8BC counters:0,1,2,3 um:zero minimum:10000  name:PM_STCX_SUCCESS_CMPL : Number of stcx instructions that completed successfully
+event:0x0000020016 counters:1       um:zero minimum:10000  name:PM_ST_FIN : Store finish count. Includes speculative activity
+event:0x0000020018 counters:1       um:zero minimum:10000  name:PM_ST_FWD : Store forwards that finished
+event:0x00000300F0 counters:2       um:zero minimum:10000  name:PM_ST_MISS_L1 : Store Missed L1
+event:0x00000048A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_STOP_FETCH_PENDING_CYC : Fetching is stopped due to an incoming instruction that will result in a flush
+event:0x0000010000 counters:0       um:zero minimum:10000  name:PM_SUSPENDED : Counter OFF
+event:0x0000020000 counters:1       um:zero minimum:10000  name:PM_SUSPENDED : Counter OFF
+event:0x0000030000 counters:2       um:zero minimum:10000  name:PM_SUSPENDED : Counter OFF
+event:0x0000040000 counters:3       um:zero minimum:10000  name:PM_SUSPENDED : Counter OFF
+event:0x0000015152 counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_BR_LINK : Marked Branch and link branch that can cause a synchronous interrupt
+event:0x000001515C counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_BR_MPRED : Marked Branch mispredict that can cause a synchronous interrupt
+event:0x0000015156 counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_FX_DIVIDE : Marked fixed point divide that can cause a synchronous interrupt
+event:0x0000015158 counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_L2HIT : Marked L2 Hits that can throw a synchronous interrupt
+event:0x000001515A counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_L2MISS : Marked L2 Miss that can throw a synchronous interrupt
+event:0x0000015154 counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_L3MISS : Marked L3 misses that can throw a synchronous interrupt
+event:0x0000015150 counters:0       um:zero minimum:10000  name:PM_SYNC_MRK_PROBE_NOP : Marked probeNops which can cause synchronous interrupts
+event:0x0000030050 counters:2       um:zero minimum:10000  name:PM_SYS_PUMP_CPRED : Initial and Final Pump Scope was system pump for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x0000030052 counters:2       um:zero minimum:10000  name:PM_SYS_PUMP_MPRED : Final Pump Scope (system) mispredicted. Either the original scope was too small (Chip/Group) or the original scope was System and it should have been smaller. Counts for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x0000040050 counters:3       um:zero minimum:10000  name:PM_SYS_PUMP_MPRED_RTY : Final Pump Scope (system) ended up larger than Initial Pump Scope (Chip/Group) for all data types excluding data prefetch (demand load,inst prefetch,inst fetch,xlate)
+event:0x0000010026 counters:0       um:zero minimum:10000  name:PM_TABLEWALK_CYC : Cycles when an instruction tablewalk is active
+event:0x000000F884 counters:0,1,2,3 um:zero minimum:10000  name:PM_TABLEWALK_CYC_PREF : tablewalk qualified for pte prefetches
+event:0x00000058B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_TAGE_CORRECT : The TAGE overrode BHT direction prediction and it was correct. Includes taken and not taken and is counted at execution time
+event:0x00000050B4 counters:0,1,2,3 um:zero minimum:10000  name:PM_TAGE_CORRECT_TAKEN_CMPL : The TAGE overrode BHT direction prediction and it was correct. Counted at completion for taken branches only
+event:0x00000050B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_TAGE_OVERRIDE_WRONG : The TAGE overrode BHT direction prediction but it was incorrect. Counted at completion for taken branches only
+event:0x00000058B8 counters:0,1,2,3 um:zero minimum:10000  name:PM_TAGE_OVERRIDE_WRONG_SPEC : The TAGE overrode BHT direction prediction and it was correct. Includes taken and not taken and is counted at execution time
+event:0x0000020056 counters:1       um:zero minimum:10000  name:PM_TAKEN_BR_MPRED_CMPL : Total number of taken branches that were incorrectly predicted as not-taken. This event counts branches completed and does not include speculative instructions
+event:0x00000300F8 counters:2       um:zero minimum:10000  name:PM_TB_BIT_TRANS : timebase event
+event:0x000000E8B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_TEND_PEND_CYC : TEND latency per thread
+event:0x000002000C counters:1       um:zero minimum:100000 name:PM_THRD_ALL_RUN_CYC : Cycles in which all the threads have the run latch set
+event:0x00000300F4 counters:2       um:zero minimum:10000  name:PM_THRD_CONC_RUN_INST : PPC Instructions Finished by this thread when all threads in the core had the run-latch set
+event:0x00000040BC counters:0,1,2,3 um:zero minimum:1000   name:PM_THRD_PRIO_0_1_CYC : Cycles thread running at priority level 0 or 1
+event:0x00000048BC counters:0,1,2,3 um:zero minimum:1000   name:PM_THRD_PRIO_2_3_CYC : Cycles thread running at priority level 2 or 3
+event:0x0000005080 counters:0,1,2,3 um:zero minimum:1000   name:PM_THRD_PRIO_4_5_CYC : Cycles thread running at priority level 4 or 5
+event:0x0000005880 counters:0,1,2,3 um:zero minimum:1000   name:PM_THRD_PRIO_6_7_CYC : Cycles thread running at priority level 6 or 7
+event:0x0000024154 counters:1       um:zero minimum:10000  name:PM_THRESH_ACC : This event increments every time the threshold event counter ticks. Thresholding must be enabled (via MMCRA) and the thresholding start event must occur for this counter to increment. It will stop incrementing when the thresholding stop event occurs or when thresholding is disabled, until the next time a configured thresholding start event occurs.
+event:0x00000301EA counters:2       um:zero minimum:10000  name:PM_THRESH_EXC_1024 : Threshold counter exceeded a value of 1024
+event:0x00000401EA counters:3       um:zero minimum:10000  name:PM_THRESH_EXC_128 : Threshold counter exceeded a value of 128
+event:0x00000401EC counters:3       um:zero minimum:10000  name:PM_THRESH_EXC_2048 : Threshold counter exceeded a value of 2048
+event:0x00000101E8 counters:0       um:zero minimum:10000  name:PM_THRESH_EXC_256 : Threshold counter exceed a count of 256
+event:0x00000201E6 counters:1       um:zero minimum:10000  name:PM_THRESH_EXC_32 : Threshold counter exceeded a value of 32
+event:0x00000101E6 counters:0       um:zero minimum:10000  name:PM_THRESH_EXC_4096 : Threshold counter exceed a count of 4096
+event:0x00000201E8 counters:1       um:zero minimum:10000  name:PM_THRESH_EXC_512 : Threshold counter exceeded a value of 512
+event:0x00000301E8 counters:2       um:zero minimum:10000  name:PM_THRESH_EXC_64 : Threshold counter exceeded a value of 64
+event:0x00000101EC counters:0       um:zero minimum:10000  name:PM_THRESH_MET : threshold exceeded
+event:0x000004016E counters:3       um:zero minimum:10000  name:PM_THRESH_NOT_MET : Threshold counter did not meet threshold
+event:0x000001F054 counters:0       um:zero minimum:10000  name:PM_TLB_HIT : Number of times the TLB had the data required by the instruction. Applies to both HPT and RPT
+event:0x0000030058 counters:2       um:zero minimum:10000  name:PM_TLBIE_FIN : tlbie finished
+event:0x0000020066 counters:1       um:zero minimum:10000  name:PM_TLB_MISS : TLB Miss (I + D)
+event:0x0000030056 counters:2       um:zero minimum:10000  name:PM_TM_ABORTS : Number of TM transactions aborted
+event:0x000000E0A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_TMA_REQ_L2 : addrs only req to L2 only on the first one,Indication that Load footprint is not expanding
+event:0x00000168A6 counters:0       um:zero minimum:10000  name:PM_TM_CAM_OVERFLOW : L3 TM cam overflow during L2 co of SC
+event:0x000004608E counters:3       um:zero minimum:10000  name:PM_TM_CAP_OVERFLOW : TM Footprint Capacity Overflow
+event:0x00000028A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_CONF_NON_TM : TM aborted because a conflict occurred with a non-transactional access by another processor
+event:0x00000020AC counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_CONF_TM : TM aborted because a conflict occurred with another transaction.
+event:0x00000020A8 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_FOOTPRINT_OVERFLOW : TM aborted because the tracking limit for transactional storage accesses was exceeded.. Asynchronous
+event:0x000000E0B0 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_NON_TX_CONFLICT : Non transactional conflict from LSU, gets reported to TEXASR
+event:0x00000028AC counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_SELF : TM aborted because a self-induced conflict occurred in Suspended state, due to one of the following: a store to a storage location that was previously accessed transactionally
+event:0x000000E0AC counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_TLBIE : Transaction failed because there was a TLBIE hit in the bloom filter
+event:0x000000E8AC counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAIL_TX_CONFLICT : Transactional conflict from LSU, gets reported to TEXASR
+event:0x000002688E counters:1       um:zero minimum:10000  name:PM_TM_FAV_CAUSED_FAIL : TM Load (fav) caused another thread to fail
+event:0x000000209C counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_FAV_TBEGIN : Dispatch time Favored tbegin
+event:0x000001688E counters:0       um:zero minimum:10000  name:PM_TM_LD_CAUSED_FAIL : Non-TM Load caused any thread to fail
+event:0x000002608E counters:1       um:zero minimum:10000  name:PM_TM_LD_CONF : TM Load (fav or non-fav) ran into conflict (failed)
+event:0x00000020A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_NESTED_TBEGIN : Completion Tm nested tbegin
+event:0x0000002098 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_NESTED_TEND : Completion time nested tend
+event:0x000000289C counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_NON_FAV_TBEGIN : Dispatch time non favored tbegin
+event:0x0000002094 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_OUTER_TBEGIN : Completion time outer tbegin
+event:0x000004E05E counters:3       um:zero minimum:10000  name:PM_TM_OUTER_TBEGIN_DISP : Number of outer tbegin instructions dispatched. The dispatch unit determines whether the tbegin instruction is outer or nested. This is a speculative count, which includes flushed instructions
+event:0x0000002894 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_OUTER_TEND : Completion time outer tend
+event:0x000002E052 counters:1       um:zero minimum:10000  name:PM_TM_PASSED : Number of TM transactions that passed
+event:0x00000268A6 counters:1       um:zero minimum:10000  name:PM_TM_RST_SC : TM-snp rst RM SC
+event:0x00000160A6 counters:0       um:zero minimum:10000  name:PM_TM_SC_CO : L3 castout TM SC line
+event:0x000003688E counters:2       um:zero minimum:10000  name:PM_TM_ST_CAUSED_FAIL : TM Store (fav or non-fav) caused another thread to fail
+event:0x000003608E counters:2       um:zero minimum:10000  name:PM_TM_ST_CONF : TM Store (fav or non-fav) ran into conflict (failed)
+event:0x0000002898 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_TABORT_TRECLAIM : Completion time tabortnoncd, tabortcd, treclaim
+event:0x0000010060 counters:0       um:zero minimum:10000  name:PM_TM_TRANS_RUN_CYC : run cycles in transactional state
+event:0x0000030060 counters:2       um:zero minimum:10000  name:PM_TM_TRANS_RUN_INST : Run instructions completed in transactional state (gated by the run latch)
+event:0x00000020A4 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_TRESUME : TM resume instruction completed
+event:0x00000028A0 counters:0,1,2,3 um:zero minimum:10000  name:PM_TM_TSUSPEND : TM suspend instruction completed
+event:0x000002E012 counters:1       um:zero minimum:10000  name:PM_TM_TX_PASS_RUN_CYC : cycles spent in successful transactions
+event:0x000004E014 counters:3       um:zero minimum:10000  name:PM_TM_TX_PASS_RUN_INST : Run instructions spent in successful transactions
+event:0x000004D058 counters:3       um:zero minimum:10000  name:PM_VECTOR_FLOP_CMPL : Vector FP instruction completed
+event:0x0000044054 counters:3       um:zero minimum:10000  name:PM_VECTOR_LD_CMPL : Number of vector load instructions completed
+event:0x0000044056 counters:3       um:zero minimum:10000  name:PM_VECTOR_ST_CMPL : Number of vector store instructions completed
+event:0x000003D058 counters:2       um:zero minimum:10000  name:PM_VSU_DP_FSQRT_FDIV : vector versions of fdiv,fsqrt
+event:0x000002505C counters:1       um:zero minimum:10000  name:PM_VSU_FIN : VSU instruction finished. Up to 4 per cycle
+event:0x000004D04E counters:3       um:zero minimum:10000  name:PM_VSU_FSQRT_FDIV : four flops operation (fdiv,fsqrt) Scalar Instructions only
+event:0x000004D050 counters:3       um:zero minimum:10000  name:PM_VSU_NON_FLOP_CMPL : Non FLOP operation completed
+event:0x000000F098 counters:0,1,2,3 um:zero minimum:10000  name:PM_XLATE_HPT_MODE : LSU reports every cycle the thread is in HPT translation mode (as opposed to radix mode)
+event:0x000000F89C counters:0,1,2,3 um:zero minimum:10000  name:PM_XLATE_MISS : The LSU requested a line from L2 for translation. It may be satisfied from any source beyond L2. Includes speculative instructions
+event:0x000000F898 counters:0,1,2,3 um:zero minimum:10000  name:PM_XLATE_RADIX_MODE : LSU reports every cycle the thread is in radix translation mode (as opposed to HPT mode)
