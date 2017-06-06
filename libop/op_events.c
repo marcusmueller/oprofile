@@ -1259,6 +1259,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC64_POWER7:
 		case CPU_PPC64_ARCH_V1:
 		case CPU_PPC64_POWER8:
+		case CPU_PPC64_POWER9:
 			descr->name = "CYCLES";
 			break;
 

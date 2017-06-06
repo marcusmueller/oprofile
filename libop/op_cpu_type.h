@@ -105,6 +105,7 @@ typedef enum {
 	CPU_GOLDMONT, /** < Intel Goldmont microarchitecture */
 	CPU_S390_Z13, /** < IBM z13 */
 	CPU_ARM_V7_CA17, /* ARM Cortex-A17 */
+	CPU_PPC64_POWER9, /**< ppc64 POWER8 family */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -680,6 +680,12 @@ int main(int argc, char const * argv[])
 			"See Power ISA 2.07 at https://www.power.org/\n\n";
 		break;
 
+	case CPU_PPC64_POWER9:
+		event_doc =
+			"This processor type is fully supported with operf.\n"
+			"See Power ISA 3.0 at https://www.power.org/\n\n";
+		break;
+
 	case CPU_MIPS_20K:
 		event_doc =
 			"See Programming the MIPS64 20Kc Processor Core User's "

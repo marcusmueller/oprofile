@@ -119,6 +119,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Intel Goldmont microarchitecture", "i386/goldmont", CPU_GOLDMONT, 4 },
 	{ "IBM z13", "s390/z13", CPU_S390_Z13, 1 },
 	{ "ARM Cortex-A17", "arm/armv7-ca17", CPU_ARM_V7_CA17, 7 },
+	{ "ppc64 POWER9", "ppc64/power9", CPU_PPC64_POWER9, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -292,6 +293,8 @@ static op_cpu _try_ppc64_arch_generic_cpu(void)
 			 */
 			if ((strcmp(platform, "power7") == 0) && (strcmp(base_platform, "power8") == 0))
 				cpu_type = CPU_PPC64_POWER8;
+			else if ((strcmp(platform, "power8") == 0) && (strcmp(base_platform, "power9") == 0))
+				cpu_type = CPU_PPC64_POWER9;
 			else
 				cpu_type = CPU_PPC64_ARCH_V1;
 		}

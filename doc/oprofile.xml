@@ -486,7 +486,7 @@ can be used for <command>ocount</command>, minus the <emphasis>count</emphasis> 
 <row><entry>Hammer</entry><entry>x86-64/hammer</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Family10h</entry><entry>x86-64/family10</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Family11h</entry><entry>x86-64/family11h</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
-<row><entry>IBM pseries</entry><entry>ppc64/power{ 4|5|6|7|8|970 }</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>IBM pseries</entry><entry>ppc64/power{ 4|5|6|7|8|9|970 }</entry><entry>CYCLES:100000:0:1:1</entry></row>
 <row><entry>IBM s390</entry><entry>s390/{ z10|z196|zEC12 }</entry><entry>HWSAMPLING:4127518:0:1:1</entry></row>
 </tbody>
 </tgroup>
