@@ -683,13 +683,17 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_POWER8:
 		event_doc =
 			"This processor type is fully supported with operf.\n"
-			"See Power ISA 2.07 at https://www.power.org/\n\n";
+			"See Power ISA 3.0B at "
+			"https://openpowerfoundation.org/?submit=Search&s=ISA \n"
+			"And the P8 Users Manual at "
+			"https://www-355.ibm.com/systems/power/openpower \n\n";
 		break;
 
 	case CPU_PPC64_POWER9:
 		event_doc =
 			"This processor type is fully supported with operf.\n"
-			"See Power ISA 3.0 at https://www.power.org/\n\n";
+			"See Power ISA 3.0B at "
+			"https://openpowerfoundation.org/?resource_lib=power-isa-version-3-0\n";
 		break;
 
 	case CPU_MIPS_20K:
