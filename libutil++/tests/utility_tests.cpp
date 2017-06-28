@@ -40,8 +40,24 @@ void operator delete(void * p) throw()
 		free(p);
 }
 
+void operator delete(void * p, size_t s) throw()
+{
+	size_t dummy __attribute__ ((__unused__)) = s;
+	nb_new--;
+	if (p)
+		free(p);
+}
+
 void operator delete[](void * p) throw()
 {
+	nb_new_array--;
+	if (p)
+		free(p);
+}
+
+void operator delete[](void * p, size_t s) throw()
+{
+	size_t dummy __attribute__ ((__unused__)) = s;
 	nb_new_array--;
 	if (p)
 		free(p);
