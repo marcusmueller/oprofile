@@ -2,7 +2,12 @@
 # Unit masks for the Intel "Nehalem" micro architecture
 # (Intel Core i7 "Bloomfield"; Xeon 75xx)
 #
-include:i386/arch_perfmon
+name:one type:mandatory default:0x1
+	0x1 No unit mask
+name:x41 type:mandatory default:0x41
+	0x41 No unit mask
+name:x4f type:mandatory default:0x4f
+	0x4f No unit mask
 name:sb_forward type:mandatory default:0x01
 	0x01 extra: any Counts the number of store forwards
 name:load_block type:bitmask default:0x01
