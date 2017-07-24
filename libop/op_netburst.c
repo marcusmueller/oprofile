@@ -376,7 +376,7 @@ netburst_entry_t op_netburst_events[] = {
 	 .desc = "Number of entries (clipped at 15) in the IOQ that are "
 		 "active. An allocated entry can be a sector (64 bytes) "
 		 "or a chunk of 8 bytes. This event must be programmed in "
-		 "conjuction with IOQ_allocation. All 'TYPE_BIT*' event-masks "
+		 "conjunction with IOQ_allocation. All 'TYPE_BIT*' event-masks "
 		 "together are treated as a single 5-bit value",
 	 .event_select = 0x1A,
 	 .escr_select = 0x6,
@@ -1475,7 +1475,7 @@ netburst_entry_t op_netburst_events[] = {
 
 	/* 44 */
 	{.name = "MACHINE_CLEAR",
-	 .desc = "Number of occurances when the entire "
+	 .desc = "Number of occurrences when the entire "
 		 "pipeline of the machine is cleared",
 	 .event_select = 0x2,
 	 .escr_select = 0x5,
@@ -1486,7 +1486,7 @@ netburst_entry_t op_netburst_events[] = {
 		 .desc = "Counts for a portion of the many cycles while the "
 			 "machine is cleared for any cause. Use edge-"
 			 "triggering for this bit only to get a count of "
-			 "occurances versus a duration",
+			 "occurrences versus a duration",
 		 .bit = 0,
 		},
 		{.name = "MOCLEAR",
