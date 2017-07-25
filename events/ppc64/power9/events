@@ -865,12 +865,10 @@ event:0x000001688C counters:0       um:zero minimum:10000  name:PM_RC_USAGE : Co
 event:0x00000468A6 counters:3       um:zero minimum:10000  name:PM_RD_CLEARING_SC : Read clearing SC
 event:0x00000460A6 counters:3       um:zero minimum:10000  name:PM_RD_FORMING_SC : Read forming SC
 event:0x00000268A8 counters:1       um:zero minimum:10000  name:PM_RD_HIT_PF : RD machine hit L3 PF machine
-event:0x0000000 counters:5       um:zero minimum:10000  name:PM_RUN_CYC : Run_cycles
 event:0x00000200F4 counters:1       um:zero minimum:10000  name:PM_RUN_CYC : Run_cycles
 event:0x000003006C counters:2       um:zero minimum:100000 name:PM_RUN_CYC_SMT2_MODE : Cycles in which this thread's run latch is set and the core is in SMT2 mode
 event:0x000002006C counters:1       um:zero minimum:100000 name:PM_RUN_CYC_SMT4_MODE : Cycles in which this thread's run latch is set and the core is in SMT4 mode
 event:0x000001006C counters:0       um:zero minimum:100000 name:PM_RUN_CYC_ST_MODE : Cycles run latch is set and core is in ST mode
-event:0x0000000 counters:4       um:zero minimum:10000  name:PM_RUN_INST_CMPL : Run_Instructions
 event:0x00000400FA counters:3       um:zero minimum:10000  name:PM_RUN_INST_CMPL : Run_Instructions
 event:0x00000400F4 counters:3       um:zero minimum:10000  name:PM_RUN_PURR : Run_PURR
 event:0x0000010008 counters:0       um:zero minimum:10000  name:PM_RUN_SPURR : Run SPURR
