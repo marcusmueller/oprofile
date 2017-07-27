@@ -168,7 +168,7 @@ If the base event name is passed,
 will automatically choose an appropriate group number suffix
 for the event; thus, OProfile post-processing tools will always show real event
 names that include the group number suffix.
-.Po
+.P
 When no event specification is given, the default event for the running
 processor type will be used for profiling.
 Use
