@@ -16,7 +16,8 @@ man_MANS = \
 	ophelp.1 \
 	op-check-perfevents.1 \
 	oparchive.1 \
-	opimport.1
+	opimport.1 \
+	opjitconv.1
 
 if BUILD_FOR_PERF_EVENT
 man_MANS += operf.1 \

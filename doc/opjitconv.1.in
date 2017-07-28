@@ -1,0 +1,41 @@
+.TH OPJITCONV 1 "@DATE@" "oprofile @VERSION@"
+.SH NAME
+opjitconv \- convert jit dump file to an ELF
+
+.SH SYNOPSIS
+.B opjitconv
+[
+.I options
+]
+[ [--debug | --non-root | --delete-jitdumps ] --session-dir=<dir> <starttime> <endtime> ]
+
+.SH DESCRIPTION
+Convert a jit dump file to an ELF file
+
+.SH OPTIONS
+.TP
+.BI "--debug"
+Print debugging information.
+.br
+.TP
+.BI "--non-root"
+Use when opjitconv was invoked by a non-root user via operf.
+.br
+.TP
+.BI "--delete-jitdumps"
+Delete jitdump files owned by the user.
+.br
+.TP
+.BI "--session-dir [dir]"
+Session directory where sample data is stored.
+.br
+.TP
+.BI "--help / -h"
+Display brief usage message.
+.br
+
+.SH VERSION
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+.BR oprofile(1)

@@ -425,6 +425,7 @@ AC_OUTPUT(Makefile \
 	doc/opimport.1 \
 	doc/operf.1 \
 	doc/ocount.1 \
+	doc/opjitconv.1 \
 	doc/srcdoc/Doxyfile \
 	libpp/Makefile \
 	opjitconv/Makefile \
