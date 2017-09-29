@@ -21,8 +21,16 @@ AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG
 
+dateopt=''
+if test -n "$SOURCE_DATE_EPOCH" ; then
+  if date --version | grep -q GNU ; then
+    dateopt="-u -d @$SOURCE_DATE_EPOCH"
+  else
+    dateopt="-u -r $SOURCE_DATE_EPOCH"
+  fi
+fi
 dnl for the man page
-DATE="`date '+%a %d %B %Y'`"
+DATE="`date $dateopt '+%a %d %B %Y'`"
 AC_SUBST(DATE)
 
 # Since we should not permanently alter user environment variables, we'll
