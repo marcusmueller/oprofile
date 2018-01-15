@@ -21,6 +21,7 @@ event_files = \
 	i386/skylake/events i386/skylake/unit_masks \
 	i386/silvermont/events i386/silvermont/unit_masks \
 	i386/goldmont/events i386/goldmont/unit_masks \
+	i386/goldmontplus/events i386/goldmontplus/unit_masks \
 	i386/knightslanding/events i386/knightslanding/unit_masks \
 	ppc64/architected_events_v1/events ppc64/architected_events_v1/unit_masks \
 	ppc64/power4/events ppc64/power4/event_mappings ppc64/power4/unit_masks \

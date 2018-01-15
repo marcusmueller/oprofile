@@ -170,6 +170,8 @@ static inline op_cpu op_cpu_specific_type(op_cpu cpu_type)
 		case 0x57:
 		case 0x85:
 			return CPU_KNIGHTSLANDING;
+		case 0x7a:
+			return CPU_GOLDMONTPLUS;
 		}
 	}
 	return cpu_type;

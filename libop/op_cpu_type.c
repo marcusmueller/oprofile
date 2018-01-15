@@ -117,6 +117,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A53", "arm/armv8-ca53", CPU_ARM_V8_CA53, 6},
 	{ "Intel Skylake microarchitecture", "i386/skylake", CPU_SKYLAKE, 4 },
 	{ "Intel Goldmont microarchitecture", "i386/goldmont", CPU_GOLDMONT, 4 },
+	{ "Intel Goldmont Plus microarchitecture", "i386/goldmontplus", CPU_GOLDMONTPLUS, 4 },
 	{ "IBM z13", "s390/z13", CPU_S390_Z13, 1 },
 	{ "ARM Cortex-A17", "arm/armv7-ca17", CPU_ARM_V7_CA17, 7 },
 	{ "ppc64 POWER9", "ppc64/power9", CPU_PPC64_POWER9, 6 },

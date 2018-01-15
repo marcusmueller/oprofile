@@ -1,0 +1,38 @@
+#
+# Intel "Goldmont Plus" microarchitecture core events.
+#
+# See http://ark.intel.com/ for help in identifying Goldmont based CPUs
+#
+# Note the minimum counts are not discovered experimentally and could be likely
+# lowered in many cases without ill effect.
+#
+event:0x3c counters:cpuid um:cpu_clk_unhalted minimum:2000003 name:cpu_clk_unhalted :
+event:0x03 counters:cpuid um:ld_blocks minimum:200003 name:ld_blocks :
+event:0x08 counters:cpuid um:dtlb_load_misses minimum:200003 name:dtlb_load_misses :
+event:0x0e counters:cpuid um:uops_issued minimum:200003 name:uops_issued_any :
+event:0x13 counters:cpuid um:misalign_mem_ref minimum:200003 name:misalign_mem_ref :
+event:0x2e counters:cpuid um:longest_lat_cache minimum:200003 name:longest_lat_cache :
+event:0x30 counters:cpuid um:l2_reject_xq minimum:200003 name:l2_reject_xq_all :
+event:0x31 counters:cpuid um:core_reject_l2q minimum:200003 name:core_reject_l2q_all :
+event:0x49 counters:cpuid um:dtlb_store_misses minimum:2000003 name:dtlb_store_misses :
+event:0x4f counters:cpuid um:ept minimum:200003 name:ept :
+event:0x51 counters:cpuid um:dl1 minimum:200003 name:dl1_dirty_eviction :
+event:0x80 counters:cpuid um:icache minimum:200003 name:icache :
+event:0x81 counters:cpuid um:itlb minimum:200003 name:itlb_miss :
+event:0x85 counters:cpuid um:itlb_misses minimum:2000003 name:itlb_misses :
+event:0x86 counters:cpuid um:fetch_stall minimum:200003 name:fetch_stall_icache_fill_pending_cycles :
+event:0x9c counters:cpuid um:uops_not_delivered minimum:200003 name:uops_not_delivered_any :
+event:0xbd counters:cpuid um:tlb_flushes minimum:20003 name:tlb_flushes :
+event:0xc0 counters:cpuid um:inst_retired minimum:2000003 name:inst_retired :
+event:0xc2 counters:cpuid um:uops_retired minimum:2000003 name:uops_retired :
+event:0xc3 counters:cpuid um:machine_clears minimum:200003 name:machine_clears :
+event:0xc4 counters:cpuid um:br_inst_retired minimum:200003 name:br_inst_retired :
+event:0xc5 counters:cpuid um:br_misp_retired minimum:200003 name:br_misp_retired :
+event:0xca counters:cpuid um:issue_slots_not_consumed minimum:200003 name:issue_slots_not_consumed :
+event:0xcb counters:cpuid um:hw_interrupts minimum:200003 name:hw_interrupts :
+event:0xcd counters:cpuid um:cycles_div_busy minimum:2000003 name:cycles_div_busy :
+event:0xd0 counters:cpuid um:mem_uops_retired minimum:200003 name:mem_uops_retired :
+event:0xd1 counters:cpuid um:mem_load_uops_retired minimum:200003 name:mem_load_uops_retired :
+event:0xe6 counters:cpuid um:baclears minimum:200003 name:baclears :
+event:0xe7 counters:cpuid um:ms_decoded minimum:200003 name:ms_decoded_ms_entry :
+event:0xe9 counters:cpuid um:decode_restriction minimum:200003 name:decode_restriction_predecode_wrong :

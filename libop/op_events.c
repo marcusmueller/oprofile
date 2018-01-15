@@ -1214,6 +1214,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			break;
 
 		case CPU_GOLDMONT:
+		case CPU_GOLDMONTPLUS:
 		case CPU_SKYLAKE:
 			descr->name = "cpu_clk_unhalted";
 			break;
