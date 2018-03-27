@@ -154,17 +154,17 @@ static char * _get_cpuinfo_cpu_type_line(char * buf, int len, const char * prefi
 			/* if token param 0 then read the whole line else
 			 * first token only. */
 			if (token == 0) {
-				/* Trim trailing whitespace */
+				/* Trim trailing whitespace and commas */
 				end = buf + strlen(buf) - 1;
-				while (isspace(*end))
+				while (isspace(*end) || *end == ',')
 					--end;
 				*(++end) = '\0';
 				break;
 			} else {
 				/* Scan ahead to the end of the token */
-				while (*buf && !isspace(*buf))
+				while (*buf && !(isspace(*buf) || *buf == ','))
 					++buf;
-				/* Trim trailing whitespace */
+				/* Trim trailing whitespace and commas */
 				*buf = '\0';
 				break;
 			}
