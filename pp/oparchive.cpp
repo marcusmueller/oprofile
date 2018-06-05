@@ -261,7 +261,7 @@ int oparchive(options::spec const & spec)
 		/* determine the session name of sample file */
 		int offset = sample_name.find('{');
 		string base_samples_dir = sample_name.substr(0, offset-1);
-		string session = basename(base_samples_dir.c_str());
+		string session = op_basename(base_samples_dir.c_str());
 		/* Get rid of the the archive_path from the name */
 		string sample_base = sample_name.substr(offset);
 		string sample_archive_file = dest_samples_dir + "/" + session + "/" + sample_base;
