@@ -73,7 +73,14 @@ static inline void update_trans_last(struct operf_transient * trans)
 
 static inline void clear_trans(struct operf_transient * trans)
 {
-	trans->tgid = ~0U;
+	/* ~0U (-1) could be used by the kernel perf samples
+	 * for the TID/PID of exiting processes. To avoid
+	 * confusing the oprofile logic use ~1U as the
+	 * initialization value for tgid field to avoid
+	 * possibly matching the TID/PID values for exiting
+	 * processes.
+	 */
+	trans->tgid = ~1U;
 	trans->cur_procinfo = NULL;
 }
 
