@@ -1340,7 +1340,7 @@ static void _record_module_info(int output_fd, operf_record * pr)
 		mmap.header.type = PERF_RECORD_MMAP;
 		mmap.header.misc = PERF_RECORD_MISC_KERNEL;
 		size = strlen(module_name) + 1;
-		strncpy(mmap.filename, module_name, size);
+		strncpy(mmap.filename, module_name, sizeof(mmap.filename));
 		size = align_64bit(size);
 		mmap.start = start_address;
 		mmap.len = module_size;
