@@ -519,7 +519,7 @@ void operf_sfile_close_files(void)
 }
 
 
-static int always_true(void)
+static int always_true(struct operf_sfile * sf __attribute__((unused)), void * data __attribute__((unused)))
 {
 	return 1;
 }
