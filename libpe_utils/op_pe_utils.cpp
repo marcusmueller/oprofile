@@ -191,10 +191,12 @@ static int find_app_file_in_dir(const struct dirent * d)
 		return 0;
 }
 
+static char dir_pathname[PATH_MAX];
 static char full_pathname[PATH_MAX];
 static int _get_PATH_based_pathname(const char * app_name)
 {
 	int retval = -1;
+	int retlen;
 
 	char * real_path = getenv("PATH");
 	char * path = (char *) xstrdup(real_path);
@@ -210,10 +212,19 @@ static int _get_PATH_based_pathname(const char * app_name)
 				break;
 			}
 		} else if (rc == 1) {
-			size_t applen = strlen(app_name);
-			size_t dirlen = strlen(segment);
-
-			if (applen + dirlen + 2 > PATH_MAX) {
+			if (!strcmp(segment, ".")) {
+				if (getcwd(dir_pathname, sizeof(dir_pathname)) == NULL) {
+					retval = -1;
+					cerr << "getcwd [3] failed when processing <cur-dir>/" << app_name << " found via PATH. Aborting."
+							<< endl;
+					break;
+				}
+			} else {
+				strncpy(dir_pathname, segment, sizeof(dir_pathname)-1);
+			}
+			retlen = snprintf(full_pathname, sizeof(full_pathname),
+					  "%s/%s", dir_pathname, app_name);
+			if (retlen <= 0 || ((int) sizeof(full_pathname)) <= retlen) {
 				cerr << "Path segment " << segment
 				     << " prepended to the passed app name is too long"
 				     << endl;
@@ -221,18 +232,6 @@ static int _get_PATH_based_pathname(const char * app_name)
 				break;
 			}
 
-			if (!strcmp(segment, ".")) {
-				if (getcwd(full_pathname, PATH_MAX) == NULL) {
-					retval = -1;
-					cerr << "getcwd [3] failed when processing <cur-dir>/" << app_name << " found via PATH. Aborting."
-							<< endl;
-					break;
-				}
-			} else {
-				strncpy(full_pathname, segment, dirlen);
-			}
-			strcat(full_pathname, "/");
-			strncat(full_pathname, app_name, applen);
 			retval = 0;
 			free(namelist[0]);
 			free(namelist);
