@@ -265,10 +265,12 @@ out:
 int copy_elffile(char * elf_file, char * tmp_elffile)
 {
 	int rc = OP_JIT_CONV_OK;
-	int fd;
+	int retlen, fd;
 
-	sprintf(sys_cmd_buffer, "/bin/cp -p %s %s", tmp_elffile, elf_file);
-	if (system(sys_cmd_buffer) != 0) {
+	retlen = snprintf(sys_cmd_buffer, sizeof(sys_cmd_buffer),
+			  "/bin/cp -p %s %s", tmp_elffile, elf_file);
+	if (retlen <= 0 || ((int) sizeof(sys_cmd_buffer)) <= retlen
+	    || system(sys_cmd_buffer) != 0) {
 		printf("opjitconv: Calling system() to copy files failed.\n");
 		rc = OP_JIT_CONV_FAIL;
 		goto out;
@@ -318,6 +320,7 @@ static int process_jit_dumpfile(char const * dmp_pathname,
 	char * tmp_dumpfile;
 	/* temporary ELF file created during conversion step */
 	char * tmp_elffile;
+	int tmp_dumpfile_size, elf_file_size, tmp_elffile_size;
 	
 	verbprintf(debug, "Processing dumpfile %s\n", dmp_pathname);
 	
@@ -348,11 +351,11 @@ static int process_jit_dumpfile(char const * dmp_pathname,
 		verbprintf(debug, "Found JIT dumpfile for process %s\n",
 			   proc_id);
 
-		tmp_dumpfile = xmalloc(tmp_conv_dir_length + 1 + strlen(dumpfilename) + 1);
-		strncpy(tmp_dumpfile, tmp_conv_dir, tmp_conv_dir_length);
-		tmp_dumpfile[tmp_conv_dir_length] = '\0';
-		strcat(tmp_dumpfile, "/");
-		strcat(tmp_dumpfile, dumpfilename);
+		tmp_dumpfile_size = tmp_conv_dir_length + 1
+			+ strlen(dumpfilename + 1);
+		tmp_dumpfile = xmalloc(tmp_dumpfile_size);
+		snprintf(tmp_dumpfile, tmp_dumpfile_size, "%s/%s",
+			 tmp_conv_dir, dumpfilename);
 	}
 chk_proc_id:
 	if (!proc_id) {
@@ -387,20 +390,17 @@ chk_proc_id:
 		}
 		result_dir_length = ++anon_path_seg - anon_dir;
 		/* create final ELF file name */
-		elf_file = xmalloc(result_dir_length +
-				   strlen(proc_id) + strlen(".jo") + 1);
-		strncpy(elf_file, anon_dir, result_dir_length);
-		elf_file[result_dir_length] = '\0';
-		strcat(elf_file, proc_id);
-		strcat(elf_file, ".jo");
+		elf_file_size = result_dir_length
+			+ strlen(proc_id) + strlen(".jo") + 1;
+		elf_file = xmalloc(elf_file_size);
+		snprintf(elf_file, elf_file_size, "%s%s.jo",
+			 anon_dir, proc_id);
 		/* create temporary ELF file name */
-		tmp_elffile = xmalloc(strlen(tmp_conv_dir) + 1 +
-				   strlen(proc_id) + strlen(".jo") + 1);
-		strncpy(tmp_elffile, tmp_conv_dir, strlen(tmp_conv_dir));
-		tmp_elffile[strlen(tmp_conv_dir)] = '\0';
-		strcat(tmp_elffile, "/");
-		strcat(tmp_elffile, proc_id);
-		strcat(tmp_elffile, ".jo");
+		tmp_elffile_size = strlen(tmp_conv_dir) + 1
+			+ strlen(proc_id) + strlen(".jo") + 1;
+		tmp_elffile = xmalloc(tmp_elffile_size);
+		snprintf(tmp_elffile, tmp_elffile_size, "%s/%s.jo",
+			 tmp_conv_dir, proc_id);
 
 		// Check if final ELF file exists already
 		jofd = open(elf_file, O_RDONLY);
@@ -588,6 +588,7 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	char jitdumpfile[PATH_MAX + 1];
 	char oprofile_tmp_template[PATH_MAX + 1];
 	char const * jitdump_dir = "/tmp/.oprofile/jitdump/";
+	int retlen;
 
 	LIST_HEAD(jd_fnames);
 	char const * anon_dir_filter = "*/{dep}/{anon:anon}/[0-9]*.*";
@@ -606,8 +607,10 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	/* Create a temporary working directory used for the conversion step.
 	 */
 	if (non_root) {
-		sprintf(sys_cmd_buffer, "/bin/rm -rf %s", oprofile_tmp_template);
-		if (system(sys_cmd_buffer) != 0) {
+		retlen = snprintf(sys_cmd_buffer, sizeof(sys_cmd_buffer),
+				 "/bin/rm -rf %s", oprofile_tmp_template);
+		if (retlen <= 0 || ((int) sizeof(sys_cmd_buffer)) <= retlen
+		   || system(sys_cmd_buffer) != 0) {
 			printf("opjitconv: Removing temporary working directory %s failed.\n",
 			       oprofile_tmp_template);
 			rc = OP_JIT_CONV_TMPDIR_NOT_REMOVED;
@@ -702,8 +705,9 @@ static int op_process_jit_dumpfiles(char const * session_dir,
 	list_for_each_safe(pos1, pos2, &jd_fnames) {
 		struct pathname * dmpfile =
 			list_entry(pos1, struct pathname, neighbor);
-		strncpy(jitdumpfile, jitdump_dir, PATH_MAX);
-		strncat(jitdumpfile, dmpfile->name, PATH_MAX);
+		snprintf(jitdumpfile, PATH_MAX, "%s%s",
+			 jitdump_dir, dmpfile->name);
+		jitdumpfile[PATH_MAX] = '\0';
 		rc = process_jit_dumpfile(jitdumpfile, &anon_dnames,
 					  start_time, end_time, tmp_conv_dir);
 		if (rc == OP_JIT_CONV_FAIL) {
