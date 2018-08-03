@@ -588,7 +588,7 @@ static string _handle_powerpc_event_spec(string event_spec)
 		}
 		if (line[0] == ' ' || line[0] == '\t')
 			continue;
-		if (!strncmp(line, event_name, evt_name_len)) {
+		if (evt_name_len && !strncmp(line, event_name, evt_name_len)) {
 			// Found a potential match.  Check if it's a perfect match.
 			string save_event_name = event_name;
 			size_t full_evt_len = index(line, ':') - line;
