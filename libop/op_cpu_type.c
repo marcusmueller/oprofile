@@ -122,6 +122,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM Cortex-A17", "arm/armv7-ca17", CPU_ARM_V7_CA17, 7 },
 	{ "ppc64 POWER9", "ppc64/power9", CPU_PPC64_POWER9, 6 },
 	{ "Intel Knights Landing", "i386/knightslanding", CPU_KNIGHTSLANDING, 4 },
+	{ "Cavium ThunderX2", "arm/armv8-thunderx2", CPU_ARM_V8_CAVIUM_THUNDERX2, 6 }, 
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
@@ -429,6 +430,13 @@ static op_cpu _get_arm_cpu_type(void)
 		switch (cpuid) {
 		case 0x00f:
 			return op_get_cpu_number("arm/armv7-ca15");
+		case 0x516:
+			return op_get_cpu_number("arm/armv8-thunderx2");
+		}
+	} else if (vendorid == 0x43) { /* Cavium */
+		switch (cpuid) {
+		case 0x0af:
+			return op_get_cpu_number("arm/armv8-thunderx2");
 		}
 	} else if (vendorid == 0x50) {	/* Applied Micro Circuits Corporation */
 		switch (cpuid) {

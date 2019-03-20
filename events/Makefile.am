@@ -59,6 +59,7 @@ event_files = \
 	arm/armv8-xgene/events arm/armv8-xgene/unit_masks \
 	arm/armv8-ca57/events arm/armv8-ca57/unit_masks \
 	arm/armv8-ca53/events arm/armv8-ca53/unit_masks \
+	arm/armv8-thunderx2/events arm/armv8-thunderx2/unit_masks \
 	mips/20K/events mips/20K/unit_masks \
 	mips/24K/events mips/24K/unit_masks \
 	mips/25K/events mips/25K/unit_masks \

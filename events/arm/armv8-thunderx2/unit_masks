@@ -1,0 +1,3 @@
+# ARMv8 architected events unit masks
+#
+include:arm/armv8-pmuv3-common

@@ -108,6 +108,7 @@ typedef enum {
 	CPU_ARM_V7_CA17, /* ARM Cortex-A17 */
 	CPU_PPC64_POWER9, /**< ppc64 POWER8 family */
 	CPU_KNIGHTSLANDING, /** Intel Knights Landing microarchitecture */
+	CPU_ARM_V8_CAVIUM_THUNDERX2, /* Cavium ThunderX2 */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -1,0 +1,168 @@
+# Cavium ThunderX2 events
+#
+# The performance event information is taken from
+# https://www.marvell.com/documents/hrur6mybdvk5uki1w0z7/
+#
+# Note: minimum event values based on armv8-xgene/events
+#
+event:0x0000 um:zero minimum:500 name:SW_INCR : Instruction architecturally executed, condition code check pass, software increment
+event:0x0001 um:zero minimum:5000 name:L1I_CACHE_REFILL : Level 1 instruction cache refill
+event:0x0002 um:zero minimum:5000 name:L1I_TLB_REFILL : Level 1 instruction TLB refill
+event:0x0003 um:zero minimum:5000 name:L1D_CACHE_REFILL : Level 1 data cache refill
+event:0x0004 um:zero minimum:5000 name:L1D_CACHE : Level 1 data cache access
+event:0x0005 um:zero minimum:5000 name:L1D_TLB_REFILL : Level 1 data TLB refill
+event:0x0006 um:zero minimum:100000 name:LD_RETIRED : Instruction architecturally executed, condition code check pass, load
+event:0x0007 um:zero minimum:100000 name:ST_RETIRED : Instruction architecturally executed, condition code check pass, store
+event:0x0008 um:zero minimum:100000 name:INST_RETIRED : Instruction architecturally executed
+event:0x0009 um:zero minimum:500 name:EXC_TAKEN : Exception taken
+event:0x000A um:zero minimum:500 name:EXC_RETURN : Instruction architecturally executed, condition code check pass, exception return
+event:0x000B um:zero minimum:500 name:CID_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, write to CONTEXTIDR
+event:0x000D um:zero minimum:5000 name:BR_IMMED_RETIRED : Instruction architecturally executed, immediate branch
+event:0x000E um:zero minimum:5000 name:BR_RETURN_RETIRED : Instruction architecturally executed, condition code check pass, procedure return
+event:0x000F um:zero minimum:500 name:UNALIGNED_LDST_RETIRED : Instruction architecturally executed, condition code check pass, unaligned load or store
+event:0x0010 um:zero minimum:5000 name:BR_MIS_PRED : Mispredicted or not predicted branch speculatively executed
+event:0x0011 um:zero minimum:100000 name:CPU_CYCLES : Cycle
+event:0x0012 um:zero minimum:5000 name:BR_PRED : Predictable branch speculatively executed
+event:0x0013 um:zero minimum:100000 name:MEM_ACCESS : Data memory access
+event:0x0014 um:zero minimum:5000 name:L1I_CACHE : Level 1 instruction cache access
+event:0x0015 um:zero minimum:5000 name:L1D_CACHE_WB : Level 1 data cache write-back
+event:0x0016 um:zero minimum:5000 name:L2D_CACHE : Level 2 data/unified cache access
+event:0x0017 um:zero minimum:5000 name:L2D_CACHE_REFILL : Level 2 data/unified cache refill
+event:0x0018 um:zero minimum:5000 name:L2D_CACHE_WB : Level 2 data/unified cache write back
+event:0x0019 um:zero minimum:5000 name:BUS_ACCESS : Bus access
+event:0x001B um:zero minimum:100000 name:INST_SPEC : Operation speculatively executed
+event:0x001C um:zero minimum:5000 name:TTBR_WRITE_RETIRED : Instruction architecturally executed, condition code check pass, write to TTBR
+#event:0x001E um:zero minimum:5000 name:CHAIN : For odd-numbered counters, increments the count by one for each overflow of the preceding even numbered counter
+event:0x001F um:zero minimum:5000 name:L1D_CACHE_ALLOCATE : Level 1 data cache allocation without refill
+event:0x0020 um:zero minimum:5000 name:L2D_CACHE_ALLOCATE : Level 2 data/unified cache allocation without refill
+event:0x0021 um:zero minimum:5000 name:BR_RETIRED : Counts all branches on the architecturally executed path that would incur cost if mispredicted
+event:0x0022 um:zero minimum:5000 name:BR_MIS_PRED_RETIRED : Instruction executed, mispredicted branch. All instructions counted by BR RETIRED that were not correctly predicted
+event:0x0023 um:zero minimum:5000 name:STALL_FRONTEND : Cycle on which no operation issued because there are no operations to issue
+event:0x0024 um:zero minimum:5000 name:STALL_BACKEND : Cycle on which no operation issued due to back-end resources being unavailable
+event:0x0025 um:zero minimum:5000 name:L1D_TLB : Level 1 data TLB access
+event:0x0026 um:zero minimum:5000 name:L1I_TLB : Level 1 instruction TLB access
+event:0x002D um:zero minimum:5000 name:L2D_TLB_REFILL : Attributable memory-read/write operation that causes a TLB refill of at least the Level 2 data or unified TLB
+event:0x002E um:zero minimum:5000 name:L2I_TLB_REFILL : Attributable instruction memory accesses that cause a TLB refill of at least the Level 2 instruction or unified TLB
+event:0x002F um:zero minimum:5000 name:L2D_TLB : Attributable memory read/write operation that causes a TLB access to at least the Level 2 data or unified TLB
+event:0x0030 um:zero minimum:5000 name:L2I_TLB : Attributable memory read/write operation that causes a TLB access to at least the Level 2 instruction or unified TLB
+event:0x0040 um:zero minimum:10007 name:L1D_CACHE_RD : Level 1 data cache access, read
+event:0x0041 um:zero minimum:10007 name:L1D_CACHE_WR : Level 1 data cache access, write
+event:0x0042 um:zero minimum:10007 name:L1D_CACHE_REFILL_RD : Level 1 data cache refill, read
+event:0x0043 um:zero minimum:10007 name:L1D_CACHE_REFILL_WR : Level 1 data cache refill, write
+event:0x0044 um:zero minimum:10007 name:L1D_CACHE_REFILL_INNER : Level 1 data cache refill, inner
+event:0x0045 um:zero minimum:10007 name:L1D_CACHE_REFILL_OUTER : Level 1 data cache refill, outer
+event:0x0046 um:zero minimum:10007 name:L1D_CACHE_WB_VICTIM : Level 1 data cache write-back, victim (threadless)
+event:0x0047 um:zero minimum:10007 name:L1D_CACHE_WB_CLEAN : Level 1 data cache write-back, cleaning and coherency (thread- less)
+event:0x0048 um:zero minimum:10007 name:L1D_CACHE_INVAL : Level 1 data cache invalidate (threadless)
+event:0x004C um:zero minimum:10007 name:L1D_TLB_REFILL_RD : Level 1 data TLB refill, read
+event:0x004D um:zero minimum:10007 name:L1D_TLB_REFILL_WR : Level 1 data TLB refill, wirte
+event:0x004E um:zero minimum:10007 name:L1D_TLB_RD : Level 1 data TLB access, read
+event:0x004F um:zero minimum:10007 name:L1D_TLB_WR : Level 1 data TLB access, write
+event:0x0050 um:zero minimum:10007 name:L2D_CACHE_RD : Level 2 data cache access, read
+event:0x0051 um:zero minimum:10007 name:L2D_CACHE_WR : Level 2 data cache access, write
+event:0x0052 um:zero minimum:10007 name:L2D_CACHE_REFILL_RD : Level 2 data cache refill, read
+event:0x0053 um:zero minimum:10007 name:L2D_CACHE_REFILL_WR : Level 2 data cache refill, write
+event:0x0056 um:zero minimum:10007 name:L2D_CACHE_WB_VICTIM : Level 2 data cache write-back, victim
+event:0x0057 um:zero minimum:10007 name:L2D_CACHE_WB_CLEAN : Level 2 data cache write-back, cleaning and coherency
+event:0x0058 um:zero minimum:10007 name:L2D_CACHE_INVAL : Level 2 data cache invalidate
+event:0x005C um:zero minimum:10007 name:L2D_TLB_REFILL_RD : Level 2 data/unified TLB refill, read
+event:0x005D um:zero minimum:10007 name:L2D_TLB_REFILL_WR : Level 2 data/unified TLB refill, write
+event:0x005E um:zero minimum:10007 name:L2D_TLB_RD : Level 2 data/unified TLB access, read
+event:0x005F um:zero minimum:10007 name:L2D_TLB_WR : Level 2 data/unified TLB access, read
+event:0x0060 um:zero minimum:10007 name:BUS_ACCESS_RD : Bus access, read
+event:0x0061 um:zero minimum:10007 name:BUS_ACCESS_WR : Bus access, write
+event:0x0062 um:zero minimum:10007 name:BUS_ACCESS_SHARED : Bus access, Normal, Cacheable, Shareable
+event:0x0063 um:zero minimum:10007 name:BUS_ACCESS_NOT_SHARED : Bus access, not Normal, Cacheable, Shareable
+event:0x0064 um:zero minimum:10007 name:BUS_ACCESS_NORMAL : Bus access, normal
+event:0x0065 um:zero minimum:10007 name:BUS_ACCESS_PERIPH : Bus access, peripheral
+event:0x0066 um:zero minimum:10007 name:MEM_ACCESS_RD : Data memory access, read
+event:0x0067 um:zero minimum:10007 name:MEM_ACCESS_WR : Data memory access, write
+event:0x0068 um:zero minimum:10007 name:UNALIGNED_LD_SPEC : Unaligned access, read
+event:0x0069 um:zero minimum:10007 name:UNALIGNED_ST_SPEC : Unaligned access, write (threadless)
+event:0x006A um:zero minimum:10007 name:UNALIGNED_LDST_SPEC : Unaligned access (threadless)
+event:0x006C um:zero minimum:10007 name:LDREX_SPEC : Exclusive operation speculatively executed, LDREX or LDX
+event:0x006D um:zero minimum:10007 name:STREX_PASS_SPEC : Exclusive operation speculatively executed, STREX or STX pass
+event:0x006E um:zero minimum:10007 name:STREX_FAIL_SPEC : Exclusive operation speculatively executed, STREX or STX fail
+event:0x006F um:zero minimum:10007 name:STREX_SPEC : Exclusive operation speculatively executed, STREX or STX
+event:0x0070 um:zero minimum:10007 name:LD_SPEC : Operation speculatively executed, load
+event:0x0071 um:zero minimum:10007 name:ST_SPEC : Operation speculatively executed, store
+event:0x0072 um:zero minimum:10007 name:LDST_SPEC : Operation speculatively executed, load or store
+event:0x0073 um:zero minimum:10007 name:DP_SPEC : Operation speculatively executed, integer data processing
+event:0x0074 um:zero minimum:10007 name:ASE_SPEC : Operation speculatively executed, Advanced SIMD instruction
+event:0x0075 um:zero minimum:10007 name:VFP_SPEC : Operation speculatively executed, floating-point instruction
+event:0x0077 um:zero minimum:10007 name:CRYPTO_SPEC : Operation speculatively executed, Cryptographic instruction
+event:0x0078 um:zero minimum:10007 name:BR_IMMED_SPEC : Branch speculatively executed, immediate branch
+event:0x0079 um:zero minimum:10007 name:BR_RETURN_SPEC : Branch speculatively executed, procedure return
+event:0x007A um:zero minimum:10007 name:BR_INDIRECT_SPEC : Branch speculatively executed, indirect branch
+event:0x007C um:zero minimum:10007 name:ISB_SPEC : Barrier speculatively executed, ISB
+event:0x007D um:zero minimum:10007 name:DSB_SPEC : Barrier speculatively executed, DSB
+event:0x007E um:zero minimum:10007 name:DMB_SPEC : Barrier speculatively executed, DMB
+event:0x0081 um:zero minimum:10007 name:EXC_UNDEF : Exception taken, Other synchronous
+event:0x0082 um:zero minimum:10007 name:EXC_SVC : Exception taken, Supervisor Call
+event:0x0083 um:zero minimum:10007 name:EXC_PABORT : Exception taken, Instruction Abort
+event:0x0084 um:zero minimum:10007 name:EXC_DABORT : Exception taken, Data Abort and SError
+event:0x0086 um:zero minimum:10007 name:EXC_IRQ : Exception taken, IRQ
+event:0x0087 um:zero minimum:10007 name:EXC_FIQ : Exception taken, FIQ
+event:0x0088 um:zero minimum:10007 name:EXC_SMC : Exception taken, Secure Monitor Call
+event:0x008A um:zero minimum:10007 name:EXC_HVC : Exception taken, Hypervisor Call
+event:0x008B um:zero minimum:10007 name:EXC_TRAP_PABORT : Exception taken, Instruction Abort not taken locally
+event:0x008C um:zero minimum:10007 name:EXC_TRAP_DABORT : Exception taken, Data Abort or SError not taken locally
+event:0x008D um:zero minimum:10007 name:EXC_TRAP_OTHER : Exception taken, Other traps not taken locally
+event:0x008E um:zero minimum:10007 name:EXC_TRAP_IRQ : Exception taken, IRQ not taken locally
+event:0x008F um:zero minimum:10007 name:EXC_TRAP_FIQ : Exception taken, FIQ not taken locally
+event:0x0090 um:zero minimum:10007 name:RC_LD_SPEC : Release consistency operation speculatively executed, Load Acquire
+event:0x0091 um:zero minimum:10007 name:RC_ST_SPEC : Release consistency operation speculatively executed, Store Release
+event:0x00C1 um:zero minimum:10007 name:L1D_LHS_VANOTP : A Load hit store retry. VA match against an older entryin the SRQ but the PA mismatches
+event:0x00C2 um:zero minimum:10007 name:L1D_LHS_OVRLAP : Load hit store retry. VA match against an older entry in the SRQ but the required load bytes are not all contained
+event:0x00C3 um:zero minimum:10007 name:L1D_LHS_VANOSD : Load hit store retry. VA match against an older entry in the SRQ but the associated store data has not been issued yet
+event:0x00C4 um:zero minimum:10007 name:L1D_LHS_FWD : Load hit store forwarding. Load completes with data successfully forwarded from the SRQ
+event:0x00C6 um:zero minimum:10007 name:L1D_BNKCFL : Bank Conflict load retry. A load that hits in the L1 retriesdue a bank read conflict with another higher priority port of the L1
+event:0x00C7 um:zero minimum:10007 name:L1D_LSMQ_FULL : LSMQ full retry. A load misses the L1 but retries due to the LSMQ being full. Upon retry, sleep in the SCH until a fill return
+event:0x00C8 um:zero minimum:10007 name:L1D_LSMQ_HIT : LSMQ hit retry. A load misses the L1 but retries due to hitting an LSMQ that already has 2 loads al-located to it
+event:0x00C9 um:zero minimum:10007 name:L1D_EXPB_MISS : An external probe missed the L1
+event:0x00CA um:zero minimum:10007 name:L1D_L2EV_MISS : An L2 Evict operation missed the L1
+event:0x00CB um:zero minimum:10007 name:L1D_EXPB_HITM : An external probe hit a modified line in the L1. (threadless)
+event:0x00CC um:zero minimum:10007 name:L1D_L2EV_HITM : An L2 Evict operation hit a modified line in the L1. (threadless)
+event:0x00CD um:zero minimum:10007 name:L1D_EXPB_HIT : An external probe hit in the L1.(threadless)
+event:0x00CE um:zero minimum:10007 name:L1D_L2EV_HIT : An L2 Evict operation hit in the L1. (threadless)
+event:0x00CF um:zero minimum:10007 name:L1D_EXPB_RETRY : An external probe hit was retried by the LSU. (threadless)
+event:0x00D0 um:zero minimum:10007 name:L1D_L2EV_RETRY : An L2 Evict operation was retried by the LSU. (threadless)
+event:0x00D1 um:zero minimum:10007 name:L1D_ST_RMW : A read modify write store was drained and updated the L1. A RmW store is any store that up-dates 1, 2, or 3 bytes of a bank
+event:0x00D2 um:zero minimum:10007 name:L1D_LSMQ00_LDREQ : A load has allocated LSMQ entry 0 and made a request to the SCU
+event:0x00D3 um:zero minimum:10007 name:L1D_LSMQ00_LDVLD : LSMQ entry 0 was initiated by a load and is valid this cycle. (threadless)
+event:0x00D4 um:zero minimum:10007 name:L1D_LSMQ15_STREQ : A store has allocated LSMQ entry 15 and made a request to the SCU
+event:0x00D5 um:zero minimum:10007 name:L1D_LSMQ15_STVLD : LSMQ entry 15 was initiated by a store and is valid this cycle. (threadless)
+event:0x00D6 um:zero minimum:10007 name:L1D_PB_FLUSH : LRQ ordering flush
+event:0x00E0 um:zero minimum:10007 name:BR_COND_MIS_PRED_RETIRED : Conditional branch instruction executed, but mis-predicted
+event:0x00E1 um:zero minimum:10007 name:BR_IND_MIS_PRED_RETIRED : Indirect branch instruction executed, but mis-predicted
+event:0x00E2 um:zero minimum:10007 name:BR_RETURN_MIS_PREDRETIRED : Return branch instruction executed, but mis-predicted
+event:0x00E8 um:zero minimum:10007 name:OP_RETIRED : Uops executed
+event:0x00E9 um:zero minimum:10007 name:LD_OP_RETIRED : Load uops executed
+event:0x00EA um:zero minimum:10007 name:ST_OP_RETIRED : Store uops executed
+event:0x00EB um:zero minimum:10007 name:FUSED_OP_RETIRED : Fused uops executed
+event:0x00F8 um:zero minimum:10007 name:IRQ_MASK : Cumulative duration of a PSTATE. I interrupt mask set to 1
+event:0x00F9 um:zero minimum:10007 name:FIQ_MASK : Cumulative duration of a PSTATE. F interrupt mask set to 1
+event:0x00FA um:zero minimum:10007 name:SERROR_MASK : Cumulative duration of a PSTATE. A interrupt mask set to 1
+event:0x0108 um:zero minimum:10007 name:WFIWFE_SLEEP : Count every cycle in which the CPU is asleep due to having entered a low power mode on executing a WFI or WFE instruction
+event:0x0127 um:zero minimum:10007 name:L2TLB_4K_PAGE_MISS : L2 TLB lookup miss using 4K page size
+event:0x0128 um:zero minimum:10007 name:L2TLB_64K_PAGE_MISS : L2 TLB lookup miss using 64K page size
+event:0x0129 um:zero minimum:10007 name:L2TLB_2M_PAGE_MISS : L2 TLB lookup miss using 2M page size
+event:0x012A um:zero minimum:10007 name:L2TLB_512M_PAGE_MISS : L2 TLB lookup miss using 512M page size
+event:0x0150 um:zero minimum:10007 name:ISB_EMPTY : Number of cycles during which micro-op skid-buffer in empty.
+event:0x0151 um:zero minimum:10007 name:ISB_FULL : Num of cycles uop skid-buffer is back-pressuring decode. (5 or more entries are occupied)
+event:0x0152 um:zero minimum:10007 name:STALL_NOTSELECTED : Number of cycles during which thread was available for dispatch but was not selected
+event:0x0153 um:zero minimum:10007 name:ROB_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch due to ROB full
+event:0x0154 um:zero minimum:10007 name:ISSQ_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch because the instruction issue queue is full
+event:0x0155 um:zero minimum:10007 name:GPR_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch because GPR renamer pool is empty
+event:0x0156 um:zero minimum:10007 name:FPR_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch because the FPR renamer pool is empty
+event:0x0158 um:zero minimum:10007 name:LRQ_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch due to LRQ full
+event:0x0159 um:zero minimum:10007 name:SRQ_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch due to SRQ full
+event:0x015B um:zero minimum:10007 name:BSR_RECYCLE : Number of cycles in which one or more valid micro-ops did not dis-patch because the branch check-point buffer is full
+event:0x0164 um:zero minimum:10007 name:UOPSFUSED : Number of fused micro-ops dispatched
+event:0x020B um:zero minimum:10007 name:L2D_TLBI_INT : Internal mmu tlbi cacheops
+event:0x020C um:zero minimum:10007 name:L2D_TLBI_EXT : External mmu tlbi cacheops
+event:0x0218 um:zero minimum:10007 name:L2D_HWPF_DMD_HIT : Scu ld/st requests that hit cache or msq for lines brought in by the hardware prefetcher
+event:0x0219 um:zero minimum:10007 name:L2D_HWPF_REQ_VAL : Scu hwpf requests into the pipeline
+event:0x021A um:zero minimum:10007 name:L2D_HWPF_REQ_LD : Scu hwpf ld requests into the pipeline
+event:0x021B um:zero minimum:10007 name:L2D_HWPF_REQ_MISS : Scu hwpf requests that miss
+event:0x021C um:zero minimum:10007 name:L2D_HWPF_NEXT_LINE : Scu hwpf next line requests generated

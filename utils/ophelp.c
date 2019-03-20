@@ -662,6 +662,13 @@ int main(int argc, char const * argv[])
 			"Cortex A57 DDI (ARM DDI 0500D, revision r0p2)\n";
 		break;
 
+	case CPU_ARM_V8_CAVIUM_THUNDERX2:
+                event_doc =
+			"See ARM Architecture Reference Manual \n"
+			"ARMv8, for ARMv8-A architecture profile\n"
+			"DDI (ARM DDI0487D.a)\n";
+		break;
+
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
 	case CPU_PPC64_POWER6:
