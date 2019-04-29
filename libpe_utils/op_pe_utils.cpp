@@ -654,7 +654,7 @@ static bool _get_codes_for_match(unsigned int pfm_idx, const char name[],
 			string str = event.name;
 			strncpy(evt_name, event.name, str.rfind("_GRP"));
 		} else {
-			strncpy(evt_name, event.name, strlen(event.name));
+			strncpy(evt_name, event.name, strlen(evt_name));
 		}
 
 		/* Events where the "_EDGE_COUNT" suffix has been appended to a
@@ -734,7 +734,7 @@ static bool _op_get_event_codes(vector<operf_event_t> * evt_vec)
 			string str = event.name;
 			strncpy(evt_name, event.name, str.rfind("_GRP"));
 		} else {
-			strncpy(evt_name, event.name, strlen(event.name));
+			strncpy(evt_name, event.name, sizeof(evt_name));
 		}
 
 		/* Events where the "_EDGE_COUNT" suffix has been appended to a
