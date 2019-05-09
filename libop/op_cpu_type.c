@@ -599,7 +599,8 @@ static op_cpu _get_x86_64_cpu_type(void)
 
 	if (cpuid_vendor("GenuineIntel")) {
 		ret = _get_intel_cpu_type();
-	} else if (cpuid_vendor("AuthenticAMD")) {
+	} else if (cpuid_vendor("AuthenticAMD") ||
+		   cpuid_vendor("HygonGenuine")) {
 		ret = _get_amd_cpu_type();
 	}
 

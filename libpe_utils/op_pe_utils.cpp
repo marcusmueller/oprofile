@@ -415,7 +415,9 @@ static void _get_event_code(operf_event_t * event, op_cpu cpu_type)
 #if defined(__i386__) || defined(__x86_64__)
 	// Setup EventSelct[11:8] field for AMD
 	const char * vendor_AMD = "AuthenticAMD";
-	if (op_is_cpu_vendor((char *)vendor_AMD)) {
+	const char * vendor_Hygon = "HygonGenuine";
+	if (op_is_cpu_vendor((char *)vendor_AMD) ||
+	    op_is_cpu_vendor((char *)vendor_Hygon)) {
 		config = base_code & 0xF00ULL;
 		config = config << 32;
 	}
