@@ -242,6 +242,10 @@ bool start_counting(void)
 
 	// parent
 	int startup;
+	if ( app_PID != -1)
+		// app_PID child process created successfully
+		app_started = true;
+
 	if (startApp) {
 		if (read(app_ready_pipe[0], &startup, sizeof(startup)) == -1) {
 			perror("Internal error on app_ready_pipe");
@@ -297,7 +301,6 @@ bool start_counting(void)
 			perror("Internal error on start_app_pipe");
 			return false;
 		}
-		app_started = true;
 	}
 
 	return ret;
