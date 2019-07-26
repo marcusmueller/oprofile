@@ -176,7 +176,7 @@ static void JNICALL cb_compiled_method_load(jvmtiEnv * jvmti,
 	int cnt = strlen(method_name) + strlen(class_signature) +
 		strlen(method_signature) + 2;
 	char buf[cnt];
-	strncpy(buf, class_signature, cnt - 1);
+	strncpy(buf, class_signature, sizeof(buf) - 1);
 	strncat(buf, method_name, cnt - strlen(buf) - 1);
 	strncat(buf, method_signature, cnt - strlen(buf) - 1);
 	if (op_write_native_code(agent_hdl, buf,

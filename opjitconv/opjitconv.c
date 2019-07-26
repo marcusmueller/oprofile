@@ -313,6 +313,7 @@ static int process_jit_dumpfile(char const * dmp_pathname,
 	time_t dumpfile_modtime;
 	struct op_jitdump_info dmp_info;
 	char * elf_file = NULL;
+	char * tempstring = NULL;
 	char * proc_id = NULL;
 	char const * anon_dir;
 	char const * dumpfilename = rindex(dmp_pathname, '/');
@@ -390,11 +391,12 @@ chk_proc_id:
 		}
 		result_dir_length = ++anon_path_seg - anon_dir;
 		/* create final ELF file name */
-		elf_file_size = result_dir_length
+		elf_file_size = result_dir_length + strlen("/")
 			+ strlen(proc_id) + strlen(".jo") + 1;
 		elf_file = xmalloc(elf_file_size);
-		snprintf(elf_file, elf_file_size, "%s%s.jo",
-			 anon_dir, proc_id);
+		tempstring = xmalloc(elf_file_size);
+		snprintf(tempstring, result_dir_length, "%s",anon_dir);
+		snprintf(elf_file, elf_file_size, "%s/%s.jo",tempstring,proc_id);
 		/* create temporary ELF file name */
 		tmp_elffile_size = strlen(tmp_conv_dir) + 1
 			+ strlen(proc_id) + strlen(".jo") + 1;
