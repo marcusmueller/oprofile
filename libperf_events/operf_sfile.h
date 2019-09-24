@@ -101,6 +101,7 @@ struct operf_transient {
 	u32 tgid;
 	vma_t start_addr;
 	vma_t end_addr;
+	u64 pgoff;
 	bool cg;
 	// TODO: handle extended
 	//void * ext;

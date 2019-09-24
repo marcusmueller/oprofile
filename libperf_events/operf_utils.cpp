@@ -320,7 +320,8 @@ static void __handle_mmap_event(event_t * event)
 			cout << "PERF_RECORD_MMAP for process " << hex << event->mmap.pid << "/"
 			     << event->mmap.tid << ": " << event->mmap.filename << endl;
 			cout << "\tstart_addr: " << hex << mapping->start_addr
-			     << "; end addr: " << mapping->end_addr << endl;
+			     << "; end addr: " << mapping->end_addr
+			     << "; pgoff: " << mapping->pgoff << endl;
 		}
 
 		if (event->header.misc & PERF_RECORD_MISC_USER)
@@ -465,6 +466,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		trans.image_len = strlen(trans.image_name);
 		trans.start_addr = op_mmap->start_addr;
 		trans.end_addr = op_mmap->end_addr;
+		trans.pgoff = op_mmap->pgoff;
 		trans.tgid = data->pid;
 		trans.tid = data->tid;
 		trans.cur_procinfo = proc;
@@ -474,7 +476,7 @@ static struct operf_transient * __get_operf_trans(struct sample_data * data, boo
 		if (trans.in_kernel || trans.is_anon)
 			trans.pc = data->ip;
 		else
-			trans.pc = data->ip - trans.start_addr;
+			trans.pc = data->ip + trans.pgoff - trans.start_addr;
 
 		trans.sample_id = data->id;
 		retval = &trans;
@@ -767,7 +769,7 @@ static int __handle_sample_event(event_t * event, u64 sample_type)
 		if (trans.is_anon)
 			trans.pc = data.ip;
 		else
-			trans.pc = data.ip - trans.start_addr;
+			trans.pc = data.ip + trans.pgoff - trans.start_addr;
 		found_trans = true;
 	}
 
@@ -1062,6 +1064,7 @@ void OP_perf_utils::op_get_vsyscall_mapping(pid_t tgid, int output_fd, operf_rec
 			size = align_64bit(size);
 			mmap.start = start_addr;
 			mmap.len = end_addr - mmap.start;
+			mmap.pgoff = offset;
 			mmap.pid = tgid;
 			mmap.tid = tgid;
 			mmap.header.size = (sizeof(mmap) -
@@ -1133,6 +1136,7 @@ void OP_perf_utils::op_record_process_exec_mmaps(pid_t pid, pid_t tgid, int outp
 			size = align_64bit(size);
 			mmap.start = start_addr;
 			mmap.len = end_addr - mmap.start;
+			mmap.pgoff = offset;
 			mmap.pid = tgid;
 			mmap.tid = pid;
 			mmap.header.size = (sizeof(mmap) -
