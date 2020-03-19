@@ -19,6 +19,7 @@
 #include "locate_images.h"
 #include "op_libiberty.h"
 #include "op_exception.h"
+#include "op_bfd_wrappers.h"
 
 #include <unistd.h>
 #include <errno.h>
@@ -137,7 +138,7 @@ static bool get_build_id(bfd * ibfd, unsigned char * build_id)
 		}
 	}
 
-	bfd_size_type buildid_sect_size = bfd_section_size(ibfd, sect);
+	bfd_size_type buildid_sect_size = op_bfd_section_size(ibfd, sect);
 	char * contents = (char *) xmalloc(buildid_sect_size);
 	errno = 0;
 	if (!bfd_get_section_contents(ibfd, sect,
@@ -188,7 +189,7 @@ bool get_debug_link_info(bfd * ibfd, string & filename, unsigned long & crc32)
 	if (sect == NULL)
 		return false;
 	
-	bfd_size_type debuglink_size = bfd_section_size(ibfd, sect);  
+	bfd_size_type debuglink_size = op_bfd_section_size(ibfd, sect);
 	char * contents = (char *) xmalloc(debuglink_size);
 	cverb << vbfd
 	      << ".gnu_debuglink section has size " << debuglink_size << endl;
@@ -346,7 +347,7 @@ void fixup_linenr(bfd * abfd, asection * section, asymbol ** syms,
 	// first restrict the search on a sensible range of vma, 16 is
 	// an intuitive value based on epilog code look
 	size_t max_search = 16;
-	size_t section_size = bfd_section_size(abfd, section);
+	size_t section_size = op_bfd_section_size(abfd, section);
 	if (pc + max_search > section_size)
 		max_search = section_size - pc;
 
@@ -819,10 +820,10 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 	else
 		pc = (sym.value() + offset) - sym.filepos();
 
-	if ((bfd_get_section_flags(abfd, section) & SEC_ALLOC) == 0)
+	if ((op_bfd_get_section_flags(abfd, section) & SEC_ALLOC) == 0)
 		goto fail;
 
-	if (pc >= bfd_section_size(abfd, section))
+	if (pc >= op_bfd_section_size(abfd, section))
 		goto fail;
 
 	ret = bfd_find_nearest_line(abfd, section, syms, pc, &cfilename,

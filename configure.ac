@@ -224,6 +224,26 @@ if test "$host_cpu" = "powerpc64le" -o "$host_cpu" = "powerpc64"; then
 fi
 AC_SUBST(PFM_LIB)
 
+HAVE_BINUTILS_234='1'
+AC_MSG_CHECKING([whether binutils 2.34 is being used])
+rm -f test-for-BINUTILS
+AC_LANG_CONFTEST(
+	[AC_LANG_PROGRAM([[#include <bfd.h>]],
+		[[asection * sect;
+		bfd_size_type buildid_sect_size = bfd_section_size(sect);
+		return 0;]])
+	])
+$CC conftest.$ac_ext $CFLAGS $LDFLAGS $LIBS $PERF_EVENT_FLAGS -o test-for-BINUTILS  > /dev/null 2>&1
+if test -f test-for-BINUTILS; then
+	echo "yes"
+	HAVE_BINUTILS_234='1'
+else
+	echo "no"
+	HAVE_BINUTILS_234='0'
+fi
+AC_DEFINE_UNQUOTED(HAVE_BINUTILS_234, $HAVE_BINUTILS_234, [Using binutils 2.34])
+rm -f test-for-BINUTILS*
+
 AC_ARG_WITH(java,
 [  --with-java=java-home        Path to Java home directory (default is "no"; "yes" will use /usr as Java home)],
 JAVA_HOMEDIR=$with_java, [with_java=no])

@@ -16,6 +16,7 @@
 
 #include "opjitconv.h"
 #include "op_libiberty.h"
+#include "op_bfd_wrappers.h"
 
 #include <bfd.h>
 #include <assert.h>
@@ -86,12 +87,12 @@ asection * create_section(bfd * abfd, char const * section_name,
 		bfd_perror("bfd_make_section");
 		goto error;
 	}
-	bfd_set_section_vma(abfd, section, vma);
-	if (bfd_set_section_size(abfd, section, size) == FALSE) {
+	op_bfd_set_section_vma(abfd, section, vma);
+	if (op_bfd_set_section_size(abfd, section, size) == FALSE) {
 		bfd_perror("bfd_set_section_size");
 		goto error;
 	}
-	if (bfd_set_section_flags(abfd, section, flags) == FALSE) {
+	if (op_bfd_set_section_flags(abfd, section, flags) == FALSE) {
 		bfd_perror("bfd_set_section_flags");
 		goto error;
 	}
