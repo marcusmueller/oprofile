@@ -28,4 +28,5 @@ libutil_a_SOURCES = \
 	op_version.c \
 	op_version.h \
 	op_growable_buffer.c \
-	op_growable_buffer.h
+	op_growable_buffer.h \
+	op_bfd_wrappers.h
