@@ -466,8 +466,8 @@ AX_COPY_IF_CHANGE(doc/xsl/catalog-1.xml, doc/xsl/catalog.xml)
 
 if ! test "x$enable_account_check" = "xyes"; then
 	:
-elif test "`getent passwd oprofile 2>/dev/null`" == "" || \
-     test "`getent group oprofile 2>/dev/null`" == ""; then
+elif test "`getent passwd oprofile 2>/dev/null`" = "" || \
+     test "`getent group oprofile 2>/dev/null`" = ""; then
 	if test `id -u` != "0"; then
 		echo "Warning: The user account 'oprofile:oprofile' does not exist on the system."
 		echo "         To profile JITed code, this special user account must exist."
