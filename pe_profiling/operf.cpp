@@ -860,9 +860,9 @@ static int __delete_old_previous_sample_data(const char *fpath,
 {
 	if (remove(fpath)) {
 		perror("sample data removal error");
-		return FTW_STOP;
+		return 1;
 	} else {
-		return FTW_CONTINUE;
+		return 0;
 	}
 }
 
@@ -897,7 +897,7 @@ static void convert_sample_data(void)
 		return;
 
 	if (!operf_options::append) {
-                int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
+		int flags = FTW_DEPTH;
 		errno = 0;
 		if (nftw(previous_sampledir.c_str(), __delete_old_previous_sample_data, 32, flags) !=0 &&
 				errno != ENOENT) {
