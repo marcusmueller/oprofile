@@ -31,6 +31,7 @@ if test -n "$SOURCE_DATE_EPOCH" ; then
 fi
 dnl for the man page
 DATE="`date $dateopt '+%a %d %B %Y'`"
+AC_DEFINE_UNQUOTED([BUILD_DATE], ["$DATE"], [Use reproducible build date])
 AC_SUBST(DATE)
 
 # Since we should not permanently alter user environment variables, we'll
