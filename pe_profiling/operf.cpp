@@ -1342,8 +1342,8 @@ static int _process_operf_and_app_args(int argc, char * const argv[])
 			__print_usage_and_exit(NULL);
 			break;
 		case 'v':
-			cout << argv[0] << ": " << PACKAGE << " " << VERSION << " compiled on " << __DATE__
-			     << " " << __TIME__ << endl;
+			cout << argv[0] << ": " << PACKAGE << " " << VERSION << " compiled on "
+			     << BUILD_DATE << endl;
 			exit(EXIT_SUCCESS);
 			break;
 		default:
