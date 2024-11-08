@@ -116,6 +116,7 @@ if test "$kernel_may_have_perf_events_support" = "yes"; then
 		rm -f test-for-PERF_EVENT_OPEN
 		AC_LANG_CONFTEST(
 			[AC_LANG_PROGRAM([[#include <linux/perf_event.h>
+				#include <unistd.h>
 				#include <asm/unistd.h>
 				#include <sys/types.h>
 				#include <string.h>
