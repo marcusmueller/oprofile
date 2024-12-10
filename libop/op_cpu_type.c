@@ -430,6 +430,8 @@ static op_cpu _get_arm_cpu_type(void)
 		switch (cpuid) {
 		case 0x00f:
 			return op_get_cpu_number("arm/armv7-ca15");
+		case 0x100:
+			return op_get_cpu_number("arm/armv8-ca53");
 		case 0x516:
 			return op_get_cpu_number("arm/armv8-thunderx2");
 		}
